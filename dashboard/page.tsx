@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { FiInfo, FiLogIn } from "react-icons/fi";
 import { BentoCard } from "../core/components/BentoCard.tsx";
 import { Button } from "../core/components/Button.tsx";
@@ -12,7 +12,8 @@ import { useMyOrgs } from "./hooks.ts";
 export function DashboardPage(): ReactElement {
   const session = useSession();
   const orgs = useMyOrgs();
-  const scope = useRiseIn<HTMLDivElement>();
+  const { pathname } = useLocation();
+  const scope = useRiseIn<HTMLDivElement>([pathname]);
   const orgCount = orgs.data?.length ?? 0;
 
   if (!session.isPending && !session.data) {

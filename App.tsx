@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { PageShell } from "./core/components/PageShell.tsx";
 import { ChangePasswordPage } from "./auth/change-password-page.tsx";
 import { ForgotPasswordPage } from "./auth/forgot-password-page.tsx";
@@ -11,14 +11,19 @@ import { VerifyPage } from "./auth/verify-page.tsx";
 import { EventsPage } from "./events/page.tsx";
 import { HomePage } from "./home/page.tsx";
 import { LeaderboardPage } from "./leaderboard/page.tsx";
-import { DashboardCreatePage } from "./my-dashboard/create-page.tsx";
-import { DashboardEventsPage } from "./my-dashboard/events-page.tsx";
-import { DashboardMembersPage } from "./my-dashboard/members-page.tsx";
-import { DashboardOrgsPage } from "./my-dashboard/orgs-page.tsx";
-import { DashboardOverviewPage } from "./my-dashboard/overview-page.tsx";
-import { DashboardSettingsPage } from "./my-dashboard/settings-page.tsx";
-import { DashboardPage } from "./my-dashboard/page.tsx";
+import { DashboardCreatePage } from "./dashboard/create-page.tsx";
+import { DashboardEventsPage } from "./dashboard/events-page.tsx";
+import { DashboardMembersPage } from "./dashboard/members-page.tsx";
+import { DashboardOrgsPage } from "./dashboard/orgs-page.tsx";
+import { DashboardOverviewPage } from "./dashboard/overview-page.tsx";
+import { DashboardSettingsPage } from "./dashboard/settings-page.tsx";
+import { DashboardPage } from "./dashboard/page.tsx";
 import { OrgsPage } from "./orgs/page.tsx";
+
+function LegacyDashboardRedirect(): ReactElement {
+  const { "*": splat = "" } = useParams();
+  return <Navigate to={`/manage/${splat}`} replace />;
+}
 
 export default function App(): ReactElement {
   return (
@@ -27,11 +32,13 @@ export default function App(): ReactElement {
         <Route index element={<HomePage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="orgs" element={<OrgsPage />} />
-        <Route path="my-dashboard" element={<DashboardPage />}>
+        <Route path="my-dashboard/*" element={<LegacyDashboardRedirect />} />
+        <Route path="manage" element={<DashboardPage />}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<DashboardOverviewPage />} />
           <Route path="orgs" element={<DashboardOrgsPage />} />
-          <Route path="create" element={<DashboardCreatePage />} />
+          <Route path="orgs/create" element={<DashboardCreatePage />} />
+          <Route path="create" element={<Navigate to="orgs/create" replace />} />
           <Route path="events" element={<DashboardEventsPage />} />
           <Route path="members" element={<DashboardMembersPage />} />
           <Route path="settings" element={<DashboardSettingsPage />} />

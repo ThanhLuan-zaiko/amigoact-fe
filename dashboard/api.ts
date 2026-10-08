@@ -62,10 +62,13 @@ export async function restoreOrg(id: string): Promise<DashboardOrg> {
   return apiFetch<DashboardOrg>(`/orgs/${id}/restore`, { method: "POST" });
 }
 
+export type MediaRole = "gallery" | "cover" | "logo";
+
 export interface OrgMedia {
   id: string;
   org_id: string;
   kind: string;
+  role: MediaRole;
   mime: string;
   size_bytes: number;
   file_url: string;
@@ -80,14 +83,34 @@ export async function listOrgMedia(orgId: string): Promise<OrgMedia[]> {
   return apiFetch<OrgMedia[]>(`/orgs/${orgId}/media`);
 }
 
-export async function uploadOrgMedia(orgId: string, file: File): Promise<OrgMedia> {
+export async function uploadOrgMedia(
+  orgId: string,
+  file: File,
+  role: MediaRole = "gallery",
+): Promise<OrgMedia> {
   const form = new FormData();
+  form.append("role", role);
   form.append("file", file, file.name);
   return apiUpload<OrgMedia>(`/orgs/${orgId}/media`, form);
 }
 
+export async function setOrgMediaRole(
+  orgId: string,
+  mediaId: string,
+  role: MediaRole,
+): Promise<OrgMedia> {
+  return apiFetch<OrgMedia>(`/orgs/${orgId}/media/${mediaId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
+  });
+}
+
 export async function deleteOrgMedia(orgId: string, mediaId: string): Promise<void> {
   await apiFetch<unknown>(`/orgs/${orgId}/media/${mediaId}`, { method: "DELETE" });
+}
+
+export async function deleteAllOrgMedia(orgId: string): Promise<void> {
+  await apiFetch<unknown>(`/orgs/${orgId}/media`, { method: "DELETE" });
 }
 
 export async function createOrg(input: CreateOrgInput): Promise<DashboardOrg> {

@@ -1,6 +1,30 @@
-import type { CreateOrgInput, OrgKind } from "./api.ts";
+import type { CreateOrgInput, MediaRole, OrgKind } from "./api.ts";
 
 export const ORG_KINDS: OrgKind[] = ["organization", "club", "group", "business"];
+
+export interface PendingMedia {
+  file: File;
+  role: MediaRole;
+  cropped: boolean;
+  decodable?: boolean;
+}
+
+export function assignMediaRole(
+  items: PendingMedia[],
+  index: number,
+  role: MediaRole,
+): PendingMedia[] {
+  return items.map((item, i) => ({
+    ...item,
+    role: i === index ? role : role !== "gallery" && item.role === role ? "gallery" : item.role,
+  }));
+}
+
+export function defaultAspectForRole(role: MediaRole): number {
+  if (role === "logo") return 1;
+  if (role === "cover") return 3;
+  return 16 / 9;
+}
 
 export type OrgFieldErrors = Partial<
   Record<"name" | "slug" | "description" | "taxCode" | "legalRepName" | "legalRepId", string>
@@ -107,12 +131,29 @@ export function slugifyName(name: string): string {
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 export const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 
-const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+  "image/bmp",
+  "image/tiff",
+  "image/heic",
+  "image/heif",
+];
 const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+// Windows often reports no mime for these extensions; the backend
+// transcodes them, so accept by filename when file.type is empty.
+const IMAGE_EXTS = [".heic", ".heif", ".tiff", ".tif", ".bmp", ".avif"];
 
 export function isSupportedMedia(file: File): boolean {
   const type = file.type.split(";")[0].trim().toLowerCase();
   if (IMAGE_TYPES.includes(type)) return file.size <= MAX_IMAGE_BYTES;
   if (VIDEO_TYPES.includes(type)) return file.size <= MAX_VIDEO_BYTES;
+  if (type === "") {
+    const ext = `.${file.name.split(".").pop() ?? ""}`.toLowerCase();
+    if (IMAGE_EXTS.includes(ext)) return file.size <= MAX_IMAGE_BYTES;
+  }
   return false;
 }

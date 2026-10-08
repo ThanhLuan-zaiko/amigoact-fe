@@ -34,7 +34,7 @@ const NAV_LINKS: NavEntry[] = [
   { to: "/events", label: "Sự kiện", Icon: FiCalendar },
   { to: "/orgs", label: "Tổ chức", Icon: FiUsers },
   { to: "/leaderboard", label: "Bảng xếp hạng", Icon: FiAward },
-  { to: "/my-dashboard", label: "Bảng điều khiển", Icon: FiGrid },
+  { to: "/manage", label: "Bảng điều khiển", Icon: FiGrid },
 ];
 
 const LINK_BASE =

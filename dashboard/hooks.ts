@@ -8,16 +8,19 @@ import {
 import { ApiError } from "../core/api.ts";
 import {
   createOrg,
+  deleteAllOrgMedia,
   deleteOrgMedia,
   hardDeleteOrg,
   listMyOrgs,
   listOrgMedia,
   restoreOrg,
+  setOrgMediaRole,
   softDeleteOrg,
   updateOrg,
   uploadOrgMedia,
   type CreateOrgInput,
   type DashboardOrg,
+  type MediaRole,
   type OrgMedia,
   type UpdateOrgInput,
 } from "./api.ts";
@@ -99,10 +102,26 @@ export function useOrgMedia(orgId: string): UseQueryResult<OrgMedia[], ApiError>
 
 export function useUploadOrgMedia(
   orgId: string,
-): UseMutationResult<OrgMedia, ApiError, File> {
+): UseMutationResult<OrgMedia, ApiError, { file: File; role: MediaRole }> {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (file: File) => uploadOrgMedia(orgId, file),
+    mutationFn: ({ file, role }: { file: File; role: MediaRole }) =>
+      uploadOrgMedia(orgId, file, role),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: dashboardKeys.orgMedia(orgId),
+      });
+    },
+  });
+}
+
+export function useSetOrgMediaRole(
+  orgId: string,
+): UseMutationResult<OrgMedia, ApiError, { mediaId: string; role: MediaRole }> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ mediaId, role }: { mediaId: string; role: MediaRole }) =>
+      setOrgMediaRole(orgId, mediaId, role),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: dashboardKeys.orgMedia(orgId),
@@ -117,6 +136,20 @@ export function useDeleteOrgMedia(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (mediaId: string) => deleteOrgMedia(orgId, mediaId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: dashboardKeys.orgMedia(orgId),
+      });
+    },
+  });
+}
+
+export function useDeleteAllOrgMedia(
+  orgId: string,
+): UseMutationResult<void, ApiError, void> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => deleteAllOrgMedia(orgId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: dashboardKeys.orgMedia(orgId),

@@ -22,12 +22,12 @@ interface SidebarEntry {
 }
 
 const ENTRIES: SidebarEntry[] = [
-  { to: "/my-dashboard/overview", label: "Tổng quan", Icon: FiGrid },
-  { to: "/my-dashboard/orgs", label: "Tổ chức của tôi", Icon: FiUsers },
-  { to: "/my-dashboard/create", label: "Tạo tổ chức", Icon: FiPlusCircle },
-  { to: "/my-dashboard/events", label: "Sự kiện", Icon: FiCalendar },
-  { to: "/my-dashboard/members", label: "Thành viên", Icon: FiUser },
-  { to: "/my-dashboard/settings", label: "Cài đặt", Icon: FiSettings },
+  { to: "/manage/overview", label: "Tổng quan", Icon: FiGrid },
+  { to: "/manage/orgs", label: "Tổ chức của tôi", Icon: FiUsers },
+  { to: "/manage/orgs/create", label: "Tạo tổ chức", Icon: FiPlusCircle },
+  { to: "/manage/events", label: "Sự kiện", Icon: FiCalendar },
+  { to: "/manage/members", label: "Thành viên", Icon: FiUser },
+  { to: "/manage/settings", label: "Cài đặt", Icon: FiSettings },
 ];
 
 const BASE =

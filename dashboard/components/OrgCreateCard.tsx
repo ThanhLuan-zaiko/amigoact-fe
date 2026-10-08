@@ -9,10 +9,12 @@ import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useCreateOrg } from "../hooks.ts";
 import { toVietnameseDashboardMessage, ORG_KIND_LABELS } from "../messages.tsx";
-import { ORG_KINDS, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
+import { assignMediaRole, ORG_KINDS, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
+import type { PendingMedia } from "../schemas.ts";
 import { uploadOrgMedia, type CreateOrgInput, type OrgKind } from "../api.ts";
 import { dashboardKeys } from "../keys.ts";
 import type { OrgFieldErrors } from "../schemas.ts";
+import { BusinessOrgFields } from "./BusinessOrgFields.tsx";
 import { MediaPicker } from "./MediaPicker.tsx";
 
 export function OrgCreateCard(): ReactElement {
@@ -31,7 +33,7 @@ export function OrgCreateCard(): ReactElement {
   const [errors, setErrors] = useState<OrgFieldErrors>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
   const [createdName, setCreatedName] = useState<string | null>(null);
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<PendingMedia[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState<string | null>(null);
 
@@ -88,9 +90,9 @@ export function OrgCreateCard(): ReactElement {
         setUploading(true);
         let done = 0;
         let failedCode: string | null = null;
-        for (const file of files) {
+        for (const item of files) {
           try {
-            await uploadOrgMedia(org.id, file);
+            await uploadOrgMedia(org.id, item.file, item.role);
             done += 1;
           } catch (error) {
             failedCode = error instanceof ApiError ? error.code : "REQUEST_FAILED";
@@ -194,40 +196,28 @@ export function OrgCreateCard(): ReactElement {
           error={errors.description ? toVietnameseDashboardMessage(errors.description) : undefined}
         />
         {form.kind === "business" && (
-          <>
-            <TextField
-              label="Mã số thuế"
-              name="tax_code"
-              placeholder="0312345678"
-              value={form.tax_code ?? ""}
-              onChange={(event) => update("tax_code", event.target.value)}
-              error={errors.taxCode ? toVietnameseDashboardMessage(errors.taxCode) : undefined}
-              icon={<FiTag className="h-4 w-4" aria-hidden="true" />}
-            />
-            <TextField
-              label="Người đại diện pháp luật"
-              name="legal_rep_name"
-              placeholder="Nguyễn Văn A"
-              value={form.legal_rep_name ?? ""}
-              onChange={(event) => update("legal_rep_name", event.target.value)}
-              error={errors.legalRepName ? toVietnameseDashboardMessage(errors.legalRepName) : undefined}
-              icon={<FiType className="h-4 w-4" aria-hidden="true" />}
-            />
-            <TextField
-              label="CCCD người đại diện"
-              name="legal_rep_id"
-              placeholder="12 chữ số"
-              value={form.legal_rep_id ?? ""}
-              onChange={(event) => update("legal_rep_id", event.target.value)}
-              error={errors.legalRepId ? toVietnameseDashboardMessage(errors.legalRepId) : undefined}
-              icon={<FiTag className="h-4 w-4" aria-hidden="true" />}
-            />
-          </>
+          <BusinessOrgFields form={form} errors={errors} onChange={update} />
         )}
         <MediaPicker
-          files={pendingFiles} disabled={create.isPending || uploading}
-          onAdd={(picked) => setPendingFiles((prev) => [...prev, ...picked])}
+          items={pendingFiles} disabled={create.isPending || uploading}
+          onAdd={(picked) =>
+            setPendingFiles((prev) => [
+              ...prev,
+              ...picked.map(({ file, decodable }) => ({
+                file,
+                role: "gallery" as const,
+                cropped: false,
+                decodable,
+              })),
+            ])
+          }
           onRemove={(index) => setPendingFiles((prev) => prev.filter((_, i) => i !== index))}
+          onRole={(index, role) => setPendingFiles((prev) => assignMediaRole(prev, index, role))}
+          onCropApply={(index, file) =>
+            setPendingFiles((prev) =>
+              prev.map((item, i) => (i === index ? { ...item, file, cropped: true } : item)),
+            )
+          }
         />
         <Button
           type="submit"

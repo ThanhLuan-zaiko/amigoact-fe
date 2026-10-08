@@ -63,9 +63,12 @@ export function swapGlyph(glyph: HTMLElement): void {
 }
 
 // Entrance scope for pages and cards. Mark animated children with the
-// data-rise attribute; they stagger in once on mount and stay visible
-// without motion (reduced-motion or load failure never hides content).
-export function useRiseIn<T extends HTMLElement>(): RefObject<T | null> {
+// data-rise attribute; they stagger in on mount (and again whenever deps
+// change, e.g. route switches) and stay visible without motion
+// (reduced-motion or load failure never hides content).
+export function useRiseIn<T extends HTMLElement>(
+  deps: readonly unknown[] = [],
+): RefObject<T | null> {
   const ref = useRef<T | null>(null);
   useEffect(() => {
     const root = ref.current;
@@ -74,6 +77,25 @@ export function useRiseIn<T extends HTMLElement>(): RefObject<T | null> {
     if (targets.length > 0) {
       riseIn(targets, { staggerMs: 70, y: 14, duration: 250 });
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+  return ref;
+}
+
+// Staggered entrance for list/grid children marked data-rise, replayed
+// whenever `trigger` changes (e.g. a query result arrives after mount).
+export function useRiseOn<T extends HTMLElement>(
+  trigger: unknown,
+): RefObject<T | null> {
+  const ref = useRef<T | null>(null);
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    const targets = root.querySelectorAll("[data-rise]");
+    if (targets.length > 0) {
+      riseIn(targets, { staggerMs: 45, y: 8, duration: 200 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trigger]);
   return ref;
 }

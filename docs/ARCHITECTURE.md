@@ -43,7 +43,7 @@ page.tsx / components/*.tsx
 ## 5. Bento grid và chống lệch giao diện
 
 - Cấu trúc mọi trang: `PageShell > grid bento > BentoCard`.
-- Ngoại lệ: `/my-dashboard` dùng một tile full-row chứa sidebar trái (`aside`) và viewport phải (`section`), bên trong vẫn là các `BentoCard`.
+- Ngoại lệ: `/manage` dùng một tile full-row chứa sidebar trái (`aside`) và viewport phải (`section`), bên trong vẫn là các `BentoCard`.
 - Grid chuẩn: `grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12`, tile dùng `md:col-span-*`/`lg:col-span-*` (`4` thường, `8` hero, `12` full-row).
 - Trang đầu tiên chốt shell (chiều cao header, gap, card, typography). Trang sau tái sử dụng `PageShell`, `BentoCard`, `Button`, `TextField`, `Feedback`. Đổi card phải sửa `BentoCard`, không override từng trang.
 - Typography chuẩn: display `text-2xl sm:text-3xl font-semibold tracking-tight`, tiêu đề card `text-base sm:text-lg font-semibold`, thân `text-sm`, caption `text-xs`.

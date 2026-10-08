@@ -28,10 +28,18 @@
             "where": {
               "and": [
                 { "href_matches": "/*" },
-                { "not": { "href_matches": "/auth/*" } },
+                { "not": { "href_matches": "/login*" } },
+                { "not": { "href_matches": "/register*" } },
                 { "not": { "href_matches": "/verify*" } },
+                { "not": { "href_matches": "/forgot-password*" } },
                 { "not": { "href_matches": "/reset-password*" } },
-                { "not": { "href_matches": "/logout*" } }
+                { "not": { "href_matches": "/profile*" } },
+                { "not": { "href_matches": "/change-password*" } },
+                { "not": { "href_matches": "/my-dashboard*" } },
+                { "not": { "href_matches": "/manage*" } },
+                { "not": { "href_matches": "/logout*" } },
+                { "not": { "href_matches": "/auth/*" } },
+                { "not": { "href_matches": "/export*" } }
               ]
             },
             "eagerness": "moderate"
@@ -42,9 +50,18 @@
             "where": {
               "and": [
                 { "href_matches": "/*" },
-                { "not": { "href_matches": "/auth/*" } },
+                { "not": { "href_matches": "/login*" } },
+                { "not": { "href_matches": "/register*" } },
                 { "not": { "href_matches": "/verify*" } },
-                { "not": { "href_matches": "/reset-password*" } }
+                { "not": { "href_matches": "/forgot-password*" } },
+                { "not": { "href_matches": "/reset-password*" } },
+                { "not": { "href_matches": "/profile*" } },
+                { "not": { "href_matches": "/change-password*" } },
+                { "not": { "href_matches": "/my-dashboard*" } },
+                { "not": { "href_matches": "/manage*" } },
+                { "not": { "href_matches": "/logout*" } },
+                { "not": { "href_matches": "/auth/*" } },
+                { "not": { "href_matches": "/export*" } }
               ]
             },
             "eagerness": "moderate"

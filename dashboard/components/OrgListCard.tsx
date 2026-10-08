@@ -5,6 +5,8 @@ import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { ApiError } from "../../core/api.ts";
+import { useRiseOn } from "../../core/motion.ts";
+import { useSession } from "../../auth/hooks.ts";
 import { useMyOrgs } from "../hooks.ts";
 import { ORG_KIND_LABELS, toVietnameseDashboardMessage } from "../messages.tsx";
 import type { DashboardOrg } from "../api.ts";
@@ -17,6 +19,7 @@ function OrgRow({
   editing,
   expanded,
   compact,
+  canManage,
   onEdit,
   onToggleMedia,
 }: {
@@ -24,11 +27,15 @@ function OrgRow({
   editing: boolean;
   expanded: boolean;
   compact: boolean;
+  canManage: boolean;
   onEdit: () => void;
   onToggleMedia: () => void;
 }): ReactElement {
   return (
-    <li className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <li
+      data-rise
+      className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
+    >
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -47,7 +54,7 @@ function OrgRow({
           {!compact && (
             <>
               <Button
-                to="/my-dashboard/overview"
+                to="/manage/overview"
                 variant="secondary"
                 icon={<FiUsers className="h-4 w-4" aria-hidden="true" />}
               >
@@ -69,7 +76,7 @@ function OrgRow({
       </div>
       <OrgCardActions org={org} isEditing={editing} onEdit={onEdit} />
       {editing && <OrgEditCard org={org} onDone={onEdit} />}
-      {expanded && <MediaDropzone orgId={org.id} />}
+      {expanded && <MediaDropzone orgId={org.id} canManage={canManage} />}
     </li>
   );
 }
@@ -77,8 +84,11 @@ function OrgRow({
 export function OrgListCard(): ReactElement {
   const orgs = useMyOrgs(false);
   const trash = useMyOrgs(true);
+  const session = useSession();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const listRef = useRiseOn<HTMLUListElement>(orgs.data);
+  const trashRef = useRiseOn<HTMLUListElement>(trash.data);
   const live = (orgs.data ?? []).filter((org) => org.deleted_at === null);
   const trashed = (trash.data ?? []).filter((org) => org.deleted_at !== null);
 
@@ -93,7 +103,7 @@ export function OrgListCard(): ReactElement {
             </h3>
           </div>
           <Button
-            to="/my-dashboard/create"
+            to="/manage/orgs/create"
             variant="secondary"
             icon={<FiPlusCircle className="h-4 w-4" aria-hidden="true" />}
           >
@@ -118,7 +128,7 @@ export function OrgListCard(): ReactElement {
               />
               <div className="mt-3">
                 <Button
-                  to="/my-dashboard/create"
+                  to="/manage/orgs/create"
                   variant="primary"
                   icon={<FiPlusCircle className="h-4 w-4" aria-hidden="true" />}
                 >
@@ -128,7 +138,7 @@ export function OrgListCard(): ReactElement {
             </>
           )}
           {live.length > 0 && (
-            <ul className="flex flex-col gap-3">
+            <ul ref={listRef} className="flex flex-col gap-3">
               {live.map((org) => (
                 <OrgRow
                   key={org.id}
@@ -136,6 +146,7 @@ export function OrgListCard(): ReactElement {
                   editing={editingId === org.id}
                   expanded={expandedId === org.id}
                   compact={false}
+                  canManage={org.owner_id === session.data?.id}
                   onEdit={() => setEditingId((current) => (current === org.id ? null : org.id))}
                   onToggleMedia={() =>
                     setExpandedId((current) => (current === org.id ? null : org.id))
@@ -157,7 +168,7 @@ export function OrgListCard(): ReactElement {
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             Tổ chức đã xóa mềm. Khôi phục để dùng tiếp, hoặc xóa cứng để xóa vĩnh viễn cùng toàn bộ tệp.
           </p>
-          <ul className="mt-3 flex flex-col gap-3">
+          <ul ref={trashRef} className="mt-3 flex flex-col gap-3">
             {trashed.map((org) => (
               <OrgRow
                 key={org.id}
@@ -165,6 +176,7 @@ export function OrgListCard(): ReactElement {
                 editing={false}
                 expanded={false}
                 compact={true}
+                canManage={false}
                 onEdit={() => {}}
                 onToggleMedia={() => {}}
               />

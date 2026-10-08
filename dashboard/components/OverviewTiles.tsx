@@ -66,14 +66,14 @@ export function OverviewTiles(): ReactElement {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button
-            to="/my-dashboard/create"
+            to="/manage/orgs/create"
             variant="primary"
             icon={<FiPlusCircle className="h-4 w-4" aria-hidden="true" />}
           >
             Tạo tổ chức
           </Button>
           <Button
-            to="/my-dashboard/orgs"
+            to="/manage/orgs"
             variant="secondary"
             icon={<FiUsers className="h-4 w-4" aria-hidden="true" />}
           >

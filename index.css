@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Brand tokens use the default blue scale as the single decorative hue. */

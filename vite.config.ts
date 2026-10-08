@@ -1,8 +1,9 @@
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import babel from '@rolldown/plugin-babel'
 import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from 'vite'
 
-const DEFAULT_API_URL = 'http://localhost:8100'
+const DEFAULT_API_URL = ''
 const CHECK_TIMEOUT_MS = 5000
 
 interface ReadyPayload {
@@ -73,6 +74,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       react(),
+      tailwindcss(),
       babel({ presets: [reactCompilerPreset()] }),
       backendHealthPlugin(apiUrl),
     ],

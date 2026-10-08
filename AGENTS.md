@@ -7,14 +7,18 @@ Follow it strictly. Do not introduce patterns outside this document without upda
 
 - Build: Vite `^8`, React `^19`, TypeScript `~7`, Tailwind CSS `^4` (`@tailwindcss/vite`).
 - Package manager: `bun`.
+- Router: `react-router-dom` only (`BrowserRouter` + `NavLink` for Navbar active state). No TanStack Router, no other routing libs.
 - Data fetching: TanStack Query (`@tanstack/react-query`) only. No SWR, no Apollo, no `fetch` in components.
+- Animation: `animejs` only. No `framer-motion`, no `gsap`, no CSS `@keyframes` sprawl outside `core/motion.ts` presets. All motion goes through `core/motion.ts` and respects `prefers-reduced-motion`.
+- Icons: `react-icons` only. Every icon affordance (buttons, links, nav items, toggles, empty states) uses `react-icons`. No emoji-as-icon, no hand-copied inline SVG, no second icon package.
 - Styling: Tailwind utility classes only. No new CSS files, no CSS modules, no `styled-components`, no Emotion, no inline `<style>` tags, no `style={}` objects for visual design (only for dynamic measured values with justification).
+- Responsive strategy: mobile-first only (see §5.6 and §7.5). Base styles target `360px` mobile; enhance with `sm:` / `md:` / `lg:` / `xl:` min-width breakpoints. Desktop-first `max-*` breakpoints are forbidden except documented fixes.
 - Lint: `oxlint`. Types: `tsc -b`. Build: `vite build`.
 
 Required dependencies (add if missing):
 
 ```bash
-bun add @tanstack/react-query
+bun add @tanstack/react-query react-router-dom animejs react-icons
 bun add -d @tanstack/eslint-plugin-query  # optional but recommended
 ```
 
@@ -50,8 +54,12 @@ amigoact-fe/
     api.ts             # fetch wrapper: baseURL, credentials:include, error envelope
     queryClient.ts     # QueryClient singleton + defaults
     theme.ts           # theme mode helpers (light/dark toggle, storage key)
+    motion.ts          # animejs presets only (fade/slide/stagger, reduced-motion guard)
     components/
       PageShell.tsx    # single page shell: header + bento grid + footer slot
+      Navbar.tsx       # global navbar: logo + 4 links + ThemeToggle + account cluster (§7.5)
+      AccountMenu.tsx  # signed-in avatar dropdown: profile, change-password, logout
+      ThemeToggle.tsx  # theme toggle button (react-icons + OS default per §6)
       BentoCard.tsx    # single card primitive (border only, no shadow)
       Button.tsx       # all buttons go through here
       TextField.tsx    # all inputs go through here
@@ -61,9 +69,15 @@ amigoact-fe/
     keys.ts            # query-key factory, e.g. authKeys.session
     hooks.ts           # useSession(), useLogin(), useLogout() (TanStack Query)
     schemas.ts         # zod/valibot or plain TS types + validators
+    messages.tsx       # Vietnamese UI copy table (ASCII gate forces .tsx, see §10)
     components/
       LoginCard.tsx
-    page.tsx           # composes PageShell + BentoCard, <= 250 lines
+      RegisterCard.tsx
+      AccountMenu.tsx  # avatar dropdown lives here when Navbar is unavailable
+    page.tsx           # login screen (route /login), <= 250 lines
+    register-page.tsx  # registration screen (route /register)
+    # Multi-screen features may ship extra <screen>-page.tsx beside page.tsx
+    # instead of nested folders. Every screen keeps Vietnamese UI copy.
   users/
     api.ts
     keys.ts
@@ -126,10 +140,18 @@ Rules:
    ```bash
    bun -e "import {Glob} from 'bun'; const re=/shadow|drop-shadow|box-shadow|\bring-/; for await (const p of new Glob('**/*.{tsx,ts,css}').scan({cwd:'.',onlyFiles:true})) { if(p.startsWith('node_modules/')||p.startsWith('dist/')) continue; const t=await Bun.file(p).text(); t.split('\n').forEach((l,i)=>{ if(re.test(l)) console.log(p+':'+(i+1)+': '+l.trim()) }) }"
    ```
+6. Mobile-first responsive (locked):
+   - Write base utilities for mobile (`360px`, single column, `min-h`, `p-4`, `text-*` base). Add complexity only via `sm:` (`640px`), `md:` (`768px`), `lg:` (`1024px`), `xl:` (`1280px`) min-width prefixes.
+   - Forbidden: desktop-first `max-sm:` / `max-md:` / `max-lg:` chains as the primary layout strategy, fixed pixel widths that overflow `360px`, horizontal scroll, and per-page breakpoint inventions.
+   - Every page and `Navbar` MUST be verified at `360px` (no overflow), `768px`, `1024px`, `1440px` in both themes before merge (screenshots for new shells).
 
 ## 6. Theme: Light/Dark + Blue Accent + Semantic Colors Only
 
-1. Modes: `light` and `dark` are the primary themes. Toggle via `.dark` class on `<html>` (see `@custom-variant` above), persisted in `localStorage`, defaulting to system preference. No additional themes.
+1. Modes: `light` and `dark` are the primary themes. Toggle via `.dark` class on `<html>` (see `@custom-variant` above), persisted in `localStorage` under key `amigoact-theme` (`"light" | "dark"`), defaulting to OS preference on first visit. No additional themes, no `system` mode after the first resolution (explicit user choice always wins).
+   - First-visit resolution order: (a) stored `amigoact-theme` if present; else (b) `window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'`.
+   - `main.tsx` MUST run theme init before first paint, and `index.html` MUST contain a blocking inline `<script>` in `<head>` that reads `amigoact-theme` (or OS preference when absent) and sets/removes `.dark` to avoid FOUC. No `style={}` theming, no theme logic in `App.tsx`.
+   - `core/theme.ts` owns: storage key constant, `getStoredTheme()`, `resolveInitialTheme()`, `applyTheme(mode)`, `toggleTheme()`. Components never touch `localStorage` or `document.documentElement.classList` directly.
+   - `ThemeToggle` (in `core/components/ThemeToggle.tsx`) is the only toggle: `react-icons` sun/moon pair (`h-5 w-5`), `aria-label` in Vietnamese, `aria-pressed`, `>= 44px` target, subtle `animejs` icon cross-fade via `core/motion.ts`, disabled motion when `prefers-reduced-motion` is set.
 2. Palette (do not add hues without updating this file):
    - Base: light `bg-white text-zinc-900`, dark `bg-zinc-950 text-zinc-100`. Muted text: `text-zinc-500 dark:text-zinc-400`.
    - Decoration/accent: blue only — primary `blue-600 dark:blue-400/500`, subtle surfaces `blue-50 dark:blue-950`, borders `blue-200 dark:blue-800`. Blue is the ONLY decorative color.
@@ -148,9 +170,23 @@ Rules:
    - Tiles are `BentoCard` only: `rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950`. No per-page card restyling (padding/border/radius changes require updating `BentoCard`, not overrides).
 2. Consistency rule: the first shipped page sets the shell (header height, grid, gaps, card style, typography). Every later page MUST reuse `PageShell`, `BentoCard`, `Button`, `TextField`, `Feedback`. A page that looks or spaces differently is a defect.
    - Typography scale only: display `text-2xl sm:text-3xl font-semibold tracking-tight`, card title `text-base sm:text-lg font-semibold`, body `text-sm text-zinc-600 dark:text-zinc-400`, caption `text-xs text-zinc-500 dark:text-zinc-400`.
-   - Icons: one icon set, one stroke width, fixed sizes (`h-4 w-4` inline, `h-5 w-5` card headers).
-3. Responsive behavior: mobile single-column stacking, `md:` 6-col, `lg:` 12-col. No horizontal scroll at `360px`. Touch targets `>= 44px` for primary actions.
+   - Icons: `react-icons` only, one family per release (e.g. Feather `Fi*` or Heroicons `Hi2*` — do not mix families on one screen), one stroke width, fixed sizes (`h-4 w-4` inline, `h-5 w-5` card headers and navbar). Every icon-only button has a Vietnamese `aria-label`. No emoji-as-icon.
+3. Responsive behavior: mobile-first single-column stacking, `md:` 6-col, `lg:` 12-col. No horizontal scroll at `360px`. Touch targets `>= 44px` for primary actions. Base classes are mobile; `sm:/md:/lg:` only add columns, spacing, and type scale.
 4. States are part of the design, not afterthoughts: every data tile specifies `loading` (skeleton), `empty`, and `error` via `Feedback.tsx` with the semantic colors from §6. No blank tiles, no `console.log` errors, no browser `alert()`.
+5. Navbar (locked spec, `core/components/Navbar.tsx` through `PageShell`):
+   - Order left to right: brand logo (links to `/`, Vietnamese label "Trang chủ" on logo `aria-label`) + primary links + trailing cluster `ThemeToggle` + login `Button`.
+   - Primary links (Vietnamese labels, English routes, `react-router-dom` `NavLink` with active `aria-current="page"`): `Trang chủ -> /`, `Sự kiện -> /events`, `Tổ chức -> /orgs`, `Bảng xếp hạng -> /leaderboard`. Auth screens live at `/login`, `/register`, `/verify` (kept functional while the verification gate is deferred), `/forgot-password`, `/reset-password` (guest-only via `RequireGuest`; signed-in users redirect to `/`), `/profile`, `/change-password` (auth-only via `RequireAuth`; guests redirect to `/login`). Registration signs the user in immediately and lands on `/` (falls back to `/login` with a notice only if the auto sign-in fails).
+   - Trailing account cluster: guests see a login `Button` (variant `primary`, leading `react-icons` login icon, label `Đăng nhập -> /login`); signed-in users (via `useSession()`) see `AccountMenu`: avatar circle with the name initial + full name (`hidden sm:inline`), opening a small dropdown (`Hồ sơ -> /profile`, `Đổi mật khẩu -> /change-password`, `Đăng xuất` action) with `Esc`/outside-click close, `animejs` open animation, and focus return. The visibility eye on password fields is mouse-only (`tabIndex={-1}`) with a shared per-form state, and every field validates live on change.
+   - Each nav link pairs a `react-icons` glyph + label (`h-4 w-4 sm:h-5 sm:w-5`, `gap-2`); icon is decorative (`aria-hidden="true"`) when the text label is visible, informative with `aria-label` when collapsed to icon-only.
+   - Layout mobile-first: `360px` shows brand + hamburger (`FiMenu`/`FiX`) + `ThemeToggle` + compact login; menu panel expands below header with a short `animejs` slide/fade via `core/motion.ts` and traps no scroll. `md:` and up shows one horizontal row (`hidden md:flex` for links, `md:hidden` for hamburger). Sticky `top-0 z-40` header with `border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur`, never `shadow`/`ring`.
+   - Active link: `text-blue-600 dark:text-blue-400` + `bg-blue-50 dark:bg-blue-950` pill (`rounded-full`) or underline bar; inactive: `text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100`. Focus uses §5.4 outline. Keyboard: hamburger is a real `Button`, `aria-expanded` + `aria-controls`, `Esc` closes, focus returns to the trigger.
+6. Motion (`animejs` only, via `core/motion.ts`):
+   - Allowed uses: navbar mobile-panel open/close, page/hero entrance (fade + `translateY 8-12px`), list stagger (`30-50ms`), `ThemeToggle` icon cross-fade, micro-feedback on primary buttons. Durations `150-300ms`, easing `ease-out`.
+   - Forbidden: looping/ambient animation on chrome, scroll-jacking, parallax, layout-thrashing loops, per-page `anime()` one-offs bypassing `core/motion.ts`, any second animation library.
+   - Accessibility: `core/motion.ts` MUST check `window.matchMedia('(prefers-reduced-motion: reduce)')` and skip/jump-to-end when set. No content may depend on animation to be visible (final state is always rendered even if `animejs` fails to load).
+7. Icons (`react-icons` everywhere):
+   - Every button (`Button`, nav link, icon-button, `ThemeToggle`, empty-state action) renders a `react-icons` glyph at a fixed size. Buttons without an icon are defects unless justified in the PR.
+   - Allowed: one family per release, tree-shaken named imports (e.g. `import { FiHome } from 'react-icons/fi'`). Forbidden: `react-icons` wildcard star imports, emoji icons, pasted raw SVG paths, adding `lucide-react` / `@heroicons` alongside `react-icons`.
 
 ## 8. No Browser-Default Chrome
 
@@ -173,13 +209,14 @@ Minimize anything that looks like an unstyled browser:
   3. `.tsx <= 250` / `.ts <= 350` lines; Tailwind-only; zero `shadow`/`ring` hits; every color has `dark:` coverage.
   4. Data flows through TanStack Query hooks with loading/empty/error states on the bento grid.
   5. New/changed tiles reviewed side-by-side with an existing page for drift (spacing, cards, type, colors).
+  6. Mobile-first + motion + icons + theme verified: no overflow at `360px`; only `animejs` via `core/motion.ts` with `prefers-reduced-motion` guard (no second animation lib); every button/nav affordance renders a `react-icons` glyph with Vietnamese accessible label; first-visit theme follows OS (`prefers-color-scheme`) with no FOUC and persisted toggle; `Navbar` order/routes/labels match §7.5 (`/`, `/events`, `/orgs`, `/leaderboard`, `ThemeToggle`, `/login`).
 
 ## 10. Documentation, Code, and UI Language
 
 1. `AGENTS.md` (this file) is the ONLY Markdown file written in English.
 2. Every other `*.md` file in this repo (`README.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `docs/*.md`) MUST be written in Vietnamese.
 3. Markdown rule: code, identifiers, commands, and error codes stay in English. Only prose/explanations are in Vietnamese.
-4. Frontend code rule — English only: all `*.ts`/`*.tsx` code MUST be written entirely in English. This includes identifiers, types, comments, TSDoc, console/dev logs, query keys, and test names. Vietnamese is forbidden in code and comments.
+4. Frontend code rule — English only: all `*.ts`/`*.tsx` code MUST be written entirely in English. This includes identifiers, types, comments, TSDoc, console/dev logs, query keys, and test names. Vietnamese is forbidden in code and comments. Exception: Vietnamese UI string literals and the dedicated UI copy tables (e.g. `messages.tsx`) — the `.ts` ASCII-only gate requires those tables to live in `.tsx` modules, never in `.ts`.
 5. End-user UI rule — Vietnamese only: every string rendered to ordinary users MUST be in Vietnamese. This includes page titles, headings, buttons, labels, placeholders, empty states, and user-facing error/success messages mapped from the backend `{ code, message }` envelope. Do not ship English UI copy to end users. Developer-only surfaces (console logs, `data-testid`, error `code`) stay in English.
 6. A change that violates the Markdown, code, or UI language rule fails the quality gates in §9.
 

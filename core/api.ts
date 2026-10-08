@@ -87,7 +87,6 @@ export async function apiFetch<T>(
     const needsRetry =
       error instanceof ApiError &&
       error.status === 401 &&
-      accessToken !== null &&
       !NO_RETRY_PATHS.some((prefix) => path.startsWith(prefix));
     if (!needsRetry) throw error;
     try {

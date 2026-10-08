@@ -11,6 +11,13 @@ import { VerifyPage } from "./auth/verify-page.tsx";
 import { EventsPage } from "./events/page.tsx";
 import { HomePage } from "./home/page.tsx";
 import { LeaderboardPage } from "./leaderboard/page.tsx";
+import { DashboardCreatePage } from "./my-dashboard/create-page.tsx";
+import { DashboardEventsPage } from "./my-dashboard/events-page.tsx";
+import { DashboardMembersPage } from "./my-dashboard/members-page.tsx";
+import { DashboardOrgsPage } from "./my-dashboard/orgs-page.tsx";
+import { DashboardOverviewPage } from "./my-dashboard/overview-page.tsx";
+import { DashboardSettingsPage } from "./my-dashboard/settings-page.tsx";
+import { DashboardPage } from "./my-dashboard/page.tsx";
 import { OrgsPage } from "./orgs/page.tsx";
 
 export default function App(): ReactElement {
@@ -20,6 +27,16 @@ export default function App(): ReactElement {
         <Route index element={<HomePage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="orgs" element={<OrgsPage />} />
+        <Route path="my-dashboard" element={<DashboardPage />}>
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<DashboardOverviewPage />} />
+          <Route path="orgs" element={<DashboardOrgsPage />} />
+          <Route path="create" element={<DashboardCreatePage />} />
+          <Route path="events" element={<DashboardEventsPage />} />
+          <Route path="members" element={<DashboardMembersPage />} />
+          <Route path="settings" element={<DashboardSettingsPage />} />
+          <Route path="*" element={<Navigate to="overview" replace />} />
+        </Route>
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />

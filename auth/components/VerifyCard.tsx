@@ -74,7 +74,7 @@ export function VerifyCard(): ReactElement {
     <BentoCard className="md:col-span-4 md:col-start-2 lg:col-span-6 lg:col-start-4">
       <div className="flex items-center gap-2">
         <FiShield
-          className="h-5 w-5 text-blue-600 dark:text-blue-400"
+          className="h-5 w-5 text-zinc-900 dark:text-brand"
           aria-hidden="true"
         />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
@@ -95,7 +95,7 @@ export function VerifyCard(): ReactElement {
       {resent && (
         <p
           role="status"
-          className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+          className="mt-4 rounded-xl border border-brand/40 bg-brand/10 p-3 text-sm text-zinc-900 dark:border-brand/30 dark:bg-brand/10 dark:text-zinc-100"
         >
           Đã gửi lại mã mới. Vui lòng kiểm tra hộp thư.
         </p>

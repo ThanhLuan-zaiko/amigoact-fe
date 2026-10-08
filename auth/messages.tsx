@@ -8,6 +8,7 @@ const MESSAGES: Record<string, string> = {
   WEAK_PASSWORD:
     "Mật khẩu tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
   PASSWORD_MISMATCH: "Mật khẩu nhập lại chưa khớp.",
+  SAME_AS_CURRENT: "Mật khẩu mới phải khác mật khẩu hiện tại.",
   INVALID_NAME: "Họ tên từ 2 đến 100 ký tự.",
   INVALID_CODE: "Mã xác nhận gồm 6 chữ số.",
   EMAIL_TAKEN: "Email này đã được đăng ký.",

@@ -62,10 +62,10 @@ export function AuthSidePanel({
   const isLogin = variant === "login";
   const items = isLogin ? LOGIN_BENEFITS : REGISTER_STEPS;
   return (
-    <BentoCard className="order-2 border-blue-200 bg-blue-50 md:col-span-6 lg:order-1 lg:col-span-7 dark:border-blue-800 dark:bg-blue-950">
+    <BentoCard className="order-2 border-brand/40 bg-brand/10 md:col-span-6 lg:order-1 lg:col-span-7 dark:border-brand/30 dark:bg-brand/10">
       <div ref={scope} className="flex h-full flex-col justify-center gap-5 p-2 sm:p-4">
         <div data-rise className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 dark:border-blue-800 dark:bg-zinc-950 dark:text-blue-400">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
             <FiActivity className="h-5 w-5" aria-hidden="true" />
           </span>
           <span className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -83,7 +83,7 @@ export function AuthSidePanel({
         <ul className="flex flex-col gap-4">
           {items.map(({ Icon, title, body }) => (
             <li key={title} data-rise className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-blue-200 bg-white text-blue-600 dark:border-blue-800 dark:bg-zinc-950 dark:text-blue-400">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
                 <Icon className="h-5 w-5" aria-hidden="true" />
               </span>
               <span>

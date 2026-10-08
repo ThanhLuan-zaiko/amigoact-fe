@@ -49,7 +49,7 @@ export function TextField({
           id={fieldId}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className={`min-h-[44px] w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:outline-blue-400 ${
+          className={`min-h-[44px] w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:outline-brand ${
             icon ? "pl-9" : ""
           } ${trailing ? "pr-12" : ""} ${
             error

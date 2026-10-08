@@ -22,7 +22,7 @@ bun add @tanstack/react-query react-router-dom animejs react-icons
 bun add -d @tanstack/eslint-plugin-query  # optional but recommended
 ```
 
-Backend contract: API base URL defaults to `http://localhost:8100` (FastAPI on port `8100`). Configure via `VITE_API_URL`. Always send cookies (`credentials: "include"`) because refresh uses an `HttpOnly` cookie.
+Backend contract: API base URL defaults to `http://localhost:8100` (FastAPI on port `8100`). Configure via `VITE_API_URL`. Always send cookies (`credentials: "include"`) because refresh uses an `HttpOnly` cookie. Contract parity, both directions: every frontend feature MUST have backend support, and every backend capability the product relies on MUST be surfaced in the frontend. Shipping one side without the other fails the quality gates in §9. New or changed backend error `code` values MUST be handled in the UI copy table in the same change.
 
 ## 2. File Size Rules (Hard Limits)
 
@@ -57,7 +57,7 @@ amigoact-fe/
     motion.ts          # animejs presets only (fade/slide/stagger, reduced-motion guard)
     components/
       PageShell.tsx    # single page shell: header + bento grid + footer slot
-      Navbar.tsx       # global navbar: logo + 4 links + ThemeToggle + account cluster (§7.5)
+      Navbar.tsx       # global navbar: logo + 5 links + ThemeToggle + account cluster (§7.5)
       AccountMenu.tsx  # signed-in avatar dropdown: profile, change-password, logout
       ThemeToggle.tsx  # theme toggle button (react-icons + OS default per §6)
       BentoCard.tsx    # single card primitive (border only, no shadow)
@@ -122,7 +122,7 @@ Rules:
    ```css
    @import "tailwindcss";
    @custom-variant dark (&:where(.dark, .dark *));
-   /* @theme tokens for brand blue + semantic colors only. No component CSS. */
+   /* @theme tokens for brand #aff092 + semantic colors only. No component CSS. */
    ```
    No additional `.css` files. No `@apply` component classes except documented tokens.
 2. Borders, never shadows. Forbidden everywhere (including arbitrary values and inline styles):
@@ -134,7 +134,7 @@ Rules:
    - Inner elements: `rounded-xl`; pills/inputs: `rounded-lg` (inputs) / `rounded-full` (badges, toggles).
    - Gaps: bento grid `gap-4 sm:gap-6`; stack `space-y-4`; inline `gap-2 sm:gap-3`.
 4. Focus must be visible and custom (never rely on browser default glow):
-   - Interactive primitives use e.g. `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:focus-visible:outline-blue-400`.
+   - Interactive primitives use e.g. `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand`.
    - Never remove focus indication (`outline-none` without a `focus-visible:` replacement is forbidden).
 5. Before commit, search for violations:
    ```bash
@@ -145,7 +145,7 @@ Rules:
    - Forbidden: desktop-first `max-sm:` / `max-md:` / `max-lg:` chains as the primary layout strategy, fixed pixel widths that overflow `360px`, horizontal scroll, and per-page breakpoint inventions.
    - Every page and `Navbar` MUST be verified at `360px` (no overflow), `768px`, `1024px`, `1440px` in both themes before merge (screenshots for new shells).
 
-## 6. Theme: Light/Dark + Blue Accent + Semantic Colors Only
+## 6. Theme: Light/Dark + Brand Accent (#AFF092) + Semantic Colors Only
 
 1. Modes: `light` and `dark` are the primary themes. Toggle via `.dark` class on `<html>` (see `@custom-variant` above), persisted in `localStorage` under key `amigoact-theme` (`"light" | "dark"`), defaulting to OS preference on first visit. No additional themes, no `system` mode after the first resolution (explicit user choice always wins).
    - First-visit resolution order: (a) stored `amigoact-theme` if present; else (b) `window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'`.
@@ -154,18 +154,19 @@ Rules:
    - `ThemeToggle` (in `core/components/ThemeToggle.tsx`) is the only toggle: `react-icons` sun/moon pair (`h-5 w-5`), `aria-label` in Vietnamese, `aria-pressed`, `>= 44px` target, subtle `animejs` icon cross-fade via `core/motion.ts`, disabled motion when `prefers-reduced-motion` is set.
 2. Palette (do not add hues without updating this file):
    - Base: light `bg-white text-zinc-900`, dark `bg-zinc-950 text-zinc-100`. Muted text: `text-zinc-500 dark:text-zinc-400`.
-   - Decoration/accent: blue only — primary `blue-600 dark:blue-400/500`, subtle surfaces `blue-50 dark:blue-950`, borders `blue-200 dark:blue-800`. Blue is the ONLY decorative color.
+   - Decoration/accent: brand only — single token `--color-brand: #AFF092` in `index.css`, no other custom hex. Solid fills use `bg-brand text-zinc-950` (both modes, hover `bg-brand/85`); subtle surfaces use `bg-brand/10` with `border-brand/40` (dark `border-brand/30`); text stays `zinc` for contrast except dark-mode accents (`dark:text-brand`). Brand is the ONLY decorative custom color.
    - Error: red — `red-600 dark:red-400`, subtle `red-50 dark:red-950`, border `red-200 dark:red-800`. Reserved for errors/destructive actions.
    - Warning: amber/yellow — `amber-600 dark:amber-400`, subtle `amber-50 dark:amber-950`. Reserved for warnings.
-   - Success/info: emerald/green for success, blue for info (same blue scale as accent, distinguished by icon + label, never by a new hue). Reserved meanings must not be swapped (no green errors, no red info).
-   - Forbidden as UI chrome: purple, pink, orange, teal, cyan, lime, indigo (except inside static illustrations/logos with justification).
+   - Success/info: emerald/green for success, brand for info (same brand scale as accent, distinguished by icon + label, never by a new hue). Reserved meanings must not be swapped (no green errors, no red info).
+   - Forbidden as UI chrome: purple, pink, orange, teal, cyan, blue, indigo (except inside static illustrations/logos with justification).
 3. Every color usage must carry both modes: each colored class needs its `dark:` counterpart (or an explicit comment why it is mode-invariant).
-4. Contrast: body text and interactive elements must remain readable in both modes. Decorative blue is never used for body text on colored backgrounds without a contrast check.
+4. Contrast: body text and interactive elements must remain readable in both modes. Brand `#AFF092` is light, so solid fills always pair with `text-zinc-950`, never white text and never lime body text on white. Decorative brand is never used for body text on light backgrounds without a contrast check.
 
 ## 7. Design Language: Unified Bento Grid, Zero Drift
 
 1. Bento grid is the only page language:
    - Page structure is always `PageShell > bento grid > BentoCard tiles`. No ad-hoc page layouts.
+   - Exception: `/my-dashboard` renders one full-row tile (`lg:col-span-12`) that holds an internal `flex flex-col gap-4 lg:flex-row` layout with a left sidebar (`aside`) and a right viewport (`section`). Both regions still render `BentoCard` tiles inside; the exception covers only the two-column shell, never card styling.
    - Grid: `grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12`. Tiles span via `md:col-span-*` / `lg:col-span-*` (typical tiles: `lg:col-span-4`, heroes: `lg:col-span-8`, full rows: `lg:col-span-12`).
    - Tiles are `BentoCard` only: `rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950`. No per-page card restyling (padding/border/radius changes require updating `BentoCard`, not overrides).
 2. Consistency rule: the first shipped page sets the shell (header height, grid, gaps, card style, typography). Every later page MUST reuse `PageShell`, `BentoCard`, `Button`, `TextField`, `Feedback`. A page that looks or spaces differently is a defect.
@@ -175,11 +176,11 @@ Rules:
 4. States are part of the design, not afterthoughts: every data tile specifies `loading` (skeleton), `empty`, and `error` via `Feedback.tsx` with the semantic colors from §6. No blank tiles, no `console.log` errors, no browser `alert()`.
 5. Navbar (locked spec, `core/components/Navbar.tsx` through `PageShell`):
    - Order left to right: brand logo (links to `/`, Vietnamese label "Trang chủ" on logo `aria-label`) + primary links + trailing cluster `ThemeToggle` + login `Button`.
-   - Primary links (Vietnamese labels, English routes, `react-router-dom` `NavLink` with active `aria-current="page"`): `Trang chủ -> /`, `Sự kiện -> /events`, `Tổ chức -> /orgs`, `Bảng xếp hạng -> /leaderboard`. Auth screens live at `/login`, `/register`, `/verify` (kept functional while the verification gate is deferred), `/forgot-password`, `/reset-password` (guest-only via `RequireGuest`; signed-in users redirect to `/`), `/profile`, `/change-password` (auth-only via `RequireAuth`; guests redirect to `/login`). Registration signs the user in immediately and lands on `/` (falls back to `/login` with a notice only if the auto sign-in fails).
+   - Primary links (Vietnamese labels, English routes, `react-router-dom` `NavLink` with active `aria-current="page"`): `Trang chủ -> /`, `Sự kiện -> /events`, `Tổ chức -> /orgs`, `Bảng xếp hạng -> /leaderboard`, `Bảng điều khiển -> /my-dashboard`. Auth screens live at `/login`, `/register`, `/verify` (kept functional while the verification gate is deferred), `/forgot-password`, `/reset-password` (guest-only via `RequireGuest`; signed-in users redirect to `/`), `/profile`, `/change-password` (auth-only via `RequireAuth`; guests redirect to `/login`). Registration signs the user in immediately and lands on `/` (falls back to `/login` with a notice only if the auto sign-in fails). Change-password requires the new password to differ from the current password (code `SAME_AS_CURRENT`, validated live on change). `/my-dashboard` is the self-serve workspace where individuals or businesses create and manage organizations, clubs, and groups via a left sidebar plus a right viewport.
    - Trailing account cluster: guests see a login `Button` (variant `primary`, leading `react-icons` login icon, label `Đăng nhập -> /login`); signed-in users (via `useSession()`) see `AccountMenu`: avatar circle with the name initial + full name (`hidden sm:inline`), opening a small dropdown (`Hồ sơ -> /profile`, `Đổi mật khẩu -> /change-password`, `Đăng xuất` action) with `Esc`/outside-click close, `animejs` open animation, and focus return. The visibility eye on password fields is mouse-only (`tabIndex={-1}`) with a shared per-form state, and every field validates live on change.
    - Each nav link pairs a `react-icons` glyph + label (`h-4 w-4 sm:h-5 sm:w-5`, `gap-2`); icon is decorative (`aria-hidden="true"`) when the text label is visible, informative with `aria-label` when collapsed to icon-only.
    - Layout mobile-first: `360px` shows brand + hamburger (`FiMenu`/`FiX`) + `ThemeToggle` + compact login; menu panel expands below header with a short `animejs` slide/fade via `core/motion.ts` and traps no scroll. `md:` and up shows one horizontal row (`hidden md:flex` for links, `md:hidden` for hamburger). Sticky `top-0 z-40` header with `border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur`, never `shadow`/`ring`.
-   - Active link: `text-blue-600 dark:text-blue-400` + `bg-blue-50 dark:bg-blue-950` pill (`rounded-full`) or underline bar; inactive: `text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100`. Focus uses §5.4 outline. Keyboard: hamburger is a real `Button`, `aria-expanded` + `aria-controls`, `Esc` closes, focus returns to the trigger.
+   - Active link: `bg-brand text-zinc-950 dark:bg-brand dark:text-zinc-950` pill (`rounded-full`) or underline bar; inactive: `text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100`. Focus uses §5.4 outline. Keyboard: hamburger is a real `Button`, `aria-expanded` + `aria-controls`, `Esc` closes, focus returns to the trigger.
 6. Motion (`animejs` only, via `core/motion.ts`):
    - Allowed uses: navbar mobile-panel open/close, page/hero entrance (fade + `translateY 8-12px`), list stagger (`30-50ms`), `ThemeToggle` icon cross-fade, micro-feedback on primary buttons. Durations `150-300ms`, easing `ease-out`.
    - Forbidden: looping/ambient animation on chrome, scroll-jacking, parallax, layout-thrashing loops, per-page `anime()` one-offs bypassing `core/motion.ts`, any second animation library.
@@ -187,13 +188,21 @@ Rules:
 7. Icons (`react-icons` everywhere):
    - Every button (`Button`, nav link, icon-button, `ThemeToggle`, empty-state action) renders a `react-icons` glyph at a fixed size. Buttons without an icon are defects unless justified in the PR.
    - Allowed: one family per release, tree-shaken named imports (e.g. `import { FiHome } from 'react-icons/fi'`). Forbidden: `react-icons` wildcard star imports, emoji icons, pasted raw SVG paths, adding `lucide-react` / `@heroicons` alongside `react-icons`.
+8. Buttons: compact, content-sized, never stretched horizontally:
+   - All buttons go through `core/components/Button.tsx` with locked size variants only (e.g. `sm: px-3 py-1.5 text-sm`, `md: px-4 py-2 text-sm`). No per-page padding inventions such as `px-8 / px-10 / px-12` or arbitrary `px-[...]` to make buttons look longer.
+   - Buttons are `inline-flex items-center justify-center gap-2 whitespace-nowrap` and size to their content (icon + label). Forbidden: horizontally long buttons with excess horizontal padding and empty space on both sides.
+   - Forbidden stretch patterns: `w-full` on desktop or inside toolbars/cards, `flex-1` / `grow` buttons in a row, `justify-between` stretching a single label across the full tile width. `w-full` is allowed only for a single-column form submit on mobile (`360px`) with justification, and must revert to content-sized (`sm:w-auto`) from `sm:` up.
+   - Reach the `>= 44px` touch target with height (`py-2 / min-h-[44px]`), never by widening horizontal padding. Icon stays fixed (`h-4 w-4` inline, `h-5 w-5` headers/navbar) with `gap-2`; do not pad the icon away from the label.
+   - A button that looks like a wide empty bar with small centered text is a defect. Review new buttons side-by-side with existing `Button` variants for drift.
+9. Deep-linkable tabs (locked):
+   - Every tab or sidebar view inside a single page MUST have its own URL.
 
 ## 8. No Browser-Default Chrome
 
 Minimize anything that looks like an unstyled browser:
 
 - Never render bare `<button>`, `<a>`, `<input>`, `<select>`, `<textarea>` — always use `core/components/` primitives.
-- Links have deliberate styles (`text-blue-600 hover:underline dark:text-blue-400` or button styles), never default blue-underline UA styling by accident.
+- Links have deliberate styles (`text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand` or button styles), never default blue-underline UA styling by accident.
 - Form controls: custom borders (`border-zinc-300 dark:border-zinc-700`), `rounded-lg`, explicit `placeholder:text-zinc-400`, `appearance-none` for selects with a custom chevron icon. No default OS bevels.
 - Scrollbars/number spinners: normalize where they break the grid aesthetic; do not ship pages with mixed native and custom control styles.
 - Favicon/title/meta in `index.html` must be set per release; no `vite.svg` leftovers, no `lorem ipsum`.
@@ -209,7 +218,7 @@ Minimize anything that looks like an unstyled browser:
   3. `.tsx <= 250` / `.ts <= 350` lines; Tailwind-only; zero `shadow`/`ring` hits; every color has `dark:` coverage.
   4. Data flows through TanStack Query hooks with loading/empty/error states on the bento grid.
   5. New/changed tiles reviewed side-by-side with an existing page for drift (spacing, cards, type, colors).
-  6. Mobile-first + motion + icons + theme verified: no overflow at `360px`; only `animejs` via `core/motion.ts` with `prefers-reduced-motion` guard (no second animation lib); every button/nav affordance renders a `react-icons` glyph with Vietnamese accessible label; first-visit theme follows OS (`prefers-color-scheme`) with no FOUC and persisted toggle; `Navbar` order/routes/labels match §7.5 (`/`, `/events`, `/orgs`, `/leaderboard`, `ThemeToggle`, `/login`).
+  6. Mobile-first + motion + icons + theme verified: no overflow at `360px`; only `animejs` via `core/motion.ts` with `prefers-reduced-motion` guard (no second animation lib); every button/nav affordance renders a `react-icons` glyph with Vietnamese accessible label; first-visit theme follows OS (`prefers-color-scheme`) with no FOUC and persisted toggle; `Navbar` order/routes/labels match §7.5 (`/`, `/events`, `/orgs`, `/leaderboard`, `/my-dashboard`, `ThemeToggle`, `/login`).
 
 ## 10. Documentation, Code, and UI Language
 

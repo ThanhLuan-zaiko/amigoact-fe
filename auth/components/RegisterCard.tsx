@@ -87,7 +87,7 @@ export function RegisterCard(): ReactElement {
       <div ref={scope} className="flex flex-col">
       <div data-rise className="flex items-center gap-2">
         <FiUserPlus
-          className="h-5 w-5 text-blue-600 dark:text-blue-400"
+          className="h-5 w-5 text-zinc-900 dark:text-brand"
           aria-hidden="true"
         />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
@@ -184,13 +184,14 @@ export function RegisterCard(): ReactElement {
           variant="primary"
           disabled={busy}
           icon={<FiUserPlus className="h-4 w-4" aria-hidden="true" />}
+          className="w-full sm:w-auto sm:self-start"
         >
           {busy ? "Đang tạo tài khoản…" : "Đăng ký"}
         </Button>
       </form>
       <p data-rise className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
         Đã có tài khoản?{" "}
-        <Link to="/login" className="text-blue-600 hover:underline dark:text-blue-400">
+        <Link to="/login" className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand">
           Đăng nhập
         </Link>
       </p>

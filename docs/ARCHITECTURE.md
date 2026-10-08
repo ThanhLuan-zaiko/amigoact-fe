@@ -2,7 +2,7 @@
 
 ## 1. Tổng quan
 
-`amigoact-fe` là SPA React + Vite + TypeScript, styling bằng Tailwind duy nhất, dữ liệu qua TanStack Query tới `amigoact-be` (`http://localhost:8100`). Ngôn ngữ thiết kế duy nhất là bento grid, theme light/dark, màu trang trí xanh dương.
+`amigoact-fe` là SPA React + Vite + TypeScript, styling bằng Tailwind duy nhất, dữ liệu qua TanStack Query tới `amigoact-be` (`http://localhost:8100`). Ngôn ngữ thiết kế duy nhất là bento grid, theme light/dark, màu trang trí xanh non `#AFF092`.
 
 Mục tiêu: mọi trang nhìn thống nhất, không lệch spacing/card/typography/màu, file ngắn (`.tsx` ≤ 250, `.ts` ≤ 350), logic dữ liệu tách khỏi giao diện.
 
@@ -36,13 +36,14 @@ page.tsx / components/*.tsx
 - Theme `.dark` trên `<html>`, lưu `localStorage`, mặc định theo hệ thống. Mọi màu phải có cặp `dark:`.
 - Bảng màu:
   - Nền/chữ: `white/zinc-950`, `zinc-900/zinc-100`.
-  - Trang trí: xanh dương (`blue-600/dark:blue-400`, `blue-50/dark:blue-950`).
-  - Lỗi: đỏ. Cảnh báo: vàng/amber. Thành công: xanh lá. Info: xanh dương (phân biệt bằng icon + nhãn).
-  - Cấm tím, hồng, cam, teal, cyan, lime, indigo cho khung UI.
+  - Trang trí: xanh non `#AFF092` duy nhất (token `brand`, pha loãng bằng opacity `bg-brand/10`, `border-brand/40`).
+  - Lỗi: đỏ. Cảnh báo: vàng/amber. Thành công: xanh lá. Info: màu brand (phân biệt bằng icon + nhãn).
+  - Cấm tím, hồng, cam, teal, cyan, xanh dương, indigo cho khung UI.
 
 ## 5. Bento grid và chống lệch giao diện
 
 - Cấu trúc mọi trang: `PageShell > grid bento > BentoCard`.
+- Ngoại lệ: `/my-dashboard` dùng một tile full-row chứa sidebar trái (`aside`) và viewport phải (`section`), bên trong vẫn là các `BentoCard`.
 - Grid chuẩn: `grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12`, tile dùng `md:col-span-*`/`lg:col-span-*` (`4` thường, `8` hero, `12` full-row).
 - Trang đầu tiên chốt shell (chiều cao header, gap, card, typography). Trang sau tái sử dụng `PageShell`, `BentoCard`, `Button`, `TextField`, `Feedback`. Đổi card phải sửa `BentoCard`, không override từng trang.
 - Typography chuẩn: display `text-2xl sm:text-3xl font-semibold tracking-tight`, tiêu đề card `text-base sm:text-lg font-semibold`, thân `text-sm`, caption `text-xs`.
@@ -53,7 +54,7 @@ page.tsx / components/*.tsx
 
 - Không render `<button>`, `<a>`, `<input>`, `<select>`, `<textarea>` trần — bắt buộc qua primitive trong `core/components/`.
 - Select dùng `appearance-none` + chevron tùy chỉnh, input có border `zinc-300/dark:zinc-700` + `rounded-lg` + placeholder rõ ràng.
-- Focus luôn custom: `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600`, cấm `outline-none` mà không có thay thế.
+- Focus luôn custom: `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand`, cấm `outline-none` mà không có thay thế.
 - `index.html` phải có favicon/title/meta thật, không để `vite.svg` hay chữ mẫu.
 
 ## 7. Chất lượng

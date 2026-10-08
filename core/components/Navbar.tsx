@@ -6,6 +6,7 @@ import {
   FiActivity,
   FiAward,
   FiCalendar,
+  FiGrid,
   FiHome,
   FiKey,
   FiLogIn,
@@ -33,16 +34,17 @@ const NAV_LINKS: NavEntry[] = [
   { to: "/events", label: "Sự kiện", Icon: FiCalendar },
   { to: "/orgs", label: "Tổ chức", Icon: FiUsers },
   { to: "/leaderboard", label: "Bảng xếp hạng", Icon: FiAward },
+  { to: "/my-dashboard", label: "Bảng điều khiển", Icon: FiGrid },
 ];
 
 const LINK_BASE =
-  "inline-flex min-h-[44px] items-center gap-2 text-sm font-medium transition-colors " +
+  "inline-flex min-h-[44px] items-center gap-2 text-sm font-medium whitespace-nowrap transition-colors " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-blue-600 dark:focus-visible:outline-blue-400";
+  "focus-visible:outline-brand dark:focus-visible:outline-brand";
 
 function desktopLinkClass(state: { isActive: boolean }): string {
   const tone = state.isActive
-    ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+    ? "bg-brand text-zinc-950 dark:bg-brand dark:text-zinc-950"
     : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 " +
       "dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100";
   return `${LINK_BASE} rounded-full px-3 ${tone}`;
@@ -50,7 +52,7 @@ function desktopLinkClass(state: { isActive: boolean }): string {
 
 function mobileLinkClass(state: { isActive: boolean }): string {
   const tone = state.isActive
-    ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+    ? "bg-brand text-zinc-950 dark:bg-brand dark:text-zinc-950"
     : "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900";
   return `${LINK_BASE} w-full rounded-xl px-3 ${tone}`;
 }
@@ -58,6 +60,7 @@ function mobileLinkClass(state: { isActive: boolean }): string {
 export function Navbar(): ReactElement {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const session = useSession();
   const logout = useLogout();
   const navigate = useNavigate();
@@ -70,11 +73,14 @@ export function Navbar(): ReactElement {
 
   useEffect(() => {
     function onKey(event: KeyboardEvent): void {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape" && open) {
+        setOpen(false);
+        menuTriggerRef.current?.focus();
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [open]);
 
   const menuLabel = open ? "Đóng menu" : "Mở menu";
   const MenuIcon = open ? FiX : FiMenu;
@@ -89,18 +95,18 @@ export function Navbar(): ReactElement {
     <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
       <nav
         aria-label="Điều hướng chính"
-        className="mx-auto grid h-16 w-full max-w-6xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 sm:px-6"
+        className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:px-6 md:grid md:grid-cols-[1fr_auto_1fr]"
       >
-        <div className="flex items-center justify-start">
+        <div className="flex min-w-0 items-center justify-start">
           <Link
             to="/"
             aria-label="AmigoACT - Trang chủ"
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:focus-visible:outline-blue-400"
+            className="inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-200 bg-blue-50 text-blue-600 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
               <FiActivity className="h-5 w-5" aria-hidden="true" />
             </span>
-            <span className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+            <span className="truncate text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
               AmigoACT
             </span>
           </Link>
@@ -116,12 +122,7 @@ export function Navbar(): ReactElement {
         </div>
 
         <div className="flex items-center justify-end gap-2">
-          <ThemeToggle />
-          {profile ? (
-            <AccountMenu />
-          ) : session.isPending ? (
-            <span className="h-11 w-11" aria-hidden="true" />
-          ) : (
+          {!profile && !session.isPending && (
             <Button
               to="/login"
               variant="primary"
@@ -131,17 +132,32 @@ export function Navbar(): ReactElement {
               <span className="hidden sm:inline">Đăng nhập</span>
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setOpen((value) => !value)}
-            aria-expanded={open}
-            aria-controls="primary-navigation"
-            aria-label={menuLabel}
-          >
-            <MenuIcon className="h-5 w-5" aria-hidden="true" />
-          </Button>
+          <div className="flex items-center gap-1 rounded-full border border-zinc-200 bg-white p-1 md:contents dark:border-zinc-800 dark:bg-zinc-950">
+            <ThemeToggle />
+            {profile ? (
+              <AccountMenu />
+            ) : (
+              session.isPending && (
+                <span className="h-11 w-11 rounded-full" aria-hidden="true" />
+              )
+            )}
+            <span
+              aria-hidden="true"
+              className="h-6 w-px bg-zinc-200 md:hidden dark:bg-zinc-800"
+            />
+            <Button
+              ref={menuTriggerRef}
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setOpen((value) => !value)}
+              aria-expanded={open}
+              aria-controls="primary-navigation"
+              aria-label={menuLabel}
+            >
+              <MenuIcon className="h-5 w-5" aria-hidden="true" />
+            </Button>
+          </div>
         </div>
       </nav>
 
@@ -152,6 +168,9 @@ export function Navbar(): ReactElement {
           className="border-t border-zinc-200 bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-950"
         >
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-3 sm:px-6">
+            <p className="px-3 pb-1 text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+              Điều hướng
+            </p>
             {NAV_LINKS.map(({ to, label, Icon, end }) => (
               <NavLink
                 key={to}
@@ -166,6 +185,13 @@ export function Navbar(): ReactElement {
             ))}
             {profile && (
               <>
+                <div
+                  aria-hidden="true"
+                  className="my-1 h-px bg-zinc-200 dark:bg-zinc-800"
+                />
+                <p className="px-3 pb-1 text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
+                  Tài khoản
+                </p>
                 <NavLink
                   to="/profile"
                   className={mobileLinkClass}

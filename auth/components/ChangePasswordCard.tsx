@@ -32,6 +32,11 @@ export function ChangePasswordCard(): ReactElement {
         if (confirm) copy.confirm = confirm;
         else delete copy.confirm;
       }
+      if (key === "current" && next.next.length > 0) {
+        const fresh = validateChangeField(next, "next");
+        if (fresh) copy.next = fresh;
+        else delete copy.next;
+      }
       return copy;
     });
   }
@@ -60,10 +65,10 @@ export function ChangePasswordCard(): ReactElement {
   }
 
   return (
-    <BentoCard className="md:col-span-4 md:col-start-2 lg:col-span-6 lg:col-start-4">
+    <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-7">
       <div className="flex items-center gap-2">
         <FiKey
-          className="h-5 w-5 text-blue-600 dark:text-blue-400"
+          className="h-5 w-5 text-zinc-900 dark:text-brand"
           aria-hidden="true"
         />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
@@ -84,7 +89,7 @@ export function ChangePasswordCard(): ReactElement {
       {done && (
         <p
           role="status"
-          className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+          className="mt-4 rounded-xl border border-brand/40 bg-brand/10 p-3 text-sm text-zinc-900 dark:border-brand/30 dark:bg-brand/10 dark:text-zinc-100"
         >
           Đổi mật khẩu thành công.
         </p>
@@ -113,6 +118,7 @@ export function ChangePasswordCard(): ReactElement {
           type={showPasswords ? "text" : "password"}
           autoComplete="new-password"
           placeholder="Tối thiểu 8 ký tự"
+          hint="Khác với mật khẩu hiện tại."
           value={form.next}
           onChange={(event) => update("next", event.target.value)}
           error={errors.next ? toVietnameseMessage(errors.next) : undefined}
@@ -146,6 +152,7 @@ export function ChangePasswordCard(): ReactElement {
           variant="primary"
           disabled={change.isPending}
           icon={<FiKey className="h-4 w-4" aria-hidden="true" />}
+          className="w-full sm:w-auto sm:self-start"
         >
           {change.isPending ? "Đang đổi…" : "Đổi mật khẩu"}
         </Button>

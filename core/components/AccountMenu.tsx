@@ -58,7 +58,7 @@ export function AccountMenu(): ReactElement | null {
     "flex min-h-[44px] w-full items-center gap-2 rounded-xl px-3 text-sm font-medium " +
     "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900 " +
     "focus-visible:outline-2 focus-visible:outline-offset-2 " +
-    "focus-visible:outline-blue-600 dark:focus-visible:outline-blue-400";
+    "focus-visible:outline-brand dark:focus-visible:outline-brand";
 
   return (
     <div className="relative" ref={panelRef}>
@@ -74,7 +74,7 @@ export function AccountMenu(): ReactElement | null {
       >
         <span
           aria-hidden="true"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-brand bg-brand text-sm font-semibold text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950"
         >
           {initialOf(profile.full_name)}
         </span>

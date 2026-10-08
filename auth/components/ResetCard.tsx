@@ -66,7 +66,7 @@ export function ResetCard(): ReactElement {
     <BentoCard className="md:col-span-4 md:col-start-2 lg:col-span-6 lg:col-start-4">
       <div className="flex items-center gap-2">
         <FiRefreshCw
-          className="h-5 w-5 text-blue-600 dark:text-blue-400"
+          className="h-5 w-5 text-zinc-900 dark:text-brand"
           aria-hidden="true"
         />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
@@ -155,7 +155,7 @@ export function ResetCard(): ReactElement {
         Chưa nhận mã?{" "}
         <Link
           to="/forgot-password"
-          className="text-blue-600 hover:underline dark:text-blue-400"
+          className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand"
         >
           Gửi lại mã
         </Link>

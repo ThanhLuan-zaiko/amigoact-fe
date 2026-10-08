@@ -151,6 +151,12 @@ export function validateChangeField(
   key: "current" | "next" | "confirm",
 ): string | null {
   if (key === "current") return form.current.length === 0 ? "REQUIRED" : null;
-  if (key === "next") return validatePasswordValue(form.next);
+  if (key === "next") {
+    const strength = validatePasswordValue(form.next);
+    if (strength) return strength;
+    if (form.current.length > 0 && form.next === form.current)
+      return "SAME_AS_CURRENT";
+    return null;
+  }
   return form.confirm !== form.next ? "PASSWORD_MISMATCH" : null;
 }

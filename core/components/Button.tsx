@@ -13,9 +13,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 font-semibold transition-colors " +
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-colors " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-blue-600 dark:focus-visible:outline-blue-400 " +
+  "focus-visible:outline-brand dark:focus-visible:outline-brand " +
   "disabled:cursor-not-allowed disabled:opacity-60";
 
 const SIZES: Record<ButtonSize, string> = {
@@ -25,8 +25,8 @@ const SIZES: Record<ButtonSize, string> = {
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    "border border-blue-600 bg-blue-600 text-white hover:bg-blue-700 " +
-    "dark:border-blue-400 dark:bg-blue-500 dark:text-zinc-950 dark:hover:bg-blue-400",
+    "border border-brand bg-brand text-zinc-950 hover:bg-brand/85 " +
+    "dark:border-brand dark:bg-brand dark:text-zinc-950 dark:hover:bg-brand/85",
   secondary:
     "border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 " +
     "dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900",

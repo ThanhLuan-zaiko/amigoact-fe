@@ -17,7 +17,7 @@ export function ProfileCard(): ReactElement {
 
   if (!profile) {
     return (
-      <BentoCard className="md:col-span-4 md:col-start-2 lg:col-span-6 lg:col-start-4">
+      <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-7">
         <EmptyState
           title="Chưa đăng nhập"
           message="Vui lòng đăng nhập để xem hồ sơ của bạn."
@@ -28,11 +28,11 @@ export function ProfileCard(): ReactElement {
   }
 
   return (
-    <BentoCard className="md:col-span-4 md:col-start-2 lg:col-span-6 lg:col-start-4">
+    <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-7">
       <div className="flex items-center gap-3">
         <span
           aria-hidden="true"
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-lg font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-brand bg-brand text-lg font-semibold text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950"
         >
           {initialOf(profile.full_name)}
         </span>
@@ -42,7 +42,7 @@ export function ProfileCard(): ReactElement {
           </h1>
           <p className="mt-1 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
             <FiCheckCircle
-              className="h-4 w-4 text-blue-600 dark:text-blue-400"
+              className="h-4 w-4 text-zinc-900 dark:text-brand"
               aria-hidden="true"
             />
             {profile.email_verified
@@ -68,7 +68,7 @@ export function ProfileCard(): ReactElement {
           <dd className="text-zinc-900 dark:text-zinc-100">{profile.full_name}</dd>
         </div>
       </dl>
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:gap-3">
+      <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
         <Button
           to="/change-password"
           variant="secondary"

@@ -61,7 +61,7 @@ export function LoginCard(): ReactElement {
       <div ref={scope} className="flex flex-col">
       <div data-rise className="flex items-center gap-2">
         <FiLogIn
-          className="h-5 w-5 text-blue-600 dark:text-blue-400"
+          className="h-5 w-5 text-zinc-900 dark:text-brand"
           aria-hidden="true"
         />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
@@ -74,7 +74,7 @@ export function LoginCard(): ReactElement {
       {(state?.verified || state?.registered) && (
         <p
           role="status"
-          className="mt-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300"
+          className="mt-4 rounded-xl border border-brand/40 bg-brand/10 p-3 text-sm text-zinc-900 dark:border-brand/30 dark:bg-brand/10 dark:text-zinc-100"
         >
           {state?.verified
             ? "Xác minh thành công. Mời bạn đăng nhập."
@@ -123,6 +123,7 @@ export function LoginCard(): ReactElement {
           variant="primary"
           disabled={login.isPending}
           icon={<FiLogIn className="h-4 w-4" aria-hidden="true" />}
+          className="w-full sm:w-auto sm:self-start"
         >
           {login.isPending ? "Đang đăng nhập…" : "Đăng nhập"}
         </Button>
@@ -130,13 +131,13 @@ export function LoginCard(): ReactElement {
       <div data-rise className="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:gap-4">
         <Link
           to="/forgot-password"
-          className="text-blue-600 hover:underline dark:text-blue-400"
+          className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand"
         >
           Quên mật khẩu?
         </Link>
         <Link
           to="/register"
-          className="text-blue-600 hover:underline dark:text-blue-400"
+          className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand"
         >
           Chưa có tài khoản? Đăng ký
         </Link>

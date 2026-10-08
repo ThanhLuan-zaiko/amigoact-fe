@@ -13,6 +13,11 @@ const MESSAGES: Record<string, string> = {
   INVALID_CODE: "Mã xác nhận gồm 6 chữ số.",
   EMAIL_TAKEN: "Email này đã được đăng ký.",
   PHONE_TAKEN: "Số điện thoại này đã được sử dụng.",
+  INVALID_TAX_CODE: "Mã số thuế 10 số (chi nhánh thêm -XXX).",
+  INVALID_CCCD: "CCCD gồm 12 chữ số.",
+  INVALID_COMPANY_NAME: "Tên công ty từ 2 đến 200 ký tự.",
+  INVALID_LEGAL_REP: "Tên người đại diện từ 2 đến 100 ký tự.",
+  INVALID_BUSINESS_PROFILE: "Hồ sơ doanh nghiệp còn thiếu thông tin bắt buộc.",
   INVALID_CREDENTIALS: "Email hoặc mật khẩu chưa đúng.",
   EMAIL_NOT_VERIFIED:
     "Tài khoản chưa xác minh email. Vui lòng nhập mã đã gửi tới hộp thư của bạn.",

@@ -5,6 +5,12 @@ export interface SessionProfile {
   email: string;
   phone: string;
   full_name: string;
+  account_type: string;
+  tax_code: string | null;
+  company_name: string | null;
+  legal_rep_name: string | null;
+  legal_rep_id: string | null;
+  legal_rep_position: string | null;
   email_verified: boolean;
   created_at: string;
 }
@@ -14,6 +20,12 @@ export interface RegisterInput {
   phone: string;
   password: string;
   full_name: string;
+  account_type: string;
+  tax_code?: string;
+  company_name?: string;
+  legal_rep_name?: string;
+  legal_rep_id?: string;
+  legal_rep_position?: string;
 }
 
 interface TokenBody {

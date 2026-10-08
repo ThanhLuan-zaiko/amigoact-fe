@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { FiCheckCircle, FiPlusCircle, FiTag, FiType } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
@@ -9,32 +10,47 @@ import { TextField } from "../../core/components/TextField.tsx";
 import { useCreateOrg } from "../hooks.ts";
 import { toVietnameseDashboardMessage, ORG_KIND_LABELS } from "../messages.tsx";
 import { ORG_KINDS, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
-import type { CreateOrgInput, OrgKind } from "../api.ts";
+import { uploadOrgMedia, type CreateOrgInput, type OrgKind } from "../api.ts";
+import { dashboardKeys } from "../keys.ts";
 import type { OrgFieldErrors } from "../schemas.ts";
+import { MediaPicker } from "./MediaPicker.tsx";
 
 export function OrgCreateCard(): ReactElement {
   const create = useCreateOrg();
+  const queryClient = useQueryClient();
   const [form, setForm] = useState<CreateOrgInput>({
     name: "",
     slug: "",
     description: "",
     kind: "organization",
+    tax_code: "",
+    legal_rep_name: "",
+    legal_rep_id: "",
+    legal_rep_position: "",
   });
   const [errors, setErrors] = useState<OrgFieldErrors>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
   const [createdName, setCreatedName] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadNote, setUploadNote] = useState<string | null>(null);
 
-  function update(key: "name" | "slug" | "description", value: string): void {
+  function update(
+    key: "name" | "slug" | "description" | "tax_code" | "legal_rep_name" | "legal_rep_id" | "legal_rep_position",
+    value: string,
+  ): void {
     const next = { ...form, [key]: value };
     if (key === "name" && (form.slug.length === 0 || form.slug === slugifyName(form.name))) {
       next.slug = slugifyName(value);
     }
     setForm(next);
     const single = validateOrgField(next, key);
+    const errorKey =
+      key === "tax_code" ? "taxCode" : key === "legal_rep_name" ? "legalRepName" : key === "legal_rep_id" ? "legalRepId" : key;
     setErrors((current) => {
       const copy = { ...current };
-      if (single) copy[key] = single;
-      else delete copy[key];
+      if (single && (errorKey === "name" || errorKey === "slug" || errorKey === "description" || errorKey === "taxCode" || errorKey === "legalRepName" || errorKey === "legalRepId")) copy[errorKey] = single;
+      else if (errorKey in copy) delete copy[errorKey as keyof OrgFieldErrors];
       return copy;
     });
   }
@@ -49,6 +65,7 @@ export function OrgCreateCard(): ReactElement {
     setErrors(validation);
     setServerCode(null);
     setCreatedName(null);
+    setUploadNote(null);
     if (Object.keys(validation).length > 0) return;
     try {
       const org = await create.mutateAsync({
@@ -56,9 +73,42 @@ export function OrgCreateCard(): ReactElement {
         slug: form.slug.trim().toLowerCase(),
         description: form.description.trim(),
         kind: form.kind,
+        ...(form.kind === "business"
+          ? {
+              tax_code: (form.tax_code ?? "").trim(),
+              legal_rep_name: (form.legal_rep_name ?? "").trim(),
+              legal_rep_id: (form.legal_rep_id ?? "").trim(),
+              legal_rep_position: (form.legal_rep_position ?? "").trim() || undefined,
+            }
+          : {}),
       });
       setCreatedName(org.name);
-      setForm({ name: "", slug: "", description: "", kind: form.kind });
+      const files = pendingFiles;
+      setPendingFiles([]);      if (files.length > 0) {
+        setUploading(true);
+        let done = 0;
+        let failedCode: string | null = null;
+        for (const file of files) {
+          try {
+            await uploadOrgMedia(org.id, file);
+            done += 1;
+          } catch (error) {
+            failedCode = error instanceof ApiError ? error.code : "REQUEST_FAILED";
+            break;
+          }
+        }
+        await queryClient.invalidateQueries({ queryKey: dashboardKeys.orgMedia(org.id) });
+        setUploading(false);
+        setUploadNote(
+          failedCode
+            ? `${toVietnameseDashboardMessage("UPLOAD_PARTIAL")} (${done}/${files.length}, ${toVietnameseDashboardMessage(failedCode)})`
+            : `Đã tải lên ${done}/${files.length} tệp. Mở mục Tệp ở trang Tổ chức để xem.`,
+        );
+      }
+      setForm({
+        name: "", slug: "", description: "", kind: form.kind,
+        tax_code: "", legal_rep_name: "", legal_rep_id: "", legal_rep_position: "",
+      });
     } catch (error) {
       setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
     }
@@ -106,6 +156,15 @@ export function OrgCreateCard(): ReactElement {
           Đã tạo “{createdName}”. Mời thêm thành viên và mở sự kiện đầu tiên.
         </p>
       )}
+      {(uploading || uploadNote) && (
+        <p
+          role="status"
+          className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-200 p-3 text-sm text-zinc-900 dark:border-zinc-800 dark:text-zinc-100"
+        >
+          <FiPlusCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+          {uploading ? "Đang tải ảnh/video lên…" : uploadNote}
+        </p>
+      )}
       <form onSubmit={handleSubmit} noValidate className="mt-3 flex flex-col gap-3">
         <TextField
           label="Tên tổ chức"
@@ -134,14 +193,50 @@ export function OrgCreateCard(): ReactElement {
           onChange={(event) => update("description", event.target.value)}
           error={errors.description ? toVietnameseDashboardMessage(errors.description) : undefined}
         />
+        {form.kind === "business" && (
+          <>
+            <TextField
+              label="Mã số thuế"
+              name="tax_code"
+              placeholder="0312345678"
+              value={form.tax_code ?? ""}
+              onChange={(event) => update("tax_code", event.target.value)}
+              error={errors.taxCode ? toVietnameseDashboardMessage(errors.taxCode) : undefined}
+              icon={<FiTag className="h-4 w-4" aria-hidden="true" />}
+            />
+            <TextField
+              label="Người đại diện pháp luật"
+              name="legal_rep_name"
+              placeholder="Nguyễn Văn A"
+              value={form.legal_rep_name ?? ""}
+              onChange={(event) => update("legal_rep_name", event.target.value)}
+              error={errors.legalRepName ? toVietnameseDashboardMessage(errors.legalRepName) : undefined}
+              icon={<FiType className="h-4 w-4" aria-hidden="true" />}
+            />
+            <TextField
+              label="CCCD người đại diện"
+              name="legal_rep_id"
+              placeholder="12 chữ số"
+              value={form.legal_rep_id ?? ""}
+              onChange={(event) => update("legal_rep_id", event.target.value)}
+              error={errors.legalRepId ? toVietnameseDashboardMessage(errors.legalRepId) : undefined}
+              icon={<FiTag className="h-4 w-4" aria-hidden="true" />}
+            />
+          </>
+        )}
+        <MediaPicker
+          files={pendingFiles} disabled={create.isPending || uploading}
+          onAdd={(picked) => setPendingFiles((prev) => [...prev, ...picked])}
+          onRemove={(index) => setPendingFiles((prev) => prev.filter((_, i) => i !== index))}
+        />
         <Button
           type="submit"
           variant="primary"
-          disabled={create.isPending}
+          disabled={create.isPending || uploading}
           icon={<FiPlusCircle className="h-4 w-4" aria-hidden="true" />}
           className="w-full sm:w-auto sm:self-start"
         >
-          {create.isPending ? "Đang tạo…" : "Tạo tổ chức"}
+          {create.isPending ? "Đang tạo…" : uploading ? "Đang tải tệp…" : "Tạo tổ chức"}
         </Button>
       </form>
     </BentoCard>

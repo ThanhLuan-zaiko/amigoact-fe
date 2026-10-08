@@ -25,9 +25,11 @@ export function LoginCard(): ReactElement {
     password: "",
   });
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
   const [showPasswords, setShowPasswords] = useState(false);
   const scope = useRiseIn<HTMLDivElement>();
+  const canSubmit = Object.keys(validateLoginForm(form)).length === 0;
 
   function update(key: "email" | "password", value: string): void {
     const next = { ...form, [key]: value };
@@ -41,10 +43,22 @@ export function LoginCard(): ReactElement {
     });
   }
 
+  function blurField(key: "email" | "password"): void {
+    setTouched((prev) => ({ ...prev, [key]: true }));
+    const single = validateLoginField(form, key);
+    setErrors((current) => {
+      const copy = { ...current };
+      if (single) copy[key] = single;
+      else delete copy[key];
+      return copy;
+    });
+  }
+
   async function handleSubmit(event: FormEvent): Promise<void> {
     event.preventDefault();
     const validation = validateLoginForm(form);
     setErrors(validation);
+    setTouched({ email: true, password: true });
     setServerCode(null);
     if (Object.keys(validation).length > 0) return;
     const email = form.email.trim().toLowerCase();
@@ -98,7 +112,8 @@ export function LoginCard(): ReactElement {
           placeholder="vidu@email.com"
           value={form.email}
           onChange={(event) => update("email", event.target.value)}
-          error={errors.email ? toVietnameseMessage(errors.email) : undefined}
+          onBlur={() => blurField("email")}
+          error={touched.email && errors.email ? toVietnameseMessage(errors.email) : undefined}
           icon={<FiMail className="h-4 w-4" aria-hidden="true" />}
         />
         <TextField
@@ -109,7 +124,8 @@ export function LoginCard(): ReactElement {
           placeholder="Mật khẩu của bạn"
           value={form.password}
           onChange={(event) => update("password", event.target.value)}
-          error={errors.password ? toVietnameseMessage(errors.password) : undefined}
+          onBlur={() => blurField("password")}
+          error={touched.password && errors.password ? toVietnameseMessage(errors.password) : undefined}
           icon={<FiLock className="h-4 w-4" aria-hidden="true" />}
           trailing={
             <VisibilityToggle
@@ -121,7 +137,7 @@ export function LoginCard(): ReactElement {
         <Button
           type="submit"
           variant="primary"
-          disabled={login.isPending}
+          disabled={login.isPending || !canSubmit}
           icon={<FiLogIn className="h-4 w-4" aria-hidden="true" />}
           className="w-full sm:w-auto sm:self-start"
         >

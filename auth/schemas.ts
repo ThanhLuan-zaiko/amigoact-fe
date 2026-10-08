@@ -53,12 +53,39 @@ export function validateCodeValue(value: string): string | null {
   return CODE_PATTERN.test(value.trim()) ? null : "INVALID_CODE";
 }
 
+export type AccountType = "individual" | "business";
+
+const TAX_PATTERN = /^\d{10}(-\d{3})?$/;
+const CCCD_PATTERN = /^\d{12}$/;
+
+export function validateTaxCodeValue(value: string): string | null {
+  const code = value.trim();
+  if (code.length === 0) return "REQUIRED";
+  if (!TAX_PATTERN.test(code)) return "INVALID_TAX_CODE";
+  if (new Set(code.replace("-", "")).size === 1) return "INVALID_TAX_CODE";
+  return null;
+}
+
+export function validateCccdValue(value: string): string | null {
+  const code = value.trim();
+  if (code.length === 0) return "REQUIRED";
+  if (!CCCD_PATTERN.test(code)) return "INVALID_CCCD";
+  if (new Set(code).size === 1) return "INVALID_CCCD";
+  return null;
+}
+
 export interface RegisterForm {
   email: string;
   phone: string;
   password: string;
   confirmPassword: string;
   fullName: string;
+  accountType: AccountType;
+  companyName: string;
+  taxCode: string;
+  legalRepName: string;
+  legalRepId: string;
+  legalRepPosition: string;
 }
 
 export function validateRegisterForm(form: RegisterForm): FieldErrors {
@@ -73,6 +100,16 @@ export function validateRegisterForm(form: RegisterForm): FieldErrors {
     errors.confirmPassword = "PASSWORD_MISMATCH";
   const name = validateNameValue(form.fullName);
   if (name) errors.fullName = name;
+  if (form.accountType === "business") {
+    const company = validateNameValue(form.companyName);
+    if (company) errors.companyName = "INVALID_COMPANY_NAME";
+    const tax = validateTaxCodeValue(form.taxCode);
+    if (tax) errors.taxCode = tax;
+    const rep = validateNameValue(form.legalRepName);
+    if (rep) errors.legalRepName = "INVALID_LEGAL_REP";
+    const cccd = validateCccdValue(form.legalRepId);
+    if (cccd) errors.legalRepId = cccd;
+  }
   return errors;
 }
 
@@ -99,11 +136,36 @@ export function validateLoginField(
 
 export function validateRegisterField(
   form: RegisterForm,
-  key: "email" | "phone" | "password" | "confirmPassword" | "fullName",
+  key:
+    | "email"
+    | "phone"
+    | "password"
+    | "confirmPassword"
+    | "fullName"
+    | "accountType"
+    | "companyName"
+    | "taxCode"
+    | "legalRepName"
+    | "legalRepId"
+    | "legalRepPosition",
 ): string | null {
   if (key === "email") return validateEmailValue(form.email);
   if (key === "phone") return validatePhoneValue(form.phone);
   if (key === "password") return validatePasswordValue(form.password);
+  if (key === "accountType") return null;
+  if (key === "companyName")
+    return form.accountType === "business" && validateNameValue(form.companyName)
+      ? "INVALID_COMPANY_NAME"
+      : null;
+  if (key === "taxCode")
+    return form.accountType === "business" ? validateTaxCodeValue(form.taxCode) : null;
+  if (key === "legalRepName")
+    return form.accountType === "business" && validateNameValue(form.legalRepName)
+      ? "INVALID_LEGAL_REP"
+      : null;
+  if (key === "legalRepId")
+    return form.accountType === "business" ? validateCccdValue(form.legalRepId) : null;
+  if (key === "legalRepPosition") return null;
   if (key === "confirmPassword") {
     return form.confirmPassword !== form.password ? "PASSWORD_MISMATCH" : null;
   }

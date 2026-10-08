@@ -2,7 +2,28 @@ import type { CreateOrgInput, OrgKind } from "./api.ts";
 
 export const ORG_KINDS: OrgKind[] = ["organization", "club", "group", "business"];
 
-export type OrgFieldErrors = Partial<Record<"name" | "slug" | "description", string>>;
+export type OrgFieldErrors = Partial<
+  Record<"name" | "slug" | "description" | "taxCode" | "legalRepName" | "legalRepId", string>
+>;
+
+const TAX_PATTERN = /^\d{10}(-\d{3})?$/;
+const CCCD_PATTERN = /^\d{12}$/;
+
+export function validateTaxCodeValue(value: string): string | null {
+  const code = value.trim();
+  if (code.length === 0) return "REQUIRED";
+  if (!TAX_PATTERN.test(code)) return "INVALID_TAX_CODE";
+  if (new Set(code.replace("-", "")).size === 1) return "INVALID_TAX_CODE";
+  return null;
+}
+
+export function validateCccdValue(value: string): string | null {
+  const code = value.trim();
+  if (code.length === 0) return "REQUIRED";
+  if (!CCCD_PATTERN.test(code)) return "INVALID_CCCD";
+  if (new Set(code).size === 1) return "INVALID_CCCD";
+  return null;
+}
 
 function isValidSlug(value: string): boolean {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
@@ -24,6 +45,17 @@ export function validateOrgField(form: CreateOrgInput, key: keyof CreateOrgInput
     if (description.length > 500) return "INVALID_DESCRIPTION";
     return null;
   }
+  if (key === "tax_code") {
+    return form.kind === "business" ? validateTaxCodeValue(form.tax_code ?? "") : null;
+  }
+  if (key === "legal_rep_name") {
+    if (form.kind !== "business") return null;
+    const rep = (form.legal_rep_name ?? "").trim();
+    return rep.length >= 2 && rep.length <= 100 ? null : "INVALID_LEGAL_REP";
+  }
+  if (key === "legal_rep_id") {
+    return form.kind === "business" ? validateCccdValue(form.legal_rep_id ?? "") : null;
+  }
   return null;
 }
 
@@ -35,6 +67,29 @@ export function validateOrgForm(form: CreateOrgInput): OrgFieldErrors {
   if (slug) errors.slug = slug;
   const description = validateOrgField(form, "description");
   if (description) errors.description = description;
+  if (form.kind === "business") {
+    const tax = validateOrgField(form, "tax_code");
+    if (tax) errors.taxCode = tax;
+    const rep = validateOrgField(form, "legal_rep_name");
+    if (rep) errors.legalRepName = rep;
+    const cccd = validateOrgField(form, "legal_rep_id");
+    if (cccd) errors.legalRepId = cccd;
+  }
+  return errors;
+}
+
+export interface UpdateOrgForm {
+  name: string;
+  description: string;
+}
+
+export type UpdateFieldErrors = Partial<Record<"name" | "description", string>>;
+
+export function validateUpdateForm(form: UpdateOrgForm): UpdateFieldErrors {
+  const errors: UpdateFieldErrors = {};
+  const name = form.name.trim();
+  if (name.length < 2 || name.length > 100) errors.name = "INVALID_NAME";
+  if (form.description.trim().length > 500) errors.description = "INVALID_DESCRIPTION";
   return errors;
 }
 
@@ -47,4 +102,17 @@ export function slugifyName(name: string): string {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .slice(0, 60);
+}
+
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+export const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+
+export function isSupportedMedia(file: File): boolean {
+  const type = file.type.split(";")[0].trim().toLowerCase();
+  if (IMAGE_TYPES.includes(type)) return file.size <= MAX_IMAGE_BYTES;
+  if (VIDEO_TYPES.includes(type)) return file.size <= MAX_VIDEO_BYTES;
+  return false;
 }

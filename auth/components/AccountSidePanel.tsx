@@ -74,8 +74,8 @@ export function AccountSidePanel({
   const items = isProfile ? PROFILE_BENEFITS : PASSWORD_RULES;
   const HeadIcon = isProfile ? FiShield : FiKey;
   return (
-    <BentoCard className="order-2 border-brand/40 bg-brand/10 md:col-span-6 lg:order-1 lg:col-span-5 dark:border-brand/30 dark:bg-brand/10">
-      <div ref={scope} className="flex h-full flex-col justify-center gap-5 p-2 sm:p-4">
+    <BentoCard className="order-2 w-full self-start border-brand/40 bg-brand/10 md:col-span-6 lg:order-1 lg:col-span-5 lg:sticky lg:top-20 dark:border-brand/30 dark:bg-brand/10">
+      <div ref={scope} className="flex flex-col justify-start gap-5 p-2 sm:p-4">
         <div data-rise className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
             <HeadIcon className="h-5 w-5" aria-hidden="true" />

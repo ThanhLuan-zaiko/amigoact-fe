@@ -61,3 +61,8 @@ page.tsx / components/*.tsx
 
 - TypeScript strict: cấm `any`, đủ kiểu cho hợp đồng API, không biến/tham số thừa.
 - Kiểm tra trước merge: `bun run build`, `bun run lint`, đếm dòng `.tsx/.ts`, quét `shadow`/`ring`, soát `dark:`, kiểm tra loading/error/empty, so sánh cạnh với trang cũ, chụp ảnh light/dark desktop + mobile.
+
+## 8. Tài liệu tính năng
+
+- `docs/AUTH.md`: wizard đăng ký theo bước, validation `touched`, hai tầng tài khoản, thẻ phụ sticky.
+- `docs/ORGS.md`: CRUD tổ chức (xóa mềm/khôi phục/xóa cứng), thùng rác, dropzone ảnh/video, upload `FormData`.

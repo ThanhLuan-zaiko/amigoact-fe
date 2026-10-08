@@ -28,6 +28,10 @@ function resolveBaseUrl(): string {
   return "http://localhost:8100";
 }
 
+export function apiBaseUrl(): string {
+  return resolveBaseUrl();
+}
+
 function toApiError(status: number, body: unknown): ApiError {
   const envelope = body as Partial<ApiErrorEnvelope>;
   const code =
@@ -96,5 +100,35 @@ export async function apiFetch<T>(
       throw error;
     }
     return request<T>(path, init);
+  }
+}
+
+async function uploadRequest<T>(path: string, form: FormData): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+  const response = await fetch(`${resolveBaseUrl()}${path}`, {
+    method: "POST",
+    credentials: "include",
+    headers,
+    body: form,
+  });
+  if (response.status === 204) return undefined as T;
+  const body = (await response.json()) as unknown;
+  if (!response.ok) throw toApiError(response.status, body);
+  return body as T;
+}
+
+export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
+  try {
+    return await uploadRequest<T>(path, form);
+  } catch (error) {
+    if (!(error instanceof ApiError) || error.status !== 401) throw error;
+    try {
+      await refreshAccessToken();
+    } catch {
+      accessToken = null;
+      throw error;
+    }
+    return uploadRequest<T>(path, form);
   }
 }

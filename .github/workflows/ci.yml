@@ -1,0 +1,274 @@
+# FE CI — 12 required gates (see AGENTS.md §11).
+# No auto-commit / auto-push / docker push in this pipeline.
+name: fe-ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: fe-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Gate 01: no junk files tracked in git.
+  gate-01-git-hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if junk is tracked
+        run: |
+          python3 - <<'EOF'
+          import subprocess, sys
+          tracked = subprocess.check_output(["git", "ls-files"], text=True).splitlines()
+          junk_markers = ("node_modules/", "dist/", "dist-ssr/", "coverage/",
+                          ".vite/", "logs/")
+          junk_suffixes = (".local", ".log", ".tsbuildinfo", ".DS_Store")
+          bad = [f for f in tracked
+                 if f.startswith(junk_markers) or f.endswith(junk_suffixes)]
+          if bad:
+              print("Tracked junk files (add to .gitignore, do not commit):")
+              print("\n".join(" - " + f for f in bad))
+              sys.exit(1)
+          print("OK: no tracked junk")
+          EOF
+
+  # Gate 02: .tsx <= 250 lines, .ts <= 350 lines.
+  gate-02-file-lines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check TS/TSX line limits
+        run: |
+          python3 - <<'EOF'
+          import pathlib, sys
+          bad = []
+          for p in list(pathlib.Path(".").rglob("*.tsx")) + list(pathlib.Path(".").rglob("*.ts")):
+              if "node_modules" in p.parts or p.parts and p.parts[0] == "dist":
+                  continue
+              n = sum(1 for _ in p.open(encoding="utf-8", errors="replace"))
+              lim = 250 if p.suffix == ".tsx" else 350
+              if n > lim:
+                  bad.append(f"{p}: {n} > {lim}")
+          if bad:
+              print("Files exceeding line limits:")
+              print("\n".join(" - " + b for b in bad))
+              sys.exit(1)
+          print("OK: .tsx<=250 / .ts<=350")
+          EOF
+
+  # Gate 03: Tailwind-only, border-only — no shadow/ring, no extra CSS.
+  gate-03-no-shadow-css:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Forbid shadows and extra CSS
+        run: |
+          python3 - <<'EOF'
+          import pathlib, re, sys
+          pat = re.compile(r"shadow|drop-shadow|box-shadow|\bring-")
+          bad = []
+          for p in list(pathlib.Path(".").rglob("*.tsx")) + list(pathlib.Path(".").rglob("*.ts")) + list(pathlib.Path(".").rglob("*.css")):
+              if "node_modules" in p.parts or (p.parts and p.parts[0] == "dist"):
+                  continue
+              for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                  if pat.search(line):
+                      bad.append(f"{p}:{i}: {line.strip()[:120]}")
+          css_files = [p for p in pathlib.Path(".").rglob("*.css")
+                       if "node_modules" not in p.parts and p.name != "index.css"]
+          for p in css_files:
+              bad.append(f"{p}: only index.css is allowed (Tailwind-only)")
+          if bad:
+              print("Shadow/CSS violations:")
+              print("\n".join(" - " + b for b in bad))
+              sys.exit(1)
+          print("OK: border-only, Tailwind-only")
+          EOF
+
+  # Gate 04: TanStack Query only — dep present, no fetch() in components.
+  gate-04-query:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Enforce TanStack Query data flow
+        run: |
+          python3 - <<'EOF'
+          import json, pathlib, re, sys
+          pkg = json.loads(pathlib.Path("package.json").read_text(encoding="utf-8"))
+          deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
+          if "@tanstack/react-query" not in deps:
+              print("MISSING: @tanstack/react-query in package.json")
+              sys.exit(1)
+          pat = re.compile(r"(?<!\w)fetch\s*\(")
+          bad = []
+          for p in pathlib.Path(".").rglob("*.tsx"):
+              if "node_modules" in p.parts:
+                  continue
+              for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                  if pat.search(line):
+                      bad.append(f"{p}:{i}: direct fetch() in component (use hooks.ts)")
+          if bad:
+              print("\n".join(" - " + b for b in bad))
+              sys.exit(1)
+          print("OK: TanStack Query only")
+          EOF
+
+  # Gate 05: code/comments English-only (.ts ASCII-only; .tsx comment lines ASCII-only).
+  gate-05-english-comments:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Forbid non-ASCII in code and comments
+        run: |
+          python3 - <<'EOF'
+          import pathlib, re, sys
+          comment_pat = re.compile(r"^\s*(//|/\*|\*|\{/\*)")
+          bad = []
+          for p in pathlib.Path(".").rglob("*.ts"):
+              if "node_modules" in p.parts or p.suffix == ".tsx":
+                  continue
+              if p.name.endswith(".d.ts"):
+                  continue
+              for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                  if any(ord(c) > 127 for c in line):
+                      bad.append(f"{p}:{i}: non-English content in .ts")
+                      break
+          for p in pathlib.Path(".").rglob("*.tsx"):
+              if "node_modules" in p.parts:
+                  continue
+              for i, line in enumerate(p.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+                  if comment_pat.match(line) and any(ord(c) > 127 for c in line):
+                      bad.append(f"{p}:{i}: non-English comment (UI strings stay in JSX, comments in English)")
+                      break
+          if bad:
+              print("\n".join(" - " + b for b in bad))
+              sys.exit(1)
+          print("OK: code/comments are English-only")
+          EOF
+
+  # Gate 06: end-user UI in Vietnamese (page.tsx must contain Vietnamese when present).
+  gate-06-vietnamese-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require Vietnamese UI strings
+        run: |
+          python3 - <<'EOF'
+          import pathlib, sys
+          pages = [p for p in pathlib.Path(".").rglob("page.tsx") if "node_modules" not in p.parts]
+          if not pages:
+              print("SKIP: no page.tsx yet")
+              sys.exit(0)
+          bad = [str(p) for p in pages
+                 if not any(ord(c) > 127 for c in p.read_text(encoding="utf-8", errors="replace"))]
+          if bad:
+              print("Pages without Vietnamese UI strings:")
+              print("\n".join(" - " + b for b in bad))
+              sys.exit(1)
+          print("OK: UI strings are Vietnamese")
+          EOF
+
+  # Gate 07: docs language — AGENTS.md English, all other .md Vietnamese.
+  gate-07-docs-language:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Markdown languages
+        run: |
+          python3 - <<'EOF'
+          import pathlib, sys
+          bad = []
+          for p in pathlib.Path(".").rglob("*.md"):
+              if "node_modules" in p.parts:
+                  continue
+              text = p.read_text(encoding="utf-8", errors="replace")
+              if p.name == "AGENTS.md" or not text.strip():
+                  continue
+              if not any(ord(c) > 127 for c in text):
+                  bad.append(f"{p}: expected Vietnamese prose (no non-ASCII found)")
+          if bad:
+              print("\n".join(" - " + b for b in bad))
+              sys.exit(1)
+          print("OK: docs language rule holds")
+          EOF
+
+  # Gate 08: root-per-feature structure — no src/, entry files present.
+  gate-08-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check project structure
+        run: |
+          test ! -d src || (echo "FORBIDDEN: src/ directory must not exist" && exit 1)
+          test -f main.tsx || (echo "MISSING: main.tsx at repo root" && exit 1)
+          test -f App.tsx || (echo "MISSING: App.tsx at repo root" && exit 1)
+          test -f index.css || (echo "MISSING: index.css at repo root" && exit 1)
+          echo "OK: structure holds (no src/, entry files present)"
+
+  # Gate 09: strict types.
+  gate-09-types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install and typecheck
+        run: |
+          bun install --frozen-lockfile
+          bunx tsc -b
+
+  # Gate 10: lint.
+  gate-10-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install and lint
+        run: |
+          bun install --frozen-lockfile
+          bun run lint
+
+  # Gate 11: Docker image builds (validation only, never pushed).
+  gate-11-docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: amigoact-fe:ci
+
+  # Gate 12: aggregator — the single required check for branch protection.
+  gate-12-ci-success:
+    runs-on: ubuntu-latest
+    needs:
+      - gate-01-git-hygiene
+      - gate-02-file-lines
+      - gate-03-no-shadow-css
+      - gate-04-query
+      - gate-05-english-comments
+      - gate-06-vietnamese-ui
+      - gate-07-docs-language
+      - gate-08-structure
+      - gate-09-types
+      - gate-10-lint
+      - gate-11-docker-build
+    if: always()
+    steps:
+      - name: All 12 gates must be green
+        run: |
+          python3 - <<'EOF'
+          import json, os, sys
+          needs = json.loads(os.environ["NEEDS_JSON"])
+          failed = {k: v for k, v in needs.items() if v != "success"}
+          if failed:
+              print("Failing/skipped gates:")
+              for k, v in failed.items():
+                  print(f" - {k}: {v}")
+              sys.exit(1)
+          print("OK: all 12 FE gates green")
+          EOF
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}

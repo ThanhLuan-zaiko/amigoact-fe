@@ -43,6 +43,17 @@ Biến môi trường:
 |---|---|---|
 | `VITE_API_URL` | Địa chỉ backend | `http://localhost:8100` |
 
+Mỗi khi `bun run dev` khởi động, terminal hiện log kiểm tra kết nối
+backend (`/health` + `/ready` theo `VITE_API_URL`):
+
+```text
+[api] backend connected: http://localhost:8100 (54ms)
+[api] database ready: keyspace=amigoact tables=73
+```
+
+Nếu backend chưa chạy, log báo `[api] backend unreachable...` nhưng dev
+server vẫn chạy bình thường.
+
 ## Cấu trúc thư mục
 
 ```text

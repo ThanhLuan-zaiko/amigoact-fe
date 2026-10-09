@@ -26,13 +26,17 @@ import {
 } from "./api.ts";
 import { dashboardKeys } from "./keys.ts";
 
-export function useMyOrgs(includeDeleted = false): UseQueryResult<DashboardOrg[], ApiError> {
+export function useMyOrgs(
+  includeDeleted = false,
+  enabled = true,
+): UseQueryResult<DashboardOrg[], ApiError> {
   return useQuery({
     queryKey: dashboardKeys.myOrgs(includeDeleted),
     queryFn: () => listMyOrgs(includeDeleted),
     staleTime: 30_000,
     retry: 1,
     refetchOnWindowFocus: false,
+    enabled,
   });
 }
 

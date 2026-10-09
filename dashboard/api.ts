@@ -76,8 +76,14 @@ export interface OrgMedia {
 }
 
 export function orgMediaUrl(fileUrl: string): string {
-  return `${apiBaseUrl()}${fileUrl}`;
+  if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) return fileUrl;
+  const path = fileUrl.startsWith("/") ? fileUrl : `/${fileUrl}`;
+  return `${apiBaseUrl()}${path}`;
 }
+
+// Narrow picker accept list to the backend allowlist.
+export const MEDIA_ACCEPT =
+  "image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm";
 
 export async function listOrgMedia(orgId: string): Promise<OrgMedia[]> {
   return apiFetch<OrgMedia[]>(`/orgs/${orgId}/media`);

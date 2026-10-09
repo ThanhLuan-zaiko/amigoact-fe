@@ -33,7 +33,7 @@ export function apiBaseUrl(): string {
 }
 
 function toApiError(status: number, body: unknown): ApiError {
-  const envelope = body as Partial<ApiErrorEnvelope>;
+  const envelope = body as Partial<ApiErrorEnvelope> | null | undefined;
   const code =
     typeof envelope?.code === "string" ? envelope.code : "REQUEST_FAILED";
   const message =
@@ -41,6 +41,14 @@ function toApiError(status: number, body: unknown): ApiError {
       ? envelope.message
       : `Request failed (${status})`;
   return new ApiError(status, { code, message });
+}
+
+async function readBody(response: Response): Promise<unknown> {
+  try {
+    return (await response.json()) as unknown;
+  } catch {
+    return undefined;
+  }
 }
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -55,7 +63,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     headers,
   });
   if (response.status === 204) return undefined as T;
-  const body = (await response.json()) as unknown;
+  const body = await readBody(response);
   if (!response.ok) throw toApiError(response.status, body);
   return body as T;
 }
@@ -113,7 +121,7 @@ async function uploadRequest<T>(path: string, form: FormData): Promise<T> {
     body: form,
   });
   if (response.status === 204) return undefined as T;
-  const body = (await response.json()) as unknown;
+  const body = await readBody(response);
   if (!response.ok) throw toApiError(response.status, body);
   return body as T;
 }

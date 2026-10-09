@@ -11,7 +11,7 @@ import { useMyOrgs } from "./hooks.ts";
 
 export function DashboardPage(): ReactElement {
   const session = useSession();
-  const orgs = useMyOrgs();
+  const orgs = useMyOrgs(false, session.data != null);
   const { pathname } = useLocation();
   const scope = useRiseIn<HTMLDivElement>([pathname]);
   const orgCount = orgs.data?.length ?? 0;

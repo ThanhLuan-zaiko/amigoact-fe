@@ -10,12 +10,7 @@ import { ApiError, apiBaseUrl, apiFetch } from "./api.ts";
  * query keys or apply narrow deltas inside channel handlers.
  */
 
-export type RealtimeStatus =
-  | "idle"
-  | "connecting"
-  | "open"
-  | "reconnecting"
-  | "offline";
+export type RealtimeStatus = "idle" | "connecting" | "open" | "reconnecting" | "offline";
 
 export interface ServerEnvelope {
   type: string;
@@ -35,15 +30,13 @@ const BASE_RETRY_MS = 500;
 const MAX_RETRY_MS = 15_000;
 const DEFAULT_WATCHDOG_MS = 40_000;
 const WATCHDOG_GRACE_MS = 15_000;
+const MIN_WATCHDOG_MS = 5_000;
+const MAX_WATCHDOG_MS = 120_000;
+const MAX_FRAME_CHARS = 1_000_000;
 
-interface WsTicket {
-  ticket: string;
-  expires_in: number;
-}
+interface WsTicket { ticket: string; expires_in: number; }
 
-interface ReadyData {
-  heartbeat_seconds?: number;
-}
+interface ReadyData { heartbeat_seconds?: number; }
 
 export function notificationsChannel(userId: string): string {
   return `notifications:${userId}`;
@@ -60,7 +53,9 @@ export function activitiesChannel(orgId: string): string {
 function wsUrl(ticket: string): string {
   const url = new URL(apiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-  url.pathname = WS_PATH;
+  // Keep ticket in query per backend contract. Never log the returned URL.
+  const basePath = url.pathname.replace(/\/+$/, "");
+  url.pathname = `${basePath}${WS_PATH}`;
   url.search = `?ticket=${encodeURIComponent(ticket)}`;
   return url.toString();
 }
@@ -76,10 +71,10 @@ class RealtimeClient {
   private watchdogTimer: ReturnType<typeof setTimeout> | null = null;
   private watchdogMs = DEFAULT_WATCHDOG_MS;
   private manualClose = false;
+  private connecting = false;
+  private connectPromise: Promise<void> | null = null;
 
-  getStatus(): RealtimeStatus {
-    return this.status;
-  }
+  getStatus(): RealtimeStatus { return this.status; }
 
   onStatus(handler: StatusHandler): () => void {
     this.statusHandlers.add(handler);
@@ -117,14 +112,10 @@ class RealtimeClient {
   }
 
   private maybeTeardown(): void {
-    if (this.handlers.size === 0 && this.statusHandlers.size === 0) {
-      this.teardown();
-    }
+    if (this.handlers.size === 0 && this.statusHandlers.size === 0) this.teardown();
   }
 
-  private isOpen(): boolean {
-    return this.socket?.readyState === WebSocket.OPEN;
-  }
+  private isOpen(): boolean { return this.socket?.readyState === WebSocket.OPEN; }
 
   private setStatus(next: RealtimeStatus): void {
     if (this.status === next) return;
@@ -132,55 +123,80 @@ class RealtimeClient {
     for (const handler of this.statusHandlers) handler(next);
   }
 
+  private logDev(message: string): void {
+    if (import.meta.env.DEV) console.warn(message);
+  }
+
+  private clearRetryTimer(): void {
+    if (this.retryTimer !== null) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
+  }
+
   private ensureConnected(): void {
-    if (this.retryTimer !== null || this.socket !== null) return;
-    void this.connect();
+    if (this.socket !== null || this.retryTimer !== null) return;
+    if (this.connecting) return;
+    this.connectPromise = this.connect();
+    void this.connectPromise;
   }
 
   private async connect(): Promise<void> {
-    this.setStatus(this.retryAttempt > 0 ? "reconnecting" : "connecting");
-    let ticket: WsTicket;
+    if (this.connecting) return;
+    this.connecting = true;
     try {
-      ticket = await apiFetch<WsTicket>(TICKETS_PATH, { method: "POST" });
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 401) {
-        this.setStatus("offline"); // signed out: stop until next subscribe
+      this.setStatus(this.retryAttempt > 0 ? "reconnecting" : "connecting");
+      let ticket: WsTicket;
+      try {
+        ticket = await apiFetch<WsTicket>(TICKETS_PATH, { method: "POST" });
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 401) {
+          this.setStatus("offline");
+          return;
+        }
+        this.scheduleRetry();
         return;
       }
-      this.scheduleRetry();
-      return;
+      const socket = new WebSocket(wsUrl(ticket.ticket));
+      this.socket = socket;
+      socket.onopen = () => {
+        this.retryAttempt = 0;
+        this.setStatus("open");
+        this.armWatchdog();
+        this.resubscribe();
+      };
+      socket.onmessage = (event: MessageEvent) => this.handleMessage(event);
+      socket.onclose = (event: CloseEvent) => this.handleClose(event);
+    } finally {
+      this.connecting = false;
+      this.connectPromise = null;
     }
-    const socket = new WebSocket(wsUrl(ticket.ticket));
-    this.socket = socket;
-    socket.onopen = () => {
-      this.retryAttempt = 0;
-      this.setStatus("open");
-      this.armWatchdog();
-      this.resubscribe();
-    };
-    socket.onmessage = (event: MessageEvent) => this.handleMessage(event);
-    socket.onclose = (event: CloseEvent) => this.handleClose(event);
   }
 
   private handleMessage(event: MessageEvent): void {
+    const raw = typeof event.data === "string" ? event.data : String(event.data);
+    if (raw.length > MAX_FRAME_CHARS) return;
     this.armWatchdog();
     let frame: ServerEnvelope;
     try {
-      frame = JSON.parse(String(event.data)) as ServerEnvelope;
+      frame = JSON.parse(raw) as ServerEnvelope;
     } catch {
       return;
     }
-    if (typeof frame?.type !== "string" || typeof frame?.data !== "object") {
-      return;
-    }
+    if (typeof frame !== "object" || frame === null) return;
+    if (typeof frame.type !== "string") return;
+    if (frame.data === null || typeof frame.data !== "object") return;
     switch (frame.type) {
       case "ping.v1":
         this.send("pong.v1");
         break;
       case "ready.v1": {
         const ready = frame.data as ReadyData;
-        if (typeof ready.heartbeat_seconds === "number") {
-          this.watchdogMs = ready.heartbeat_seconds * 1000 + WATCHDOG_GRACE_MS;
+        const hb = ready.heartbeat_seconds;
+        if (typeof hb === "number" && Number.isFinite(hb) && hb >= 5 && hb <= 120) {
+          this.watchdogMs = hb * 1000 + WATCHDOG_GRACE_MS;
+        } else {
+          this.watchdogMs = DEFAULT_WATCHDOG_MS;
         }
         break;
       }
@@ -195,11 +211,12 @@ class RealtimeClient {
         if (code === "FORBIDDEN" && typeof channel === "string") {
           this.denied.add(channel);
         }
-        console.warn(`[realtime] server error: ${String(code)}`, frame.data);
+        // TODO: Surface connection issues via a Feedback banner.
+        this.logDev("[realtime] server error");
         break;
       }
       default:
-        break; // unknown types are ignored by contract (never crash)
+        break;
     }
   }
 
@@ -216,12 +233,29 @@ class RealtimeClient {
   private handleClose(event: CloseEvent): void {
     this.socket = null;
     this.clearWatchdog();
-    if (event.code === CLOSE_UNAUTHORIZED || event.code === CLOSE_FORBIDDEN) {
-      console.warn(`[realtime] socket closed by server: ${event.code}`);
-    }
+    this.connecting = false;
+    this.connectPromise = null;
     if (this.manualClose) {
       this.manualClose = false;
       this.setStatus("idle");
+      return;
+    }
+    if (event.code === CLOSE_UNAUTHORIZED) {
+      this.retryAttempt = 0;
+      this.clearRetryTimer();
+      this.setStatus("offline");
+      // TODO: Surface expired session via a Feedback banner.
+      this.logDev("[realtime] socket closed while unauthorized");
+      return;
+    }
+    if (event.code === CLOSE_FORBIDDEN) {
+      this.setStatus("offline");
+      // TODO: Surface denied access via a Feedback banner.
+      this.logDev("[realtime] socket closed after forbidden response");
+      const retryable = [...this.handlers.keys()].some((c) => !this.denied.has(c));
+      if (retryable && this.retryTimer === null && this.handlers.size > 0) {
+        this.scheduleRetry(MAX_RETRY_MS);
+      }
       return;
     }
     if (this.handlers.size === 0) {
@@ -231,15 +265,16 @@ class RealtimeClient {
     this.scheduleRetry();
   }
 
-  private scheduleRetry(): void {
-    const backoff = Math.min(MAX_RETRY_MS, BASE_RETRY_MS * 2 ** this.retryAttempt);
+  private scheduleRetry(delayOverride?: number): void {
+    const base =
+      delayOverride ?? Math.min(MAX_RETRY_MS, BASE_RETRY_MS * 2 ** this.retryAttempt);
     const jitter = 0.5 + Math.random() * 0.5;
     this.retryAttempt += 1;
     this.setStatus("reconnecting");
     this.retryTimer = setTimeout(() => {
       this.retryTimer = null;
       void this.connect();
-    }, backoff * jitter);
+    }, base * jitter);
   }
 
   private resubscribe(): void {
@@ -249,6 +284,7 @@ class RealtimeClient {
   }
 
   private sendSubscribe(channel: string): void {
+    if (this.denied.has(channel)) return;
     this.send("subscribe.v1", { channel });
   }
 
@@ -260,9 +296,10 @@ class RealtimeClient {
 
   private armWatchdog(): void {
     this.clearWatchdog();
+    const clamped = Math.min(MAX_WATCHDOG_MS, Math.max(MIN_WATCHDOG_MS, this.watchdogMs));
     this.watchdogTimer = setTimeout(() => {
-      this.socket?.close(); // silent server: onclose drives the reconnect
-    }, this.watchdogMs);
+      this.socket?.close();
+    }, clamped);
   }
 
   private clearWatchdog(): void {
@@ -273,16 +310,18 @@ class RealtimeClient {
   }
 
   private teardown(): void {
-    if (this.retryTimer !== null) {
-      clearTimeout(this.retryTimer);
-      this.retryTimer = null;
-    }
+    this.clearRetryTimer();
     this.clearWatchdog();
+    this.denied.clear();
     this.retryAttempt = 0;
+    this.connecting = false;
+    this.connectPromise = null;
     if (this.socket !== null) {
       this.manualClose = true;
       this.socket.close();
       this.socket = null;
+    } else {
+      this.manualClose = false;
     }
     this.setStatus("idle");
   }
@@ -290,10 +329,7 @@ class RealtimeClient {
 
 export const realtime = new RealtimeClient();
 
-export function subscribeChannel(
-  channel: string,
-  handler: ChannelHandler,
-): () => void {
+export function subscribeChannel(channel: string, handler: ChannelHandler): () => void {
   return realtime.subscribe(channel, handler);
 }
 

@@ -83,7 +83,8 @@ export function useRiseIn<T extends HTMLElement>(
 }
 
 // Staggered entrance for list/grid children marked data-rise, replayed
-// whenever `trigger` changes (e.g. a query result arrives after mount).
+// whenever `trigger` changes. Pass a stable primitive such as list length
+// instead of the whole query object to avoid replaying on each refetch.
 export function useRiseOn<T extends HTMLElement>(
   trigger: unknown,
 ): RefObject<T | null> {

@@ -1,6 +1,10 @@
 import type { ReactElement } from "react";
-import { Navigate, Route, Routes, useParams } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { FiHome } from "react-icons/fi";
 import { PageShell } from "./core/components/PageShell.tsx";
+import { BentoCard } from "./core/components/BentoCard.tsx";
+import { Button } from "./core/components/Button.tsx";
+import { EmptyState } from "./core/components/Feedback.tsx";
 import { ChangePasswordPage } from "./auth/change-password-page.tsx";
 import { ForgotPasswordPage } from "./auth/forgot-password-page.tsx";
 import { LoginPage } from "./auth/page.tsx";
@@ -22,7 +26,30 @@ import { OrgsPage } from "./orgs/page.tsx";
 
 function LegacyDashboardRedirect(): ReactElement {
   const { "*": splat = "" } = useParams();
-  return <Navigate to={`/manage/${splat}`} replace />;
+  const { search, hash } = useLocation();
+  return <Navigate to={`/manage/${splat}${search}${hash}`} replace />;
+}
+
+function NotFoundPage(): ReactElement {
+  return (
+    <div className="col-span-1 md:col-span-6 lg:col-span-12">
+      <BentoCard>
+        <EmptyState
+          title="Không tìm thấy trang"
+          message="Trang bạn tìm không tồn tại hoặc đã được di chuyển."
+        />
+        <div className="mt-3">
+          <Button
+            to="/"
+            variant="primary"
+            icon={<FiHome className="h-4 w-4" aria-hidden="true" />}
+          >
+            Về trang chủ
+          </Button>
+        </div>
+      </BentoCard>
+    </div>
+  );
 }
 
 export default function App(): ReactElement {
@@ -42,7 +69,7 @@ export default function App(): ReactElement {
           <Route path="events" element={<DashboardEventsPage />} />
           <Route path="members" element={<DashboardMembersPage />} />
           <Route path="settings" element={<DashboardSettingsPage />} />
-          <Route path="*" element={<Navigate to="overview" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="login" element={<LoginPage />} />
@@ -52,7 +79,7 @@ export default function App(): ReactElement {
         <Route path="reset-password" element={<ResetPasswordPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="change-password" element={<ChangePasswordPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

@@ -2,16 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import type { PointerEvent, ReactElement } from "react";
 import { FiCheck, FiX, FiZoomIn } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
+import { MAX_IMAGE_BYTES } from "../schemas.ts";
 
 const VIEW_W = 520;
 const EXPORT_CAP = 2048;
-const ASPECTS: { label: string; value: number }[] = [
-  { label: "1:1", value: 1 },
-  { label: "4:3", value: 4 / 3 },
-  { label: "16:9", value: 16 / 9 },
-  { label: "3:1", value: 3 },
-];
-const OUT_MIMES = ["image/jpeg", "image/png", "image/webp"];
+const ASPECTS: { label: string; value: number }[] = [{ label: "1:1", value: 1 }, { label: "4:3", value: 4 / 3 }, { label: "16:9", value: 16 / 9 }, { label: "3:1", value: 3 }];
 
 interface ImageCropperProps {
   file: File;
@@ -20,9 +15,14 @@ interface ImageCropperProps {
   onCancel: () => void;
 }
 
-interface Offset {
-  x: number;
-  y: number;
+interface Offset { x: number; y: number; }
+
+function isGifFile(file: File): boolean { return file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif"); }
+
+function pickOutputMime(file: File): string {
+  if (file.type === "image/png") return "image/png";
+  if (file.type === "image/webp") return "image/webp";
+  return "image/jpeg";
 }
 
 export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCropperProps): ReactElement {
@@ -31,41 +31,30 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
   const dragRef = useRef<{ px: number; py: number; origin: Offset } | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [tooLarge, setTooLarge] = useState(false);
   const [aspect, setAspect] = useState(defaultAspect);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 });
   const viewH = Math.round(VIEW_W / aspect);
+  const gif = isGifFile(file);
 
   useEffect(() => {
     let cancelled = false;
+    imgRef.current = null;
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = () => {
-      if (cancelled) return;
-      imgRef.current = img;
-      setReady(true);
-    };
-    img.onerror = () => {
-      if (!cancelled) setFailed(true);
-    };
+    img.onload = () => { if (cancelled) return; imgRef.current = img; setReady(true); };
+    img.onerror = () => { if (!cancelled) setFailed(true); };
     img.src = url;
-    return () => {
-      cancelled = true;
-      URL.revokeObjectURL(url);
-    };
+    return () => { cancelled = true; URL.revokeObjectURL(url); imgRef.current = null; };
   }, [file]);
 
-  function fitScale(img: HTMLImageElement): number {
-    return Math.max(VIEW_W / img.naturalWidth, viewH / img.naturalHeight);
-  }
+  function fitScale(img: HTMLImageElement): number { return Math.max(VIEW_W / img.naturalWidth, viewH / img.naturalHeight); }
 
   function clamp(next: Offset, scale: number, img: HTMLImageElement): Offset {
     const dw = img.naturalWidth * scale;
     const dh = img.naturalHeight * scale;
-    return {
-      x: Math.min(0, Math.max(VIEW_W - dw, next.x)),
-      y: Math.min(0, Math.max(viewH - dh, next.y)),
-    };
+    return { x: Math.min(0, Math.max(VIEW_W - dw, next.x)), y: Math.min(0, Math.max(viewH - dh, next.y)) };
   }
 
   useEffect(() => {
@@ -129,7 +118,7 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
 
   async function apply(): Promise<void> {
     const img = imgRef.current;
-    if (!img) return;
+    if (!img || gif) return;
     const scale = fitScale(img) * zoom;
     const sw = VIEW_W / scale;
     const sh = viewH / scale;
@@ -138,9 +127,10 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
     out.width = Math.max(1, Math.round(sw * cap));
     out.height = Math.max(1, Math.round(sh * cap));
     out.getContext("2d")?.drawImage(img, -offset.x / scale, -offset.y / scale, sw, sh, 0, 0, out.width, out.height);
-    const mime = OUT_MIMES.includes(file.type) ? file.type : "image/png";
+    const mime = pickOutputMime(file);
     const blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, mime, 0.92));
     if (!blob) return;
+    if (blob.size > MAX_IMAGE_BYTES) { setTooLarge(true); return; }
     const ext = mime === "image/png" ? ".png" : mime === "image/webp" ? ".webp" : ".jpg";
     const name = file.name.replace(/\.[^.]+$/, "") + ext;
     onApply(new File([blob], name, { type: mime }));
@@ -164,6 +154,16 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
       <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
         Cắt ảnh — kéo để chọn khung, trượt để thu phóng.
       </p>
+      {gif && (
+        <p role="alert" className="text-xs text-amber-600 dark:text-amber-400">
+          Ảnh GIF sẽ mất ảnh động khi cắt. Hãy giữ nguyên gốc để dùng GIF.
+        </p>
+      )}
+      {tooLarge && (
+        <p role="alert" className="text-xs text-red-600 dark:text-red-400">
+          Ảnh sau khi cắt vẫn vượt quá 10MB. Hãy thu phóng nhỏ hơn.
+        </p>
+      )}
       <canvas
         ref={canvasRef}
         width={VIEW_W}
@@ -177,13 +177,7 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
       />
       <div className="flex flex-wrap items-center gap-2">
         {ASPECTS.map((preset) => (
-          <Button
-            key={preset.label}
-            type="button"
-            variant={aspect === preset.value ? "primary" : "secondary"}
-            aria-pressed={aspect === preset.value}
-            onClick={() => setAspect(preset.value)}
-          >
+          <Button key={preset.label} type="button" variant={aspect === preset.value ? "primary" : "secondary"} aria-pressed={aspect === preset.value} onClick={() => setAspect(preset.value)}>
             {preset.label}
           </Button>
         ))}
@@ -203,21 +197,10 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
         />
       </label>
       <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="primary"
-          disabled={!ready}
-          onClick={() => void apply()}
-          icon={<FiCheck className="h-4 w-4" aria-hidden="true" />}
-        >
+        <Button type="button" variant="primary" disabled={!ready || gif} onClick={() => void apply()} icon={<FiCheck className="h-4 w-4" aria-hidden="true" />}>
           Áp dụng
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onCancel}
-          icon={<FiX className="h-4 w-4" aria-hidden="true" />}
-        >
+        <Button type="button" variant="secondary" onClick={onCancel} icon={<FiX className="h-4 w-4" aria-hidden="true" />}>
           Giữ nguyên gốc
         </Button>
       </div>

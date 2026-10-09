@@ -1,4 +1,5 @@
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
@@ -21,6 +22,8 @@ import {
   type CreateOrgInput,
   type DashboardOrg,
   type MediaRole,
+  type OrgListPage,
+  type OrgListParams,
   type OrgMedia,
   type UpdateOrgInput,
 } from "./api.ts";
@@ -28,14 +31,16 @@ import { dashboardKeys } from "./keys.ts";
 
 export function useMyOrgs(
   includeDeleted = false,
+  params: OrgListParams = {},
   enabled = true,
-): UseQueryResult<DashboardOrg[], ApiError> {
+): UseQueryResult<OrgListPage, ApiError> {
   return useQuery({
-    queryKey: dashboardKeys.myOrgs(includeDeleted),
-    queryFn: () => listMyOrgs(includeDeleted),
+    queryKey: dashboardKeys.myOrgs(includeDeleted, params),
+    queryFn: () => listMyOrgs(includeDeleted, params),
     staleTime: 30_000,
     retry: 1,
     refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData,
     enabled,
   });
 }
@@ -94,13 +99,17 @@ export function useRestoreOrg(): UseMutationResult<DashboardOrg, ApiError, strin
   });
 }
 
-export function useOrgMedia(orgId: string): UseQueryResult<OrgMedia[], ApiError> {
+export function useOrgMedia(
+  orgId: string,
+  enabled = true,
+): UseQueryResult<OrgMedia[], ApiError> {
   return useQuery({
     queryKey: dashboardKeys.orgMedia(orgId),
     queryFn: () => listOrgMedia(orgId),
     staleTime: 30_000,
     retry: 1,
     refetchOnWindowFocus: false,
+    enabled,
   });
 }
 

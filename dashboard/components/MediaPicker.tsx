@@ -175,7 +175,7 @@ export function MediaPicker({ items, disabled, allowRoles = true, hint, onAdd, o
                 key={`${preview.item.file.name}-${index}`}
                 className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-2 dark:border-zinc-800"
               >
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {preview.item.file.type.startsWith("video") ? (
                     <video src={preview.url} preload="metadata" className="h-12 w-16 shrink-0 rounded-lg bg-zinc-950 object-cover" />
                   ) : (

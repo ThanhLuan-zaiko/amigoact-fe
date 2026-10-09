@@ -125,6 +125,7 @@ Rules:
    /* @theme tokens for brand #aff092 + semantic colors only. No component CSS. */
    ```
    No additional `.css` files. No `@apply` component classes except documented tokens.
+   Single allowed exception: one global slim-scrollbar block in `index.css` (Firefox `scrollbar-width`/`scrollbar-color` plus WebKit pseudo-elements, zinc tokens only, both themes covered). Feature code never hand-writes scrollbar CSS; every scrollable pane inherits it.
 2. Borders, never shadows. Forbidden everywhere (including arbitrary values and inline styles):
    - `shadow-*`, `drop-shadow-*`, `box-shadow`, `ring-*` (ring renders as shadow), `text-shadow`.
    - Use instead: `border`, `border-{color}`, `divide-*`, `outline-*` for focus only.

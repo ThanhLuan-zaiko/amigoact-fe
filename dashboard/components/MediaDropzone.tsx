@@ -79,7 +79,7 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
     setRole.mutate({ mediaId, role }, { onError: (e) => setServerCode(e instanceof ApiError ? e.code : "REQUEST_FAILED") });
   }
   return (
-    <div className="mt-3 flex flex-col gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
+    <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
       <MediaPicker
         items={pending}
         disabled={upload.isPending}
@@ -139,7 +139,8 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
         {gallery.data && total === 0 && <EmptyState title="Chưa có tệp nào" message="Ảnh và video của tổ chức sẽ hiện ở đây." />}
         {total > 0 && (
           <>
-            <ul ref={listRef} className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {/* Single column on phones so role buttons never squeeze the dialog wider. */}
+            <ul ref={listRef} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {shown.map((item) => (
                 <li key={item.id} data-rise className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-2 dark:border-zinc-800">
                   <div className="relative">

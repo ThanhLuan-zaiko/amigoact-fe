@@ -1,96 +1,106 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { ReactElement } from "react";
-import { FiImage, FiPlusCircle, FiTrash2, FiUsers } from "react-icons/fi";
+import { FiPlusCircle, FiTrash2, FiUsers } from "react-icons/fi";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
+import { Pagination } from "../../core/components/Pagination.tsx";
 import { ApiError } from "../../core/api.ts";
 import { useRiseOn } from "../../core/motion.ts";
 import { useSession } from "../../auth/hooks.ts";
 import { useMyOrgs } from "../hooks.ts";
-import { ORG_KIND_LABELS, toVietnameseDashboardMessage } from "../messages.tsx";
-import type { DashboardOrg } from "../api.ts";
-import { MediaDropzone } from "./MediaDropzone.tsx";
-import { OrgCardActions } from "./OrgCardActions.tsx";
-import { OrgEditCard } from "./OrgEditCard.tsx";
+import { toVietnameseDashboardMessage } from "../messages.tsx";
+import { OrgListToolbar, type OrgSort } from "./OrgListToolbar.tsx";
+import { OrgMediaModal } from "./OrgMediaModal.tsx";
+import { OrgRow } from "./OrgRow.tsx";
 
-function OrgRow({
-  org,
-  editing,
-  expanded,
-  compact,
-  canManage,
-  onEdit,
-  onToggleMedia,
-}: {
-  org: DashboardOrg;
-  editing: boolean;
-  expanded: boolean;
-  compact: boolean;
-  canManage: boolean;
-  onEdit: () => void;
-  onToggleMedia: () => void;
-}): ReactElement {
-  return (
-    <li
-      data-rise
-      className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
-    >
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            {org.name}
-          </p>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            {ORG_KIND_LABELS[org.kind] ?? org.kind} · @{org.slug} · {org.member_count} thành viên · {org.event_count} sự kiện
-          </p>
-          {org.description && (
-            <p className="mt-1 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
-              {org.description}
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {!compact && (
-            <>
-              <Button
-                to="/manage/overview"
-                variant="secondary"
-                icon={<FiUsers className="h-4 w-4" aria-hidden="true" />}
-              >
-                Quản lý
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={onToggleMedia}
-                aria-expanded={expanded}
-                aria-pressed={expanded}
-                icon={<FiImage className="h-4 w-4" aria-hidden="true" />}
-              >
-                Tệp
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
-      <OrgCardActions org={org} isEditing={editing} onEdit={onEdit} />
-      {editing && <OrgEditCard org={org} onDone={onEdit} />}
-      {expanded && <MediaDropzone orgId={org.id} canManage={canManage} />}
-    </li>
-  );
-}
+const PAGE_SIZE = 5;
+const TRASH_LIMIT = 100;
+const SORTS: string[] = ["newest", "name", "members"];
 
 export function OrgListCard(): ReactElement {
-  const orgs = useMyOrgs(false);
-  const trash = useMyOrgs(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const session = useSession();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const listRef = useRiseOn<HTMLUListElement>(orgs.data);
-  const trashRef = useRiseOn<HTMLUListElement>(trash.data);
-  const live = (orgs.data ?? []).filter((org) => org.deleted_at === null);
-  const trashed = (trash.data ?? []).filter((org) => org.deleted_at !== null);
+
+  // Filter state lives in the URL so every view is deep-linkable (§7.9).
+  const query = searchParams.get("q") ?? "";
+  const bucket = searchParams.get("status") ?? "all";
+  const sortParam = searchParams.get("sort") ?? "newest";
+  const sort: OrgSort = SORTS.includes(sortParam) ? (sortParam as OrgSort) : "newest";
+  const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
+  const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+  const mediaOrgId = searchParams.get("media");
+
+  const updateParams = useCallback(
+    (patch: Record<string, string | null>, replace = false): void => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          for (const [key, value] of Object.entries(patch)) {
+            if (value === null || value === "") next.delete(key);
+            else next.set(key, value);
+          }
+          return next;
+        },
+        { replace },
+      );
+    },
+    [setSearchParams],
+  );
+
+  // Live list is server-driven; trash and modal lookup fetch wide instead.
+  const orgs = useMyOrgs(false, {
+    q: query || undefined,
+    status: bucket === "all" ? undefined : bucket,
+    sort,
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+  });
+  const trash = useMyOrgs(true, { limit: TRASH_LIMIT });
+  const allOrgs = useMyOrgs(false, { limit: TRASH_LIMIT }, mediaOrgId !== null);
+
+  const items = orgs.data?.items ?? [];
+  const total = orgs.data?.total ?? 0;
+  const counts: [string, number][] = (orgs.data?.counts ?? []).map(
+    (entry): [string, number] => [entry.bucket, entry.count],
+  );
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const current = Math.min(page, totalPages);
+  const outOfRange = orgs.data !== undefined && page > totalPages;
+  const filtering = query.trim() !== "" || bucket !== "all";
+  const trashed = (trash.data?.items ?? []).filter((org) => org.deleted_at !== null);
+  const mediaOrg = mediaOrgId === null ? null : (allOrgs.data?.items.find((org) => org.id === mediaOrgId) ?? null);
+
+  const listRef = useRiseOn<HTMLUListElement>(`${current}:${items.length}`);
+  const trashRef = useRiseOn<HTMLUListElement>(trashed.length);
+
+  // Pull an out-of-range ?page= back once totals arrive.
+  useEffect(() => {
+    if (orgs.data !== undefined && page > totalPages) {
+      updateParams({ page: totalPages > 1 ? String(totalPages) : null }, true);
+    }
+  }, [orgs.data, page, totalPages, updateParams]);
+
+  // Drop a stale ?media= param once the lookup has loaded without that org.
+  useEffect(() => {
+    if (mediaOrgId !== null && allOrgs.data !== undefined && mediaOrg === null) {
+      updateParams({ media: null }, true);
+    }
+  }, [mediaOrgId, allOrgs.data, mediaOrg, updateParams]);
+
+  const closeMedia = useCallback((): void => {
+    // Back closes the modal; a direct deep link just clears the param instead.
+    if (location.key !== "default") navigate(-1);
+    else updateParams({ media: null }, true);
+  }, [location.key, navigate, updateParams]);
+
+  function resetFilters(): void {
+    updateParams({ q: null, status: null, sort: null, page: null }, true);
+  }
 
   return (
     <>
@@ -101,6 +111,11 @@ export function OrgListCard(): ReactElement {
             <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
               Tổ chức của tôi
             </h3>
+            {orgs.data && total > 0 && (
+              <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                {total}
+              </span>
+            )}
           </div>
           <Button
             to="/manage/orgs/create"
@@ -110,6 +125,18 @@ export function OrgListCard(): ReactElement {
             Tạo mới
           </Button>
         </div>
+        {(total > 0 || filtering) && (
+          <OrgListToolbar
+            query={query}
+            onQuery={(value) => updateParams({ q: value || null, page: null }, true)}
+            bucket={bucket}
+            onBucket={(key) => updateParams({ status: key === "all" ? null : key, page: null })}
+            counts={counts}
+            sort={sort}
+            onSort={(key) => updateParams({ sort: key === "newest" ? null : key, page: null })}
+            total={total}
+          />
+        )}
         <div className="mt-3" aria-live="polite" aria-busy={orgs.isPending}>
           {orgs.isPending && <LoadingState label="Đang tải danh sách tổ chức…" />}
           {orgs.isError && (
@@ -120,7 +147,7 @@ export function OrgListCard(): ReactElement {
               )}
             />
           )}
-          {orgs.data && live.length === 0 && (
+          {orgs.data && !filtering && total === 0 && (
             <>
               <EmptyState
                 title="Chưa có tổ chức nào"
@@ -137,23 +164,47 @@ export function OrgListCard(): ReactElement {
               </div>
             </>
           )}
-          {live.length > 0 && (
-            <ul ref={listRef} className="flex flex-col gap-3">
-              {live.map((org) => (
-                <OrgRow
-                  key={org.id}
-                  org={org}
-                  editing={editingId === org.id}
-                  expanded={expandedId === org.id}
-                  compact={false}
-                  canManage={org.owner_id === session.data?.id}
-                  onEdit={() => setEditingId((current) => (current === org.id ? null : org.id))}
-                  onToggleMedia={() =>
-                    setExpandedId((current) => (current === org.id ? null : org.id))
-                  }
+          {outOfRange && <LoadingState label="Đang tải danh sách tổ chức…" />}
+          {orgs.data && filtering && total === 0 && !outOfRange && (
+            <EmptyState
+              title="Không có tổ chức phù hợp"
+              message="Thử từ khóa khác hoặc xóa bộ lọc để xem toàn bộ."
+              actionLabel="Xóa bộ lọc"
+              onAction={resetFilters}
+            />
+          )}
+          {!outOfRange && items.length > 0 && (
+            <>
+              <ul ref={listRef} className="flex flex-col gap-3">
+                {items.map((org) => (
+                  <OrgRow
+                    key={org.id}
+                    org={org}
+                    editing={editingId === org.id}
+                    compact={false}
+                    onEdit={() => setEditingId((currentId) => (currentId === org.id ? null : org.id))}
+                    onOpenMedia={() => updateParams({ media: org.id })}
+                  />
+                ))}
+              </ul>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {`Trang ${current} / ${totalPages} · ${total} tổ chức`}
+                </p>
+                <Pagination
+                  page={current}
+                  totalPages={totalPages}
+                  onPage={(n) => updateParams({ page: n > 1 ? String(n) : null })}
                 />
-              ))}
-            </ul>
+              </div>
+            </>
+          )}
+          {filtering && items.length > 0 && (
+            <div className="mt-3">
+              <Button type="button" variant="ghost" onClick={resetFilters}>
+                Xóa bộ lọc
+              </Button>
+            </div>
           )}
         </div>
       </BentoCard>
@@ -174,15 +225,20 @@ export function OrgListCard(): ReactElement {
                 key={org.id}
                 org={org}
                 editing={false}
-                expanded={false}
                 compact={true}
-                canManage={false}
                 onEdit={() => {}}
-                onToggleMedia={() => {}}
+                onOpenMedia={() => {}}
               />
             ))}
           </ul>
         </BentoCard>
+      )}
+      {mediaOrg && (
+        <OrgMediaModal
+          org={mediaOrg}
+          canManage={mediaOrg.owner_id === session.data?.id}
+          onClose={closeMedia}
+        />
       )}
     </>
   );

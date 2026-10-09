@@ -41,6 +41,12 @@ export const MEDIA_ROLE_LABELS: Record<string, string> = {
   logo: "Logo",
 };
 
+export const ORG_STATUS_LABELS: Record<string, string> = {
+  active: "Hoạt động",
+  pending: "Chờ duyệt",
+  suspended: "Tạm khóa",
+};
+
 export function toVietnameseDashboardMessage(code: string): string {
   return MESSAGES[code] ?? MESSAGES["REQUEST_FAILED"];
 }

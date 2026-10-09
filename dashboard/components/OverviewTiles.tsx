@@ -8,8 +8,10 @@ import { useMyOrgs } from "../hooks.ts";
 import { ORG_KIND_LABELS } from "../messages.tsx";
 
 export function OverviewTiles(): ReactElement {
-  const orgs = useMyOrgs();
-  const items = orgs.data ?? [];
+  // Wide fetch: tiles aggregate over every org, not one pager slice.
+  const orgs = useMyOrgs(false, { limit: 100 });
+  const items = orgs.data?.items ?? [];
+  const total = orgs.data?.total ?? 0;
   const totalMembers = items.reduce((sum, org) => sum + org.member_count, 0);
   const totalEvents = items.reduce((sum, org) => sum + org.event_count, 0);
 
@@ -33,7 +35,7 @@ export function OverviewTiles(): ReactElement {
           </div>
         ) : (
           <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
-            {items.length}
+            {total}
           </p>
         )}
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
@@ -80,7 +82,7 @@ export function OverviewTiles(): ReactElement {
             Xem danh sách
           </Button>
         </div>
-        {orgs.data && orgs.data.length === 0 && (
+        {orgs.data && total === 0 && (
           <div className="mt-3">
             <EmptyState
               title="Chưa có tổ chức nào"
@@ -88,9 +90,9 @@ export function OverviewTiles(): ReactElement {
             />
           </div>
         )}
-        {orgs.data && orgs.data.length > 0 && (
+        {orgs.data && total > 0 && (
           <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-            Mới nhất: {orgs.data[0].name} · {ORG_KIND_LABELS[orgs.data[0].kind] ?? orgs.data[0].kind}
+            Mới nhất: {items[0].name} · {ORG_KIND_LABELS[items[0].kind] ?? items[0].kind}
           </p>
         )}
       </BentoCard>

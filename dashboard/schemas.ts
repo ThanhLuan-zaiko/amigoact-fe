@@ -1,6 +1,13 @@
-import type { CreateOrgInput, MediaRole, OrgKind } from "./api.ts";
+import type { CreateOrgInput, DashboardOrg, MediaRole, OrgKind } from "./api.ts";
 
 export const ORG_KINDS: OrgKind[] = ["organization", "club", "group", "business"];
+
+// Pending legal review wins over the base status; anything unexpected
+// falls through so the toolbar can surface it as its own filter chip.
+export function orgStatusBucket(org: DashboardOrg): string {
+  if (org.legal_status === "pending") return "pending";
+  return org.status || "active";
+}
 
 export interface PendingMedia {
   file: File;

@@ -3,9 +3,14 @@
 ## 1. Trang `/manage/orgs`
 
 `OrgListCard.tsx` hiển thị hai khối: `Tổ chức của tôi` (đang sống) và
-`Thùng rác` (đã xóa mềm, có ghi chú khôi phục/xóa cứng). Lấy qua
-`useMyOrgs(false)` và `useMyOrgs(true)` (`?include_deleted=true`).
-Mỗi dòng là `OrgRow`: tên, loại, `@slug`, số thành viên/sự kiện, mô tả.
+`Thùng rác` (đã xóa mềm, có ghi chú khôi phục/xóa cứng). Khối đang sống
+lấy qua `useMyOrgs(false, { q, status, sort, limit, offset })` — tìm kiếm,
+lọc, sắp xếp và phân trang chạy phía server (`GET /orgs/mine` trả envelope
+`{items, total, counts}`); `total` cho phân trang, `counts` cho chip lọc.
+Mọi trạng thái lọc nằm trên URL (`?q&status&sort&page&media`) nên
+deep-link được. Thùng rác và tra cứu modal dùng thêm một query rộng
+(`limit: 100`). Mỗi dòng là `OrgRow`: tên, loại, `@slug`, số thành
+viên/sự kiện, mô tả.
 
 ## 2. CRUD trên từng dòng
 
@@ -38,7 +43,9 @@ nguyên gốc` để bỏ cắt. Video không cắt và chỉ ở vai trò `Thư
 backend trả `INVALID_MEDIA_ROLE` nếu ép bìa/logo lên video hoặc người
 không phải chủ org đặt vai trò.
 
-Mỗi dòng có nút `Tệp` mở rộng dropzone ngay dưới (không cần route mới):
+Mỗi dòng có nút `Tệp` mở modal `OrgMediaModal.tsx` (`?media=<id>`, đóng
+bằng Back khi mở từ list, `Esc`/bấm nền cũng đóng; dialog đứng yên, chỉ
+vùng thư viện bên trong cuộn):
 - Kéo thả hoặc bấm để chọn nhiều file (`accept="image/*,video/*"`); file
   vào hàng chờ `MediaPicker` (chọn vai trò Thường/Bìa/Logo, cắt ảnh tùy
   chọn, gỡ) — bấm `Tải lên N tệp` mới upload nối tiếp. File lỗi dừng lại,
@@ -47,7 +54,7 @@ Mỗi dòng có nút `Tệp` mở rộng dropzone ngay dưới (không cần rou
   không web-safe (HEIC, TIFF, BMP…) sang JPEG/PNG nên gallery luôn
   hiển thị được; file đó không cắt được phía client (browser không
   decode) nhưng vẫn upload nguyên gốc.
-- Preview lưới `2 cột` (mobile) / `3 cột`: `img` cho ảnh, `video`
+- Preview lưới `1 cột` (mobile) / `3 cột` (`sm:` trở lên): `img` cho ảnh, `video`
   (`controls`, `preload="metadata"`) cho video. URL tệp ghép bằng
   `orgMediaUrl()` (`apiBaseUrl()` + `file_url` tương đối từ backend).
 - Chủ org (`canManage` = `owner_id === session.id`) thấy trên ảnh nút

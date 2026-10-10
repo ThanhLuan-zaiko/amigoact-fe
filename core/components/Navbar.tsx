@@ -20,6 +20,7 @@ import { expandPanel } from "../motion.ts";
 import { useLogout, useSession } from "../../auth/hooks.ts";
 import { AccountMenu } from "./AccountMenu.tsx";
 import { Button } from "./Button.tsx";
+import { NotificationBell } from "./NotificationBell.tsx";
 import { ThemeToggle } from "./ThemeToggle.tsx";
 
 interface NavEntry {
@@ -133,6 +134,7 @@ export function Navbar(): ReactElement {
             </Button>
           )}
           <div className="flex items-center gap-1 rounded-full border border-zinc-200 bg-white p-1 md:contents dark:border-zinc-800 dark:bg-zinc-950">
+            {profile && <NotificationBell userId={profile.id} />}
             <ThemeToggle />
             {profile ? (
               <AccountMenu />

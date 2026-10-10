@@ -19,6 +19,19 @@ export interface DashboardOrg {
   legal_rep_position: string | null;
   legal_status: string;
   status: string;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  legal_name: string | null;
+  license_number: string | null;
+  is_personal: boolean;
+  logo_media_id: string | null;
+  cover_media_id: string | null;
+  verified_at: string | null;
+  previous_slug: string | null;
   deleted_at: string | null;
   created_at: string;
 }
@@ -33,6 +46,14 @@ export interface CreateOrgInput {
   legal_rep_name?: string;
   legal_rep_id?: string;
   legal_rep_position?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  legal_name?: string;
+  license_number?: string;
 }
 
 export type OrgSortParam = "newest" | "name" | "members";
@@ -75,6 +96,15 @@ export interface UpdateOrgInput {
   name: string;
   description: string;
   join_policy?: JoinPolicy;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  address?: string | null;
+  city?: string | null;
+  country?: string | null;
+  legal_name?: string | null;
+  license_number?: string | null;
+  is_personal?: boolean;
 }
 
 export async function updateOrg(id: string, input: UpdateOrgInput): Promise<DashboardOrg> {
@@ -106,6 +136,9 @@ export interface OrgMedia {
   mime: string;
   size_bytes: number;
   file_url: string;
+  uploader_id: string | null;
+  original_name: string | null;
+  upload_status: string;
   created_at: string;
 }
 
@@ -175,6 +208,8 @@ export interface DashboardMember {
   email: string | null;
   role: MemberRole;
   status: MemberStatus;
+  invited_by: string | null;
+  invited_by_name: string | null;
   joined_at: string;
 }
 
@@ -199,6 +234,7 @@ export interface MyMembership {
   org_slug: string;
   role: MemberRole;
   status: MemberStatus;
+  invited_by_name: string | null;
   joined_at: string;
 }
 

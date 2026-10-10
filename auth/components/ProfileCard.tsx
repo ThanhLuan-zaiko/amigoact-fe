@@ -1,18 +1,36 @@
+import { useState } from "react";
 import type { ReactElement } from "react";
-import { FiCheckCircle, FiKey, FiLogOut, FiMail, FiPhone, FiUser } from "react-icons/fi";
+import { FiCalendar, FiCheckCircle, FiClock, FiEdit2, FiKey, FiLogOut, FiMail, FiMapPin, FiPhone, FiUser } from "react-icons/fi";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import { useLogoutAll, useSession } from "../hooks.ts";
+import { GENDER_LABELS } from "../messages.tsx";
+import { ProfileEditCard } from "./ProfileEditCard.tsx";
 
 function initialOf(name: string): string {
   const first = name.trim().charAt(0);
   return first ? first.toUpperCase() : "?";
 }
 
+function dateLabel(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("vi-VN");
+}
+
+function dateTimeLabel(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("vi-VN", { dateStyle: "medium", timeStyle: "short" });
+}
+
 export function ProfileCard(): ReactElement {
   const session = useSession();
   const logoutAll = useLogoutAll();
+  const [editing, setEditing] = useState(false);
   const profile = session.data ?? null;
 
   if (!profile) {
@@ -26,6 +44,10 @@ export function ProfileCard(): ReactElement {
       </BentoCard>
     );
   }
+
+  const dob = dateLabel(profile.date_of_birth);
+  const lastLogin = dateTimeLabel(profile.last_login_at);
+  const gender = profile.gender ? (GENDER_LABELS[profile.gender] ?? profile.gender) : "";
 
   return (
     <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-7">
@@ -51,43 +73,85 @@ export function ProfileCard(): ReactElement {
           </p>
         </div>
       </div>
-      <dl className="mt-4 flex flex-col gap-3 text-sm">
-        <div className="flex items-center gap-2">
-          <FiMail className="h-4 w-4 text-zinc-400" aria-hidden="true" />
-          <dt className="sr-only">Email</dt>
-          <dd className="text-zinc-900 dark:text-zinc-100">{profile.email}</dd>
-        </div>
-        <div className="flex items-center gap-2">
-          <FiPhone className="h-4 w-4 text-zinc-400" aria-hidden="true" />
-          <dt className="sr-only">Số điện thoại</dt>
-          <dd className="text-zinc-900 dark:text-zinc-100">{profile.phone}</dd>
-        </div>
-        <div className="flex items-center gap-2">
-          <FiUser className="h-4 w-4 text-zinc-400" aria-hidden="true" />
-          <dt className="sr-only">Họ và tên</dt>
-          <dd className="text-zinc-900 dark:text-zinc-100">{profile.full_name}</dd>
-        </div>
-      </dl>
-      <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
-        <Button
-          to="/change-password"
-          variant="secondary"
-          icon={<FiKey className="h-4 w-4" aria-hidden="true" />}
-        >
-          Đổi mật khẩu
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={logoutAll.isPending}
-          onClick={() => logoutAll.mutate()}
-          icon={<FiLogOut className="h-4 w-4" aria-hidden="true" />}
-        >
-          {logoutAll.isPending
-            ? "Đang đăng xuất…"
-            : "Đăng xuất khỏi mọi thiết bị"}
-        </Button>
-      </div>
+      {editing ? (
+        <ProfileEditCard profile={profile} onDone={() => setEditing(false)} />
+      ) : (
+        <>
+          <dl className="mt-4 flex flex-col gap-3 text-sm">
+            <div className="flex items-center gap-2">
+              <FiMail className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+              <dt className="sr-only">Email</dt>
+              <dd className="text-zinc-900 dark:text-zinc-100">{profile.email}</dd>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiPhone className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+              <dt className="sr-only">Số điện thoại</dt>
+              <dd className="text-zinc-900 dark:text-zinc-100">{profile.phone}</dd>
+            </div>
+            <div className="flex items-center gap-2">
+              <FiUser className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+              <dt className="sr-only">Họ và tên</dt>
+              <dd className="text-zinc-900 dark:text-zinc-100">{profile.full_name}</dd>
+            </div>
+            {dob && (
+              <div className="flex items-center gap-2">
+                <FiCalendar className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+                <dt className="sr-only">Ngày sinh</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{dob}</dd>
+              </div>
+            )}
+            {gender && gender !== "Không nêu" && (
+              <div className="flex items-center gap-2">
+                <FiUser className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+                <dt className="sr-only">Giới tính</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{gender}</dd>
+              </div>
+            )}
+            {profile.address && (
+              <div className="flex items-center gap-2">
+                <FiMapPin className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+                <dt className="sr-only">Địa chỉ</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{profile.address}</dd>
+              </div>
+            )}
+            {lastLogin && (
+              <div className="flex items-center gap-2">
+                <FiClock className="h-4 w-4 text-zinc-400" aria-hidden="true" />
+                <dt className="sr-only">Đăng nhập gần nhất</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{`Đăng nhập gần nhất: ${lastLogin}`}</dd>
+              </div>
+            )}
+          </dl>
+          <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={() => setEditing(true)}
+              icon={<FiEdit2 className="h-4 w-4" aria-hidden="true" />}
+            >
+              Chỉnh sửa hồ sơ
+            </Button>
+            <Button
+              to="/change-password"
+              variant="secondary"
+              icon={<FiKey className="h-4 w-4" aria-hidden="true" />}
+            >
+              Đổi mật khẩu
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={logoutAll.isPending}
+              onClick={() => logoutAll.mutate()}
+              icon={<FiLogOut className="h-4 w-4" aria-hidden="true" />}
+            >
+              {logoutAll.isPending
+                ? "Đang đăng xuất…"
+                : "Đăng xuất khỏi mọi thiết bị"}
+            </Button>
+          </div>
+        </>
+      )}
     </BentoCard>
   );
 }

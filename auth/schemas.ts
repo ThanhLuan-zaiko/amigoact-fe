@@ -202,6 +202,45 @@ export function validateResetField(
   return form.confirm !== form.password ? "PASSWORD_MISMATCH" : null;
 }
 
+export interface ProfileForm {
+  fullName: string;
+  dateOfBirth: string;
+  gender: string;
+  address: string;
+}
+
+export function validateProfileField(
+  form: ProfileForm,
+  key: keyof ProfileForm,
+): string | null {
+  if (key === "fullName") return validateNameValue(form.fullName);
+  if (key === "dateOfBirth") {
+    const dob = form.dateOfBirth.trim();
+    if (dob.length === 0) return null;
+    const parsed = new Date(`${dob}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) return "INVALID_DOB";
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (parsed > today || parsed.getFullYear() < 1900) return "INVALID_DOB";
+    return null;
+  }
+  if (key === "address") {
+    return form.address.trim().length > 255 ? "INVALID_ADDRESS" : null;
+  }
+  return null;
+}
+
+export function validateProfileForm(form: ProfileForm): FieldErrors {
+  const errors: FieldErrors = {};
+  const name = validateProfileField(form, "fullName");
+  if (name) errors.fullName = name;
+  const dob = validateProfileField(form, "dateOfBirth");
+  if (dob) errors.dateOfBirth = dob;
+  const address = validateProfileField(form, "address");
+  if (address) errors.address = address;
+  return errors;
+}
+
 export interface ChangeForm {
   current: string;
   next: string;

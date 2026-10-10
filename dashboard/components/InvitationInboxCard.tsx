@@ -102,6 +102,7 @@ export function InvitationInboxCard(): ReactElement | null {
                   <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
                     {`@${invite.org_slug}`}
                     {invitedLabel(invite.joined_at) ? ` · mời ${invitedLabel(invite.joined_at)}` : ""}
+                    {invite.invited_by_name ? ` · bởi ${invite.invited_by_name}` : ""}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">

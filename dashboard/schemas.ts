@@ -112,15 +112,67 @@ export function validateOrgForm(form: CreateOrgInput): OrgFieldErrors {
 export interface UpdateOrgForm {
   name: string;
   description: string;
+  email: string;
+  phone: string;
+  website: string;
+  address: string;
+  city: string;
+  country: string;
+  legal_name: string;
+  license_number: string;
 }
 
-export type UpdateFieldErrors = Partial<Record<"name" | "description", string>>;
+export type ContactKey = keyof Omit<UpdateOrgForm, "name" | "description">;
+
+export const CONTACT_FIELD_MAX: Record<string, number> = {
+  address: 255,
+  city: 100,
+  country: 100,
+  legal_name: 255,
+  license_number: 100,
+};
+
+export type UpdateFieldErrors = Partial<
+  Record<keyof UpdateOrgForm, string>
+>;
+
+const CONTACT_EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const ORG_PHONE_PATTERN = /^[0-9+\-().\s]{5,20}$/;
+const WEBSITE_PATTERN =
+  /^(https?:\/\/)?[a-z0-9][a-z0-9.-]*\.[a-z]{2,}(\/\S*)?$/i;
+
+export function validateContactField(
+  form: UpdateOrgForm,
+  key: ContactKey,
+): string | null {
+  const value = form[key].trim();
+  if (value.length === 0) return null;
+  if (key === "email") {
+    if (value.length > 254 || !CONTACT_EMAIL_PATTERN.test(value))
+      return "INVALID_CONTACT_EMAIL";
+    return null;
+  }
+  if (key === "phone") {
+    return ORG_PHONE_PATTERN.test(value) ? null : "INVALID_ORG_PHONE";
+  }
+  if (key === "website") {
+    if (value.length > 255 || !WEBSITE_PATTERN.test(value))
+      return "INVALID_WEBSITE";
+    return null;
+  }
+  const max = CONTACT_FIELD_MAX[key];
+  return max !== undefined && value.length > max ? "INVALID_CONTACT_FIELD" : null;
+}
 
 export function validateUpdateForm(form: UpdateOrgForm): UpdateFieldErrors {
   const errors: UpdateFieldErrors = {};
   const name = form.name.trim();
   if (name.length < 2 || name.length > 100) errors.name = "INVALID_NAME";
   if (form.description.trim().length > 500) errors.description = "INVALID_DESCRIPTION";
+  for (const key of Object.keys(CONTACT_FIELD_MAX).concat(["email", "phone", "website"]) as ContactKey[]) {
+    const invalid = validateContactField(form, key);
+    if (invalid) errors[key] = invalid;
+  }
   return errors;
 }
 

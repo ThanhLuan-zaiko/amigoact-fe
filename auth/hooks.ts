@@ -17,9 +17,11 @@ import {
   registerAccount,
   resendVerificationCode,
   resetPasswordAccount,
+  updateProfile,
   verifyEmailAccount,
   type RegisterInput,
   type SessionProfile,
+  type UpdateProfileInput,
 } from "./api.ts";
 import { authKeys } from "./keys.ts";
 
@@ -84,6 +86,17 @@ export function useLogin(): UseMutationResult<
       token_type: string;
       expires_in: number;
     }>(),
+  });
+}
+
+export function useUpdateProfile(): UseMutationResult<
+  SessionProfile,
+  ApiError,
+  UpdateProfileInput
+> {
+  return useMutation({
+    mutationFn: updateProfile,
+    ...useInvalidateSession<SessionProfile>(),
   });
 }
 

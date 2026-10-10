@@ -84,6 +84,9 @@ export function MemberRow({
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
               {member.email ? `${member.email} · ` : ""}
               {joined ? `tham gia ${joined}` : "thành viên"}
+              {member.status === "invited" && member.invited_by_name
+                ? ` · mời bởi ${member.invited_by_name}`
+                : ""}
             </p>
           </div>
         </div>

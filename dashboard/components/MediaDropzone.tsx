@@ -155,6 +155,14 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
                       </span>
                     )}
                   </div>
+                  {item.original_name && (
+                    <p
+                      className="truncate text-xs text-zinc-500 dark:text-zinc-400"
+                      title={item.original_name}
+                    >
+                      {item.original_name}
+                    </p>
+                  )}
                   {canManage && item.kind === "image" && (
                     <div className="flex gap-1" role="group" aria-label="Vai trò ảnh">
                       {(["cover", "logo"] as MediaRole[]).map((role) => {

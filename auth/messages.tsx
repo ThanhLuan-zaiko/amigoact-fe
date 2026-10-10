@@ -26,7 +26,18 @@ const MESSAGES: Record<string, string> = {
   NOT_FOUND: "Không tìm thấy thông tin yêu cầu.",
   UNAUTHORIZED: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
   ACCOUNT_SUSPENDED: "Tài khoản đang bị tạm khóa.",
+  INVALID_DOB: "Ngày sinh phải là ngày trong quá khứ (từ năm 1900).",
+  INVALID_GENDER: "Giới tính không hợp lệ.",
+  INVALID_ADDRESS: "Địa chỉ tối đa 255 ký tự.",
+  PROFILE_UPDATED: "Đã cập nhật hồ sơ.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
+};
+
+export const GENDER_LABELS: Record<string, string> = {
+  male: "Nam",
+  female: "Nữ",
+  other: "Khác",
+  unspecified: "Không nêu",
 };
 
 export function toVietnameseMessage(code: string): string {

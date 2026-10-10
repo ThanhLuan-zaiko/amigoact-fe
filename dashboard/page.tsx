@@ -9,6 +9,7 @@ import { useSession } from "../auth/hooks.ts";
 import { DashboardSidebar } from "./components/DashboardSidebar.tsx";
 import { useMyOrgs } from "./hooks.ts";
 import { useMembershipRealtime, useMyMemberships } from "./members-hooks.ts";
+import { useUnreadCount } from "../notifications/hooks.ts";
 
 export function DashboardPage(): ReactElement {
   const session = useSession();
@@ -18,6 +19,7 @@ export function DashboardPage(): ReactElement {
   const scope = useRiseIn<HTMLDivElement>([pathname]);
   const orgCount = orgs.data?.total ?? 0;
   const inviteCount = memberships.data?.total ?? 0;
+  const unreadCount = useUnreadCount(session.data != null).data?.unread ?? 0;
 
   // Invitation pushes land here so the badge and inbox update live.
   useMembershipRealtime(session.data?.id);
@@ -48,7 +50,11 @@ export function DashboardPage(): ReactElement {
     <div className="col-span-1 md:col-span-6 lg:col-span-12">
       <h1 className="sr-only">Bảng điều khiển</h1>
       <div ref={scope} className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start">
-        <DashboardSidebar orgCount={orgCount} inviteCount={inviteCount} />
+        <DashboardSidebar
+          orgCount={orgCount}
+          inviteCount={inviteCount}
+          unreadCount={unreadCount}
+        />
         <section aria-label="Nội dung bảng điều khiển" className="grid min-w-0 flex-1 grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12">
           <Outlet />
           <BentoCard className="md:col-span-6 lg:col-span-12">

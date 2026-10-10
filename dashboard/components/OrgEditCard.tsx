@@ -7,8 +7,15 @@ import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useUpdateOrg } from "../hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
-import { validateUpdateForm, type UpdateFieldErrors } from "../schemas.ts";
+import {
+  validateContactField,
+  validateUpdateForm,
+  type ContactKey,
+  type UpdateFieldErrors,
+  type UpdateOrgForm,
+} from "../schemas.ts";
 import type { DashboardOrg, JoinPolicy } from "../api.ts";
+import { OrgContactFields } from "./OrgContactFields.tsx";
 import { OrgPolicyChips } from "./OrgPolicyChips.tsx";
 
 interface OrgEditCardProps {
@@ -18,35 +25,86 @@ interface OrgEditCardProps {
 
 export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
   const update = useUpdateOrg();
-  const [form, setForm] = useState({ name: org.name, description: org.description ?? "" });
+  const [form, setForm] = useState<UpdateOrgForm>({
+    name: org.name,
+    description: org.description ?? "",
+    email: org.email ?? "",
+    phone: org.phone ?? "",
+    website: org.website ?? "",
+    address: org.address ?? "",
+    city: org.city ?? "",
+    country: org.country ?? "",
+    legal_name: org.legal_name ?? "",
+    license_number: org.license_number ?? "",
+  });
   const [policy, setPolicy] = useState<JoinPolicy>(org.join_policy);
   const [errors, setErrors] = useState<UpdateFieldErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
 
-  function blurField(key: "name" | "description"): void {
+  function markField(key: keyof UpdateOrgForm, invalid: string | null): void {
     setTouched((prev) => ({ ...prev, [key]: true }));
-    const next = { ...form };
-    const single = validateUpdateForm(next)[key];
     setErrors((prev) => {
       const copy = { ...prev };
+      if (invalid) copy[key] = invalid;
+      else delete copy[key];
+      return copy;
+    });
+  }
+
+  function blurField(key: "name" | "description"): void {
+    markField(key, validateUpdateForm(form)[key] ?? null);
+  }
+
+  function blurContact(key: ContactKey): void {
+    markField(key, validateContactField(form, key));
+  }
+
+  function changeContact(key: ContactKey, value: string): void {
+    const next = { ...form, [key]: value };
+    setForm(next);
+    setErrors((prev) => {
+      const copy = { ...prev };
+      const single = validateContactField(next, key);
       if (single) copy[key] = single;
       else delete copy[key];
       return copy;
     });
   }
 
+  function nullable(value: string): string | null {
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
   async function handleSubmit(event: FormEvent): Promise<void> {
     event.preventDefault();
     const validation = validateUpdateForm(form);
     setErrors(validation);
-    setTouched({ name: true, description: true });
+    setTouched({
+      name: true, description: true, email: true, phone: true, website: true,
+      address: true, city: true, country: true, legal_name: true, license_number: true,
+    });
     setServerCode(null);
     if (Object.keys(validation).length > 0) return;
     try {
       await update.mutateAsync({
         id: org.id,
-        input: { name: form.name.trim(), description: form.description.trim(), join_policy: policy },
+        input: {
+          name: form.name.trim(),
+          description: form.description.trim(),
+          join_policy: policy,
+          // Backend replaces contact fields wholesale: null clears a value.
+          email: nullable(form.email),
+          phone: nullable(form.phone),
+          website: nullable(form.website),
+          address: nullable(form.address),
+          city: nullable(form.city),
+          country: nullable(form.country),
+          legal_name: nullable(form.legal_name),
+          license_number: nullable(form.license_number),
+          is_personal: org.is_personal,
+        },
       });
       onDone();
     } catch (error) {
@@ -75,6 +133,13 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
         onChange={(event) => setForm({ ...form, description: event.target.value })}
         onBlur={() => blurField("description")}
         error={touched.description && errors.description ? toVietnameseDashboardMessage(errors.description) : undefined}
+      />
+      <OrgContactFields
+        form={form}
+        errors={errors}
+        touched={touched}
+        onChange={changeContact}
+        onBlur={blurContact}
       />
       <OrgPolicyChips value={policy} onChange={setPolicy} />
       <div className="flex flex-wrap gap-2">

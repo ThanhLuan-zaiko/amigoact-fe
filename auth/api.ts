@@ -11,8 +11,21 @@ export interface SessionProfile {
   legal_rep_name: string | null;
   legal_rep_id: string | null;
   legal_rep_position: string | null;
+  date_of_birth: string | null;
+  gender: string | null;
+  address: string | null;
+  last_login_at: string | null;
   email_verified: boolean;
   created_at: string;
+}
+
+export type ProfileGender = "male" | "female" | "other" | "unspecified";
+
+export interface UpdateProfileInput {
+  full_name: string;
+  date_of_birth?: string | null;
+  gender?: ProfileGender | null;
+  address?: string | null;
 }
 
 export interface RegisterInput {
@@ -68,6 +81,13 @@ export async function loginAccount(input: {
   });
   setAccessToken(body.access_token);
   return body;
+}
+
+export async function updateProfile(input: UpdateProfileInput): Promise<SessionProfile> {
+  return apiFetch<SessionProfile>("/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
 }
 
 export async function fetchSession(): Promise<SessionProfile | null> {

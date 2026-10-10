@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { Link, useNavigate } from "react-router-dom";import { FiKey, FiLogOut, FiUser } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";import { FiKey, FiLogOut, FiShield, FiUser } from "react-icons/fi";
 import { expandPanel } from "../motion.ts";
 import { Button } from "./Button.tsx";
 import { useLogout, useSession } from "../../auth/hooks.ts";
+import { useAdminStatus } from "../../admin/hooks.ts";
 
 function initialOf(name: string): string {
   const first = name.trim().charAt(0);
@@ -13,6 +14,7 @@ function initialOf(name: string): string {
 export function AccountMenu(): ReactElement | null {
   const session = useSession();
   const logout = useLogout();
+  const adminStatus = useAdminStatus(session.data != null);
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -106,6 +108,17 @@ export function AccountMenu(): ReactElement | null {
             <FiKey className="h-4 w-4" aria-hidden="true" />
             Đổi mật khẩu
           </Link>
+          {adminStatus.data?.is_admin && (
+            <Link
+              role="menuitem"
+              to="/admin"
+              onClick={() => setOpen(false)}
+              className={itemClass}
+            >
+              <FiShield className="h-4 w-4" aria-hidden="true" />
+              Quản trị
+            </Link>
+          )}
           <button
             role="menuitem"
             type="button"

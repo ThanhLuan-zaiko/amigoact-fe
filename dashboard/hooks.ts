@@ -128,6 +128,25 @@ export function useUploadOrgMedia(
   });
 }
 
+// Org-agnostic upload for flows where the target org only exists after
+// a preceding mutation (e.g. create-then-upload in OrgCreateCard).
+export function useUploadOrgMediaFile(): UseMutationResult<
+  OrgMedia,
+  ApiError,
+  { orgId: string; file: File; role: MediaRole }
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ orgId, file, role }: { orgId: string; file: File; role: MediaRole }) =>
+      uploadOrgMedia(orgId, file, role),
+    onSuccess: async (media) => {
+      await queryClient.invalidateQueries({
+        queryKey: dashboardKeys.orgMedia(media.org_id),
+      });
+    },
+  });
+}
+
 export function useSetOrgMediaRole(
   orgId: string,
 ): UseMutationResult<OrgMedia, ApiError, { mediaId: string; role: MediaRole }> {

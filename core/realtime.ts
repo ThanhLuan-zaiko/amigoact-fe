@@ -50,6 +50,10 @@ export function activitiesChannel(orgId: string): string {
   return `activities:${orgId}`;
 }
 
+export function membersChannel(orgId: string): string {
+  return `members:${orgId}`;
+}
+
 function wsUrl(ticket: string): string {
   const url = new URL(apiBaseUrl());
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";

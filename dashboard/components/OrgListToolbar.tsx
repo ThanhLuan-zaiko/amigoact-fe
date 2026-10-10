@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { ReactElement } from "react";
-import { FiClock, FiSearch, FiType, FiUsers } from "react-icons/fi";
+import { FiClock, FiSearch, FiShield, FiType, FiUsers } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { ORG_STATUS_LABELS } from "../messages.tsx";
@@ -67,6 +67,7 @@ export function OrgListToolbar({
             variant={bucket === "all" ? "primary" : "secondary"}
             onClick={() => onBucket("all")}
             aria-pressed={bucket === "all"}
+            icon={<FiUsers className="h-4 w-4" aria-hidden="true" />}
           >
             {`Tất cả · ${total}`}
           </Button>
@@ -77,6 +78,7 @@ export function OrgListToolbar({
               variant={bucket === key ? "primary" : "secondary"}
               onClick={() => onBucket(key)}
               aria-pressed={bucket === key}
+              icon={<FiShield className="h-4 w-4" aria-hidden="true" />}
             >
               {`${ORG_STATUS_LABELS[key] ?? key} · ${count}`}
             </Button>

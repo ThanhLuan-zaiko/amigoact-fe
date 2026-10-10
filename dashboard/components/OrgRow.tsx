@@ -1,10 +1,14 @@
+import { useState } from "react";
 import type { ReactElement } from "react";
-import { FiImage, FiUsers } from "react-icons/fi";
+import { FiCheckCircle, FiImage, FiPlus, FiUsers } from "react-icons/fi";
+import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
+import { ErrorState } from "../../core/components/Feedback.tsx";
 import { useOrgMedia } from "../hooks.ts";
+import { useJoinOrg } from "../members-hooks.ts";
 import { orgMediaUrl, type DashboardOrg } from "../api.ts";
 import { orgStatusBucket } from "../schemas.ts";
-import { ORG_KIND_LABELS, ORG_STATUS_LABELS } from "../messages.tsx";
+import { ORG_KIND_LABELS, ORG_STATUS_LABELS, toVietnameseDashboardMessage } from "../messages.tsx";
 import { OrgCardActions } from "./OrgCardActions.tsx";
 import { OrgEditCard } from "./OrgEditCard.tsx";
 import { OrgMediaStrip } from "./OrgMediaStrip.tsx";
@@ -39,6 +43,9 @@ export function OrgRow({
   onOpenMedia,
 }: OrgRowProps): ReactElement {
   const gallery = useOrgMedia(org.id, !compact);
+  const join = useJoinOrg();
+  const [joinCode, setJoinCode] = useState<string | null>(null);
+  const [joined, setJoined] = useState(false);
   const media = gallery.data ?? [];
   const avatar =
     media.find((item) => item.kind === "image" && item.role === "logo") ??
@@ -47,6 +54,16 @@ export function OrgRow({
   const bucket = orgStatusBucket(org);
   const badge = bucket === "active" ? null : STATUS_BADGES[bucket] ?? FALLBACK_BADGE;
   const created = createdLabel(org.created_at);
+
+  async function handleJoin(): Promise<void> {
+    setJoinCode(null);
+    try {
+      await join.mutateAsync(org.id);
+      setJoined(true);
+    } catch (error) {
+      setJoinCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
+    }
+  }
 
   return (
     <li
@@ -93,7 +110,7 @@ export function OrgRow({
           {!compact && (
             <>
               <Button
-                to="/manage/overview"
+                to={`/manage/members?org=${org.id}`}
                 variant="secondary"
                 icon={<FiUsers className="h-4 w-4" aria-hidden="true" />}
               >
@@ -108,10 +125,38 @@ export function OrgRow({
               >
                 Tệp
               </Button>
+              {org.join_policy === "open" && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={join.isPending || joined}
+                  onClick={() => void handleJoin()}
+                  icon={<FiPlus className="h-4 w-4" aria-hidden="true" />}
+                >
+                  {join.isPending ? "Đang tham gia…" : joined ? "Đã tham gia" : "Tham gia"}
+                </Button>
+              )}
             </>
           )}
         </div>
       </div>
+      {joined && (
+        <p
+          role="status"
+          className="flex items-center gap-2 rounded-xl border border-brand/40 bg-brand/10 p-3 text-sm text-zinc-900 dark:border-brand/30 dark:bg-brand/10 dark:text-zinc-100"
+        >
+          <FiCheckCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+          {toVietnameseDashboardMessage("JOINED_ORG")}
+        </p>
+      )}
+      {joinCode && (
+        <div aria-live="polite">
+          <ErrorState
+            title="Không thể tham gia"
+            message={toVietnameseDashboardMessage(joinCode)}
+          />
+        </div>
+      )}
       {!compact && media.length > 0 && (
         <OrgMediaStrip media={media} onBrowse={onOpenMedia} />
       )}

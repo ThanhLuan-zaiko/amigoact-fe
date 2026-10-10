@@ -1,30 +1,30 @@
 import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { FiCheckCircle, FiPlusCircle, FiTag, FiType } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
-import { useCreateOrg } from "../hooks.ts";
+import { useCreateOrg, useUploadOrgMediaFile } from "../hooks.ts";
 import { toVietnameseDashboardMessage, ORG_KIND_LABELS } from "../messages.tsx";
 import { assignMediaRole, ORG_KINDS, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
 import type { PendingMedia } from "../schemas.ts";
-import { uploadOrgMedia, type CreateOrgInput, type OrgKind } from "../api.ts";
-import { dashboardKeys } from "../keys.ts";
+import type { CreateOrgInput, JoinPolicy, OrgKind } from "../api.ts";
 import type { OrgFieldErrors } from "../schemas.ts";
 import { BusinessOrgFields } from "./BusinessOrgFields.tsx";
 import { MediaPicker } from "./MediaPicker.tsx";
+import { OrgPolicyChips } from "./OrgPolicyChips.tsx";
 
 export function OrgCreateCard(): ReactElement {
   const create = useCreateOrg();
-  const queryClient = useQueryClient();
+  const uploadMedia = useUploadOrgMediaFile();
   const [form, setForm] = useState<CreateOrgInput>({
     name: "",
     slug: "",
     description: "",
     kind: "organization",
+    join_policy: "invite",
     tax_code: "",
     legal_rep_name: "",
     legal_rep_id: "",
@@ -61,6 +61,10 @@ export function OrgCreateCard(): ReactElement {
     setForm((current) => ({ ...current, kind }));
   }
 
+  function selectPolicy(policy: JoinPolicy): void {
+    setForm((current) => ({ ...current, join_policy: policy }));
+  }
+
   async function handleSubmit(event: FormEvent): Promise<void> {
     event.preventDefault();
     const validation = validateOrgForm(form);
@@ -75,6 +79,7 @@ export function OrgCreateCard(): ReactElement {
         slug: form.slug.trim().toLowerCase(),
         description: form.description.trim(),
         kind: form.kind,
+        join_policy: form.join_policy ?? "invite",
         ...(form.kind === "business"
           ? {
               tax_code: (form.tax_code ?? "").trim(),
@@ -92,14 +97,13 @@ export function OrgCreateCard(): ReactElement {
         let failedCode: string | null = null;
         for (const item of files) {
           try {
-            await uploadOrgMedia(org.id, item.file, item.role);
+            await uploadMedia.mutateAsync({ orgId: org.id, file: item.file, role: item.role });
             done += 1;
           } catch (error) {
             failedCode = error instanceof ApiError ? error.code : "REQUEST_FAILED";
             break;
           }
         }
-        await queryClient.invalidateQueries({ queryKey: dashboardKeys.orgMedia(org.id) });
         setUploading(false);
         setUploadNote(
           failedCode
@@ -108,7 +112,7 @@ export function OrgCreateCard(): ReactElement {
         );
       }
       setForm({
-        name: "", slug: "", description: "", kind: form.kind,
+        name: "", slug: "", description: "", kind: form.kind, join_policy: "invite",
         tax_code: "", legal_rep_name: "", legal_rep_id: "", legal_rep_position: "",
       });
     } catch (error) {
@@ -140,6 +144,9 @@ export function OrgCreateCard(): ReactElement {
             {ORG_KIND_LABELS[kind]}
           </Button>
         ))}
+      </div>
+      <div className="mt-3">
+        <OrgPolicyChips value={form.join_policy ?? "invite"} onChange={selectPolicy} />
       </div>
       {serverCode && (
         <div className="mt-3">

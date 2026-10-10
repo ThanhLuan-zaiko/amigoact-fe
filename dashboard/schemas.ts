@@ -124,6 +124,25 @@ export function validateUpdateForm(form: UpdateOrgForm): UpdateFieldErrors {
   return errors;
 }
 
+// Accent-folded matching for pickers; mirrors the backend search fold.
+export function foldText(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u0111/g, "d");
+}
+
+const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+export function validateInviteEmail(value: string): string | null {
+  const email = value.trim().toLowerCase();
+  if (email.length === 0) return "REQUIRED";
+  if (email.length > 254 || !EMAIL_PATTERN.test(email)) return "INVALID_EMAIL";
+  return null;
+}
+
 export function slugifyName(name: string): string {
   return name
     .trim()

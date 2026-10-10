@@ -8,13 +8,19 @@ import { useRiseIn } from "../core/motion.ts";
 import { useSession } from "../auth/hooks.ts";
 import { DashboardSidebar } from "./components/DashboardSidebar.tsx";
 import { useMyOrgs } from "./hooks.ts";
+import { useMembershipRealtime, useMyMemberships } from "./members-hooks.ts";
 
 export function DashboardPage(): ReactElement {
   const session = useSession();
   const orgs = useMyOrgs(false, {}, session.data != null);
+  const memberships = useMyMemberships("invited", session.data != null);
   const { pathname } = useLocation();
   const scope = useRiseIn<HTMLDivElement>([pathname]);
   const orgCount = orgs.data?.total ?? 0;
+  const inviteCount = memberships.data?.total ?? 0;
+
+  // Invitation pushes land here so the badge and inbox update live.
+  useMembershipRealtime(session.data?.id);
 
   if (!session.isPending && !session.data) {
     return (
@@ -42,7 +48,7 @@ export function DashboardPage(): ReactElement {
     <div className="col-span-1 md:col-span-6 lg:col-span-12">
       <h1 className="sr-only">Bảng điều khiển</h1>
       <div ref={scope} className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start">
-        <DashboardSidebar orgCount={orgCount} />
+        <DashboardSidebar orgCount={orgCount} inviteCount={inviteCount} />
         <section aria-label="Nội dung bảng điều khiển" className="grid min-w-0 flex-1 grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12">
           <Outlet />
           <BentoCard className="md:col-span-6 lg:col-span-12">

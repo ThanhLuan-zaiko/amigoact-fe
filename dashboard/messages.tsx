@@ -25,6 +25,22 @@ const MESSAGES: Record<string, string> = {
   UNAUTHORIZED: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
   FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
   NOT_FOUND: "Không tìm thấy thông tin yêu cầu.",
+  USER_NOT_FOUND: "Không tìm thấy tài khoản với email này.",
+  ALREADY_MEMBER: "Người này đã là thành viên của tổ chức.",
+  ALREADY_INVITED: "Người này đã có lời mời đang chờ.",
+  MEMBER_NOT_FOUND: "Không tìm thấy thành viên này.",
+  OWNER_IMMUTABLE: "Chủ sở hữu không thể rời hoặc bị thay đổi quyền.",
+  INVALID_MEMBER_STATE: "Trạng thái thành viên không hợp lệ cho thao tác này.",
+  INVALID_ROLE: "Vai trò không hợp lệ.",
+  INVITE_ONLY: "Tổ chức này chỉ nhận thành viên qua lời mời.",
+  INVALID_EMAIL: "Địa chỉ email không hợp lệ.",
+  INVITE_SENT: "Đã gửi lời mời.",
+  INVITE_ACCEPTED: "Đã tham gia tổ chức.",
+  INVITE_DECLINED: "Đã từ chối lời mời.",
+  MEMBER_UPDATED: "Đã cập nhật thành viên.",
+  MEMBER_REMOVED: "Đã xóa thành viên.",
+  MEMBER_LEFT: "Bạn đã rời tổ chức.",
+  JOINED_ORG: "Bạn đã gia nhập tổ chức.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
 };
 
@@ -45,6 +61,24 @@ export const ORG_STATUS_LABELS: Record<string, string> = {
   active: "Hoạt động",
   pending: "Chờ duyệt",
   suspended: "Tạm khóa",
+};
+
+export const MEMBER_ROLE_LABELS: Record<string, string> = {
+  owner: "Chủ sở hữu",
+  admin: "Quản trị viên",
+  member: "Thành viên",
+};
+
+export const MEMBER_STATUS_LABELS: Record<string, string> = {
+  active: "Hoạt động",
+  invited: "Đã mời",
+  suspended: "Tạm khóa",
+  left: "Đã rời",
+};
+
+export const JOIN_POLICY_LABELS: Record<string, string> = {
+  invite: "Chỉ mời",
+  open: "Mở",
 };
 
 export function toVietnameseDashboardMessage(code: string): string {

@@ -13,6 +13,7 @@ import { BentoCard } from "../../core/components/BentoCard.tsx";
 
 interface DashboardSidebarProps {
   orgCount: number;
+  inviteCount: number;
 }
 
 interface SidebarEntry {
@@ -45,7 +46,7 @@ function itemClass(isActive: boolean): string {
   );
 }
 
-export function DashboardSidebar({ orgCount }: DashboardSidebarProps): ReactElement {
+export function DashboardSidebar({ orgCount, inviteCount }: DashboardSidebarProps): ReactElement {
   return (
     <BentoCard className="w-full shrink-0 md:col-span-6 lg:col-span-3 lg:sticky lg:top-20 lg:w-64">
       <p className="text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
@@ -62,6 +63,14 @@ export function DashboardSidebar({ orgCount }: DashboardSidebarProps): ReactElem
           <NavLink key={to} to={to} end className={({ isActive }) => itemClass(isActive)}>
             <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
             {label}
+            {to === "/manage/members" && inviteCount > 0 && (
+              <span
+                className="ml-auto rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400"
+                aria-label={`${inviteCount} lời mời đang chờ`}
+              >
+                {inviteCount}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

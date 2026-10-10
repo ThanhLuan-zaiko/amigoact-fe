@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ReactElement } from "react";
-import { FiPlusCircle, FiTrash2, FiUsers } from "react-icons/fi";
+import { FiPlusCircle, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
@@ -26,7 +26,7 @@ export function OrgListCard(): ReactElement {
   const session = useSession();
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Filter state lives in the URL so every view is deep-linkable (§7.9).
+  // Filter state lives in the URL so every view is deep-linkable (AGENTS.md 7.9).
   const query = searchParams.get("q") ?? "";
   const bucket = searchParams.get("status") ?? "all";
   const sortParam = searchParams.get("sort") ?? "newest";
@@ -201,7 +201,7 @@ export function OrgListCard(): ReactElement {
           )}
           {filtering && items.length > 0 && (
             <div className="mt-3">
-              <Button type="button" variant="ghost" onClick={resetFilters}>
+              <Button type="button" variant="ghost" onClick={resetFilters} icon={<FiX className="h-4 w-4" aria-hidden="true" />}>
                 Xóa bộ lọc
               </Button>
             </div>

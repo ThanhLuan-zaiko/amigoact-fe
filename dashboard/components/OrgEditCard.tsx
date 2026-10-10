@@ -8,7 +8,8 @@ import { TextField } from "../../core/components/TextField.tsx";
 import { useUpdateOrg } from "../hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
 import { validateUpdateForm, type UpdateFieldErrors } from "../schemas.ts";
-import type { DashboardOrg } from "../api.ts";
+import type { DashboardOrg, JoinPolicy } from "../api.ts";
+import { OrgPolicyChips } from "./OrgPolicyChips.tsx";
 
 interface OrgEditCardProps {
   org: DashboardOrg;
@@ -18,6 +19,7 @@ interface OrgEditCardProps {
 export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
   const update = useUpdateOrg();
   const [form, setForm] = useState({ name: org.name, description: org.description ?? "" });
+  const [policy, setPolicy] = useState<JoinPolicy>(org.join_policy);
   const [errors, setErrors] = useState<UpdateFieldErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
@@ -44,7 +46,7 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
     try {
       await update.mutateAsync({
         id: org.id,
-        input: { name: form.name.trim(), description: form.description.trim() },
+        input: { name: form.name.trim(), description: form.description.trim(), join_policy: policy },
       });
       onDone();
     } catch (error) {
@@ -74,6 +76,7 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
         onBlur={() => blurField("description")}
         error={touched.description && errors.description ? toVietnameseDashboardMessage(errors.description) : undefined}
       />
+      <OrgPolicyChips value={policy} onChange={setPolicy} />
       <div className="flex flex-wrap gap-2">
         <Button
           type="submit"

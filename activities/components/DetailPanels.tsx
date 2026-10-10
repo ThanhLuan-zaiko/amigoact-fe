@@ -13,7 +13,7 @@ import type {
   ActivityDetailView,
   ScheduleItem,
 } from "../api.ts";
-import { formatDateTime } from "../dates.ts";
+import { formatDateTime } from "../dates.tsx";
 
 interface SchedulePanelProps {
   schedules: ScheduleItem[];

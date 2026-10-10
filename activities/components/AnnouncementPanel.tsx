@@ -5,7 +5,7 @@ import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import type { AnnouncementItem } from "../api.ts";
-import { formatDateTime } from "../dates.ts";
+import { formatDateTime } from "../dates.tsx";
 
 interface AnnouncementPanelProps {
   announcements: AnnouncementItem[];

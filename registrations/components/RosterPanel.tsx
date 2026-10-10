@@ -13,7 +13,7 @@ import {
   ErrorState,
   LoadingState,
 } from "../../core/components/Feedback.tsx";
-import { formatDateTime } from "../../activities/dates.ts";
+import { formatDateTime } from "../../activities/dates.tsx";
 import { useIssueCertificate } from "../../certificates/hooks.ts";
 import { toVietnameseCertificateError } from "../../certificates/messages.tsx";
 import { useManualCheckIn, useReview, useRoster } from "../hooks.ts";

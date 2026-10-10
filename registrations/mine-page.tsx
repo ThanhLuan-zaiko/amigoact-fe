@@ -8,7 +8,7 @@ import {
   ErrorState,
   LoadingState,
 } from "../core/components/Feedback.tsx";
-import { formatDateTime } from "../activities/dates.ts";
+import { formatDateTime } from "../activities/dates.tsx";
 import {
   useCancelRegistration,
   useMyAttendance,

@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { NavLink } from "react-router-dom";
 import type { IconType } from "react-icons";
 import {
+  FiActivity,
   FiAward,
   FiBell,
   FiCalendar,
@@ -90,6 +91,11 @@ const GROUPS: SidebarGroup[] = [
         to: "/leaderboard",
         label: "Bảng xếp hạng",
         Icon: FiTrendingUp,
+      },
+      {
+        to: "/manage/audit",
+        label: "Nhật ký hoạt động",
+        Icon: FiActivity,
       },
       {
         to: "/certificates/verify",

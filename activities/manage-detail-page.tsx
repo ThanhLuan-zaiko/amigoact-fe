@@ -23,7 +23,7 @@ import {
   useUpdateActivity,
 } from "./hooks.ts";
 import { StatusChip } from "./components/ActivityCard.tsx";
-import { formatDateTime } from "./dates.ts";
+import { formatDateTime } from "./dates.tsx";
 import { ActivityForm } from "./components/ActivityForm.tsx";
 import { AnnouncementPanel } from "./components/AnnouncementPanel.tsx";
 import { SchedulePanel, StaffPanel } from "./components/DetailPanels.tsx";

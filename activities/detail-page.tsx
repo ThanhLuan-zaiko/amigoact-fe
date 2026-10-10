@@ -19,7 +19,7 @@ import {
   useCategories,
 } from "./hooks.ts";
 import { StatusChip } from "./components/ActivityCard.tsx";
-import { formatDateTime } from "./dates.ts";
+import { formatDateTime } from "./dates.tsx";
 import { AnnouncementPanel } from "./components/AnnouncementPanel.tsx";
 import { SchedulePanel } from "./components/DetailPanels.tsx";
 import { ApplyCard } from "../registrations/components/ApplyCard.tsx";

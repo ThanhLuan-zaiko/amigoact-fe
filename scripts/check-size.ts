@@ -13,7 +13,9 @@ for await (const p of new Glob("**/*.{ts,tsx}").scan({
 }
 console.log(bad.length ? bad.join("\n") : "OK");
 
-const shadow = /shadow|drop-shadow|box-shadow|\bring-/;
+// Character-class alternates keep this file from matching itself when the
+// same pattern scans the whole repo.
+const forbidden = /shad[o]w|drop-shad[o]w|box-shad[o]w|\brin[g]-/;
 let clean = true;
 for await (const p of new Glob("**/*.{tsx,ts,css}").scan({
   cwd: ".",
@@ -22,10 +24,10 @@ for await (const p of new Glob("**/*.{tsx,ts,css}").scan({
   const n = p.replaceAll("\\", "/");
   if (n.startsWith("node_modules/") || n.startsWith("dist/")) continue;
   (await Bun.file(p).text()).split("\n").forEach((line, i) => {
-    if (shadow.test(line)) {
+    if (forbidden.test(line)) {
       clean = false;
       console.log(`${n}:${i + 1}: ${line.trim()}`);
     }
   });
 }
-if (clean) console.log("no-shadow OK");
+if (clean) console.log("css-style gate OK");

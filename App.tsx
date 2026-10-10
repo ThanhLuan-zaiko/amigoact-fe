@@ -6,6 +6,7 @@ import { BentoCard } from "./core/components/BentoCard.tsx";
 import { Button } from "./core/components/Button.tsx";
 import { EmptyState } from "./core/components/Feedback.tsx";
 import { AdminAdminsPage } from "./admin/admins-page.tsx";
+import { AuditPage } from "./audit/page.tsx";
 import { AdminOrgsPage } from "./admin/orgs-page.tsx";
 import { AdminPage } from "./admin/page.tsx";
 import { ChangePasswordPage } from "./auth/change-password-page.tsx";
@@ -95,6 +96,7 @@ export default function App(): ReactElement {
             element={<MyCertificatesPage />}
           />
           <Route path="members" element={<DashboardMembersPage />} />
+          <Route path="audit" element={<AuditPage />} />
           <Route path="settings" element={<DashboardSettingsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

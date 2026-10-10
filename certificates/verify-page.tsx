@@ -4,7 +4,7 @@ import { ApiError } from "../core/api.ts";
 import { BentoCard } from "../core/components/BentoCard.tsx";
 import { Button } from "../core/components/Button.tsx";
 import { TextField } from "../core/components/TextField.tsx";
-import { formatDateTime } from "../activities/dates.ts";
+import { formatDateTime } from "../activities/dates.tsx";
 import { verifyCertificate, type VerifyResult } from "./api.ts";
 import {
   CERTIFICATE_STATUS_LABELS,

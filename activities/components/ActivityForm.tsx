@@ -9,7 +9,7 @@ import type {
   ActivityInput,
   CategoryItem,
 } from "../api.ts";
-import { fromLocalInput, toLocalInput } from "../dates.ts";
+import { fromLocalInput, toLocalInput } from "../dates.tsx";
 
 interface ActivityFormProps {
   categories: CategoryItem[];

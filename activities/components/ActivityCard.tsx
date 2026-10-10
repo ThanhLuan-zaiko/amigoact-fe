@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { FiCalendar, FiClock } from "react-icons/fi";
 import type { ActivitySummary } from "../api.ts";
-import { formatDateTime } from "../dates.ts";
+import { formatDateTime } from "../dates.tsx";
 import { ACTIVITY_STATUS_LABELS } from "../messages.tsx";
 
 const STATUS_TONE: Record<string, string> = {

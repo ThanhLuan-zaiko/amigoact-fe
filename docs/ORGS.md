@@ -1,6 +1,41 @@
-# Tổ chức và thư viện media — `dashboard/`
+# Tổ chức và thư viện media — `dashboard/` + `orgs/` (public)
 
-## 1. Trang `/manage/orgs`
+## 1. Trang công khai `/orgs` và `/orgs/:slug` (`orgs/`)
+
+Thư mục guest (không cần đăng nhập), đọc `GET /orgs` và
+`GET /orgs/{slug}` của backend — feature module riêng `orgs/`
+(`api.ts`, `keys.ts`, `hooks.ts`, `messages.tsx`, `utils.ts`,
+`components/`), không lẫn với `dashboard/` quản trị.
+
+- `/orgs` là "discovery board" bento: tile hero (search debounce + chip
+  `kind` + chip `sort`), tile thống kê theo `counts`, tile nổi bật
+  (org đầu kết quả theo sort), rail "Vừa tham gia", mosaic card, tile
+  phân trang. Filter/pagination nằm trên URL (`?q&kind&sort&page`) nên
+  deep-link được; `splitDirectory` trong `utils.ts` chia items thành
+  spotlight/rail/mosaic.
+- `/orgs/:slug` render 6 tile: hero (cover + logo + nút `Tham gia`),
+  `Đánh giá tin cậy`, giới thiệu, liên hệ & pháp lý, hoạt động đã tổ
+  chức, thư viện ảnh. `OrgTrustCard` dựng checklist 6 tiêu chí từ tín
+  hiệu thô của API (verified, legal_status, activity_count, liên hệ,
+  địa chỉ, gallery) kèm điểm `x/6` và disclaimer — không tự chấm điểm mù.
+- Nút `Tham gia` (`useJoinOrg` → `POST /orgs/{id}/members/join`): guest
+  thấy `Đăng nhập để tham gia`; org `invite` hiện ghi chú nhận qua lời
+  mời; lỗi `ALREADY_MEMBER`/`INVITE_ONLY`/`ORG_DELETED` dịch ở
+  `messages.tsx`. `404` từ detail hiển thị EmptyState "không còn hiển
+  thị công khai".
+
+### Realtime thư mục (`useOrgsRealtime`)
+
+Cả hai trang mount `useOrgsRealtime()` (`orgs/hooks.ts`): subscribe kênh
+public `orgs:directory` qua `subscribeChannel` (`core/realtime.ts`),
+nhận `event.v1` `{action, org_id, slug}` (`created`/`updated`/`restored`/
+`removed`) rồi `invalidateQueries(orgKeys.all)` — org bị xóa/ẩn biến mất
+khỏi card và trang chi tiết chuyển sang EmptyState 404 mà không cần
+F5. Payload chỉ là gợi ý refetch; REST vẫn là fact source nên event giả
+không thể đưa org đã ẩn quay lại. Guest kết nối bằng socket ẩn danh —
+xem `docs/REALTIME.md`.
+
+## 2. Trang `/manage/orgs`
 
 `OrgListCard.tsx` hiển thị hai khối: `Tổ chức của tôi` (đang sống) và
 `Thùng rác` (đã xóa mềm, có ghi chú khôi phục/xóa cứng). Khối đang sống
@@ -12,7 +47,7 @@ deep-link được. Thùng rác và tra cứu modal dùng thêm một query rộ
 (`limit: 100`). Mỗi dòng là `OrgRow`: tên, loại, `@slug`, số thành
 viên/sự kiện, mô tả.
 
-## 2. CRUD trên từng dòng
+## 3. CRUD trên từng dòng
 
 `OrgCardActions.tsx` gom nút theo trạng thái (xem `docs/ORGS.md` của
 backend để đối chiếu API và mã lỗi):
@@ -33,7 +68,7 @@ backend để đối chiếu API và mã lỗi):
   thùng rác đều tươi lại. Lỗi backend (`SLUG_TAKEN`, `FORBIDDEN`,
   `ORG_DELETED`...) dịch sang tiếng Việt ở `dashboard/messages.tsx`.
 
-## 3. Thư viện ảnh/video (`MediaDropzone.tsx`)
+## 4. Thư viện ảnh/video (`MediaDropzone.tsx`)
 
 Trang tạo (`/manage/orgs/create`) cũng hiện block `Thông tin liên hệ &
 pháp lý` (`OrgContactFields`, toàn bộ không bắt buộc — `contactPayload`
@@ -83,7 +118,7 @@ vùng thư viện bên trong cuộn):
   `core/motion.ts` (data về sau mount vẫn được animate); tôn trọng
   `prefers-reduced-motion`.
 
-## 4. Upload qua `FormData`
+## 5. Upload qua `FormData`
 
 `core/api.ts` mặc định gửi JSON nên upload dùng riêng `apiUpload()`
 (không ép `Content-Type`, để trình duyệt tự gắn boundary `multipart`),

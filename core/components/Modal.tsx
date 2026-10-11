@@ -49,7 +49,7 @@ export function Modal({ open, title, onClose, children, wide = false }: ModalPro
       // Close on click, not mousedown: unmounting mid-gesture lets the release
       // hit a page element under the cursor. Both press and release must land
       // outside the panel (the backdrop covers the overlay, so comparing
-      // against currentTarget never fires) — a drag out of the panel won't close.
+      // against currentTarget never fires) - a drag out of the panel won't close.
       onMouseDown={(event) => {
         downOnOverlay.current = !panelRef.current?.contains(event.target as Node);
       }}

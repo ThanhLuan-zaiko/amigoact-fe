@@ -26,17 +26,20 @@ Hợp đồng với backend (`amigoact-be` AGENTS.md §16):
 1. Handshake: client `POST /ws/tickets` (Bearer JWT qua `apiFetch`, tự
    refresh-401) → mở `ws(s)://<api>/ws?ticket=<one-time-ticket>`. Ticket
    một lần nên mỗi lần (re)connect đều xin ticket mới.
-2. Sau khi mở, server gửi `ready.v1` (`heartbeat_seconds` được dùng để chỉnh
+2. **Guest**: `401` khi xin ticket (chưa đăng nhập) → client mở
+   `ws(s)://<api>/ws` không ticket — socket ẩn danh của backend chỉ
+   subscribe được kênh public (hiện là `orgs:directory`); kênh private
+   vẫn nhận `FORBIDDEN` + `4403` như thường.
+3. Sau khi mở, server gửi `ready.v1` (`heartbeat_seconds` được dùng để chỉnh
    watchdog) rồi client `subscribe.v1` lại toàn bộ kênh đang giữ
-   (resubscribe-on-reconnect). Kênh `notifications:{userId}` server tự join.
-3. Heartbeat: server `ping.v1` mỗi ~25s → client trả `pong.v1`. Watchdog:
+   (resubscribe-on-reconnect). Kênh `notifications:{userId}` server tự join
+   trên socket đã auth.
+4. Heartbeat: server `ping.v1` mỗi ~25s → client trả `pong.v1`. Watchdog:
    không có frame nào trong `heartbeat + 15s` thì client tự đóng để chạy
    reconnect.
-4. Reconnect: exponential backoff `500ms × 2^n` (cap 15s) + jitter.
-   `401` khi xin ticket (chưa đăng nhập) → trạng thái `offline`, chờ
-   `subscribe` tiếp theo. `FORBIDDEN` trên kênh → đánh dấu denied, không
-   resubscribe kênh đó nữa.
-5. Mã đóng: `4401` ticket sai, `4403` bị từ chối, `4400` bad frame, `4408`
+5. Reconnect: exponential backoff `500ms × 2^n` (cap 15s) + jitter.
+   `FORBIDDEN` trên kênh → đánh dấu denied, không resubscribe kênh đó nữa.
+6. Mã đóng: `4401` ticket sai, `4403` bị từ chối, `4400` bad frame, `4408`
    miss pong — mọi close đều chạy reconnect trừ khi teardown chủ động.
 
 API xuất ra:
@@ -45,10 +48,14 @@ API xuất ra:
 |---|---|
 | `subscribeChannel(channel, handler)` | Đăng ký kênh, trả về hàm unsubscribe |
 | `onRealtimeStatus(handler)` | Nghe `idle`/`connecting`/`open`/`reconnecting`/`offline` cho banner kết nối (copy tiếng Việt, §12.5) |
-| `notificationsChannel` / `attendanceChannel` / `activitiesChannel` | Helper tên kênh chuẩn backend |
+| `notificationsChannel` / `attendanceChannel` / `activitiesChannel` / `membersChannel` | Helper tên kênh chuẩn backend |
 | `realtime` | Singleton client (dùng nội bộ hai hàm trên) |
 
 Socket tự teardown về `idle` khi không còn subscriber/status listener nào.
+Kênh public của thư mục tổ chức (`orgs:directory`, subscribe qua
+`useOrgsRealtime` trong `orgs/hooks.ts`) là trường hợp duy nhất hoạt động
+trên socket ẩn danh — payload `{action, org_id, slug}` luôn chỉ là gợi ý
+invalidate query, không phải sự thật.
 
 ## 2. Speculation Rules API (`index.html`, §12.4)
 

@@ -60,7 +60,8 @@ function wsUrl(ticket: string): string {
   // Keep ticket in query per backend contract. Never log the returned URL.
   const basePath = url.pathname.replace(/\/+$/, "");
   url.pathname = `${basePath}${WS_PATH}`;
-  url.search = `?ticket=${encodeURIComponent(ticket)}`;
+  // Empty ticket opens an anonymous guest socket (public channels only).
+  url.search = ticket ? `?ticket=${encodeURIComponent(ticket)}` : "";
   return url.toString();
 }
 
@@ -150,18 +151,18 @@ class RealtimeClient {
     this.connecting = true;
     try {
       this.setStatus(this.retryAttempt > 0 ? "reconnecting" : "connecting");
-      let ticket: WsTicket;
+      let ticket = "";
       try {
-        ticket = await apiFetch<WsTicket>(TICKETS_PATH, { method: "POST" });
+        ticket = (await apiFetch<WsTicket>(TICKETS_PATH, { method: "POST" })).ticket;
       } catch (error) {
-        if (error instanceof ApiError && error.status === 401) {
-          this.setStatus("offline");
+        if (!(error instanceof ApiError && error.status === 401)) {
+          this.scheduleRetry();
           return;
         }
-        this.scheduleRetry();
-        return;
+        // 401 means no session: open an anonymous guest socket below so
+        // public channels (e.g. orgs:directory) still update live.
       }
-      const socket = new WebSocket(wsUrl(ticket.ticket));
+      const socket = new WebSocket(wsUrl(ticket));
       this.socket = socket;
       socket.onopen = () => {
         this.retryAttempt = 0;

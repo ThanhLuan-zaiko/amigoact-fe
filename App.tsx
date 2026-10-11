@@ -32,6 +32,7 @@ import { DashboardOverviewPage } from "./dashboard/overview-page.tsx";
 import { DashboardSettingsPage } from "./dashboard/settings-page.tsx";
 import { DashboardPage } from "./dashboard/page.tsx";
 import { NotificationsPage } from "./notifications/page.tsx";
+import { OrgDetailPage } from "./orgs/detail-page.tsx";
 import { OrgsPage } from "./orgs/page.tsx";
 import { PublicVolunteerPage } from "./profiles/public-page.tsx";
 import { MyRegistrationsPage } from "./registrations/mine-page.tsx";
@@ -73,6 +74,7 @@ export default function App(): ReactElement {
         <Route path="events" element={<EventsPage />} />
         <Route path="events/:orgId/:slug" element={<EventDetailPage />} />
         <Route path="orgs" element={<OrgsPage />} />
+        <Route path="orgs/:slug" element={<OrgDetailPage />} />
         <Route path="my-dashboard/*" element={<LegacyDashboardRedirect />} />
         <Route path="manage" element={<DashboardPage />}>
           <Route index element={<Navigate to="overview" replace />} />

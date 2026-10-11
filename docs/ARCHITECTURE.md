@@ -65,4 +65,5 @@ page.tsx / components/*.tsx
 ## 8. Tài liệu tính năng
 
 - `docs/AUTH.md`: wizard đăng ký theo bước, validation `touched`, hai tầng tài khoản, thẻ phụ sticky.
-- `docs/ORGS.md`: CRUD tổ chức (xóa mềm/khôi phục/xóa cứng), thùng rác, dropzone ảnh/video, upload `FormData`.
+- `docs/ORGS.md`: trang public `/orgs` + `/orgs/:slug` (discovery board, trust checklist, realtime `orgs:directory`), CRUD tổ chức (xóa mềm/khôi phục/xóa cứng), thùng rác, dropzone ảnh/video, upload `FormData`.
+- `docs/REALTIME.md`: singleton socket `core/realtime.ts`, ticket một lần, socket ẩn danh cho kênh public, resubscribe + backoff.

@@ -13,6 +13,7 @@ import {
   useActivityAttendance,
   useCheckIn,
   useCheckOut,
+  useLiveAttendance,
 } from "../hooks.ts";
 import {
   CHECKIN_METHOD_LABELS,
@@ -29,6 +30,7 @@ export function AttendancePanel({
   const attendance = useActivityAttendance(activityId);
   const checkIn = useCheckIn(activityId);
   const checkOut = useCheckOut(activityId);
+  useLiveAttendance(activityId);
   const [token, setToken] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");

@@ -5,7 +5,10 @@ import {
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { ApiError } from "../core/api.ts";
+import { attendanceChannel, subscribeChannel } from "../core/realtime.ts";
+import { hourKeys } from "../hours/keys.ts";
 import {
   applyToActivity,
   cancelRegistration,
@@ -158,4 +161,21 @@ export function useCheckOut(
       checkOut(activityId, recordId, actualHours),
     ...useInvalidateRegistrations(),
   });
+}
+
+// Live check-in feed (AGENTS.md 12.1): committed check-in/out events on
+// attendance:{activityId} refresh the roster, the attendance list, and
+// the hours tiles (check-out can credit pending hours). The payload is
+// never trusted as truth; queries are invalidated and refetched.
+export function useLiveAttendance(activityId: string | undefined): void {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (activityId === undefined) return undefined;
+    return subscribeChannel(attendanceChannel(activityId), () => {
+      void queryClient.invalidateQueries({
+        queryKey: registrationKeys.all,
+      });
+      void queryClient.invalidateQueries({ queryKey: hourKeys.all });
+    });
+  }, [activityId, queryClient]);
 }

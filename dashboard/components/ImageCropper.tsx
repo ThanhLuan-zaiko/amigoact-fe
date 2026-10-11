@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import type { PointerEvent, ReactElement } from "react";
-import { FiCheck, FiX, FiZoomIn } from "react-icons/fi";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { ReactElement } from "react";
+import { FiCheck, FiCompass, FiLayout, FiX, FiZoomIn, FiZoomOut } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { MAX_IMAGE_BYTES } from "../schemas.ts";
+import type { CropFilters, CropView } from "../crop-math.ts";
+import { anchoredView, clampCenter, clampZoom, DEFAULT_FILTERS, fitView, MAX_ZOOM, stepOf, tiltOf, VIEW_W } from "../crop-math.ts";
+import { exportCropped, isGifFile, renderCropPreview } from "../crop-render.ts";
+import { useCropGestures } from "../crop-gestures.ts";
+import { AdjustPanel, CropToolbar, SliderRow } from "./CropControls.tsx";
 
-const VIEW_W = 520;
-const EXPORT_CAP = 2048;
 const ASPECTS: { label: string; value: number }[] = [{ label: "1:1", value: 1 }, { label: "4:3", value: 4 / 3 }, { label: "16:9", value: 16 / 9 }, { label: "3:1", value: 3 }];
 
 interface ImageCropperProps {
@@ -15,28 +18,30 @@ interface ImageCropperProps {
   onCancel: () => void;
 }
 
-interface Offset { x: number; y: number; }
-
-function isGifFile(file: File): boolean { return file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif"); }
-
-function pickOutputMime(file: File): string {
-  if (file.type === "image/png") return "image/png";
-  if (file.type === "image/webp") return "image/webp";
-  return "image/jpeg";
-}
-
 export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCropperProps): ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const dragRef = useRef<{ px: number; py: number; origin: Offset } | null>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [tooLarge, setTooLarge] = useState(false);
   const [aspect, setAspect] = useState(defaultAspect);
-  const [zoom, setZoom] = useState(1);
-  const [offset, setOffset] = useState<Offset>({ x: 0, y: 0 });
+  const [view, setView] = useState<CropView | null>(null);
+  const [filters, setFilters] = useState<CropFilters>(DEFAULT_FILTERS);
+  const [adjustOpen, setAdjustOpen] = useState(false);
   const viewH = Math.round(VIEW_W / aspect);
   const gif = isGifFile(file);
+
+  const commit = useCallback(
+    (next: CropView) => {
+      const img = imgRef.current;
+      if (!img) return;
+      const cc = clampCenter(next, img.naturalWidth, img.naturalHeight, VIEW_W, viewH);
+      setTooLarge(false);
+      setView({ ...next, cx: cc.x, cy: cc.y });
+    },
+    [viewH],
+  );
+  const gestures = useCropGestures(canvasRef, imgRef, view, VIEW_W, viewH, commit);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,91 +54,42 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
     return () => { cancelled = true; URL.revokeObjectURL(url); imgRef.current = null; };
   }, [file]);
 
-  function fitScale(img: HTMLImageElement): number { return Math.max(VIEW_W / img.naturalWidth, viewH / img.naturalHeight); }
-
-  function clamp(next: Offset, scale: number, img: HTMLImageElement): Offset {
-    const dw = img.naturalWidth * scale;
-    const dh = img.naturalHeight * scale;
-    return { x: Math.min(0, Math.max(VIEW_W - dw, next.x)), y: Math.min(0, Math.max(viewH - dh, next.y)) };
-  }
-
   useEffect(() => {
-    const img = imgRef.current;
-    if (!ready || !img) return;
-    const fit = Math.max(VIEW_W / img.naturalWidth, viewH / img.naturalHeight);
-    setZoom(1);
-    setOffset({
-      x: (VIEW_W - img.naturalWidth * fit) / 2,
-      y: (viewH - img.naturalHeight * fit) / 2,
-    });
-  }, [ready, aspect, viewH]);
+    if (!ready || !imgRef.current) return;
+    setView((prev) => fitView(VIEW_W, viewH, prev?.deg ?? 0, prev?.flipH ?? false, prev?.flipV ?? false));
+  }, [ready, viewH]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const img = imgRef.current;
-    if (!canvas || !img) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    const scale = fitScale(img) * zoom;
-    ctx.fillStyle = "#09090b";
-    ctx.fillRect(0, 0, VIEW_W, viewH);
-    ctx.drawImage(img, offset.x, offset.y, img.naturalWidth * scale, img.naturalHeight * scale);
+    if (!canvas || !img || !view) return;
+    renderCropPreview(canvas, img, view, filters, VIEW_W, viewH);
   });
 
-  function onPointerDown(event: PointerEvent<HTMLCanvasElement>): void {
-    event.currentTarget.setPointerCapture(event.pointerId);
-    dragRef.current = { px: event.clientX, py: event.clientY, origin: offset };
-  }
-
-  function onPointerMove(event: PointerEvent<HTMLCanvasElement>): void {
-    const drag = dragRef.current;
+  function anchorAt(next: CropView, px: number, py: number): void {
     const img = imgRef.current;
-    const canvas = canvasRef.current;
-    if (!drag || !img || !canvas) return;
-    const ratio = VIEW_W / canvas.clientWidth;
-    const next = {
-      x: drag.origin.x + (event.clientX - drag.px) * ratio,
-      y: drag.origin.y + (event.clientY - drag.py) * ratio,
-    };
-    setOffset(clamp(next, fitScale(img) * zoom, img));
+    if (!img || !view) return;
+    commit(anchoredView(view, next, img.naturalWidth, img.naturalHeight, px, py, VIEW_W, viewH));
   }
 
-  function endDrag(event: PointerEvent<HTMLCanvasElement>): void {
-    if (dragRef.current) event.currentTarget.releasePointerCapture(event.pointerId);
-    dragRef.current = null;
+  function applyZoom(zoom: number): void {
+    if (!view) return;
+    anchorAt({ ...view, zoom: clampZoom(zoom) }, VIEW_W / 2, viewH / 2);
   }
 
-  function applyZoom(next: number): void {
-    const img = imgRef.current;
-    if (!img) return;
-    const fit = fitScale(img);
-    const oldScale = fit * zoom;
-    const newScale = fit * next;
-    const cx = VIEW_W / 2;
-    const cy = viewH / 2;
-    const anchor = { x: (cx - offset.x) / oldScale, y: (cy - offset.y) / oldScale };
-    setOffset(clamp({ x: cx - anchor.x * newScale, y: cy - anchor.y * newScale }, newScale, img));
-    setZoom(next);
+  function resetAll(): void {
+    setFilters(DEFAULT_FILTERS);
+    setAspect(defaultAspect);
+    setView(fitView(VIEW_W, Math.round(VIEW_W / defaultAspect)));
+    setTooLarge(false);
   }
 
   async function apply(): Promise<void> {
     const img = imgRef.current;
-    if (!img || gif) return;
-    const scale = fitScale(img) * zoom;
-    const sw = VIEW_W / scale;
-    const sh = viewH / scale;
-    const cap = Math.min(1, EXPORT_CAP / Math.max(sw, sh));
-    const out = document.createElement("canvas");
-    out.width = Math.max(1, Math.round(sw * cap));
-    out.height = Math.max(1, Math.round(sh * cap));
-    out.getContext("2d")?.drawImage(img, -offset.x / scale, -offset.y / scale, sw, sh, 0, 0, out.width, out.height);
-    const mime = pickOutputMime(file);
-    const blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, mime, 0.92));
-    if (!blob) return;
-    if (blob.size > MAX_IMAGE_BYTES) { setTooLarge(true); return; }
-    const ext = mime === "image/png" ? ".png" : mime === "image/webp" ? ".webp" : ".jpg";
-    const name = file.name.replace(/\.[^.]+$/, "") + ext;
-    onApply(new File([blob], name, { type: mime }));
+    if (!img || !view || gif) return;
+    const result = await exportCropped(img, view, filters, file, VIEW_W, viewH, MAX_IMAGE_BYTES);
+    if (result.tooLarge) { setTooLarge(true); return; }
+    if (result.file) onApply(result.file);
   }
 
   if (failed) {
@@ -149,10 +105,14 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
     );
   }
 
+  const tilt = view ? tiltOf(view.deg) : 0;
+  const zoom = view?.zoom ?? 1;
+  const center = { x: VIEW_W / 2, y: viewH / 2 };
+
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
       <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-        Cắt ảnh — kéo để chọn khung, trượt để thu phóng.
+        Cắt &amp; chỉnh ảnh — kéo để di chuyển, cuộn chuột hoặc chụm hai ngón tay để thu phóng.
       </p>
       {gif && (
         <p role="alert" className="text-xs text-amber-600 dark:text-amber-400">
@@ -168,10 +128,7 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
         ref={canvasRef}
         width={VIEW_W}
         height={viewH}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
+        {...gestures}
         className="w-full touch-none rounded-lg bg-zinc-950"
         aria-label="Khung cắt ảnh"
       />
@@ -181,21 +138,51 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
             {preset.label}
           </Button>
         ))}
+        <Button size="icon" variant="ghost" disabled={!ready || aspect === 1} aria-label="Đảo ngang/dọc khung cắt" title="Đảo ngang/dọc khung cắt" onClick={() => setAspect(1 / aspect)}>
+          <FiLayout className="h-5 w-5" aria-hidden="true" />
+        </Button>
       </div>
-      <label className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-        <FiZoomIn className="h-4 w-4 shrink-0" aria-hidden="true" />
-        Thu phóng
-        <input
-          type="range"
-          min={1}
-          max={4}
-          step={0.05}
-          value={zoom}
-          onChange={(event) => applyZoom(Number(event.target.value))}
-          className="min-w-0 flex-1 accent-brand"
-          aria-label="Thu phóng ảnh"
-        />
-      </label>
+      <CropToolbar
+        disabled={!ready}
+        adjustOpen={adjustOpen}
+        onRotate={(delta) => view && anchorAt({ ...view, deg: view.deg + delta }, center.x, center.y)}
+        onFlip={(axis) => view && anchorAt(axis === "h" ? { ...view, flipH: !view.flipH } : { ...view, flipV: !view.flipV }, center.x, center.y)}
+        onToggleAdjust={() => setAdjustOpen((open) => !open)}
+        onReset={resetAll}
+      />
+      {adjustOpen && <AdjustPanel filters={filters} disabled={!ready} onChange={setFilters} />}
+      <SliderRow
+        icon={<FiZoomIn className="h-4 w-4" aria-hidden="true" />}
+        label="Thu phóng"
+        min={1}
+        max={MAX_ZOOM}
+        step={0.05}
+        value={zoom}
+        display={`${Math.round(zoom * 100)}%`}
+        disabled={!ready}
+        onChange={applyZoom}
+        controls={
+          <>
+            <Button size="icon" variant="ghost" disabled={!ready || zoom <= 1} aria-label="Thu nhỏ" onClick={() => applyZoom(zoom - 0.25)}>
+              <FiZoomOut className="h-4 w-4" aria-hidden="true" />
+            </Button>
+            <Button size="icon" variant="ghost" disabled={!ready || zoom >= MAX_ZOOM} aria-label="Phóng to" onClick={() => applyZoom(zoom + 0.25)}>
+              <FiZoomIn className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </>
+        }
+      />
+      <SliderRow
+        icon={<FiCompass className="h-4 w-4" aria-hidden="true" />}
+        label="Nghiêng"
+        min={-45}
+        max={45}
+        step={0.5}
+        value={tilt}
+        display={`${Math.round(tilt * 10) / 10}°`}
+        disabled={!ready}
+        onChange={(value) => view && anchorAt({ ...view, deg: stepOf(view.deg) + value }, center.x, center.y)}
+      />
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="primary" disabled={!ready || gif} onClick={() => void apply()} icon={<FiCheck className="h-4 w-4" aria-hidden="true" />}>
           Áp dụng

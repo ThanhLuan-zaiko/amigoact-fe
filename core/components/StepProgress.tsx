@@ -1,15 +1,15 @@
 import type { ReactElement } from "react";
 import { FiCheck } from "react-icons/fi";
 
-interface RegisterProgressProps {
+interface StepProgressProps {
   step: number;
   total: number;
   label: string;
 }
 
-export function RegisterProgress({ step, total, label }: RegisterProgressProps): ReactElement {
+export function StepProgress({ step, total, label }: StepProgressProps): ReactElement {
   return (
-    <div className="mt-3 flex items-center gap-3" aria-label={label}>
+    <div className="flex items-center gap-3" aria-label={label}>
       <div className="flex items-center gap-1.5" aria-hidden="true">
         {Array.from({ length: total }, (_, index) => {
           const done = index + 1 < step;

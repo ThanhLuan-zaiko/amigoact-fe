@@ -10,7 +10,6 @@ import { orgMediaUrl, type DashboardOrg } from "../api.ts";
 import { orgStatusBucket } from "../schemas.ts";
 import { ORG_KIND_LABELS, ORG_STATUS_LABELS, toVietnameseDashboardMessage } from "../messages.tsx";
 import { OrgCardActions } from "./OrgCardActions.tsx";
-import { OrgEditCard } from "./OrgEditCard.tsx";
 import { OrgMediaStrip } from "./OrgMediaStrip.tsx";
 
 interface OrgRowProps {
@@ -161,7 +160,6 @@ export function OrgRow({
         <OrgMediaStrip media={media} onBrowse={onOpenMedia} />
       )}
       <OrgCardActions org={org} isEditing={editing} onEdit={onEdit} />
-      {editing && <OrgEditCard org={org} onDone={onEdit} />}
     </li>
   );
 }

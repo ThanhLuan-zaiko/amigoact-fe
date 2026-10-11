@@ -11,6 +11,7 @@ import { useRiseOn } from "../../core/motion.ts";
 import { useSession } from "../../auth/hooks.ts";
 import { useMyOrgs } from "../hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
+import { OrgEditModal } from "./OrgEditModal.tsx";
 import { OrgListToolbar, type OrgSort } from "./OrgListToolbar.tsx";
 import { OrgMediaModal } from "./OrgMediaModal.tsx";
 import { OrgRow } from "./OrgRow.tsx";
@@ -74,6 +75,7 @@ export function OrgListCard(): ReactElement {
   const filtering = query.trim() !== "" || bucket !== "all";
   const trashed = (trash.data?.items ?? []).filter((org) => org.deleted_at !== null);
   const mediaOrg = mediaOrgId === null ? null : (allOrgs.data?.items.find((org) => org.id === mediaOrgId) ?? null);
+  const editingOrg = editingId === null ? null : (items.find((org) => org.id === editingId) ?? null);
 
   const listRef = useRiseOn<HTMLUListElement>(`${current}:${items.length}`);
   const trashRef = useRiseOn<HTMLUListElement>(trashed.length);
@@ -182,7 +184,7 @@ export function OrgListCard(): ReactElement {
                     org={org}
                     editing={editingId === org.id}
                     compact={false}
-                    onEdit={() => setEditingId((currentId) => (currentId === org.id ? null : org.id))}
+                    onEdit={() => setEditingId(org.id)}
                     onOpenMedia={() => updateParams({ media: org.id })}
                   />
                 ))}
@@ -240,6 +242,7 @@ export function OrgListCard(): ReactElement {
           onClose={closeMedia}
         />
       )}
+      {editingOrg && <OrgEditModal org={editingOrg} onClose={() => setEditingId(null)} />}
     </>
   );
 }

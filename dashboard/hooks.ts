@@ -14,6 +14,7 @@ import {
   hardDeleteOrg,
   listMyOrgs,
   listOrgMedia,
+  replaceOrgMediaFile,
   restoreOrg,
   setOrgMediaRole,
   softDeleteOrg,
@@ -154,6 +155,21 @@ export function useSetOrgMediaRole(
   return useMutation({
     mutationFn: ({ mediaId, role }: { mediaId: string; role: MediaRole }) =>
       setOrgMediaRole(orgId, mediaId, role),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: dashboardKeys.orgMedia(orgId),
+      });
+    },
+  });
+}
+
+export function useReplaceOrgMediaFile(
+  orgId: string,
+): UseMutationResult<OrgMedia, ApiError, { mediaId: string; file: File }> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ mediaId, file }: { mediaId: string; file: File }) =>
+      replaceOrgMediaFile(orgId, mediaId, file),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: dashboardKeys.orgMedia(orgId),

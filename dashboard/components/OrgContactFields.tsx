@@ -8,7 +8,7 @@ import {
 } from "react-icons/fi";
 import { TextField } from "../../core/components/TextField.tsx";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
-import type { ContactKey, UpdateFieldErrors, UpdateOrgForm } from "../schemas.ts";
+import type { ContactForm, ContactKey, UpdateFieldErrors } from "../schemas.ts";
 
 interface FieldSpec {
   key: ContactKey;
@@ -71,7 +71,7 @@ const FIELDS: FieldSpec[] = [
 ];
 
 interface OrgContactFieldsProps {
-  form: UpdateOrgForm;
+  form: ContactForm;
   errors: UpdateFieldErrors;
   touched: Record<string, boolean>;
   onChange: (key: ContactKey, value: string) => void;

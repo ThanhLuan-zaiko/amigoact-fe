@@ -9,12 +9,15 @@ interface ModalProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  /** Widen the panel from max-w-md to max-w-3xl for denser content. */
+  wide?: boolean;
 }
 
-export function Modal({ open, title, onClose, children }: ModalProps): ReactElement | null {
+export function Modal({ open, title, onClose, children, wide = false }: ModalProps): ReactElement | null {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const downOnOverlay = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -43,8 +46,20 @@ export function Modal({ open, title, onClose, children }: ModalProps): ReactElem
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="presentation"
+      // Close on click, not mousedown: unmounting mid-gesture lets the release
+      // hit a page element under the cursor. Both press and release must land
+      // outside the panel (the backdrop covers the overlay, so comparing
+      // against currentTarget never fires) — a drag out of the panel won't close.
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        downOnOverlay.current = !panelRef.current?.contains(event.target as Node);
+      }}
+      onClick={(event) => {
+        if (
+          downOnOverlay.current &&
+          !panelRef.current?.contains(event.target as Node)
+        ) {
+          onClose();
+        }
       }}
     >
       <div aria-hidden="true" className="absolute inset-0 bg-zinc-950/60" />
@@ -54,7 +69,7 @@ export function Modal({ open, title, onClose, children }: ModalProps): ReactElem
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950"
+        className={`relative max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950 ${wide ? "max-w-3xl" : "max-w-md"}`}
       >
         <div className="flex items-center justify-between gap-2">
           <h3
@@ -68,7 +83,10 @@ export function Modal({ open, title, onClose, children }: ModalProps): ReactElem
             type="button"
             variant="ghost"
             size="icon"
-            onClick={onClose}
+            onClick={(event) => {
+              event.preventDefault();
+              onClose();
+            }}
             aria-label="Đóng hộp thoại"
             icon={<FiX className="h-5 w-5" aria-hidden="true" />}
           />

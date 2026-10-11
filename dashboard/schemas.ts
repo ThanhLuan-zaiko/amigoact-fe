@@ -124,6 +124,9 @@ export interface UpdateOrgForm {
 
 export type ContactKey = keyof Omit<UpdateOrgForm, "name" | "description">;
 
+// Contact block shared by create and edit forms; both keep the raw strings.
+export type ContactForm = Pick<UpdateOrgForm, ContactKey>;
+
 export const CONTACT_FIELD_MAX: Record<string, number> = {
   address: 255,
   city: 100,
@@ -142,7 +145,7 @@ const WEBSITE_PATTERN =
   /^(https?:\/\/)?[a-z0-9][a-z0-9.-]*\.[a-z]{2,}(\/\S*)?$/i;
 
 export function validateContactField(
-  form: UpdateOrgForm,
+  form: ContactForm,
   key: ContactKey,
 ): string | null {
   const value = form[key].trim();

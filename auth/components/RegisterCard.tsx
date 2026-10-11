@@ -6,6 +6,7 @@ import { ApiError } from "../../core/api.ts";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
+import { StepProgress } from "../../core/components/StepProgress.tsx";
 import { useRiseIn } from "../../core/motion.ts";
 import { useLogin, useRegister } from "../hooks.ts";
 import { validateRegisterField, validateRegisterForm, type FieldErrors, type RegisterForm } from "../schemas.ts";
@@ -13,7 +14,6 @@ import { toVietnameseMessage } from "../messages.tsx";
 import { AccountTypeStep } from "./AccountTypeStep.tsx";
 import { BusinessAccountFields } from "./BusinessAccountFields.tsx";
 import { PersonalInfoStep } from "./PersonalInfoStep.tsx";
-import { RegisterProgress } from "./RegisterProgress.tsx";
 
 const PERSONAL_KEYS = ["fullName", "email", "phone", "password", "confirmPassword"] as const;
 const BUSINESS_KEYS = ["companyName", "taxCode", "legalRepName", "legalRepId"] as const;
@@ -161,7 +161,7 @@ export function RegisterCard(): ReactElement {
         Tạo tài khoản để tham gia sự kiện và ghi nhận giờ tình nguyện. Mã xác
         minh sẽ được gửi tới email của bạn.
       </p>
-      <RegisterProgress step={current} total={total} label={STEP_LABELS[current - 1]} />
+      <StepProgress step={current} total={total} label={STEP_LABELS[current - 1]} />
       {serverCode && (
         <div className="mt-4">
           <ErrorState title="Không thể đăng ký" message={toVietnameseMessage(serverCode)} />

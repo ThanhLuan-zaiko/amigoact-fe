@@ -1,24 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { FiHexagon, FiImage, FiLayout, FiPlus, FiTrash2, FiUploadCloud, FiX, FiXOctagon } from "react-icons/fi";
+import { FiPlus, FiUploadCloud, FiX, FiXOctagon } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { useRiseOn } from "../../core/motion.ts";
-import { orgMediaUrl, type MediaRole } from "../api.ts";
-import { assignMediaRole } from "../schemas.ts";
+import { downloadOrgMedia } from "../api.ts";
+import type { MediaRole, OrgMedia } from "../api.ts";
+import { assignMediaRole, defaultAspectForRole } from "../schemas.ts";
 import type { PendingMedia } from "../schemas.ts";
 import {
   useDeleteAllOrgMedia,
   useDeleteOrgMedia,
   useOrgMedia,
+  useReplaceOrgMediaFile,
   useSetOrgMediaRole,
   useUploadOrgMedia,
 } from "../hooks.ts";
-import { MEDIA_ROLE_LABELS, toVietnameseDashboardMessage } from "../messages.tsx";
+import { toVietnameseDashboardMessage } from "../messages.tsx";
+import { ImageCropper } from "./ImageCropper.tsx";
+import { MediaItemCard } from "./MediaItemCard.tsx";
 import { MediaPicker } from "./MediaPicker.tsx";
 
-const ROLE_ICONS: Record<MediaRole, typeof FiImage> = { gallery: FiImage, cover: FiLayout, logo: FiHexagon };
 const PAGE_SIZE = 50;
 
 interface MediaDropzoneProps {
@@ -32,6 +35,7 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
   const setRole = useSetOrgMediaRole(orgId);
   const remove = useDeleteOrgMedia(orgId);
   const wipe = useDeleteAllOrgMedia(orgId);
+  const replace = useReplaceOrgMediaFile(orgId);
   const listRef = useRiseOn<HTMLUListElement>(gallery.data?.length);
   const [pending, setPending] = useState<PendingMedia[]>([]);
   const [confirmWipe, setConfirmWipe] = useState(false);
@@ -39,9 +43,12 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
   const [failedName, setFailedName] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [visible, setVisible] = useState(PAGE_SIZE);
+  const [editing, setEditing] = useState<{ item: OrgMedia; file: File } | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const total = gallery.data?.length ?? 0;
   const shown = (gallery.data ?? []).slice(0, visible);
+  const busy = setRole.isPending || remove.isPending || editLoading || replace.isPending;
   useEffect(() => {
     if (!confirmWipe) return;
     const timer = setTimeout(() => setConfirmWipe(false), 8000);
@@ -78,6 +85,45 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
     setServerCode(null);
     setRole.mutate({ mediaId, role }, { onError: (e) => setServerCode(e instanceof ApiError ? e.code : "REQUEST_FAILED") });
   }
+  async function startEdit(item: OrgMedia): Promise<void> {
+    setServerCode(null);
+    setEditLoading(true);
+    try {
+      const file = await downloadOrgMedia(item);
+      setEditing({ item, file });
+    } catch (error) {
+      setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
+    } finally {
+      setEditLoading(false);
+    }
+  }
+  function applyEdit(file: File): void {
+    if (!editing || replace.isPending) return;
+    const mediaId = editing.item.id;
+    replace.mutate(
+      { mediaId, file },
+      {
+        onSuccess: () => setEditing(null),
+        onError: (error) => {
+          setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
+          setEditing(null);
+        },
+      },
+    );
+  }
+  if (editing) {
+    return (
+      <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
+        <ImageCropper
+          file={editing.file}
+          defaultAspect={defaultAspectForRole(editing.item.role)}
+          onApply={applyEdit}
+          onCancel={() => setEditing(null)}
+        />
+        {replace.isPending && <LoadingState label="Đang lưu ảnh đã chỉnh…" />}
+      </div>
+    );
+  }
   return (
     <div className="flex min-w-0 flex-col gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
       <MediaPicker
@@ -106,6 +152,7 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
           </Button>
         </div>
       )}
+      {editLoading && <LoadingState label="Đang mở ảnh để chỉnh…" />}
       {canManage && total > 0 && (
         <div className="flex justify-end">
           <Button
@@ -142,55 +189,18 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
             {/* Single column on phones so role buttons never squeeze the dialog wider. */}
             <ul ref={listRef} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {shown.map((item) => (
-                <li key={item.id} data-rise className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-2 dark:border-zinc-800">
-                  <div className="relative">
-                    {item.kind === "video" ? (
-                      <video src={orgMediaUrl(item.file_url)} controls preload="none" className="aspect-video w-full rounded-lg bg-zinc-950" />
-                    ) : (
-                      <img src={orgMediaUrl(item.file_url)} alt="Ảnh của tổ chức" loading="lazy" className="aspect-video w-full rounded-lg object-cover" />
-                    )}
-                    {item.role !== "gallery" && (
-                      <span className="absolute left-1 top-1 rounded-md bg-zinc-950/80 px-1.5 py-0.5 text-xs text-zinc-100">
-                        {MEDIA_ROLE_LABELS[item.role]}
-                      </span>
-                    )}
-                  </div>
-                  {item.original_name && (
-                    <p
-                      className="truncate text-xs text-zinc-500 dark:text-zinc-400"
-                      title={item.original_name}
-                    >
-                      {item.original_name}
-                    </p>
-                  )}
-                  {canManage && item.kind === "image" && (
-                    <div className="flex gap-1" role="group" aria-label="Vai trò ảnh">
-                      {(["cover", "logo"] as MediaRole[]).map((role) => {
-                        const RoleIcon = ROLE_ICONS[role];
-                        return (
-                          <Button key={role} type="button" variant={item.role === role ? "primary" : "secondary"} aria-pressed={item.role === role} disabled={setRole.isPending} onClick={() => markRole(item.id, item.role === role ? "gallery" : role)} icon={<RoleIcon className="h-3.5 w-3.5" aria-hidden="true" />} className="flex-1 px-2 py-1 text-xs">
-                            {MEDIA_ROLE_LABELS[role]}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {canManage && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled={remove.isPending}
-                      onClick={() => {
-                        setServerCode(null);
-                        remove.mutate(item.id, { onError: (error) => setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED") });
-                      }}
-                      icon={<FiTrash2 className="h-4 w-4 text-red-600 dark:text-red-400" aria-hidden="true" />}
-                      className="w-full"
-                    >
-                      Xóa tệp
-                    </Button>
-                  )}
-                </li>
+                <MediaItemCard
+                  key={item.id}
+                  item={item}
+                  canManage={canManage}
+                  busy={busy}
+                  onRole={markRole}
+                  onEdit={(target) => void startEdit(target)}
+                  onDelete={(mediaId) => {
+                    setServerCode(null);
+                    remove.mutate(mediaId, { onError: (error) => setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED") });
+                  }}
+                />
               ))}
             </ul>
             {visible < total && (

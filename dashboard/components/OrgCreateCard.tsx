@@ -1,11 +1,12 @@
 import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { FiCheckCircle, FiPlusCircle, FiTag, FiType } from "react-icons/fi";
+import { FiPlusCircle, FiTag, FiType } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
+import { contactPayload, emptyContact, useContactForm } from "../contact-form.ts";
 import { useCreateOrg, useUploadOrgMediaFile } from "../hooks.ts";
 import { toVietnameseDashboardMessage, ORG_KIND_LABELS } from "../messages.tsx";
 import { assignMediaRole, ORG_KINDS, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
@@ -14,6 +15,8 @@ import type { CreateOrgInput, JoinPolicy, OrgKind } from "../api.ts";
 import type { OrgFieldErrors } from "../schemas.ts";
 import { BusinessOrgFields } from "./BusinessOrgFields.tsx";
 import { MediaPicker } from "./MediaPicker.tsx";
+import { OrgContactFields } from "./OrgContactFields.tsx";
+import { OrgCreateNotes } from "./OrgCreateNotes.tsx";
 import { OrgPolicyChips } from "./OrgPolicyChips.tsx";
 
 export function OrgCreateCard(): ReactElement {
@@ -36,6 +39,7 @@ export function OrgCreateCard(): ReactElement {
   const [pendingFiles, setPendingFiles] = useState<PendingMedia[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState<string | null>(null);
+  const contact = useContactForm(emptyContact());
 
   function update(
     key: "name" | "slug" | "description" | "tax_code" | "legal_rep_name" | "legal_rep_id" | "legal_rep_position",
@@ -68,11 +72,12 @@ export function OrgCreateCard(): ReactElement {
   async function handleSubmit(event: FormEvent): Promise<void> {
     event.preventDefault();
     const validation = validateOrgForm(form);
+    const contactErrors = contact.validateAll();
     setErrors(validation);
     setServerCode(null);
     setCreatedName(null);
     setUploadNote(null);
-    if (Object.keys(validation).length > 0) return;
+    if (Object.keys(validation).length > 0 || Object.keys(contactErrors).length > 0) return;
     try {
       const org = await create.mutateAsync({
         name: form.name.trim(),
@@ -80,6 +85,7 @@ export function OrgCreateCard(): ReactElement {
         description: form.description.trim(),
         kind: form.kind,
         join_policy: form.join_policy ?? "invite",
+        ...contactPayload(contact.form),
         ...(form.kind === "business"
           ? {
               tax_code: (form.tax_code ?? "").trim(),
@@ -115,6 +121,7 @@ export function OrgCreateCard(): ReactElement {
         name: "", slug: "", description: "", kind: form.kind, join_policy: "invite",
         tax_code: "", legal_rep_name: "", legal_rep_id: "", legal_rep_position: "",
       });
+      contact.reset();
     } catch (error) {
       setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
     }
@@ -156,24 +163,7 @@ export function OrgCreateCard(): ReactElement {
           />
         </div>
       )}
-      {createdName && (
-        <p
-          role="status"
-          className="mt-3 flex items-center gap-2 rounded-xl border border-brand/40 bg-brand/10 p-3 text-sm text-zinc-900 dark:border-brand/30 dark:bg-brand/10 dark:text-zinc-100"
-        >
-          <FiCheckCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
-          Đã tạo “{createdName}”. Mời thêm thành viên và mở sự kiện đầu tiên.
-        </p>
-      )}
-      {(uploading || uploadNote) && (
-        <p
-          role="status"
-          className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-200 p-3 text-sm text-zinc-900 dark:border-zinc-800 dark:text-zinc-100"
-        >
-          <FiPlusCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
-          {uploading ? "Đang tải ảnh/video lên…" : uploadNote}
-        </p>
-      )}
+      <OrgCreateNotes createdName={createdName} uploading={uploading} uploadNote={uploadNote} />
       <form onSubmit={handleSubmit} noValidate className="mt-3 flex flex-col gap-3">
         <TextField
           label="Tên tổ chức"
@@ -205,6 +195,13 @@ export function OrgCreateCard(): ReactElement {
         {form.kind === "business" && (
           <BusinessOrgFields form={form} errors={errors} onChange={update} />
         )}
+        <OrgContactFields
+          form={contact.form}
+          errors={contact.errors}
+          touched={contact.touched}
+          onChange={contact.change}
+          onBlur={contact.blur}
+        />
         <MediaPicker
           items={pendingFiles} disabled={create.isPending || uploading}
           onAdd={(picked) =>

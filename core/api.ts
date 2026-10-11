@@ -111,11 +111,11 @@ export async function apiFetch<T>(
   }
 }
 
-async function uploadRequest<T>(path: string, form: FormData): Promise<T> {
+async function uploadRequest<T>(path: string, form: FormData, method = "POST"): Promise<T> {
   const headers: Record<string, string> = {};
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
-    method: "POST",
+    method,
     credentials: "include",
     headers,
     body: form,
@@ -126,9 +126,9 @@ async function uploadRequest<T>(path: string, form: FormData): Promise<T> {
   return body as T;
 }
 
-export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
+export async function apiUpload<T>(path: string, form: FormData, method = "POST"): Promise<T> {
   try {
-    return await uploadRequest<T>(path, form);
+    return await uploadRequest<T>(path, form, method);
   } catch (error) {
     if (!(error instanceof ApiError) || error.status !== 401) throw error;
     try {
@@ -137,6 +137,6 @@ export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
       accessToken = null;
       throw error;
     }
-    return uploadRequest<T>(path, form);
+    return uploadRequest<T>(path, form, method);
   }
 }

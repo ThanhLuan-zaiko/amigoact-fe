@@ -19,27 +19,37 @@ backend để đối chiếu API và mã lỗi):
 
 | Trạng thái | Nút |
 |---|---|
-| Đang sống | `Sửa` (mở form inline), `Quản lý`, `Tệp`, `Xóa mềm` |
+| Đang sống | `Sửa` (mở modal `OrgEditModal`), `Quản lý`, `Tệp`, `Xóa mềm` |
 | Thùng rác | `Khôi phục`, `Xóa cứng` (bấm 2 lần: lần 1 xác nhận đỏ, lần 2 xóa thật) |
 
-- Sửa (`OrgEditCard.tsx`): chỉ tên + mô tả (slug, loại đóng băng),
-  validation `touched` như form auth, `Lưu`/`Hủy`.
+- Sửa (`OrgEditCard.tsx` bên trong `OrgEditModal.tsx`, `Modal wide` —
+  `core/components/Modal.tsx` có prop `wide` nới panel lên `max-w-3xl`):
+  chia 2 bước kiểu đăng ký (`core/components/StepProgress.tsx`) — bước 1
+  tên + mô tả + chip `join_policy` (slug, loại đóng băng), bước 2 block
+  liên hệ & pháp lý (`OrgContactFields` + hook `useContactForm` ở
+  `contact-form.ts`); `Tiếp tục` chỉ qua khi bước 1 hợp lệ, submit lỗi
+  tên/mô tả tự nhảy về bước 1, nút `Quay lại`/`Lưu`/`Hủy`.
 - Mọi mutation invalidate `dashboardKeys.all` nên cả danh sách sống và
   thùng rác đều tươi lại. Lỗi backend (`SLUG_TAKEN`, `FORBIDDEN`,
   `ORG_DELETED`...) dịch sang tiếng Việt ở `dashboard/messages.tsx`.
 
 ## 3. Thư viện ảnh/video (`MediaDropzone.tsx`)
 
-Trang tạo (`/manage/orgs/create`) có `MediaPicker.tsx` chọn file trước:
+Trang tạo (`/manage/orgs/create`) cũng hiện block `Thông tin liên hệ &
+pháp lý` (`OrgContactFields`, toàn bộ không bắt buộc — `contactPayload`
+chỉ gửi ô có nhập), và có `MediaPicker.tsx` chọn file trước:
 file không hợp lệ (sai định dạng/quá cỡ) bị lọc ngay kèm cảnh báo, tạo
 org xong file tự đẩy lên nối tiếp, lỗi giữa chừng báo tên file và gợi ý
 thử lại ở mục `Tệp`.
 
 Mỗi ảnh chờ tải (`PendingMedia`) chọn vai trò `Thường`/`Ảnh bìa`/`Logo`
 (`assignMediaRole` giữ chỉ một bìa và một logo) và có thể `Cắt` qua
-`ImageCropper.tsx` (kéo khung, trượt thu phóng, tỉ lệ 1:1/4:3/16:9/3:1,
-xuất canvas tối đa 2048px, giữ nguyên mime jpeg/png/webp). Nhấn `Giữ
-nguyên gốc` để bỏ cắt. Video không cắt và chỉ ở vai trò `Thường` —
+`ImageCropper.tsx` với lõi hình học ở `crop-math.ts` và vẽ/xuất canvas ở
+`crop-render.ts` (kéo để di chuyển, cuộn chuột hoặc chụm hai ngón để thu
+phóng neo theo con trỏ, xoay ±90°, nghiêng ±45°, lật ngang/dọc, tỉ lệ
+1:1/4:3/16:9/3:1 kèm nút đảo ngang/dọc, lưới tam phân, bộ lọc độ
+sáng/tương phản/bão hoà qua `CropControls.tsx`, xuất canvas tối đa
+2048px, giữ nguyên mime jpeg/png/webp). Nhấn `Giữ nguyên gốc` để bỏ cắt. Video không cắt và chỉ ở vai trò `Thường` —
 backend trả `INVALID_MEDIA_ROLE` nếu ép bìa/logo lên video hoặc người
 không phải chủ org đặt vai trò.
 
@@ -57,6 +67,11 @@ vùng thư viện bên trong cuộn):
 - Preview lưới `1 cột` (mobile) / `3 cột` (`sm:` trở lên): `img` cho ảnh, `video`
   (`controls`, `preload="metadata"`) cho video. URL tệp ghép bằng
   `orgMediaUrl()` (`apiBaseUrl()` + `file_url` tương đối từ backend).
+- Ảnh đã tải lên có nút `Chỉnh sửa` (`MediaItemCard.tsx`): tải bytes
+  về (`downloadOrgMedia`), mở lại `ImageCropper`, rồi `PUT
+  /orgs/{id}/media/{id}/file` thay bytes tại chỗ — giữ nguyên asset id,
+  vai trò và brand pointer; ảnh có `updated_at` để bust cache khi URL
+  không đổi. Video không sửa được (chỉ role/xoá).
 - Chủ org (`canManage` = `owner_id === session.id`) thấy trên ảnh nút
   `Ảnh bìa`/`Logo` bật-tắt gọi `PATCH /orgs/{id}/media/{mediaId}` và nút
   `Xóa tệp`; badge vai trò nằm góc trái thumbnail. Bấm lại vai trò đang

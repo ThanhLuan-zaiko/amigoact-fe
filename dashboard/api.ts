@@ -1,4 +1,4 @@
-import { apiBaseUrl, apiFetch, apiUpload } from "../core/api.ts";
+import { ApiError, apiBaseUrl, apiFetch, apiUpload } from "../core/api.ts";
 
 export type OrgKind = "organization" | "club" | "group" | "business";
 export type JoinPolicy = "invite" | "open";
@@ -140,6 +140,7 @@ export interface OrgMedia {
   original_name: string | null;
   upload_status: string;
   created_at: string;
+  updated_at: string | null;
 }
 
 export function orgMediaUrl(fileUrl: string): string {
@@ -176,6 +177,29 @@ export async function setOrgMediaRole(
     method: "PATCH",
     body: JSON.stringify({ role }),
   });
+}
+
+export async function replaceOrgMediaFile(
+  orgId: string,
+  mediaId: string,
+  file: File,
+): Promise<OrgMedia> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  return apiUpload<OrgMedia>(`/orgs/${orgId}/media/${mediaId}/file`, form, "PUT");
+}
+
+export async function downloadOrgMedia(item: OrgMedia): Promise<File> {
+  const response = await fetch(orgMediaUrl(item.file_url), { credentials: "include" });
+  if (!response.ok) {
+    throw new ApiError(response.status, {
+      code: "REQUEST_FAILED",
+      message: `Media download failed (${response.status})`,
+    });
+  }
+  const blob = await response.blob();
+  const name = item.original_name ?? `media-${item.id}`;
+  return new File([blob], name, { type: item.mime || blob.type });
 }
 
 export async function deleteOrgMedia(orgId: string, mediaId: string): Promise<void> {

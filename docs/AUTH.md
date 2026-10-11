@@ -11,7 +11,8 @@ ngợp (cá nhân 2 bước, doanh nghiệp 3 bước):
 | 2 | Họ tên, email, phone, mật khẩu, nhập lại | `PersonalInfoStep.tsx` |
 | 3 (chỉ business) | Tên công ty, MST, người đại diện, CCCD, chức danh | `BusinessAccountFields.tsx` |
 
-`RegisterProgress.tsx` vẽ chấm tròn + `Bước X/Y` (xong có tích xanh).
+`core/components/StepProgress.tsx` vẽ chấm tròn + `Bước X/Y` (xong có
+tích xanh) — primitive dùng chung, dashboard cũng xài (form sửa org).
 Nút `Tiếp tục`/`Đăng ký` disabled cho tới khi bước hợp lệ, kèm gợi ý
 `Điền đầy đủ thông tin hợp lệ để tiếp tục`. Nhấn Enter ở bước giữa chỉ
 sang bước tiếp theo, không validate cả form.

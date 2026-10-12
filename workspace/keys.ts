@@ -1,9 +1,24 @@
-import type { PostListParams } from "./api.ts";
+import type { PostListParams } from "./board-api.ts";
 
+// Every board key nests under [..., "posts", orgId] so one prefix
+// invalidation (mutations, posts:{org} realtime) refreshes feed, detail,
+// drafts and trash together.
 export const workspaceKeys = {
   all: ["workspace"] as const,
   posts: (orgId: string | null, params: PostListParams = {}) =>
-    [...workspaceKeys.all, "posts", orgId, params.kind ?? "all"] as const,
+    [
+      ...workspaceKeys.all,
+      "posts",
+      orgId,
+      params.kind ?? "all",
+      params.page ?? 1,
+    ] as const,
+  post: (orgId: string | null, postId: string | null) =>
+    [...workspaceKeys.all, "posts", orgId, "detail", postId] as const,
+  drafts: (orgId: string | null, page = 1) =>
+    [...workspaceKeys.all, "posts", orgId, "drafts", page] as const,
+  trash: (orgId: string | null, page = 1) =>
+    [...workspaceKeys.all, "posts", orgId, "trash", page] as const,
   comments: (postId: string) =>
     [...workspaceKeys.all, "comments", postId] as const,
   chat: (roomId: string | null) =>

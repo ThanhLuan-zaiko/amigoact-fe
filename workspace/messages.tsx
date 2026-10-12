@@ -14,6 +14,13 @@ const MESSAGES: Record<string, string> = {
   POST_DELETED: "Đã xóa bài viết.",
   POST_PINNED: "Đã ghim bài viết.",
   POST_UNPINNED: "Đã bỏ ghim bài viết.",
+  INVALID_POST_STATE: "Bài viết không ở trạng thái phù hợp cho thao tác này.",
+  POST_CONTENT_REQUIRED: "Bài viết cần có nội dung trước khi tiếp tục.",
+  POST_TITLE_REQUIRED: "Thông báo cần có tiêu đề.",
+  UPLOAD_IN_PROGRESS: "Đang tải tệp lên, vui lòng chờ hoàn tất.",
+  UNSUPPORTED_MEDIA:
+    "Chỉ nhận ảnh (JPG, PNG, WebP, GIF, AVIF, BMP, TIFF, HEIC) và video (MP4, WebM, MOV).",
+  MEDIA_TOO_LARGE: "Tệp vượt quá dung lượng cho phép.",
   COMMENT_POSTED: "Đã bình luận.",
   COMMENT_DELETED: "Đã xóa bình luận.",
   MESSAGE_DELETED: "Đã xóa tin nhắn.",
@@ -26,6 +33,21 @@ export function toVietnameseWorkspaceMessage(code: string): string {
 export const POST_KIND_LABELS: Record<string, string> = {
   announcement: "Thông báo",
   discussion: "Thảo luận",
+};
+
+export const POST_STATUS_LABELS: Record<string, string> = {
+  published: "Đã đăng",
+  draft: "Nháp",
+};
+
+export const BLOCK_TYPE_LABELS: Record<string, string> = {
+  paragraph: "Đoạn văn",
+  heading: "Tiêu đề phụ",
+  quote: "Trích dẫn",
+  list: "Danh sách",
+  image: "Ảnh",
+  video: "Video",
+  divider: "Đường kẻ ngang",
 };
 
 // Toast copy for board events pushed on posts:{orgId} by other actors.
@@ -46,6 +68,12 @@ export function postEventToast(
       return `${actor} vừa ghim một bài viết.`;
     case "post.unpinned":
       return `${actor} vừa bỏ ghim một bài viết.`;
+    case "post.unpublished":
+      return `${actor} vừa chuyển một bài viết về nháp.`;
+    case "post.restored":
+      return `${actor} vừa khôi phục một bài viết.`;
+    case "post.purged":
+      return `${actor} vừa xóa vĩnh viễn một bài viết.`;
     default:
       return null;
   }
@@ -61,6 +89,10 @@ export function formatTime(iso: string | null): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+export function readingTimeLabel(minutes: number): string {
+  return `${minutes} phút đọc`;
 }
 
 export function formatDay(iso: string | null): string {

@@ -40,6 +40,8 @@ import { MyRegistrationsPage } from "./registrations/mine-page.tsx";
 import { VolunteerProfilePage } from "./profiles/volunteer-page.tsx";
 import { WorkspaceBoardPage } from "./workspace/board-page.tsx";
 import { WorkspaceChatPage } from "./workspace/chat-page.tsx";
+import { WorkspaceReadPage } from "./workspace/read-page.tsx";
+import { WorkspaceWritePage } from "./workspace/write-page.tsx";
 
 function LegacyDashboardRedirect(): ReactElement {
   const { "*": splat = "" } = useParams();
@@ -104,6 +106,8 @@ export default function App(): ReactElement {
           />
           <Route path="members" element={<DashboardMembersPage />} />
           <Route path="board" element={<WorkspaceBoardPage />} />
+          <Route path="board/write" element={<WorkspaceWritePage />} />
+          <Route path="board/post" element={<WorkspaceReadPage />} />
           <Route path="chat" element={<WorkspaceChatPage />} />
           <Route path="audit" element={<AuditPage />} />
           <Route path="settings" element={<DashboardSettingsPage />} />

@@ -38,21 +38,8 @@ interface WsTicket { ticket: string; expires_in: number; }
 
 interface ReadyData { heartbeat_seconds?: number; }
 
-export function notificationsChannel(userId: string): string {
-  return `notifications:${userId}`;
-}
-
-export function attendanceChannel(activityId: string): string {
-  return `attendance:${activityId}`;
-}
-
-export function activitiesChannel(orgId: string): string {
-  return `activities:${orgId}`;
-}
-
-export function membersChannel(orgId: string): string {
-  return `members:${orgId}`;
-}
+export { activitiesChannel, attendanceChannel, chatChannel, membersChannel,
+  notificationsChannel, postsChannel } from "./channels.ts";
 
 function wsUrl(ticket: string): string {
   const url = new URL(apiBaseUrl());
@@ -305,6 +292,11 @@ class RealtimeClient {
     }
   }
 
+  /** Ephemeral typing hint onto a chat:{org} channel; safe when closed. */
+  sendTyping(channel: string): void {
+    this.send("typing.v1", { channel });
+  }
+
   private armWatchdog(): void {
     this.clearWatchdog();
     const clamped = Math.min(MAX_WATCHDOG_MS, Math.max(MIN_WATCHDOG_MS, this.watchdogMs));
@@ -346,4 +338,8 @@ export function subscribeChannel(channel: string, handler: ChannelHandler): () =
 
 export function onRealtimeStatus(handler: StatusHandler): () => void {
   return realtime.onStatus(handler);
+}
+
+export function sendTypingPing(channel: string): void {
+  realtime.sendTyping(channel);
 }

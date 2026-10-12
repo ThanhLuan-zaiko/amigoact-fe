@@ -38,6 +38,8 @@ import { OrgsPage } from "./orgs/page.tsx";
 import { PublicVolunteerPage } from "./profiles/public-page.tsx";
 import { MyRegistrationsPage } from "./registrations/mine-page.tsx";
 import { VolunteerProfilePage } from "./profiles/volunteer-page.tsx";
+import { WorkspaceBoardPage } from "./workspace/board-page.tsx";
+import { WorkspaceChatPage } from "./workspace/chat-page.tsx";
 
 function LegacyDashboardRedirect(): ReactElement {
   const { "*": splat = "" } = useParams();
@@ -101,6 +103,8 @@ export default function App(): ReactElement {
             element={<MyCertificatesPage />}
           />
           <Route path="members" element={<DashboardMembersPage />} />
+          <Route path="board" element={<WorkspaceBoardPage />} />
+          <Route path="chat" element={<WorkspaceChatPage />} />
           <Route path="audit" element={<AuditPage />} />
           <Route path="settings" element={<DashboardSettingsPage />} />
           <Route path="*" element={<NotFoundPage />} />

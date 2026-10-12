@@ -1,11 +1,11 @@
 import type { ReactElement } from "react";
-import { FiEdit2, FiHexagon, FiImage, FiLayout, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiHexagon, FiImage, FiLayout, FiPaperclip, FiTrash2 } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { orgMediaUrl } from "../api.ts";
 import type { MediaRole, OrgMedia } from "../api.ts";
 import { MEDIA_ROLE_LABELS } from "../messages.tsx";
 
-const ROLE_ICONS: Record<MediaRole, typeof FiImage> = { gallery: FiImage, cover: FiLayout, logo: FiHexagon };
+const ROLE_ICONS: Record<MediaRole, typeof FiImage> = { gallery: FiImage, cover: FiLayout, logo: FiHexagon, attachment: FiPaperclip };
 
 function mediaSrc(item: OrgMedia): string {
   const base = orgMediaUrl(item.file_url);

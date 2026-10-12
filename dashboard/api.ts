@@ -126,7 +126,7 @@ export async function restoreOrg(id: string): Promise<DashboardOrg> {
   return apiFetch<DashboardOrg>(`/orgs/${id}/restore`, { method: "POST" });
 }
 
-export type MediaRole = "gallery" | "cover" | "logo";
+export type MediaRole = "gallery" | "cover" | "logo" | "attachment";
 
 export interface OrgMedia {
   id: string;

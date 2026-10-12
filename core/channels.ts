@@ -1,0 +1,28 @@
+/**
+ * Channel names mirror backend AGENTS.md 16.3. The realtime client in
+ * core/realtime.ts re-exports these so existing imports keep working.
+ */
+
+export function notificationsChannel(userId: string): string {
+  return `notifications:${userId}`;
+}
+
+export function attendanceChannel(activityId: string): string {
+  return `attendance:${activityId}`;
+}
+
+export function activitiesChannel(orgId: string): string {
+  return `activities:${orgId}`;
+}
+
+export function membersChannel(orgId: string): string {
+  return `members:${orgId}`;
+}
+
+export function postsChannel(orgId: string): string {
+  return `posts:${orgId}`;
+}
+
+export function chatChannel(roomId: string): string {
+  return `chat:${roomId}`;
+}

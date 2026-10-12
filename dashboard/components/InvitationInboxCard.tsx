@@ -88,22 +88,30 @@ export function InvitationInboxCard(): ReactElement | null {
           </div>
         )}
         {items.length > 0 && (
-          <ul ref={listRef} className="flex flex-col gap-3">
+          <ul
+            ref={listRef}
+            className="divide-y divide-zinc-200 dark:divide-zinc-800"
+          >
             {items.map((invite: MyMembership) => (
               <li
                 key={invite.org_id}
                 data-rise
-                className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {invite.org_name}
-                  </p>
-                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    {`@${invite.org_slug}`}
-                    {invitedLabel(invite.joined_at) ? ` · mời ${invitedLabel(invite.joined_at)}` : ""}
-                    {invite.invited_by_name ? ` · bởi ${invite.invited_by_name}` : ""}
-                  </p>
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+                    <FiMail className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      {invite.org_name}
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                      {`@${invite.org_slug}`}
+                      {invitedLabel(invite.joined_at) ? ` · mời ${invitedLabel(invite.joined_at)}` : ""}
+                      {invite.invited_by_name ? ` · bởi ${invite.invited_by_name}` : ""}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button

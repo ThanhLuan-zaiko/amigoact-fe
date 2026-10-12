@@ -210,6 +210,12 @@ class RealtimeClient {
         if (typeof channel === "string") this.dispatch(channel, frame.data);
         break;
       }
+      case "unsubscribed.v1": {
+        // Server-side revocation: never re-join (a 4403 would drop the socket).
+        const channel = frame.data["channel"];
+        if (frame.data["reason"] === "ACCESS_REVOKED" && typeof channel === "string") this.denied.add(channel);
+        break;
+      }
       case "error.v1": {
         const code = frame.data["code"];
         const channel = frame.data["channel"];

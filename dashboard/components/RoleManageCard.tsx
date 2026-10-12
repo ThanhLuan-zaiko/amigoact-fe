@@ -50,13 +50,13 @@ export function RoleManageCard({
   }
 
   return (
-    <div className="mt-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+    <>
       <div data-rise className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <FiShield className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
-          <h4 className="text-sm font-semibold text-zinc-900 sm:text-base dark:text-zinc-100">
+          <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Vai trò tùy chỉnh
-          </h4>
+          </h3>
         </div>
         {canManage && (
           <Button
@@ -86,11 +86,11 @@ export function RoleManageCard({
           />
         )}
         {items.length > 0 && (
-          <ul className="flex flex-col gap-3">
+          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {items.map((role) => (
               <li
                 key={role.id}
-                className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
+                className="flex flex-col gap-2 py-4 first:pt-0"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-2">
@@ -166,6 +166,6 @@ export function RoleManageCard({
         open={target !== null}
         onClose={() => setTarget(null)}
       />
-    </div>
+    </>
   );
 }

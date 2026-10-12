@@ -71,7 +71,7 @@ export function useMyMemberships(
 }
 
 // Org role catalog: every member can read it, so it is always safe to
-// subscribe — the server enforces membership on its side.
+// subscribe - the server enforces membership on its side.
 export function useOrgRoles(
   orgId: string | null,
 ): UseQueryResult<OrgRoleList, ApiError> {
@@ -280,12 +280,14 @@ export function useMemberRealtime(
   useEffect(() => {
     if (orgId === null) return undefined;
     return subscribeChannel(membersChannel(orgId), (payload) => {
-      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
       const action = payload["action"];
+      // Presence frames share the channel but carry "presence", not
+      // "action" - they must never invalidate the roster.
+      if (typeof action !== "string") return;
+      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
       const actorId = payload["actor_id"];
       const targetId = payload["user_id"];
       const detail = payload["detail"];
-      if (typeof action !== "string") return;
       if (actorId === selfId || targetId === selfId) return;
       const message = memberEventToast(
         action,

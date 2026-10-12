@@ -16,6 +16,9 @@ interface MemberOrgPickerProps {
   orgs: DashboardOrg[];
   selectedId: string | null;
   onSelect: (orgId: string) => void;
+  // bare strips the field label and selected-org meta; used inside
+  // MemberOrgCard where the card header already owns that context.
+  bare?: boolean;
 }
 
 // Up to this many orgs, the plain chip row stays readable; past it the
@@ -27,6 +30,7 @@ export function MemberOrgPicker({
   orgs,
   selectedId,
   onSelect,
+  bare = false,
 }: MemberOrgPickerProps): ReactElement {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
@@ -47,7 +51,9 @@ export function MemberOrgPicker({
 
   return (
     <div className="mt-3 flex flex-col gap-2">
-      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Tổ chức</p>
+      {!bare && (
+        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Tổ chức</p>
+      )}
       {!many && (
         <div role="group" aria-label="Chọn tổ chức" className="flex flex-wrap gap-2">
           {orgs.map((org) => (
@@ -127,7 +133,7 @@ export function MemberOrgPicker({
           )}
         </>
       )}
-      {selected && (
+      {selected && !bare && (
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           {`${ORG_KIND_LABELS[selected.kind] ?? selected.kind} · @${selected.slug} · ${JOIN_POLICY_LABELS[selected.join_policy] ?? selected.join_policy}`}
         </p>

@@ -11,6 +11,7 @@ interface MemberRowProps {
   viewerPermissions: string[];
   orgRoles: OrgRole[];
   selfId: string | undefined;
+  online: boolean;
 }
 
 const ROLE_BADGES: Record<string, string> = {
@@ -36,6 +37,14 @@ const STATUS_BADGES: Record<string, string> = {
     "dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400",
 };
 
+// Avatar corner dot mirrors the status badge palette.
+const STATUS_DOTS: Record<string, string> = {
+  active: "bg-emerald-500",
+  invited: "bg-amber-500",
+  suspended: "bg-red-500",
+  left: "bg-zinc-400",
+};
+
 function joinedLabel(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
@@ -54,52 +63,74 @@ export function MemberRow({
   viewerPermissions,
   orgRoles,
   selfId,
+  online,
 }: MemberRowProps): ReactElement {
   const joined = joinedLabel(member.joined_at);
   const statusBadge = member.status === "active" ? null : STATUS_BADGES[member.status];
+  // Presence only applies to active members; other statuses keep their dot.
+  const dotTone =
+    member.status === "active"
+      ? online
+        ? "bg-emerald-500"
+        : "bg-zinc-300 dark:bg-zinc-600"
+      : (STATUS_DOTS[member.status] ?? "bg-zinc-400");
+  const presenceLabel =
+    member.status === "active"
+      ? online
+        ? "Đang online"
+        : "Ngoại tuyến"
+      : (MEMBER_STATUS_LABELS[member.status] ?? member.status);
 
   return (
     <li
       data-rise
-      className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
+      className="relative flex items-start gap-3 py-4 has-[[aria-expanded=true]]:z-20"
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex min-w-0 gap-3">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-sm font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-            {member.full_name ? (
-              initialOf(member.full_name)
-            ) : (
-              <FiUser className="h-5 w-5" aria-hidden="true" />
-            )}
-          </span>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {member.full_name}
-              </p>
-              {member.roles.map((role) => (
-                <span
-                  key={role}
-                  className={`rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_BADGES[role] ?? CUSTOM_BADGE}`}
-                >
-                  {MEMBER_ROLE_LABELS[role] ?? role}
-                </span>
-              ))}
-              {statusBadge && (
-                <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${statusBadge}`}>
-                  {MEMBER_STATUS_LABELS[member.status] ?? member.status}
-                </span>
-              )}
-            </div>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              {member.email ? `${member.email} · ` : ""}
-              {joined ? `tham gia ${joined}` : "thành viên"}
-              {member.status === "invited" && member.invited_by_name
-                ? ` · mời bởi ${member.invited_by_name}`
-                : ""}
-            </p>
-          </div>
+      <span className="relative shrink-0">
+        <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-sm font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+          {member.full_name ? (
+            initialOf(member.full_name)
+          ) : (
+            <FiUser className="h-5 w-5" aria-hidden="true" />
+          )}
+        </span>
+        <span
+          aria-hidden="true"
+          title={presenceLabel}
+          className={`absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-950 ${dotTone}`}
+        />
+        <span className="sr-only">{presenceLabel}</span>
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            {member.full_name}
+          </p>
+          {member.roles.map((role) => (
+            <span
+              key={role}
+              className={`rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_BADGES[role] ?? CUSTOM_BADGE}`}
+            >
+              {MEMBER_ROLE_LABELS[role] ?? role}
+            </span>
+          ))}
+          {statusBadge && (
+            <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${statusBadge}`}>
+              {MEMBER_STATUS_LABELS[member.status] ?? member.status}
+            </span>
+          )}
         </div>
+        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          {member.email ? `${member.email} · ` : ""}
+          {joined ? `tham gia ${joined}` : "thành viên"}
+          {member.status === "invited" && member.invited_by_name
+            ? ` · mời bởi ${member.invited_by_name}`
+            : ""}
+          {member.status === "active" && online && (
+            // Visual echo only: the avatar's sr-only label already says it.
+            <span aria-hidden="true"> · đang online</span>
+          )}
+        </p>
       </div>
       <MemberActions
         orgId={orgId}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
+import type { IconType } from "react-icons";
 import {
   FiMinusCircle,
   FiPlay,
@@ -8,11 +9,12 @@ import {
   FiUserX,
 } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { Button } from "../../core/components/Button.tsx";
 import { pushToast } from "../../core/toast.ts";
 import { useRemoveMember, useUpdateMember } from "../members-hooks.ts";
 import { memberMutationToast, toVietnameseDashboardMessage } from "../messages.tsx";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
+import { MemberMenu } from "./MemberMenu.tsx";
+import type { MenuAction } from "./MemberMenu.tsx";
 import { MemberRoleEditor } from "./MemberRoleEditor.tsx";
 
 interface MemberActionsProps {
@@ -34,9 +36,17 @@ export function MemberActions({
 }: MemberActionsProps): ReactElement | null {
   const update = useUpdateMember(orgId);
   const remove = useRemoveMember(orgId);
-  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [confirming, setConfirming] = useState<string | null>(null);
   const [editingRoles, setEditingRoles] = useState(false);
   const busy = update.isPending || remove.isPending;
+
+  // Every close path disarms the destructive confirm, so a reopened menu
+  // never shows a stale "press again" entry that deletes in one click.
+  function setMenuOpen(next: boolean): void {
+    setOpen(next);
+    if (!next) setConfirming(null);
+  }
 
   const isOwner = viewerRole === "owner";
   const targetOwner = member.roles.includes("owner");
@@ -44,26 +54,23 @@ export function MemberActions({
   // Non-owners can never act on an admin; nobody acts on the owner.
   const canActOnTarget =
     !isSelf && !targetOwner && (isOwner || !targetAdmin);
+  const can = (code: string): boolean =>
+    isOwner || viewerPermissions.includes(code);
   const canAssign =
-    canActOnTarget &&
-    member.status === "active" &&
-    (isOwner || viewerPermissions.includes("member:role-assign"));
+    canActOnTarget && member.status === "active" && can("member:role-assign");
   const canSuspend =
-    canActOnTarget && member.status === "active" &&
-    (isOwner || viewerPermissions.includes("member:suspend"));
+    canActOnTarget && member.status === "active" && can("member:suspend");
   const canReactivate =
-    canActOnTarget && member.status === "suspended" &&
-    (isOwner || viewerPermissions.includes("member:suspend"));
+    canActOnTarget && member.status === "suspended" && can("member:suspend");
   const canRemove =
-    canActOnTarget && member.status !== "left" &&
-    (isOwner || viewerPermissions.includes("member:remove"));
+    canActOnTarget && member.status !== "left" && can("member:remove");
   const canLeave =
     isSelf && !targetOwner && member.status !== "left" && member.status !== "invited";
 
   async function run(task: Promise<unknown>, action: string): Promise<void> {
     try {
       await task;
-      setConfirmRemove(false);
+      setConfirming(null);
       pushToast({
         tone: "success",
         title: memberMutationToast(action, member.full_name || null),
@@ -82,89 +89,96 @@ export function MemberActions({
     return null;
   }
 
+  function updateStatus(status: "active" | "suspended", action: string): void {
+    setMenuOpen(false);
+    void run(
+      update.mutateAsync({ userId: member.user_id, input: { status } }),
+      action,
+    );
+  }
+
+  // Destructive entries arm on the first press and fire on the second,
+  // keeping the confirm step inside the menu.
+  function destructive(
+    key: string,
+    idleLabel: string,
+    armedLabel: string,
+    Icon: IconType,
+    action: string,
+  ): MenuAction {
+    const armed = confirming === key;
+    return {
+      key,
+      Icon,
+      danger: true,
+      armed,
+      label: armed ? armedLabel : idleLabel,
+      onSelect: () => {
+        if (!armed) {
+          setConfirming(key);
+          return;
+        }
+        setMenuOpen(false);
+        void run(remove.mutateAsync(member.user_id), action);
+      },
+    };
+  }
+
+  const items: MenuAction[] = [];
+  if (canAssign) {
+    items.push({
+      key: "roles",
+      label: "Vai trò",
+      Icon: FiShield,
+      onSelect: () => {
+        setMenuOpen(false);
+        setEditingRoles(true);
+      },
+    });
+  }
+  if (canSuspend) {
+    items.push({
+      key: "suspend",
+      label: "Tạm khóa",
+      Icon: FiMinusCircle,
+      onSelect: () => updateStatus("suspended", "suspended"),
+    });
+  }
+  if (canReactivate) {
+    items.push({
+      key: "reactivate",
+      label: "Kích hoạt",
+      Icon: FiPlay,
+      onSelect: () => updateStatus("active", "reactivated"),
+    });
+  }
+  if (canRemove) {
+    items.push(
+      destructive(
+        "remove",
+        member.status === "invited" ? "Thu hồi" : "Xóa",
+        "Bấm lại để xác nhận",
+        FiUserX,
+        member.status === "invited" ? "revoked" : "removed",
+      ),
+    );
+  }
+  if (canLeave) {
+    items.push(
+      destructive("leave", "Rời tổ chức", "Bấm lại để rời", FiUserMinus, "left"),
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
-        {canAssign && (
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={busy}
-            onClick={() => setEditingRoles(true)}
-            icon={<FiShield className="h-4 w-4" aria-hidden="true" />}
-          >
-            Vai trò
-          </Button>
-        )}
-        {canSuspend && (
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={busy}
-            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { status: "suspended" } }), "suspended")}
-            icon={<FiMinusCircle className="h-4 w-4" aria-hidden="true" />}
-          >
-            Tạm khóa
-          </Button>
-        )}
-        {canReactivate && (
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={busy}
-            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { status: "active" } }), "reactivated")}
-            icon={<FiPlay className="h-4 w-4" aria-hidden="true" />}
-          >
-            Kích hoạt
-          </Button>
-        )}
-        {canRemove && (
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={busy}
-            onClick={() => {
-              if (!confirmRemove) {
-                setConfirmRemove(true);
-                return;
-              }
-              run(remove.mutateAsync(member.user_id), member.status === "invited" ? "revoked" : "removed");
-            }}
-            aria-pressed={confirmRemove}
-            icon={<FiUserX className="h-4 w-4 text-red-600 dark:text-red-400" aria-hidden="true" />}
-            className={
-              confirmRemove
-                ? "border-red-600 text-red-600 dark:border-red-400 dark:text-red-400"
-                : undefined
-            }
-          >
-            {confirmRemove ? "Bấm lại để xác nhận" : member.status === "invited" ? "Thu hồi" : "Xóa"}
-          </Button>
-        )}
-        {canLeave && (
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={busy}
-            onClick={() => {
-              if (!confirmRemove) {
-                setConfirmRemove(true);
-                return;
-              }
-              run(remove.mutateAsync(member.user_id), "left");
-            }}
-            aria-pressed={confirmRemove}
-            icon={<FiUserMinus className="h-4 w-4 text-red-600 dark:text-red-400" aria-hidden="true" />}
-            className={
-              confirmRemove
-                ? "border-red-600 text-red-600 dark:border-red-400 dark:text-red-400"
-                : undefined
-            }
-          >
-            {confirmRemove ? "Bấm lại để rời" : "Rời tổ chức"}
-          </Button>
-        )}
-      </div>
+    <>
+      <MemberMenu
+        label={member.full_name || "thành viên"}
+        items={items}
+        open={open}
+        busy={busy}
+        onToggle={() => setMenuOpen(!open)}
+        onClose={() => setMenuOpen(false)}
+      />
       <MemberRoleEditor
         orgId={orgId}
         member={member}
@@ -174,6 +188,6 @@ export function MemberActions({
         open={editingRoles}
         onClose={() => setEditingRoles(false)}
       />
-    </div>
+    </>
   );
 }

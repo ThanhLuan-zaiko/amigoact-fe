@@ -4,7 +4,7 @@ import { FiClock, FiSearch, FiShield, FiType, FiUsers } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { MEMBER_STATUS_LABELS } from "../messages.tsx";
-import type { MemberSortParam } from "../api.ts";
+import type { MemberSortParam } from "../members-api.ts";
 
 const SORT_OPTIONS: { key: MemberSortParam; label: string; Icon: typeof FiClock }[] = [
   { key: "newest", label: "Mới nhất", Icon: FiClock },

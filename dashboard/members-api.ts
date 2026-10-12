@@ -1,0 +1,186 @@
+import { apiFetch } from "../core/api.ts";
+import type { BucketCount } from "./api.ts";
+
+export type MemberStatus = "active" | "invited" | "suspended" | "left";
+export type MemberSortParam = "newest" | "name" | "role";
+
+export interface DashboardMember {
+  user_id: string;
+  org_id: string;
+  full_name: string;
+  email: string | null;
+  // "owner" pseudo-role, the system "admin", then sorted custom role names.
+  roles: string[];
+  status: MemberStatus;
+  invited_by: string | null;
+  invited_by_name: string | null;
+  joined_at: string;
+}
+
+export interface MemberListParams {
+  q?: string;
+  status?: string;
+  sort?: MemberSortParam;
+  limit?: number;
+  offset?: number;
+}
+
+export interface MemberListPage {
+  items: DashboardMember[];
+  total: number;
+  counts: BucketCount[];
+  // Primary display role for the viewer (owner > admin > first custom).
+  viewer_role: string;
+  // Effective permission codes the viewer holds inside this org.
+  viewer_permissions: string[];
+}
+
+export interface MyMembership {
+  org_id: string;
+  org_name: string;
+  org_slug: string;
+  roles: string[];
+  status: MemberStatus;
+  invited_by_name: string | null;
+  joined_at: string;
+}
+
+export interface MembershipPage {
+  items: MyMembership[];
+  total: number;
+}
+
+export async function listOrgMembers(
+  orgId: string,
+  params: MemberListParams = {},
+): Promise<MemberListPage> {
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.status) search.set("status", params.status);
+  if (params.sort) search.set("sort", params.sort);
+  if (params.limit !== undefined) search.set("limit", String(params.limit));
+  if (params.offset !== undefined) search.set("offset", String(params.offset));
+  const query = search.toString();
+  return apiFetch<MemberListPage>(
+    `/orgs/${orgId}/members${query ? `?${query}` : ""}`,
+  );
+}
+
+export async function inviteMember(
+  orgId: string,
+  email: string,
+  role = "member",
+): Promise<DashboardMember> {
+  return apiFetch<DashboardMember>(`/orgs/${orgId}/members`, {
+    method: "POST",
+    body: JSON.stringify({ email, role }),
+  });
+}
+
+export interface UpdateMemberInput {
+  // Legacy single-role toggle (admin only); prefer `roles` for the set.
+  role?: "member" | "admin";
+  // Full role replacement: every custom role name the member should hold.
+  roles?: string[];
+  status?: "active" | "suspended";
+}
+
+export async function updateMember(
+  orgId: string,
+  userId: string,
+  input: UpdateMemberInput,
+): Promise<DashboardMember> {
+  return apiFetch<DashboardMember>(`/orgs/${orgId}/members/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function removeMember(orgId: string, userId: string): Promise<void> {
+  await apiFetch<unknown>(`/orgs/${orgId}/members/${userId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function joinOrg(orgId: string): Promise<DashboardMember> {
+  return apiFetch<DashboardMember>(`/orgs/${orgId}/members/join`, {
+    method: "POST",
+  });
+}
+
+export async function acceptInvite(orgId: string): Promise<DashboardMember> {
+  return apiFetch<DashboardMember>(`/orgs/${orgId}/members/me/accept`, {
+    method: "POST",
+  });
+}
+
+export async function declineInvite(orgId: string): Promise<DashboardMember> {
+  return apiFetch<DashboardMember>(`/orgs/${orgId}/members/me/decline`, {
+    method: "POST",
+  });
+}
+
+export async function listMyMemberships(status?: string): Promise<MembershipPage> {
+  const query = status ? `?status=${encodeURIComponent(status)}` : "";
+  return apiFetch<MembershipPage>(`/orgs/memberships/mine${query}`);
+}
+
+// ---- Org custom roles (RBAC) ----
+
+export interface OrgRole {
+  id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+  member_count: number;
+  is_system: boolean;
+}
+
+export interface OrgRoleList {
+  items: OrgRole[];
+  // Every permission code a custom role may carry.
+  assignable_permissions: string[];
+}
+
+export interface CreateOrgRoleInput {
+  name: string;
+  description?: string;
+  permissions: string[];
+}
+
+export interface UpdateOrgRoleInput {
+  name?: string;
+  description?: string;
+  permissions?: string[];
+}
+
+export async function listOrgRoles(orgId: string): Promise<OrgRoleList> {
+  return apiFetch<OrgRoleList>(`/orgs/${orgId}/roles`);
+}
+
+export async function createOrgRole(
+  orgId: string,
+  input: CreateOrgRoleInput,
+): Promise<OrgRole> {
+  return apiFetch<OrgRole>(`/orgs/${orgId}/roles`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateOrgRole(
+  orgId: string,
+  roleId: string,
+  input: UpdateOrgRoleInput,
+): Promise<OrgRole> {
+  return apiFetch<OrgRole>(`/orgs/${orgId}/roles/${roleId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function deleteOrgRole(orgId: string, roleId: string): Promise<void> {
+  await apiFetch<unknown>(`/orgs/${orgId}/roles/${roleId}`, {
+    method: "DELETE",
+  });
+}

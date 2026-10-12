@@ -74,6 +74,15 @@ từ bất kỳ đâu, kể cả handler kênh ngoài React). Hai điểm phát:
   `dashboardKeys.all`; action tự gây ra (accepted/declined/joined/left)
   trả `null` nên không toast.
 
+Payload member event có thêm trường tùy chọn `detail` (chuỗi) khi hành động
+gắn với một vai trò cụ thể — backend gửi ở các action
+`role_granted` / `role_revoked` (tên vai trò vừa gán/thu) và
+`role_catalog_changed` (tên vai trò vừa thay đổi trong danh mục).
+`memberEventToast` / `membershipEventToast` nhận `detail` làm đối số cuối;
+thiếu `detail` thì copy rơi về "vai trò mới". `role_catalog_changed` chỉ
+đi trên kênh `members:{orgId}` (sự kiện roster, không phải thông báo cá
+nhân), nên membership hook bỏ qua nó một cách tự nhiên.
+
 ## 2. Speculation Rules API (`index.html`, §12.4)
 
 `index.html` chứa `<script type="speculationrules">` với `prefetch` và

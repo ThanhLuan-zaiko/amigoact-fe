@@ -9,7 +9,7 @@ import { useRiseOn } from "../../core/motion.ts";
 import { useSession } from "../../auth/hooks.ts";
 import { useAcceptInvite, useDeclineInvite, useMyMemberships } from "../members-hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
-import type { MyMembership } from "../api.ts";
+import type { MyMembership } from "../members-api.ts";
 
 function invitedLabel(iso: string): string {
   const date = new Date(iso);

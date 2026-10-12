@@ -1,13 +1,15 @@
 import type { ReactElement } from "react";
 import { FiUser } from "react-icons/fi";
 import { MEMBER_ROLE_LABELS, MEMBER_STATUS_LABELS } from "../messages.tsx";
-import type { DashboardMember, MemberRole } from "../api.ts";
+import type { DashboardMember, OrgRole } from "../members-api.ts";
 import { MemberActions } from "./MemberActions.tsx";
 
 interface MemberRowProps {
   orgId: string;
   member: DashboardMember;
-  viewerRole: MemberRole;
+  viewerRole: string;
+  viewerPermissions: string[];
+  orgRoles: OrgRole[];
   selfId: string | undefined;
 }
 
@@ -17,6 +19,10 @@ const ROLE_BADGES: Record<string, string> = {
     "dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400",
   admin: "border-brand/40 bg-brand/10 text-zinc-900 dark:border-brand/30 dark:text-brand",
 };
+
+const CUSTOM_BADGE =
+  "border-zinc-300 bg-zinc-50 text-zinc-700 " +
+  "dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300";
 
 const STATUS_BADGES: Record<string, string> = {
   invited:
@@ -45,10 +51,11 @@ export function MemberRow({
   orgId,
   member,
   viewerRole,
+  viewerPermissions,
+  orgRoles,
   selfId,
 }: MemberRowProps): ReactElement {
   const joined = joinedLabel(member.joined_at);
-  const roleBadge = ROLE_BADGES[member.role];
   const statusBadge = member.status === "active" ? null : STATUS_BADGES[member.status];
 
   return (
@@ -70,11 +77,14 @@ export function MemberRow({
               <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 {member.full_name}
               </p>
-              {roleBadge && (
-                <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${roleBadge}`}>
-                  {MEMBER_ROLE_LABELS[member.role] ?? member.role}
+              {member.roles.map((role) => (
+                <span
+                  key={role}
+                  className={`rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_BADGES[role] ?? CUSTOM_BADGE}`}
+                >
+                  {MEMBER_ROLE_LABELS[role] ?? role}
                 </span>
-              )}
+              ))}
               {statusBadge && (
                 <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${statusBadge}`}>
                   {MEMBER_STATUS_LABELS[member.status] ?? member.status}
@@ -95,6 +105,8 @@ export function MemberRow({
         orgId={orgId}
         member={member}
         viewerRole={viewerRole}
+        viewerPermissions={viewerPermissions}
+        orgRoles={orgRoles}
         isSelf={selfId !== undefined && member.user_id === selfId}
       />
     </li>

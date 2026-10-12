@@ -1,23 +1,29 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useMemo } from "react";
 import type { ReactElement } from "react";
-import { FiPlusCircle, FiUsers } from "react-icons/fi";
+import { FiUsers } from "react-icons/fi";
 import { useSearchParams } from "react-router-dom";
 import { ApiError } from "../../core/api.ts";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
-import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { Pagination } from "../../core/components/Pagination.tsx";
 import { useRiseOn } from "../../core/motion.ts";
 import { useSession } from "../../auth/hooks.ts";
 import { useMyOrgs } from "../hooks.ts";
-import { useMemberRealtime, useOrgMembers } from "../members-hooks.ts";
+import {
+  useMemberParamSync,
+  useMemberRealtime,
+  useOrgMembers,
+  useOrgRoles,
+} from "../members-hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
-import type { MemberSortParam } from "../api.ts";
+import type { MemberSortParam } from "../members-api.ts";
 import { MemberInviteModal } from "./MemberInviteModal.tsx";
 import { MemberListToolbar } from "./MemberListToolbar.tsx";
 import { MemberManageActions } from "./MemberManageActions.tsx";
+import { MemberNoOrg } from "./MemberNoOrg.tsx";
 import { MemberOrgPicker } from "./MemberOrgPicker.tsx";
 import { MemberRow } from "./MemberRow.tsx";
+import { RoleManageCard } from "./RoleManageCard.tsx";
 
 const PAGE_SIZE = 10;
 const ORG_LIMIT = 100;
@@ -66,6 +72,7 @@ export function MemberListCard(): ReactElement {
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
   });
+  const orgRoles = useOrgRoles(orgId);
 
   const items = members.data?.items ?? [];
   const total = members.data?.total ?? 0;
@@ -73,7 +80,13 @@ export function MemberListCard(): ReactElement {
     (entry): [string, number] => [entry.bucket, entry.count],
   );
   const viewerRole = members.data?.viewer_role ?? "member";
-  const manager = viewerRole === "owner" || viewerRole === "admin";
+  const viewerPermissions = useMemo(
+    () => members.data?.viewer_permissions ?? [],
+    [members.data],
+  );
+  // member:invite gates the invite affordance; owner always passes.
+  const canInvite =
+    viewerRole === "owner" || viewerPermissions.includes("member:invite");
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const current = Math.min(page, totalPages);
   const outOfRange = members.data !== undefined && page > totalPages;
@@ -85,30 +98,17 @@ export function MemberListCard(): ReactElement {
   // and raises a toast (selfId suppresses echoes of the viewer's own acts).
   useMemberRealtime(orgId, session.data?.id);
 
-  // Default ?org= to the first org so the URL is always shareable.
-  useEffect(() => {
-    if (orgParam === null && orgId !== null) {
-      updateParams({ org: orgId }, true);
-    }
-  }, [orgParam, orgId, updateParams]);
-
-  // Drop an unknown ?org= once the org list has loaded.
-  const firstOrgId = orgItems[0]?.id ?? null;
-  useEffect(() => {
-    if (orgParam !== null && orgs.data !== undefined && org === null && firstOrgId !== null) {
-      updateParams(
-        { org: firstOrgId, q: null, status: null, sort: null, page: null, invite: null },
-        true,
-      );
-    }
-  }, [orgParam, orgs.data, org, firstOrgId, updateParams]);
-
-  // Pull an out-of-range ?page= back once totals arrive.
-  useEffect(() => {
-    if (members.data !== undefined && page > totalPages) {
-      updateParams({ page: totalPages > 1 ? String(totalPages) : null }, true);
-    }
-  }, [members.data, page, totalPages, updateParams]);
+  useMemberParamSync({
+    updateParams,
+    orgParam,
+    orgId,
+    orgKnown: orgs.data !== undefined,
+    orgFound: org !== null,
+    firstOrgId: orgItems[0]?.id ?? null,
+    hasMembersData: members.data !== undefined,
+    page,
+    totalPages,
+  });
 
   function resetFilters(): void {
     updateParams({ q: null, status: null, sort: null, page: null }, true);
@@ -132,7 +132,7 @@ export function MemberListCard(): ReactElement {
           <MemberManageActions
             org={org}
             selfId={session.data?.id}
-            canInvite={manager}
+            canInvite={canInvite}
             inviting={inviting}
             onToggleInvite={() => updateParams({ invite: inviting ? null : "1" })}
           />
@@ -148,8 +148,10 @@ export function MemberListCard(): ReactElement {
       {orgId !== null && (
         <MemberInviteModal
           orgId={orgId}
-          canAssignAdmin={viewerRole === "owner"}
-          open={inviting && manager}
+          viewerRole={viewerRole}
+          viewerPermissions={viewerPermissions}
+          orgRoles={orgRoles.data?.items ?? []}
+          open={inviting && canInvite}
           onClose={() => updateParams({ invite: null })}
         />
       )}
@@ -175,23 +177,7 @@ export function MemberListCard(): ReactElement {
             )}
           />
         )}
-        {orgs.data && orgItems.length === 0 && (
-          <>
-            <EmptyState
-              title="Chưa có tổ chức nào"
-              message="Tạo tổ chức trước, rồi mời và quản lý thành viên tại đây."
-            />
-            <div className="mt-3">
-              <Button
-                to="/manage/orgs/create"
-                variant="primary"
-                icon={<FiPlusCircle className="h-4 w-4" aria-hidden="true" />}
-              >
-                Tạo tổ chức
-              </Button>
-            </div>
-          </>
-        )}
+        {orgs.data && orgItems.length === 0 && <MemberNoOrg />}
         {orgs.data && orgItems.length > 0 && members.isPending && (
           <LoadingState label="Đang tải danh sách thành viên…" />
         )}
@@ -227,6 +213,8 @@ export function MemberListCard(): ReactElement {
                   orgId={orgId}
                   member={member}
                   viewerRole={viewerRole}
+                  viewerPermissions={viewerPermissions}
+                  orgRoles={orgRoles.data?.items ?? []}
                   selfId={session.data?.id}
                 />
               ))}
@@ -244,6 +232,13 @@ export function MemberListCard(): ReactElement {
           </>
         )}
       </div>
+      {orgId !== null && orgItems.length > 0 && (
+        <RoleManageCard
+          orgId={orgId}
+          viewerRole={viewerRole}
+          viewerPermissions={viewerPermissions}
+        />
+      )}
     </BentoCard>
   );
 }

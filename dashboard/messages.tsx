@@ -36,7 +36,9 @@ const MESSAGES: Record<string, string> = {
   MEMBER_NOT_FOUND: "Không tìm thấy thành viên này.",
   OWNER_IMMUTABLE: "Chủ sở hữu không thể rời hoặc bị thay đổi quyền.",
   INVALID_MEMBER_STATE: "Trạng thái thành viên không hợp lệ cho thao tác này.",
-  INVALID_ROLE: "Vai trò không hợp lệ.",
+  INVALID_ROLE: "Vai trò không hợp lệ hoặc quyền hạn không được hỗ trợ.",
+  ROLE_NAME_TAKEN: "Tên vai trò này đã được sử dụng.",
+  ROLE_NOT_FOUND: "Không tìm thấy vai trò này.",
   INVITE_ONLY: "Tổ chức này chỉ nhận thành viên qua lời mời.",
   INVALID_EMAIL: "Địa chỉ email không hợp lệ.",
   INVITE_SENT: "Đã gửi lời mời.",
@@ -74,6 +76,40 @@ export const MEMBER_ROLE_LABELS: Record<string, string> = {
   member: "Thành viên",
 };
 
+// Permission codes the backend allows inside a custom org role; the
+// catalog itself arrives on the role list response, these are labels.
+export const PERMISSION_LABELS: Record<string, string> = {
+  "member:view": "Xem danh sách thành viên",
+  "member:invite": "Mời thành viên",
+  "member:suspend": "Tạm khóa / kích hoạt thành viên",
+  "member:remove": "Xóa thành viên",
+  "member:role-assign": "Gán vai trò cho thành viên",
+  "org:update": "Sửa hồ sơ và chính sách tổ chức",
+  "media:manage": "Quản lý thư viện tệp",
+  "activity:view": "Xem sự kiện nội bộ",
+  "activity:create": "Tạo sự kiện",
+  "activity:manage": "Quản lý sự kiện",
+};
+
+// Grouped labels keep the role editor readable; order is display order.
+export const PERMISSION_GROUPS: { label: string; codes: string[] }[] = [
+  {
+    label: "Thành viên",
+    codes: [
+      "member:view",
+      "member:invite",
+      "member:suspend",
+      "member:remove",
+      "member:role-assign",
+    ],
+  },
+  { label: "Tổ chức", codes: ["org:update", "media:manage"] },
+  {
+    label: "Sự kiện",
+    codes: ["activity:view", "activity:create", "activity:manage"],
+  },
+];
+
 export const MEMBER_STATUS_LABELS: Record<string, string> = {
   active: "Hoạt động",
   invited: "Đã mời",
@@ -108,6 +144,8 @@ export function memberMutationToast(action: string, name: string | null): string
       return `Đã thu hồi lời mời của ${member}.`;
     case "left":
       return "Bạn đã rời tổ chức.";
+    case "roles":
+      return `Đã cập nhật vai trò của ${member}.`;
     default:
       return MESSAGES["MEMBER_UPDATED"];
   }
@@ -115,14 +153,28 @@ export function memberMutationToast(action: string, name: string | null): string
 
 // Toast copy for roster events pushed on members:{orgId} by other actors.
 // Returns null for unknown actions so callers only invalidate the query.
+// `detail` carries the custom role name on role_granted / role_revoked /
+// role_catalog_changed events.
 export function memberEventToast(
   action: string,
   targetName: string | null,
   actorName: string | null,
+  detail: string | null = null,
 ): string | null {
   const target = targetName ?? "Một thành viên";
   const actor = actorName;
+  const role = detail ?? "vai trò mới";
   switch (action) {
+    case "role_granted":
+      return actor
+        ? `${actor} đã gán vai trò ${role} cho ${target}.`
+        : `${target} đã được gán vai trò ${role}.`;
+    case "role_revoked":
+      return actor
+        ? `${actor} đã thu vai trò ${role} của ${target}.`
+        : `${target} đã bị thu vai trò ${role}.`;
+    case "role_catalog_changed":
+      return `Danh sách vai trò của tổ chức vừa được cập nhật (${role}).`;
     case "promoted":
       return actor
         ? `${actor} đã gán quyền quản trị viên cho ${target}.`
@@ -166,8 +218,10 @@ export function memberEventToast(
 export function membershipEventToast(
   action: string,
   orgName: string | null,
+  detail: string | null = null,
 ): string | null {
   const org = orgName ?? "tổ chức";
+  const role = detail ?? "vai trò mới";
   switch (action) {
     case "invited":
       return `Bạn có lời mời tham gia ${org}.`;
@@ -175,6 +229,10 @@ export function membershipEventToast(
       return `Bạn đã được gán quyền quản trị viên tại ${org}.`;
     case "demoted":
       return `Bạn không còn là quản trị viên của ${org}.`;
+    case "role_granted":
+      return `Bạn đã được gán vai trò ${role} tại ${org}.`;
+    case "role_revoked":
+      return `Bạn không còn vai trò ${role} tại ${org}.`;
     case "suspended":
       return `Bạn đã bị tạm khóa khỏi ${org}.`;
     case "reactivated":

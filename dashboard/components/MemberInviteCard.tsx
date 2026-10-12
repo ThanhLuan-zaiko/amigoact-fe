@@ -8,24 +8,47 @@ import { TextField } from "../../core/components/TextField.tsx";
 import { useInviteMember } from "../members-hooks.ts";
 import { toVietnameseDashboardMessage, MEMBER_ROLE_LABELS } from "../messages.tsx";
 import { validateInviteEmail } from "../schemas.ts";
+import { canGrantRole } from "../members-utils.ts";
+import type { OrgRole } from "../members-api.ts";
 
 interface MemberInviteCardProps {
   orgId: string;
-  canAssignAdmin: boolean;
+  viewerRole: string;
+  viewerPermissions: string[];
+  orgRoles: OrgRole[];
   onDone: () => void;
 }
 
 export function MemberInviteCard({
   orgId,
-  canAssignAdmin,
+  viewerRole,
+  viewerPermissions,
+  orgRoles,
   onDone,
 }: MemberInviteCardProps): ReactElement {
   const invite = useInviteMember(orgId);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"member" | "admin">("member");
+  const [role, setRole] = useState("member");
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [serverCode, setServerCode] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+
+  const isOwner = viewerRole === "owner";
+  // Roles the viewer may hand out at invite time: admin stays owner-only;
+  // a non-owner needs member:role-assign plus the delegation subset.
+  const canAssign = isOwner || viewerPermissions.includes("member:role-assign");
+  const choices = !canAssign
+    ? []
+    : [
+        ...(isOwner ? ["admin"] : []),
+        ...orgRoles
+          .filter(
+            (item) =>
+              !item.is_system &&
+              canGrantRole(item, viewerRole, viewerPermissions),
+          )
+          .map((item) => item.name),
+      ];
 
   function changeEmail(value: string): void {
     setEmail(value);
@@ -75,11 +98,11 @@ export function MemberInviteCard({
         hint="Người được mời cần có tài khoản và chấp nhận lời mời."
         icon={<FiAtSign className="h-4 w-4" aria-hidden="true" />}
       />
-      {canAssignAdmin && (
+      {choices.length > 0 && (
         <div className="flex flex-col gap-1">
           <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Vai trò</p>
           <div role="group" aria-label="Chọn vai trò" className="flex flex-wrap gap-2">
-            {(["member", "admin"] as const).map((key) => (
+            {["member", ...choices].map((key) => (
               <Button
                 key={key}
                 type="button"
@@ -87,14 +110,14 @@ export function MemberInviteCard({
                 onClick={() => setRole(key)}
                 aria-pressed={role === key}
                 icon={
-                  key === "admin" ? (
-                    <FiShield className="h-4 w-4" aria-hidden="true" />
-                  ) : (
+                  key === "member" ? (
                     <FiUser className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <FiShield className="h-4 w-4" aria-hidden="true" />
                   )
                 }
               >
-                {MEMBER_ROLE_LABELS[key]}
+                {MEMBER_ROLE_LABELS[key] ?? key}
               </Button>
             ))}
           </div>

@@ -12,12 +12,15 @@ import { Button } from "../../core/components/Button.tsx";
 import { pushToast } from "../../core/toast.ts";
 import { useRemoveMember, useUpdateMember } from "../members-hooks.ts";
 import { memberMutationToast, toVietnameseDashboardMessage } from "../messages.tsx";
-import type { DashboardMember, MemberRole } from "../api.ts";
+import type { DashboardMember, OrgRole } from "../members-api.ts";
+import { MemberRoleEditor } from "./MemberRoleEditor.tsx";
 
 interface MemberActionsProps {
   orgId: string;
   member: DashboardMember;
-  viewerRole: MemberRole;
+  viewerRole: string;
+  viewerPermissions: string[];
+  orgRoles: OrgRole[];
   isSelf: boolean;
 }
 
@@ -25,24 +28,37 @@ export function MemberActions({
   orgId,
   member,
   viewerRole,
+  viewerPermissions,
+  orgRoles,
   isSelf,
 }: MemberActionsProps): ReactElement | null {
   const update = useUpdateMember(orgId);
   const remove = useRemoveMember(orgId);
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const [editingRoles, setEditingRoles] = useState(false);
   const busy = update.isPending || remove.isPending;
 
-  const manager = viewerRole === "owner" || viewerRole === "admin";
-  // Admins only act on plain members; owners act on admins and members too.
+  const isOwner = viewerRole === "owner";
+  const targetOwner = member.roles.includes("owner");
+  const targetAdmin = member.roles.includes("admin");
+  // Non-owners can never act on an admin; nobody acts on the owner.
   const canActOnTarget =
-    manager && !isSelf && member.role !== "owner" &&
-    (viewerRole === "owner" || member.role === "member");
-  const canAssign = viewerRole === "owner" && !isSelf && member.status === "active";
-  const canSuspend = canActOnTarget && member.status === "active";
-  const canReactivate = canActOnTarget && member.status === "suspended";
-  const canRemove = canActOnTarget && member.status !== "left";
+    !isSelf && !targetOwner && (isOwner || !targetAdmin);
+  const canAssign =
+    canActOnTarget &&
+    member.status === "active" &&
+    (isOwner || viewerPermissions.includes("member:role-assign"));
+  const canSuspend =
+    canActOnTarget && member.status === "active" &&
+    (isOwner || viewerPermissions.includes("member:suspend"));
+  const canReactivate =
+    canActOnTarget && member.status === "suspended" &&
+    (isOwner || viewerPermissions.includes("member:suspend"));
+  const canRemove =
+    canActOnTarget && member.status !== "left" &&
+    (isOwner || viewerPermissions.includes("member:remove"));
   const canLeave =
-    isSelf && member.role !== "owner" && member.status !== "left" && member.status !== "invited";
+    isSelf && !targetOwner && member.status !== "left" && member.status !== "invited";
 
   async function run(task: Promise<unknown>, action: string): Promise<void> {
     try {
@@ -69,26 +85,15 @@ export function MemberActions({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
-        {canAssign && member.role === "member" && (
+        {canAssign && (
           <Button
             type="button"
             variant="secondary"
             disabled={busy}
-            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { role: "admin" } }), "promoted")}
+            onClick={() => setEditingRoles(true)}
             icon={<FiShield className="h-4 w-4" aria-hidden="true" />}
           >
-            Gán admin
-          </Button>
-        )}
-        {canAssign && member.role === "admin" && (
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={busy}
-            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { role: "member" } }), "demoted")}
-            icon={<FiShield className="h-4 w-4" aria-hidden="true" />}
-          >
-            Hạ thành viên
+            Vai trò
           </Button>
         )}
         {canSuspend && (
@@ -160,6 +165,15 @@ export function MemberActions({
           </Button>
         )}
       </div>
+      <MemberRoleEditor
+        orgId={orgId}
+        member={member}
+        viewerRole={viewerRole}
+        viewerPermissions={viewerPermissions}
+        orgRoles={orgRoles}
+        open={editingRoles}
+        onClose={() => setEditingRoles(false)}
+      />
     </div>
   );
 }

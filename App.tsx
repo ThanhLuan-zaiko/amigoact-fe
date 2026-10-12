@@ -31,6 +31,7 @@ import { DashboardOrgsPage } from "./dashboard/orgs-page.tsx";
 import { DashboardOverviewPage } from "./dashboard/overview-page.tsx";
 import { DashboardSettingsPage } from "./dashboard/settings-page.tsx";
 import { DashboardPage } from "./dashboard/page.tsx";
+import { MembershipRealtime } from "./dashboard/components/MembershipRealtime.tsx";
 import { NotificationsPage } from "./notifications/page.tsx";
 import { OrgDetailPage } from "./orgs/detail-page.tsx";
 import { OrgsPage } from "./orgs/page.tsx";
@@ -68,7 +69,9 @@ function NotFoundPage(): ReactElement {
 
 export default function App(): ReactElement {
   return (
-    <Routes>
+    <>
+      <MembershipRealtime />
+      <Routes>
       <Route element={<PageShell />}>
         <Route index element={<HomePage />} />
         <Route path="events" element={<EventsPage />} />
@@ -124,6 +127,7 @@ export default function App(): ReactElement {
         <Route path="change-password" element={<ChangePasswordPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
-    </Routes>
+      </Routes>
+    </>
   );
 }

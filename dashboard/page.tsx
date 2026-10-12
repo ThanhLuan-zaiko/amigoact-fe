@@ -8,7 +8,7 @@ import { useRiseIn } from "../core/motion.ts";
 import { useSession } from "../auth/hooks.ts";
 import { DashboardSidebar } from "./components/DashboardSidebar.tsx";
 import { useMyOrgs } from "./hooks.ts";
-import { useMembershipRealtime, useMyMemberships } from "./members-hooks.ts";
+import { useMyMemberships } from "./members-hooks.ts";
 import { useUnreadCount } from "../notifications/hooks.ts";
 
 export function DashboardPage(): ReactElement {
@@ -20,9 +20,6 @@ export function DashboardPage(): ReactElement {
   const orgCount = orgs.data?.total ?? 0;
   const inviteCount = memberships.data?.total ?? 0;
   const unreadCount = useUnreadCount(session.data != null).data?.unread ?? 0;
-
-  // Invitation pushes land here so the badge and inbox update live.
-  useMembershipRealtime(session.data?.id);
 
   if (!session.isPending && !session.data) {
     return (

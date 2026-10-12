@@ -13,6 +13,7 @@ import {
   notificationsChannel,
   subscribeChannel,
 } from "../core/realtime.ts";
+import { pushToast, type ToastTone } from "../core/toast.ts";
 import {
   acceptInvite,
   declineInvite,
@@ -26,9 +27,11 @@ import {
   type MemberListPage,
   type MemberListParams,
   type MembershipPage,
+  type OrgListPage,
   type UpdateMemberInput,
 } from "./api.ts";
 import { dashboardKeys } from "./keys.ts";
+import { memberEventToast, membershipEventToast } from "./messages.tsx";
 
 export function useOrgMembers(
   orgId: string | null,
@@ -123,20 +126,84 @@ export function useDeclineInvite(): UseMutationResult<DashboardMember, ApiError,
   });
 }
 
+// Member events the viewer should read as losses: rendered as error toasts.
+const NEGATIVE_EVENTS = new Set(["suspended", "removed"]);
+const SELF_POSITIVE_EVENTS = new Set(["promoted", "reactivated"]);
+
+function cachedMemberName(
+  queryClient: ReturnType<typeof useQueryClient>,
+  orgId: string,
+  userId: string,
+): string | null {
+  const pages = queryClient.getQueriesData<MemberListPage>({
+    queryKey: [...dashboardKeys.all, "members", orgId],
+  });
+  for (const [, data] of pages) {
+    const hit = data?.items.find((item) => item.user_id === userId);
+    if (hit?.full_name) return hit.full_name;
+  }
+  return null;
+}
+
+function cachedOrgName(
+  queryClient: ReturnType<typeof useQueryClient>,
+  orgId: string,
+): string | null {
+  const orgPages = queryClient.getQueriesData<OrgListPage>({
+    queryKey: [...dashboardKeys.all, "orgs"],
+  });
+  for (const [, data] of orgPages) {
+    const hit = data?.items.find((item) => item.id === orgId);
+    if (hit) return hit.name;
+  }
+  const memberships = queryClient.getQueriesData<MembershipPage>({
+    queryKey: [...dashboardKeys.all, "memberships"],
+  });
+  for (const [, data] of memberships) {
+    const hit = data?.items.find((item) => item.org_id === orgId);
+    if (hit) return hit.org_name;
+  }
+  return null;
+}
+
 // Live roster updates: any committed member change on members:{orgId}
-// invalidates the whole dashboard scope (roster, counts, member_count).
-export function useMemberRealtime(orgId: string | null): void {
+// invalidates the whole dashboard scope (roster, counts, member_count)
+// and surfaces a toast for actions made by other actors. Own actions are
+// skipped (the mutation already toasted) and self-targeted changes are
+// skipped too (useMembershipRealtime covers them with "you" copy).
+export function useMemberRealtime(
+  orgId: string | null,
+  selfId?: string,
+): void {
   const queryClient = useQueryClient();
   useEffect(() => {
     if (orgId === null) return undefined;
-    return subscribeChannel(membersChannel(orgId), () => {
+    return subscribeChannel(membersChannel(orgId), (payload) => {
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+      const action = payload["action"];
+      const actorId = payload["actor_id"];
+      const targetId = payload["user_id"];
+      if (typeof action !== "string") return;
+      if (actorId === selfId || targetId === selfId) return;
+      const message = memberEventToast(
+        action,
+        typeof targetId === "string"
+          ? cachedMemberName(queryClient, orgId, targetId)
+          : null,
+        typeof actorId === "string"
+          ? cachedMemberName(queryClient, orgId, actorId)
+          : null,
+      );
+      if (message === null) return;
+      const tone: ToastTone = NEGATIVE_EVENTS.has(action) ? "error" : "info";
+      pushToast({ tone, title: message });
     });
-  }, [orgId, queryClient]);
+  }, [orgId, selfId, queryClient]);
 }
 
 // Live invitation inbox: membership-scoped pushes on notifications:{user}
-// refresh invites, memberships and org lists across every device.
+// refresh invites, memberships and org lists across every device, and
+// toast changes that target the viewer (suspended, removed, role changes).
 export function useMembershipRealtime(userId: string | undefined): void {
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -144,6 +211,20 @@ export function useMembershipRealtime(userId: string | undefined): void {
     return subscribeChannel(notificationsChannel(userId), (payload) => {
       if (payload["scope"] !== "membership") return;
       void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+      const action = payload["action"];
+      const orgId = payload["org_id"];
+      if (typeof action !== "string") return;
+      const message = membershipEventToast(
+        action,
+        typeof orgId === "string" ? cachedOrgName(queryClient, orgId) : null,
+      );
+      if (message === null) return;
+      const tone: ToastTone = SELF_POSITIVE_EVENTS.has(action)
+        ? "success"
+        : NEGATIVE_EVENTS.has(action)
+          ? "error"
+          : "info";
+      pushToast({ tone, title: message });
     });
   }, [userId, queryClient]);
 }

@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { Outlet } from "react-router-dom";
 import { Navbar } from "./Navbar.tsx";
+import { ToastViewport } from "./ToastViewport.tsx";
 
 export function PageShell(): ReactElement {
   return (
@@ -11,6 +12,7 @@ export function PageShell(): ReactElement {
           <Outlet />
         </div>
       </main>
+      <ToastViewport />
     </div>
   );
 }

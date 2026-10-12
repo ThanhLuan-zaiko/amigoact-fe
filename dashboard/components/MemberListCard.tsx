@@ -81,8 +81,9 @@ export function MemberListCard(): ReactElement {
 
   const listRef = useRiseOn<HTMLUListElement>(`${current}:${items.length}`);
 
-  // Live roster: another tab or manager mutating members refreshes here.
-  useMemberRealtime(orgId);
+  // Live roster: another tab or manager mutating members refreshes here
+  // and raises a toast (selfId suppresses echoes of the viewer's own acts).
+  useMemberRealtime(orgId, session.data?.id);
 
   // Default ?org= to the first org so the URL is always shareable.
   useEffect(() => {

@@ -64,6 +64,7 @@ amigoact-fe/
       Button.tsx       # all buttons go through here
       TextField.tsx    # all inputs go through here
       Feedback.tsx     # ErrorState / EmptyState / LoadingState primitives
+      ToastViewport.tsx # bottom-center toast region fed by pushToast() (core/toast.ts)
   auth/
     api.ts             # login/refresh/logout calls (no hooks here)
     keys.ts            # query-key factory, e.g. authKeys.session

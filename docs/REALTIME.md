@@ -57,6 +57,23 @@ Kênh public của thư mục tổ chức (`orgs:directory`, subscribe qua
 trên socket ẩn danh — payload `{action, org_id, slug}` luôn chỉ là gợi ý
 invalidate query, không phải sự thật.
 
+### Toast realtime (thành viên)
+
+Toast hiển thị giữa đáy màn hình qua `ToastViewport` (mount trong
+`PageShell`, nguồn dữ liệu là store `core/toast.ts` — gọi `pushToast()`
+từ bất kỳ đâu, kể cả handler kênh ngoài React). Hai điểm phát:
+
+- `useMemberRealtime(orgId, selfId)` trên `/manage/members`: sự kiện
+  `members:{orgId}` của *actor khác* → toast kèm tên tra từ query cache;
+  bỏ qua khi `actor_id`/`user_id` là chính mình (mutation đã toast, còn
+  thay đổi nhắm vào mình do `useMembershipRealtime` lo).
+- `useMembershipRealtime(userId)` qua `MembershipRealtime` mount một lần
+  trong `App.tsx` (mọi trang, không chỉ `/manage`): sự kiện
+  `notifications:{user}` `scope:"membership"` nhắm vào mình → toast
+  (được mời, bị tạm khóa/xóa, đổi vai trò) đồng thời invalidate
+  `dashboardKeys.all`; action tự gây ra (accepted/declined/joined/left)
+  trả `null` nên không toast.
+
 ## 2. Speculation Rules API (`index.html`, §12.4)
 
 `index.html` chứa `<script type="speculationrules">` với `prefetch` và

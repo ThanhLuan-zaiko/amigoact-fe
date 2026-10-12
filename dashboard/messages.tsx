@@ -89,3 +89,99 @@ export const JOIN_POLICY_LABELS: Record<string, string> = {
 export function toVietnameseDashboardMessage(code: string): string {
   return MESSAGES[code] ?? MESSAGES["REQUEST_FAILED"];
 }
+
+// Toast copy for member mutations the viewer just performed.
+export function memberMutationToast(action: string, name: string | null): string {
+  const member = name ?? "thành viên";
+  switch (action) {
+    case "promoted":
+      return `Đã gán quyền quản trị viên cho ${member}.`;
+    case "demoted":
+      return `Đã hạ ${member} xuống thành viên.`;
+    case "suspended":
+      return `Đã tạm khóa ${member}.`;
+    case "reactivated":
+      return `Đã kích hoạt lại ${member}.`;
+    case "removed":
+      return `Đã xóa ${member} khỏi tổ chức.`;
+    case "revoked":
+      return `Đã thu hồi lời mời của ${member}.`;
+    case "left":
+      return "Bạn đã rời tổ chức.";
+    default:
+      return MESSAGES["MEMBER_UPDATED"];
+  }
+}
+
+// Toast copy for roster events pushed on members:{orgId} by other actors.
+// Returns null for unknown actions so callers only invalidate the query.
+export function memberEventToast(
+  action: string,
+  targetName: string | null,
+  actorName: string | null,
+): string | null {
+  const target = targetName ?? "Một thành viên";
+  const actor = actorName;
+  switch (action) {
+    case "promoted":
+      return actor
+        ? `${actor} đã gán quyền quản trị viên cho ${target}.`
+        : `${target} đã được gán quyền quản trị viên.`;
+    case "demoted":
+      return actor
+        ? `${actor} đã hạ ${target} xuống thành viên.`
+        : `${target} đã bị hạ xuống thành viên.`;
+    case "suspended":
+      return actor
+        ? `${actor} đã tạm khóa ${target}.`
+        : `${target} đã bị tạm khóa.`;
+    case "reactivated":
+      return actor
+        ? `${actor} đã kích hoạt lại ${target}.`
+        : `${target} đã được kích hoạt lại.`;
+    case "removed":
+      return actor
+        ? `${actor} đã xóa ${target} khỏi tổ chức.`
+        : `${target} đã bị xóa khỏi tổ chức.`;
+    case "left":
+      return `${target} đã rời tổ chức.`;
+    case "invited":
+      return actor
+        ? `${actor} đã gửi lời mời cho ${target}.`
+        : `Đã gửi lời mời cho ${target}.`;
+    case "accepted":
+      return `${target} đã chấp nhận lời mời tham gia.`;
+    case "declined":
+      return `${target} đã từ chối lời mời tham gia.`;
+    case "joined":
+      return `${target} vừa gia nhập tổ chức.`;
+    default:
+      return null;
+  }
+}
+
+// Toast copy for membership events pushed on notifications:{userId} where
+// the viewer is the target (invited, suspended, removed, role changes).
+// Self-caused actions (accepted/declined/joined/left) return null.
+export function membershipEventToast(
+  action: string,
+  orgName: string | null,
+): string | null {
+  const org = orgName ?? "tổ chức";
+  switch (action) {
+    case "invited":
+      return `Bạn có lời mời tham gia ${org}.`;
+    case "promoted":
+      return `Bạn đã được gán quyền quản trị viên tại ${org}.`;
+    case "demoted":
+      return `Bạn không còn là quản trị viên của ${org}.`;
+    case "suspended":
+      return `Bạn đã bị tạm khóa khỏi ${org}.`;
+    case "reactivated":
+      return `Bạn đã được kích hoạt lại trong ${org}.`;
+    case "removed":
+      return `Bạn đã bị xóa khỏi ${org}.`;
+    default:
+      return null;
+  }
+}

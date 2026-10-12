@@ -9,9 +9,9 @@ import {
 } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
-import { ErrorState } from "../../core/components/Feedback.tsx";
+import { pushToast } from "../../core/toast.ts";
 import { useRemoveMember, useUpdateMember } from "../members-hooks.ts";
-import { toVietnameseDashboardMessage } from "../messages.tsx";
+import { memberMutationToast, toVietnameseDashboardMessage } from "../messages.tsx";
 import type { DashboardMember, MemberRole } from "../api.ts";
 
 interface MemberActionsProps {
@@ -30,7 +30,6 @@ export function MemberActions({
   const update = useUpdateMember(orgId);
   const remove = useRemoveMember(orgId);
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const [serverCode, setServerCode] = useState<string | null>(null);
   const busy = update.isPending || remove.isPending;
 
   const manager = viewerRole === "owner" || viewerRole === "admin";
@@ -45,13 +44,21 @@ export function MemberActions({
   const canLeave =
     isSelf && member.role !== "owner" && member.status !== "left" && member.status !== "invited";
 
-  async function run(task: Promise<unknown>): Promise<void> {
-    setServerCode(null);
+  async function run(task: Promise<unknown>, action: string): Promise<void> {
     try {
       await task;
       setConfirmRemove(false);
+      pushToast({
+        tone: "success",
+        title: memberMutationToast(action, member.full_name || null),
+      });
     } catch (error) {
-      setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
+      const code = error instanceof ApiError ? error.code : "REQUEST_FAILED";
+      pushToast({
+        tone: "error",
+        title: "Thao tác thất bại",
+        message: toVietnameseDashboardMessage(code),
+      });
     }
   }
 
@@ -67,7 +74,7 @@ export function MemberActions({
             type="button"
             variant="secondary"
             disabled={busy}
-            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { role: "admin" } }))}
+            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { role: "admin" } }), "promoted")}
             icon={<FiShield className="h-4 w-4" aria-hidden="true" />}
           >
             Gán admin
@@ -78,7 +85,7 @@ export function MemberActions({
             type="button"
             variant="secondary"
             disabled={busy}
-            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { role: "member" } }))}
+            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { role: "member" } }), "demoted")}
             icon={<FiShield className="h-4 w-4" aria-hidden="true" />}
           >
             Hạ thành viên
@@ -89,7 +96,7 @@ export function MemberActions({
             type="button"
             variant="secondary"
             disabled={busy}
-            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { status: "suspended" } }))}
+            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { status: "suspended" } }), "suspended")}
             icon={<FiMinusCircle className="h-4 w-4" aria-hidden="true" />}
           >
             Tạm khóa
@@ -100,7 +107,7 @@ export function MemberActions({
             type="button"
             variant="secondary"
             disabled={busy}
-            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { status: "active" } }))}
+            onClick={() => run(update.mutateAsync({ userId: member.user_id, input: { status: "active" } }), "reactivated")}
             icon={<FiPlay className="h-4 w-4" aria-hidden="true" />}
           >
             Kích hoạt
@@ -116,7 +123,7 @@ export function MemberActions({
                 setConfirmRemove(true);
                 return;
               }
-              run(remove.mutateAsync(member.user_id));
+              run(remove.mutateAsync(member.user_id), member.status === "invited" ? "revoked" : "removed");
             }}
             aria-pressed={confirmRemove}
             icon={<FiUserX className="h-4 w-4 text-red-600 dark:text-red-400" aria-hidden="true" />}
@@ -139,7 +146,7 @@ export function MemberActions({
                 setConfirmRemove(true);
                 return;
               }
-              run(remove.mutateAsync(member.user_id));
+              run(remove.mutateAsync(member.user_id), "left");
             }}
             aria-pressed={confirmRemove}
             icon={<FiUserMinus className="h-4 w-4 text-red-600 dark:text-red-400" aria-hidden="true" />}
@@ -153,12 +160,6 @@ export function MemberActions({
           </Button>
         )}
       </div>
-      {serverCode && (
-        <ErrorState
-          title="Thao tác thất bại"
-          message={toVietnameseDashboardMessage(serverCode)}
-        />
-      )}
     </div>
   );
 }

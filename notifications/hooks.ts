@@ -14,8 +14,10 @@ import {
 import {
   getPreferences,
   listNotifications,
+  markAllNotificationsRead,
   markNotificationRead,
   updatePreferences,
+  type MarkAllResult,
   type NotificationItem,
   type NotificationPage,
   type NotificationPreferences,
@@ -59,6 +61,21 @@ export function useMarkNotificationRead(): UseMutationResult<
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: markNotificationRead,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: notificationKeys.all,
+      });
+    },
+  });
+}
+
+export function useMarkAllNotificationsRead(): UseMutationResult<
+  MarkAllResult,
+  ApiError
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: markAllNotificationsRead,
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: notificationKeys.all,

@@ -8,6 +8,7 @@ export interface NotificationItem {
   status: string;
   read_at: string | null;
   created_at: string;
+  data: Record<string, unknown> | null;
 }
 
 export interface NotificationPage {
@@ -29,6 +30,16 @@ export async function markNotificationRead(
   id: string,
 ): Promise<NotificationItem> {
   return apiFetch<NotificationItem>(`/notifications/${id}/read`, {
+    method: "POST",
+  });
+}
+
+export interface MarkAllResult {
+  marked: number;
+}
+
+export async function markAllNotificationsRead(): Promise<MarkAllResult> {
+  return apiFetch<MarkAllResult>("/notifications/read-all", {
     method: "POST",
   });
 }

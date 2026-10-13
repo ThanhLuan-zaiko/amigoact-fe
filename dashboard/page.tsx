@@ -52,7 +52,7 @@ export function DashboardPage(): ReactElement {
           inviteCount={inviteCount}
           unreadCount={unreadCount}
         />
-        <section aria-label="Nội dung bảng điều khiển" className="grid min-w-0 flex-1 grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12">
+        <section aria-label="Nội dung bảng điều khiển" className="grid min-w-0 flex-1 grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12">
           <Outlet />
           <BentoCard className="md:col-span-6 lg:col-span-12">
             <div data-rise className="flex items-center gap-2">

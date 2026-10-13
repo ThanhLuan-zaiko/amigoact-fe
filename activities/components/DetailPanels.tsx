@@ -8,6 +8,7 @@ import {
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState } from "../../core/components/Feedback.tsx";
+import { SelectField } from "../../core/components/SelectField.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import type {
   ActivityDetailView,
@@ -127,6 +128,12 @@ export function SchedulePanel({
   );
 }
 
+const STAFF_ROLE_OPTIONS = [
+  { value: "organizer", label: "Điều phối" },
+  { value: "supervisor", label: "Giám sát" },
+  { value: "supporter", label: "Hỗ trợ" },
+];
+
 interface StaffPanelProps {
   view: ActivityDetailView;
   canManage: boolean;
@@ -210,24 +217,13 @@ export function StaffPanel({
             onChange={(e) => setUserId(e.target.value)}
             placeholder="uuid của thành viên"
           />
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="staff-role"
-              className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
-            >
-              Vai trò
-            </label>
-            <select
-              id="staff-role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="min-h-[44px] w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-            >
-              <option value="organizer">Điều phối</option>
-              <option value="supervisor">Giám sát</option>
-              <option value="supporter">Hỗ trợ</option>
-            </select>
-          </div>
+          <SelectField
+            label="Vai trò"
+            name="staff_role"
+            value={role}
+            onChange={setRole}
+            options={STAFF_ROLE_OPTIONS}
+          />
           <div className="self-end">
             <Button
               variant="secondary"

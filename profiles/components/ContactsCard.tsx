@@ -56,7 +56,7 @@ export function ContactsCard({
   };
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-5">
+    <BentoCard className="md:col-span-6 lg:col-span-4">
       <div className="flex items-center gap-2">
         <FiUserCheck className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">

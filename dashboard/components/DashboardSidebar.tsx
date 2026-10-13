@@ -108,22 +108,8 @@ export function DashboardSidebar({
 }: DashboardSidebarProps): ReactElement {
   const { pathname } = useLocation();
   const activeEntry = useMemo(() => entryForPath(pathname), [pathname]);
-  const activeGroup = useMemo(
-    () =>
-      activeEntry === null
-        ? null
-        : (GROUPS.find((g) => g.entries.includes(activeEntry))?.label ??
-          null),
-    [activeEntry],
-  );
-  // Manual toggles (group, mobile nav) only hold while the route they
-  // were made under stays current; navigation re-syncs to the route.
-  const [manual, setManual] = useState<{
-    path: string;
-    label: string | null;
-  } | null>(null);
-  const openLabel =
-    manual !== null && manual.path === pathname ? manual.label : activeGroup;
+  // The mobile nav toggle only holds while the route it was made under
+  // stays current; navigation re-syncs to the route.
   const [mobileNav, setMobileNav] = useState<{
     path: string;
     open: boolean;
@@ -140,13 +126,6 @@ export function DashboardSidebar({
     }
     if (mobileOpen && navRef.current) expandPanel(navRef.current);
   }, [mobileOpen]);
-
-  function toggle(label: string): void {
-    setManual({
-      path: pathname,
-      label: openLabel === label ? null : label,
-    });
-  }
 
   const ActiveIcon = activeEntry?.Icon;
 
@@ -203,17 +182,15 @@ export function DashboardSidebar({
         ref={navRef}
         id="dashboard-nav"
         aria-label="Điều hướng bảng điều khiển"
-        className={`${mobileOpen ? "mt-3 flex" : "hidden"} flex-col gap-1 lg:mt-4 lg:flex`}
+        className={`${mobileOpen ? "mt-3 flex" : "hidden"} flex-col gap-4 lg:mt-4 lg:flex lg:max-h-[calc(100dvh-16rem)] lg:overflow-y-auto`}
       >
         {GROUPS.map((group, index) => (
           <SidebarGroupSection
             key={group.label}
             group={group}
-            regionId={`dashboard-nav-group-${index}`}
-            open={openLabel === group.label}
+            labelId={`dashboard-nav-group-${index}`}
             inviteCount={inviteCount}
             unreadCount={unreadCount}
-            onToggle={toggle}
           />
         ))}
       </nav>

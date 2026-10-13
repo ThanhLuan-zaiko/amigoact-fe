@@ -8,7 +8,7 @@ export function PageShell(): ReactElement {
     <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <Navbar />
       <main className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6">
-        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12">
+        <div className="grid grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12">
           <Outlet />
         </div>
       </main>

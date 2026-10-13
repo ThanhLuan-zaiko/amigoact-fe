@@ -18,8 +18,8 @@ html.dark {
   scrollbar-color: var(--color-zinc-600) transparent;
 }
 *::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
@@ -29,11 +29,12 @@ html.dark {
 }
 *::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  border: 3px solid transparent;
+  border: 2px solid transparent;
   background-color: var(--color-zinc-300);
   background-clip: padding-box;
 }
 *::-webkit-scrollbar-thumb:hover {
+  border-width: 1px;
   background-color: var(--color-zinc-400);
 }
 /* :where(.dark, .dark *) mirrors the dark custom-variant above so the
@@ -42,5 +43,6 @@ html.dark {
   background-color: var(--color-zinc-700);
 }
 :where(.dark, .dark *)::-webkit-scrollbar-thumb:hover {
+  border-width: 1px;
   background-color: var(--color-zinc-600);
 }

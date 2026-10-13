@@ -3,6 +3,7 @@ import { FiSave } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
+import { SelectField } from "../../core/components/SelectField.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import type {
   ActivityDetail,
@@ -109,27 +110,16 @@ export function ActivityForm({
           pattern="[a-z0-9]+(-[a-z0-9]+)*"
           hint="Để trống để tự tạo từ tên."
         />
-        <div className="flex flex-col gap-1">
-          <label
-            htmlFor="act-category"
-            className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
-          >
-            Danh mục
-          </label>
-          <select
-            id="act-category"
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="min-h-[44px] w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100"
-          >
-            <option value="">Không phân loại</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          label="Danh mục"
+          name="category_id"
+          value={categoryId}
+          onChange={setCategoryId}
+          options={[
+            { value: "", label: "Không phân loại" },
+            ...categories.map((c) => ({ value: c.id, label: c.name })),
+          ]}
+        />
         <TextField
           label="Điểm đến"
           name="location"

@@ -64,16 +64,16 @@ export function VolunteerProfilePage(): ReactElement {
           </div>
         </div>
       </BentoCard>
+      <VolunteerProfileCard key={data.updated_at ?? "new"} profile={data} />
       <AvatarCard
         avatarUrl={data.avatar_url}
         fullName={session.data?.full_name ?? "bạn"}
       />
-      <VolunteerProfileCard key={data.updated_at ?? "new"} profile={data} />
+      <ContactsCard profile={data} />
       <SkillPickerCard
         key={data.skills.map((s) => `${s.id}:${s.level}`).join(",")}
         profile={data}
       />
-      <ContactsCard profile={data} />
     </>
   );
 }

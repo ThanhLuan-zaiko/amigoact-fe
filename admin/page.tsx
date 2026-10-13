@@ -19,7 +19,7 @@ export function AdminPage(): ReactElement {
           <AdminSidebar />
           <section
             aria-label="Nội dung quản trị"
-            className="grid min-w-0 flex-1 grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12"
+            className="grid min-w-0 flex-1 grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12"
           >
             <Outlet />
           </section>

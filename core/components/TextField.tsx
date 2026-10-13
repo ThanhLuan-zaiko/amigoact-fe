@@ -15,6 +15,7 @@ export function TextField({
   icon,
   trailing,
   id,
+  required = false,
   className = "",
   ...rest
 }: TextFieldProps): ReactElement {
@@ -30,6 +31,14 @@ export function TextField({
         className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
       >
         {label}
+        {required && (
+          <span
+            aria-hidden="true"
+            className="text-red-600 dark:text-red-400"
+          >
+            {" *"}
+          </span>
+        )}
       </label>
       <div className="relative">
         {icon && (
@@ -47,6 +56,7 @@ export function TextField({
         )}
         <input
           id={fieldId}
+          required={required}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={`min-h-[44px] w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:outline-brand ${

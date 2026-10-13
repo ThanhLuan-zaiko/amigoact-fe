@@ -187,7 +187,7 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
         {total > 0 && (
           <>
             {/* Single column on phones so role buttons never squeeze the dialog wider. */}
-            <ul ref={listRef} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <ul ref={listRef} className="grid grid-cols-1 items-start gap-3 sm:grid-cols-3">
               {shown.map((item) => (
                 <MediaItemCard
                   key={item.id}

@@ -55,6 +55,7 @@ amigoact-fe/
     queryClient.ts     # QueryClient singleton + defaults
     theme.ts           # theme mode helpers (light/dark toggle, storage key)
     motion.ts          # animejs presets only (fade/slide/stagger, reduced-motion guard)
+    scroll.ts          # initErrorScroll(): MutationObserver smooth-scrolls to new role="alert" nodes inside <form>
     components/
       PageShell.tsx    # single page shell: header + bento grid + footer slot
       Navbar.tsx       # global navbar: logo + 5 links + ThemeToggle + account cluster (§7.5)
@@ -63,6 +64,7 @@ amigoact-fe/
       BentoCard.tsx    # single card primitive (border only, no shadow)
       Button.tsx       # all buttons go through here
       TextField.tsx    # all inputs go through here
+      SelectField.tsx  # all selects/dropdowns go through here; native <select> is forbidden
       Feedback.tsx     # ErrorState / EmptyState / LoadingState primitives
       ToastViewport.tsx # bottom-center toast region fed by pushToast() (core/toast.ts)
   auth/
@@ -169,13 +171,13 @@ Rules:
 1. Bento grid is the only page language:
    - Page structure is always `PageShell > bento grid > BentoCard tiles`. No ad-hoc page layouts.
    - Exception: `/manage` renders one full-row tile (`lg:col-span-12`) that holds an internal `flex flex-col gap-4 lg:flex-row` layout with a left sidebar (`aside`) and a right viewport (`section`). Both regions still render `BentoCard` tiles inside; the exception covers only the two-column shell, never card styling.
-   - Grid: `grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12`. Tiles span via `md:col-span-*` / `lg:col-span-*` (typical tiles: `lg:col-span-4`, heroes: `lg:col-span-8`, full rows: `lg:col-span-12`).
+   - Grid: `grid grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12` — `items-start` is required so tiles hug their content; a shorter tile must never stretch to match a taller row-mate (no dead space inside cards). Tiles span via `md:col-span-*` / `lg:col-span-*` (typical tiles: `lg:col-span-4`, heroes: `lg:col-span-8`, full rows: `lg:col-span-12`). A tall tile may pin a column across rows with `lg:row-span-*` (e.g. a long form beside a stacked rail); order the DOM so auto-flow backfills the rail — never `grid-flow-dense`.
    - Tiles are `BentoCard` only: `rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950`. No per-page card restyling (padding/border/radius changes require updating `BentoCard`, not overrides).
 2. Consistency rule: the first shipped page sets the shell (header height, grid, gaps, card style, typography). Every later page MUST reuse `PageShell`, `BentoCard`, `Button`, `TextField`, `Feedback`. A page that looks or spaces differently is a defect.
    - Typography scale only: display `text-2xl sm:text-3xl font-semibold tracking-tight`, card title `text-base sm:text-lg font-semibold`, body `text-sm text-zinc-600 dark:text-zinc-400`, caption `text-xs text-zinc-500 dark:text-zinc-400`.
    - Icons: `react-icons` only, one family per release (e.g. Feather `Fi*` or Heroicons `Hi2*` — do not mix families on one screen), one stroke width, fixed sizes (`h-4 w-4` inline, `h-5 w-5` card headers and navbar). Every icon-only button has a Vietnamese `aria-label`. No emoji-as-icon.
 3. Responsive behavior: mobile-first single-column stacking, `md:` 6-col, `lg:` 12-col. No horizontal scroll at `360px`. Touch targets `>= 44px` for primary actions. Base classes are mobile; `sm:/md:/lg:` only add columns, spacing, and type scale.
-4. States are part of the design, not afterthoughts: every data tile specifies `loading` (skeleton), `empty`, and `error` via `Feedback.tsx` with the semantic colors from §6. No blank tiles, no `console.log` errors, no browser `alert()`.
+4. States are part of the design, not afterthoughts: every data tile specifies `loading` (skeleton), `empty`, and `error` via `Feedback.tsx` with the semantic colors from §6. No blank tiles, no `console.log` errors, no browser `alert()`. Every form error message MUST render as `role="alert"` (TextField/SelectField/TextArea already do) — `core/scroll.ts` observes them inside `<form>` and smooth-scrolls to the first error, honoring `prefers-reduced-motion`.
 5. Navbar (locked spec, `core/components/Navbar.tsx` through `PageShell`):
    - Order left to right: brand logo (links to `/`, Vietnamese label "Trang chủ" on logo `aria-label`) + primary links + trailing cluster `ThemeToggle` + login `Button`.
    - Primary links (Vietnamese labels, English routes, `react-router-dom` `NavLink` with active `aria-current="page"`): `Trang chủ -> /`, `Sự kiện -> /events`, `Tổ chức -> /orgs`, `Bảng xếp hạng -> /leaderboard`, `Bảng điều khiển -> /manage`. Auth screens live at `/login`, `/register`, `/verify` (kept functional while the verification gate is deferred), `/forgot-password`, `/reset-password` (guest-only via `RequireGuest`; signed-in users redirect to `/`), `/profile`, `/change-password` (auth-only via `RequireAuth`; guests redirect to `/login`). Registration signs the user in immediately and lands on `/` (falls back to `/login` with a notice only if the auto sign-in fails). Change-password requires the new password to differ from the current password (code `SAME_AS_CURRENT`, validated live on change). `/manage` is the self-serve workspace where individuals or businesses create and manage organizations, clubs, and groups via a left sidebar plus a right viewport (legacy `/my-dashboard/*` URLs redirect to `/manage/*`; the feature folder is `dashboard/`).

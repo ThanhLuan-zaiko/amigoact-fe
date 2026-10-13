@@ -6,8 +6,10 @@ import './index.css'
 import App from './App.tsx'
 import { queryClient } from './core/queryClient.ts'
 import { initTheme } from './core/theme.ts'
+import { initErrorScroll } from './core/scroll.ts'
 
 initTheme()
+initErrorScroll()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

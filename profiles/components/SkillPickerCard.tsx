@@ -70,7 +70,7 @@ export function SkillPickerCard({
     "focus-visible:outline-offset-2 focus-visible:outline-brand";
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-7">
+    <BentoCard className="md:col-span-6 lg:col-span-12">
       <div className="flex items-center gap-2">
         <FiAward className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -83,7 +83,7 @@ export function SkillPickerCard({
       {catalog.isPending ? (
         <LoadingState label="Đang tải danh mục kỹ năng…" />
       ) : (
-        <ul className="mt-4 flex flex-col gap-2">
+        <ul className="mt-4 grid items-start gap-2 sm:grid-cols-2">
           {(catalog.data ?? []).map((skill) => {
             const picked = picks[skill.id];
             return (

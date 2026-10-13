@@ -95,7 +95,7 @@ export function ImageCropper({ file, defaultAspect, onApply, onCancel }: ImageCr
   if (failed) {
     return (
       <div className="flex flex-col gap-2 rounded-xl border border-red-300 p-3 dark:border-red-800">
-        <p className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
           Trình duyệt không đọc được ảnh này để cắt. Vẫn có thể tải lên nguyên gốc.
         </p>
         <Button type="button" variant="secondary" onClick={onCancel}>

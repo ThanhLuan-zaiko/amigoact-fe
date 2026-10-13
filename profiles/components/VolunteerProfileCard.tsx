@@ -4,6 +4,7 @@ import { FiSave, FiUser } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
+import { SelectField } from "../../core/components/SelectField.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useUpdateProfile } from "../hooks.ts";
 import { profileMessage } from "../messages.tsx";
@@ -12,13 +13,9 @@ import type { VolunteerProfile } from "../api.ts";
 const STATUS_OPTIONS = [
   { value: "studying", label: "Đang học" },
   { value: "graduated", label: "Đã tốt nghiệp" },
+  { value: "suspended", label: "Tạm ngưng" },
+  { value: "working", label: "Đang đi làm" },
 ];
-
-const SELECT_CLASS =
-  "min-h-[44px] w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 " +
-  "text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-brand dark:border-zinc-700 dark:bg-zinc-950 " +
-  "dark:text-zinc-100 dark:focus-visible:outline-brand";
 
 export function VolunteerProfileCard({
   profile,
@@ -36,17 +33,47 @@ export function VolunteerProfileCard({
   const [interests, setInterests] = useState(profile.interests.join(", "));
   const [status, setStatus] = useState(profile.status ?? "studying");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
+  const isStudent = status === "studying" || status === "suspended";
+  const needsSchool = isStudent || status === "graduated";
 
   const onSubmit = (event: FormEvent): void => {
     event.preventDefault();
     setError(null);
     setSaved(false);
     const parsed = year.trim() === "" ? null : Number(year);
-    if (parsed !== null && (!Number.isInteger(parsed) || parsed < 1950)) {
-      setError("Năm nhập học không hợp lệ.");
-      return;
+    const interestList = interests
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const errors: Record<string, string> = {};
+    if (isStudent) {
+      if (studentCode.trim() === "")
+        errors.student_code = "Vui lòng nhập mã sinh viên.";
+      if (className.trim() === "")
+        errors.class_name = "Vui lòng nhập lớp.";
     }
+    if (needsSchool && school.trim() === "")
+      errors.school_name = "Vui lòng nhập tên trường.";
+    if (
+      parsed !== null &&
+      (!Number.isInteger(parsed) || parsed < 1950 || parsed > 2100)
+    )
+      errors.enrollment_year = "Năm nhập học phải nằm trong 1950–2100.";
+    if (interestList.length > 20)
+      errors.interests = "Tối đa 20 sở thích.";
+    const hasInfo =
+      studentCode.trim() !== "" ||
+      className.trim() !== "" ||
+      school.trim() !== "" ||
+      bio.trim() !== "" ||
+      interestList.length > 0 ||
+      parsed !== null;
+    setFieldErrors(errors);
+    if (!hasInfo && Object.keys(errors).length === 0)
+      setError("Hồ sơ cần ít nhất một thông tin ngoài trạng thái.");
+    if (Object.keys(errors).length > 0 || !hasInfo) return;
     update.mutate(
       {
         student_code: studentCode.trim() || null,
@@ -54,11 +81,7 @@ export function VolunteerProfileCard({
         enrollment_year: parsed,
         school_name: school.trim() || null,
         bio: bio.trim() || null,
-        interests: interests
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean)
-          .slice(0, 20),
+        interests: interestList,
         status,
       },
       {
@@ -74,68 +97,73 @@ export function VolunteerProfileCard({
   };
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8">
+    <BentoCard className="md:col-span-6 lg:col-span-8 lg:row-span-2">
       <div className="flex items-center gap-2">
         <FiUser className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Hồ sơ tình nguyện viên
         </h2>
       </div>
-      <form className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2" onSubmit={onSubmit}>
+      <form className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2" noValidate onSubmit={onSubmit}>
+        <SelectField
+          label="Trạng thái"
+          name="status"
+          value={status}
+          onChange={setStatus}
+          options={STATUS_OPTIONS}
+          hint={
+            status === "working" || status === "graduated"
+              ? "Điền ít nhất một thông tin bên dưới."
+              : undefined
+          }
+        />
         <TextField
           label="Mã sinh viên"
           name="student_code"
+          required={isStudent}
+          maxLength={40}
           value={studentCode}
           onChange={(e) => setStudentCode(e.target.value)}
+          error={fieldErrors.student_code}
           placeholder="VD: SV2022001"
         />
         <TextField
           label="Lớp"
           name="class_name"
+          required={isStudent}
+          maxLength={60}
           value={className}
           onChange={(e) => setClassName(e.target.value)}
+          error={fieldErrors.class_name}
           placeholder="VD: CTK43"
         />
         <TextField
           label="Năm nhập học"
           name="enrollment_year"
           inputMode="numeric"
+          maxLength={4}
           value={year}
           onChange={(e) => setYear(e.target.value)}
+          error={fieldErrors.enrollment_year}
           placeholder="VD: 2022"
         />
         <TextField
           label="Trường"
           name="school_name"
+          required={needsSchool}
+          maxLength={160}
           value={school}
           onChange={(e) => setSchool(e.target.value)}
+          error={fieldErrors.school_name}
           placeholder="VD: Đại học Bách Khoa"
         />
-        <div className="flex flex-col gap-1">
-          <label
-            htmlFor="profile-status"
-            className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
-          >
-            Trạng thái học tập
-          </label>
-          <select
-            id="profile-status"
-            className={SELECT_CLASS}
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
         <TextField
           label="Sở thích (phân cách bằng dấu phẩy)"
           name="interests"
           value={interests}
           onChange={(e) => setInterests(e.target.value)}
+          error={fieldErrors.interests}
+          hint="Tối đa 20 mục."
           placeholder="VD: biển, dã ngoại, lập trình"
           className="sm:col-span-2"
         />

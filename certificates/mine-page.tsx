@@ -35,7 +35,7 @@ export function MyCertificatesPage(): ReactElement {
         />
       )}
       {mine.data && mine.data.length > 0 && (
-        <ul className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-3 grid grid-cols-1 items-start gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {mine.data.map((row) => (
             <li
               key={row.certificate_id}

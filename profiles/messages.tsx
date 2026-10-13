@@ -19,6 +19,7 @@ const STATUS_LABELS: Record<string, string> = {
   studying: "Đang học",
   graduated: "Đã tốt nghiệp",
   suspended: "Tạm ngưng",
+  working: "Đang đi làm",
 };
 
 export function profileStatusLabel(status: string | null): string {

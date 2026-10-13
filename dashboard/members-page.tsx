@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { useSession } from "../auth/hooks.ts";
 import { useMyOrgs } from "./hooks.ts";
 import {
@@ -174,13 +174,13 @@ export function DashboardMembersPage(): ReactElement {
         onResetFilters={resetFilters}
       />
       {hasOrgs && orgId !== null && (
-        <BentoCard className="md:col-span-6 lg:order-4 lg:col-span-4 lg:col-start-9 lg:self-start">
+        <Section className=" @4xl:self-start">
           <RoleManageCard
             orgId={orgId}
             viewerRole={viewerRole}
             viewerPermissions={viewerPermissions}
           />
-        </BentoCard>
+        </Section>
       )}
     </>
   );

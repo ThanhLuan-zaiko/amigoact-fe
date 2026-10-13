@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { FiCalendar, FiChevronRight, FiMapPin, FiZap } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import type { PublicOrgDetail } from "../api.ts";
 import { ACTIVITY_STATUS_LABELS } from "../messages.tsx";
@@ -12,7 +12,7 @@ interface OrgActivityListProps {
 
 export function OrgActivityList({ org }: OrgActivityListProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8">
+    <Section>
       <div data-rise>
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -75,6 +75,6 @@ export function OrgActivityList({ org }: OrgActivityListProps): ReactElement {
           </div>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

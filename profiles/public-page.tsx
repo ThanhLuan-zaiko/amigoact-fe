@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { useParams } from "react-router-dom";
 import { FiAward, FiClock, FiHeart, FiMapPin, FiUser } from "react-icons/fi";
 import { ApiError, apiBaseUrl } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -17,9 +17,9 @@ export function PublicVolunteerPage(): ReactElement {
 
   if (card.isPending) {
     return (
-      <BentoCard className="col-span-1 md:col-span-6 lg:col-span-8 lg:col-start-3">
+      <Section>
         <LoadingState label="Đang tải hồ sơ…" />
-      </BentoCard>
+      </Section>
     );
   }
   if (card.isError) {
@@ -27,18 +27,18 @@ export function PublicVolunteerPage(): ReactElement {
       card.error instanceof ApiError ? card.error.code : "REQUEST_FAILED";
     if (code === "NOT_FOUND") {
       return (
-        <BentoCard className="col-span-1 md:col-span-6 lg:col-span-8 lg:col-start-3">
+        <Section>
           <EmptyState
             title="Không tìm thấy tình nguyện viên"
             message="Hồ sơ này không tồn tại hoặc tài khoản đã ngừng hoạt động."
           />
-        </BentoCard>
+        </Section>
       );
     }
     return (
-      <BentoCard className="col-span-1 md:col-span-6 lg:col-span-8 lg:col-start-3">
+      <Section>
         <ErrorState title="Không tải được hồ sơ" message={profileMessage(code)} />
-      </BentoCard>
+      </Section>
     );
   }
 
@@ -46,7 +46,7 @@ export function PublicVolunteerPage(): ReactElement {
   const avatar = data.avatar_url ? `${apiBaseUrl()}${data.avatar_url}` : null;
   return (
     <>
-      <BentoCard className="col-span-1 md:col-span-6 lg:col-span-4">
+      <Section>
         <div className="flex flex-col items-center text-center">
           {avatar ? (
             <img
@@ -83,8 +83,8 @@ export function PublicVolunteerPage(): ReactElement {
             </p>
           )}
         </div>
-      </BentoCard>
-      <BentoCard className="col-span-1 md:col-span-6 lg:col-span-8">
+      </Section>
+      <Section>
         {data.bio && (
           <>
             <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -150,7 +150,7 @@ export function PublicVolunteerPage(): ReactElement {
             </ul>
           )}
         </div>
-      </BentoCard>
+      </Section>
     </>
   );
 }

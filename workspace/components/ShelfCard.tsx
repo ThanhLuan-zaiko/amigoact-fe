@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import {
   EmptyState,
@@ -78,7 +78,7 @@ export function ShelfCard({
     );
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         {icon}
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -146,6 +146,6 @@ export function ShelfCard({
           </>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

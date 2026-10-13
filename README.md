@@ -8,7 +8,7 @@ Frontend của dự án AmigoACT.
 - Lấy API duy nhất bằng **TanStack Query**, backend mặc định `http://localhost:8100`.
 - Styling duy nhất bằng **Tailwind**, cấm file CSS mới, cấm `shadow`/`ring`, chỉ dùng **border**.
 - Theme chính: **light/dark**, màu trang trí duy nhất là **xanh dương**; đỏ = lỗi, vàng = cảnh báo, xanh lá = thành công.
-- Phong cách thiết kế duy nhất: **bento grid**, mọi trang dùng chung `PageShell` + `BentoCard`, không lệch giao diện.
+- Phong cách thiết kế duy nhất: **feed một cột kiểu X**, mọi trang dùng chung `PageShell` + `Section`, không lệch giao diện.
 - Hạn chế tối đa chi tiết trang trí mặc định của trình duyệt (nút, input, link đều phải qua component dùng chung).
 - Giới hạn file: `.tsx` tối đa **250 dòng**, `.ts` tối đa **350 dòng**.
 - Mỗi thư mục chức năng nằm ở **root**, không tạo thư mục `src/`.
@@ -70,7 +70,7 @@ amigoact-fe/
     ARCHITECTURE.md
 ```
 
-Cấm tạo `src/`. Mọi màn hình đều đi qua `PageShell > bento grid > BentoCard`.
+Cấm tạo `src/`. Mọi màn hình đều đi qua `PageShell > cột feed > Section`.
 
 ## Quy ước nhanh
 

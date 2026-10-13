@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ReactElement } from "react";
 import { FiCheck, FiMail, FiX } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { useRiseOn } from "../../core/motion.ts";
@@ -51,7 +51,7 @@ export function InvitationInboxCard(): ReactElement | null {
     return null;
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-12">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiMail className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
         <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -138,6 +138,6 @@ export function InvitationInboxCard(): ReactElement | null {
           </ul>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

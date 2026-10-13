@@ -86,7 +86,7 @@ export function ToastViewport(): ReactElement | null {
     <div
       role="region"
       aria-label="Thông báo"
-      className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4 sm:bottom-6"
+      className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex flex-col items-center gap-2 px-4 sm:bottom-6"
     >
       {toasts.map((toast) => (
         <ToastCard key={toast.id} toast={toast} />

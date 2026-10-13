@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
 import { FiCalendar, FiCheckCircle, FiClock, FiEdit2, FiKey, FiLogOut, FiMail, FiMapPin, FiPhone, FiUser } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import { useLogoutAll, useSession } from "../hooks.ts";
@@ -35,13 +35,13 @@ export function ProfileCard(): ReactElement {
 
   if (!profile) {
     return (
-      <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-7">
+      <Section>
         <EmptyState
           title="Chưa đăng nhập"
           message="Vui lòng đăng nhập để xem hồ sơ của bạn."
           actionLabel="Đăng nhập"
         />
-      </BentoCard>
+      </Section>
     );
   }
 
@@ -50,7 +50,7 @@ export function ProfileCard(): ReactElement {
   const gender = profile.gender ? (GENDER_LABELS[profile.gender] ?? profile.gender) : "";
 
   return (
-    <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-7">
+    <Section>
       <div className="flex items-center gap-3">
         <span
           aria-hidden="true"
@@ -152,6 +152,6 @@ export function ProfileCard(): ReactElement {
           </div>
         </>
       )}
-    </BentoCard>
+    </Section>
   );
 }

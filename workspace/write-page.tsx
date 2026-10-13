@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiArrowLeft, FiEdit3 } from "react-icons/fi";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
   EmptyState,
@@ -47,7 +47,7 @@ export function WorkspaceWritePage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div data-rise className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <FiEdit3 className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
@@ -68,9 +68,9 @@ export function WorkspaceWritePage(): ReactElement {
             Về bảng tin
           </Button>
         </div>
-      </BentoCard>
+      </Section>
       {orgId === null && memberships.data !== undefined && (
-        <div className="col-span-1 md:col-span-6 lg:col-span-12">
+        <div>
           <EmptyState
             title="Chưa có tổ chức"
             message="Bạn cần tham gia một tổ chức trước khi viết bài."
@@ -78,7 +78,7 @@ export function WorkspaceWritePage(): ReactElement {
         </div>
       )}
       {orgId !== null && !ready && !post.isError && (
-        <div className="col-span-1 md:col-span-6 lg:col-span-12">
+        <div>
           <LoadingState
             label={
               postId === null
@@ -89,7 +89,7 @@ export function WorkspaceWritePage(): ReactElement {
         </div>
       )}
       {orgId !== null && postId !== null && post.isError && (
-        <div className="col-span-1 md:col-span-6 lg:col-span-12">
+        <div>
           <ErrorState
             title="Không mở được bài viết"
             message={toVietnameseWorkspaceMessage(

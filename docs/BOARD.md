@@ -117,7 +117,7 @@ thùng rác vẫn nội bộ.
 - `orgs/api.ts`: `PublicOrgDetail.announcements` + `announcement_count` —
   teaser `title/excerpt/cover_url/author_name/published_at/comment_count`
   nhúng trong `GET /orgs/{slug}`.
-- `orgs/components/OrgNewsCard.tsx`: tile `lg:col-span-12` "Tin tức từ tổ
+- `orgs/components/OrgNewsCard.tsx`: section full-width "Tin tức từ tổ
   chức" trên profile, teaser link sang trang đọc public; link "Xem tất cả"
   (khi `announcement_count > announcements.length`) sang trang danh sách.
 - `orgs/news-page.tsx` — route `/orgs/:slug/posts`, khách không cần đăng

@@ -1,6 +1,6 @@
 import { useState, type ReactElement } from "react";
 import { FiActivity } from "react-icons/fi";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -23,7 +23,7 @@ export function AuditPage(): ReactElement {
   const feed = useOrgAudit(orgId || undefined);
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-12">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiActivity
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -107,6 +107,6 @@ export function AuditPage(): ReactElement {
           </ul>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

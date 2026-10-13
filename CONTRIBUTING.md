@@ -16,7 +16,7 @@ bun install
 1. Tạo một thư mục ở root theo tên bounded context, ví dụ `posts/`.
 2. Tạo tối thiểu: `api.ts`, `keys.ts`, `hooks.ts`, `schemas.ts`, `components/`, `page.tsx`.
 3. Không tạo thư mục `src/`. Không tạo file CSS mới. Không đặt component dùng chung trong thư mục tính năng.
-4. `.tsx` không quá 250 dòng, `.ts` không quá 350 dòng. Vượt thì tách tile bento, tách hook, tách util.
+4. `.tsx` không quá 250 dòng, `.ts` không quá 350 dòng. Vượt thì tách section feed, tách hook, tách util.
 
 ## 3. Quy tắc kỹ thuật tóm tắt
 
@@ -25,8 +25,8 @@ bun install
 - Chỉ dùng Tailwind. Cấm `shadow-*`, `ring-*`, `box-shadow`, CSS module, styled-components, `style={}` cho trang trí.
 - Chỉ dùng border (`border-zinc-200 dark:border-zinc-800` cho card). Focus dùng `outline` theo mẫu dùng chung.
 - Màu sắc: light/dark bắt buộc, xanh dương trang trí, đỏ lỗi, vàng cảnh báo, xanh lá thành công. Cấm thêm màu mới khi chưa sửa `AGENTS.md`.
-- Mọi trang dùng `PageShell > bento grid > BentoCard`. Trang mới phải so sánh cạnh trang cũ để tránh lệch giao diện.
-- Mọi tile dữ liệu phải có loading (skeleton), empty, error qua `Feedback.tsx`.
+- Mọi trang dùng `PageShell > cột feed > Section`. Trang mới phải so sánh cạnh trang cũ để tránh lệch giao diện.
+- Mọi section dữ liệu phải có loading (skeleton), empty, error qua `Feedback.tsx`.
 - Không render `<button>`, `<input>`, `<select>`, `<a>` trần — dùng primitive trong `core/components/`.
 
 ## 4. Kiểm tra bắt buộc
@@ -40,11 +40,11 @@ Tự kiểm tra: số dòng file, không còn `shadow`/`ring`, mọi màu có c�
 
 ## 5. Quy trình pull request
 
-1. Đặt tên nhánh rõ ràng: `feat/auth-page`, `fix/bento-drift`.
+1. Đặt tên nhánh rõ ràng: `feat/auth-page`, `fix/feed-drift`.
 2. Đính kèm ảnh chụp light/dark (desktop + mobile) khi đổi giao diện.
 3. Mô tả PR gồm: mục tiêu, hook/key Query ảnh hưởng, thay đổi `core/components` (nếu có), cách kiểm tra trạng thái loading/error/empty.
 4. Cập nhật tài liệu tiếng Việt liên quan (`README.md`, `docs/ARCHITECTURE.md`).
-5. Không merge khi build/lint đỏ, lệch bento grid, hoặc thiếu dark mode.
+5. Không merge khi build/lint đỏ, lệch feed kiểu X, hoặc thiếu dark mode.
 
 ## 6. Báo lỗi giao diện
 

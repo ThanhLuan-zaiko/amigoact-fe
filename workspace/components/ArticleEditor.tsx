@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import type { OrgPost } from "../board-api.ts";
 import { useArticleEditor } from "../editor-hooks.ts";
@@ -25,7 +25,7 @@ export function ArticleEditor({
   const editor = useArticleEditor(orgId, initial, onPublished, canAnnounce);
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-8">
+      <Section>
         <div data-rise>
           <TextField
             label="Tiêu đề bài viết"
@@ -68,7 +68,7 @@ export function ArticleEditor({
             </div>
           ))}
         </div>
-      </BentoCard>
+      </Section>
       <PublishPanel editor={editor} orgId={orgId} canAnnounce={canAnnounce} />
     </>
   );

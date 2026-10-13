@@ -1,6 +1,6 @@
 import { useState, type ReactElement } from "react";
 import { FiAward, FiTrendingUp } from "react-icons/fi";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
   EmptyState,
@@ -18,7 +18,7 @@ export function LeaderboardPage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div data-rise className="flex items-center gap-2">
           <FiTrendingUp
             className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -46,8 +46,8 @@ export function LeaderboardPage(): ReactElement {
             </Button>
           ))}
         </div>
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      </Section>
+      <Section>
         {board.isPending && <LoadingState label="Đang tải bảng xếp hạng…" />}
         {board.isError && (
           <ErrorState
@@ -99,7 +99,7 @@ export function LeaderboardPage(): ReactElement {
             ))}
           </ol>
         )}
-      </BentoCard>
+      </Section>
     </>
   );
 }

@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FiArrowLeft, FiMessageCircle } from "react-icons/fi";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
   ErrorState,
@@ -39,7 +39,7 @@ export function OrgPostPage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div data-rise className="flex items-center justify-between gap-2">
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Tin tức từ tổ chức
@@ -52,14 +52,14 @@ export function OrgPostPage(): ReactElement {
             Về trang tổ chức
           </Button>
         </div>
-      </BentoCard>
+      </Section>
       {post.isPending && (
-        <div className="col-span-1 md:col-span-6 lg:col-span-12">
+        <div>
           <LoadingState label="Đang tải bài viết…" />
         </div>
       )}
       {post.isError && (
-        <div className="col-span-1 md:col-span-6 lg:col-span-12">
+        <div>
           <ErrorState
             title="Không mở được bài viết"
             message={
@@ -78,7 +78,7 @@ export function OrgPostPage(): ReactElement {
       )}
       {article !== null && (
         <>
-          <BentoCard className="md:col-span-6 lg:col-span-8">
+          <Section>
             <article data-rise>
               {cover !== null && (
                 <img
@@ -106,8 +106,8 @@ export function OrgPostPage(): ReactElement {
               </p>
               <ArticleBody post={article} />
             </article>
-          </BentoCard>
-          <BentoCard className="md:col-span-6 lg:col-span-4">
+          </Section>
+          <Section>
             <div data-rise className="flex flex-col gap-3">
               {org.data !== undefined && (
                 <Link
@@ -152,7 +152,7 @@ export function OrgPostPage(): ReactElement {
                 </div>
               </dl>
             </div>
-          </BentoCard>
+          </Section>
         </>
       )}
     </>

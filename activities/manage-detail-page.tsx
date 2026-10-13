@@ -6,7 +6,7 @@ import {
   FiPlayCircle,
   FiXCircle,
 } from "react-icons/fi";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
   ErrorState,
@@ -68,19 +68,19 @@ export function ManageEventDetailPage(): ReactElement {
 
   if (detail.isPending) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <LoadingState label="Đang tải hoạt động…" />
-      </BentoCard>
+      </Section>
     );
   }
   if (detail.isError || !detail.data) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <ErrorState
           title="Không tải được"
           message={detail.error?.message ?? "Hoạt động không tồn tại."}
         />
-      </BentoCard>
+      </Section>
     );
   }
 
@@ -96,7 +96,7 @@ export function ManageEventDetailPage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div data-rise className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -152,10 +152,10 @@ export function ManageEventDetailPage(): ReactElement {
             </dd>
           </div>
         </dl>
-      </BentoCard>
+      </Section>
 
       {editing && (
-        <BentoCard className="md:col-span-6 lg:col-span-12">
+        <Section>
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
             Chỉnh sửa thông tin
           </h2>
@@ -173,40 +173,40 @@ export function ManageEventDetailPage(): ReactElement {
               }}
             />
           </div>
-        </BentoCard>
+        </Section>
       )}
 
-      <BentoCard className="md:col-span-6 lg:col-span-6">
+      <Section>
         <SchedulePanel
           schedules={view.schedules}
           canManage={editable}
           onAdd={(input) => addSchedule.mutateAsync(input)}
           onDelete={(id) => deleteSchedule.mutateAsync(id)}
         />
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-6">
+      </Section>
+      <Section>
         <StaffPanel
           view={view}
           canManage={editable}
           onSave={(staff) => setStaff.mutateAsync(staff)}
         />
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-6">
+      </Section>
+      <Section>
         <RosterPanel activityId={a.id} />
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-6">
+      </Section>
+      <Section>
         <AttendancePanel activityId={a.id} />
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      </Section>
+      <Section>
         <HoursPanel orgId={a.org_id} activityId={a.id} />
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      </Section>
+      <Section>
         <AnnouncementPanel
           announcements={view.announcements}
           canManage
           onAdd={(input) => addAnnouncement.mutateAsync(input)}
         />
-      </BentoCard>
+      </Section>
     </>
   );
 }

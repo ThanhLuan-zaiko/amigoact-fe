@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
 import { FiPlusCircle, FiTag, FiType } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -97,7 +97,7 @@ export function OrgCreateCard(): ReactElement {
       });
       setCreatedName(org.name);
       const files = pendingFiles;
-      setPendingFiles([]);      if (files.length > 0) {
+      setPendingFiles([]); if (files.length > 0) {
         setUploading(true);
         let done = 0;
         let failedCode: string | null = null;
@@ -128,7 +128,7 @@ export function OrgCreateCard(): ReactElement {
   }
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-12">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiPlusCircle className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
         <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -233,6 +233,6 @@ export function OrgCreateCard(): ReactElement {
           {create.isPending ? "Đang tạo…" : uploading ? "Đang tải tệp…" : "Tạo tổ chức"}
         </Button>
       </form>
-    </BentoCard>
+    </Section>
   );
 }

@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react";
 import { FiBriefcase } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { LoadingState } from "../../core/components/Feedback.tsx";
 
@@ -27,7 +27,7 @@ export function WorkspaceOrgBar({
   trailing,
 }: WorkspaceOrgBarProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-12">
+    <Section>
       <div
         data-rise
         className="flex flex-wrap items-start justify-between gap-2"
@@ -73,6 +73,6 @@ export function WorkspaceOrgBar({
           ))}
         </div>
       )}
-    </BentoCard>
+    </Section>
   );
 }

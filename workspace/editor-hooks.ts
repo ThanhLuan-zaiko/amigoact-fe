@@ -209,7 +209,7 @@ export function useArticleEditor(
 
   // Draft saves keep the post private; a draft save on a published post
   // stages a private revision (the live version stays up). Publish
-  // creates/updates and then flips a draft onto the board — for a
+  // creates/updates and then flips a draft onto the board; for a
   // revision the server folds it back onto the original post. Returns
   // the saved post or null.
   async function save(mode: SaveMode): Promise<OrgPost | null> {

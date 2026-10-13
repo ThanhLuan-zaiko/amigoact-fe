@@ -7,7 +7,7 @@ import {
   FiMapPin,
   FiPhone,
 } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import type { PublicOrgDetail } from "../api.ts";
 import { LEGAL_STATUS_LABELS } from "../messages.tsx";
@@ -32,7 +32,7 @@ export function OrgContactCard({ org }: OrgContactCardProps): ReactElement {
     org.tax_code !== null ||
     org.legal_status !== "none";
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise>
         <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
           <FiMail
@@ -135,6 +135,6 @@ export function OrgContactCard({ org }: OrgContactCardProps): ReactElement {
           </div>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

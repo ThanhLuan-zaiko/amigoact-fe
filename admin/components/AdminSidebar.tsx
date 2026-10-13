@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { NavLink } from "react-router-dom";
 import type { IconType } from "react-icons";
 import { FiCheckSquare, FiShield, FiUsers } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 
 interface AdminEntry {
   to: string;
@@ -32,7 +32,7 @@ function itemClass(isActive: boolean): string {
 
 export function AdminSidebar(): ReactElement {
   return (
-    <BentoCard className="w-full shrink-0 md:col-span-6 lg:col-span-3 lg:sticky lg:top-20 lg:w-64">
+    <Section className="w-full shrink-0 @4xl:sticky @4xl:top-20 @4xl:w-64">
       <div className="flex items-center gap-2">
         <FiShield
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -55,6 +55,6 @@ export function AdminSidebar(): ReactElement {
           </NavLink>
         ))}
       </nav>
-    </BentoCard>
+    </Section>
   );
 }

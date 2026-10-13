@@ -19,7 +19,7 @@ const BASE =
   "disabled:cursor-not-allowed disabled:opacity-60";
 
 const SIZES: Record<ButtonSize, string> = {
-  md: "min-h-[44px] rounded-lg px-4 py-2 text-sm",
+  md: "min-h-[44px] rounded-full px-4 py-2 text-sm",
   icon: "h-11 w-11 rounded-full text-sm",
 };
 

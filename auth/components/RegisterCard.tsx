@@ -3,7 +3,7 @@ import type { FormEvent, ReactElement } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiArrowLeft, FiArrowRight, FiUserPlus } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { StepProgress } from "../../core/components/StepProgress.tsx";
@@ -149,7 +149,7 @@ export function RegisterCard(): ReactElement {
   }
 
   return (
-    <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-5">
+    <Section>
       <div ref={scope} className="flex flex-col">
       <div data-rise className="flex items-center gap-2">
         <FiUserPlus className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
@@ -232,6 +232,6 @@ export function RegisterCard(): ReactElement {
         </Link>
       </p>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

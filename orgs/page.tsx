@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -105,12 +105,12 @@ export function OrgsPage(): ReactElement {
       <OrgStatsCard total={total} counts={counts} isPending={orgs.isPending} />
       <div className="contents" aria-live="polite" aria-busy={orgs.isPending}>
         {orgs.isPending && (
-          <BentoCard className="md:col-span-6 lg:col-span-12">
+          <Section>
             <LoadingState label="Đang tải danh sách tổ chức…" />
-          </BentoCard>
+          </Section>
         )}
         {orgs.isError && (
-          <BentoCard className="md:col-span-6 lg:col-span-12">
+          <Section>
             <ErrorState
               title="Không tải được danh sách"
               message={toVietnameseOrgsMessage(
@@ -119,10 +119,10 @@ export function OrgsPage(): ReactElement {
                   : "REQUEST_FAILED",
               )}
             />
-          </BentoCard>
+          </Section>
         )}
         {orgs.data && total === 0 && (
-          <BentoCard className="md:col-span-6 lg:col-span-12">
+          <Section>
             <EmptyState
               title={filtering ? "Không có tổ chức phù hợp" : "Chưa có tổ chức nào"}
               message={
@@ -133,7 +133,7 @@ export function OrgsPage(): ReactElement {
               actionLabel={filtering ? "Xóa bộ lọc" : undefined}
               onAction={filtering ? resetFilters : undefined}
             />
-          </BentoCard>
+          </Section>
         )}
         {orgs.data && !outOfRange && spotlight !== null && (
           <OrgSpotlightCard org={spotlight} />
@@ -149,12 +149,12 @@ export function OrgsPage(): ReactElement {
           </div>
         )}
         {outOfRange && (
-          <BentoCard className="md:col-span-6 lg:col-span-12">
+          <Section>
             <LoadingState label="Đang tải danh sách tổ chức…" />
-          </BentoCard>
+          </Section>
         )}
         {orgs.data && totalPages > 1 && (
-          <BentoCard className="md:col-span-6 lg:col-span-12">
+          <Section>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 {`Trang ${current} / ${totalPages} · ${total} tổ chức`}
@@ -167,7 +167,7 @@ export function OrgsPage(): ReactElement {
                 }
               />
             </div>
-          </BentoCard>
+          </Section>
         )}
       </div>
     </>

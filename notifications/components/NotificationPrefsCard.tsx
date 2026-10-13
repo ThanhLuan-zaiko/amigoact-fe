@@ -1,6 +1,6 @@
 import { useState, type ReactElement } from "react";
 import { FiBell, FiBellOff, FiSave } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import {
   ErrorState,
@@ -31,19 +31,19 @@ export function NotificationPrefsCard(): ReactElement {
 
   if (prefs.isPending) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-6">
+      <Section>
         <LoadingState label="Đang tải tùy chọn…" />
-      </BentoCard>
+      </Section>
     );
   }
   if (prefs.isError || !prefs.data) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-6">
+      <Section>
         <ErrorState
           title="Không tải được"
           message="Tùy chọn thông báo hiện không khả dụng."
         />
-      </BentoCard>
+      </Section>
     );
   }
 
@@ -60,7 +60,7 @@ export function NotificationPrefsCard(): ReactElement {
   };
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-6">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiBell
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -127,6 +127,6 @@ export function NotificationPrefsCard(): ReactElement {
           Đã lưu tùy chọn.
         </p>
       )}
-    </BentoCard>
+    </Section>
   );
 }

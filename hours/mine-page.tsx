@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiAward, FiClock } from "react-icons/fi";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -27,7 +27,7 @@ export function MyHoursPage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-4">
+      <Section>
         <div data-rise className="flex items-center gap-2">
           <FiAward className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -70,8 +70,8 @@ export function MyHoursPage(): ReactElement {
             ))}
           </ul>
         )}
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-8">
+      </Section>
+      <Section>
         <div data-rise className="flex items-center gap-2">
           <FiClock className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -113,7 +113,7 @@ export function MyHoursPage(): ReactElement {
             ))}
           </ul>
         )}
-      </BentoCard>
+      </Section>
     </>
   );
 }

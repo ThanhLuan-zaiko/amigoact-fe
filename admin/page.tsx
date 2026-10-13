@@ -10,16 +10,16 @@ export function AdminPage(): ReactElement {
 
   return (
     <AdminGuard>
-      <div className="col-span-1 md:col-span-6 lg:col-span-12">
+      <div>
         <h1 className="sr-only">Quản trị nền tảng</h1>
         <div
           ref={scope}
-          className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start"
+          className="flex flex-col gap-4 @4xl:flex-row @4xl:items-start"
         >
           <AdminSidebar />
           <section
             aria-label="Nội dung quản trị"
-            className="grid min-w-0 flex-1 grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12"
+            className="flex min-w-0 flex-1 flex-col"
           >
             <Outlet />
           </section>

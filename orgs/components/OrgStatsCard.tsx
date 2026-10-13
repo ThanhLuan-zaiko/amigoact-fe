@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiPieChart } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import type { BucketCount } from "../api.ts";
 import { ORG_KIND_LABELS } from "../messages.tsx";
 
@@ -16,7 +16,7 @@ export function OrgStatsCard({
   isPending,
 }: OrgStatsCardProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiPieChart
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -60,6 +60,6 @@ export function OrgStatsCard({
           Chưa có tổ chức nào để thống kê.
         </p>
       )}
-    </BentoCard>
+    </Section>
   );
 }

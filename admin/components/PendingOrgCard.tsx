@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { FiCheck, FiCheckSquare, FiX } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import {
   EmptyState,
@@ -134,7 +134,7 @@ export function PendingOrgCard(): ReactElement {
   const [rejecting, setRejecting] = useState<AdminOrgItem | null>(null);
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-12">
+    <Section>
       <div className="flex items-center gap-2">
         <FiCheckSquare
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -192,6 +192,6 @@ export function PendingOrgCard(): ReactElement {
         )}
       </div>
       <RejectModal org={rejecting} onClose={() => setRejecting(null)} />
-    </BentoCard>
+    </Section>
   );
 }

@@ -7,7 +7,7 @@ import {
   FiMapPin,
   FiUsers,
 } from "react-icons/fi";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -54,19 +54,19 @@ export function EventDetailPage(): ReactElement {
 
   if (activity.isPending) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <LoadingState label="Đang tải hoạt động…" />
-      </BentoCard>
+      </Section>
     );
   }
   if (activity.isError || !activity.data) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <ErrorState
           title="Không tìm thấy hoạt động"
           message="Hoạt động không tồn tại hoặc chưa được công bố."
         />
-      </BentoCard>
+      </Section>
     );
   }
 
@@ -78,7 +78,7 @@ export function EventDetailPage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-8">
+      <Section>
         <div data-rise className="flex flex-wrap items-center gap-2">
           <h1 className="text-lg font-semibold text-zinc-900 sm:text-xl dark:text-zinc-100">
             {a.title}
@@ -156,8 +156,8 @@ export function EventDetailPage(): ReactElement {
             ))}
           </div>
         )}
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-4">
+      </Section>
+      <Section>
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
           Đối tác & nhân sự
         </h3>
@@ -190,37 +190,37 @@ export function EventDetailPage(): ReactElement {
             )}
           </ul>
         )}
-      </BentoCard>
-      <BentoCard className="md:col-span-6 lg:col-span-4">
+      </Section>
+      <Section>
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
           Tham gia
         </h3>
         <div className="mt-3">
           <ApplyCard activityId={a.id} activityStatus={a.status} />
         </div>
-      </BentoCard>
+      </Section>
       {view && view.schedules.length > 0 && (
-        <BentoCard className="md:col-span-6 lg:col-span-6">
+        <Section>
           <SchedulePanel
             schedules={view.schedules}
             canManage={false}
             onAdd={async () => undefined}
             onDelete={async () => undefined}
           />
-        </BentoCard>
+        </Section>
       )}
       {view && view.announcements.length > 0 && (
-        <BentoCard className="md:col-span-6 lg:col-span-6">
+        <Section>
           <AnnouncementPanel
             announcements={view.announcements}
             canManage={false}
             onAdd={async () => undefined}
           />
-        </BentoCard>
+        </Section>
       )}
-      <BentoCard className="md:col-span-6 lg:col-span-6">
+      <Section>
         <ReviewsPanel activityId={a.id} />
-      </BentoCard>
+      </Section>
     </>
   );
 }

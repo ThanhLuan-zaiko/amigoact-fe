@@ -4,7 +4,7 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string;
   error?: string;
   hint?: string;
-  // field-sizing: content — the field grows/shrinks with its text, with
+  // field-sizing: content - the field grows/shrinks with its text, with
   // `rows` acting as the minimum height instead of a fixed frame.
   autoGrow?: boolean;
 }

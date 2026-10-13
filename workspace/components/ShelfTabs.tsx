@@ -48,7 +48,7 @@ const TILE_ACTIVE =
   "border-brand/40 bg-brand/10 dark:border-brand/30 dark:bg-brand/10";
 
 // Clickable shelf selector tiles standing in for a tab strip: each tile is
-// one bento cell so the row reads as part of the grid instead of a toolbar.
+// a content cell so the row reads as part of the feed instead of a toolbar.
 export function ShelfTabs({ tab, onSelect }: ShelfTabsProps): ReactElement {
   return (
     <>
@@ -61,7 +61,7 @@ export function ShelfTabs({ tab, onSelect }: ShelfTabsProps): ReactElement {
             data-rise
             onClick={() => onSelect(shelf.value)}
             aria-pressed={active}
-            className={`${TILE_BASE} md:col-span-2 lg:col-span-4 ${
+            className={`${TILE_BASE} ${
               active ? TILE_ACTIVE : TILE_IDLE
             }`}
           >

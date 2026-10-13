@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
+import { createPortal } from "react-dom";
 import { FiChevronLeft, FiChevronRight, FiX } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { orgMediaUrl, type OrgMedia } from "../api.ts";
@@ -97,7 +98,7 @@ export function OrgMediaStrip({ media, onBrowse }: OrgMediaStripProps): ReactEle
           </button>
         )}
       </div>
-      {open && images[viewer] && (
+      {open && images[viewer] && createPortal(
         <div
           role="dialog"
           aria-modal="true"
@@ -156,7 +157,8 @@ export function OrgMediaStrip({ media, onBrowse }: OrgMediaStripProps): ReactEle
               />
             </div>
           )}
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { FiUsers } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { Pagination } from "../../core/components/Pagination.tsx";
 import { useRiseOn } from "../../core/motion.ts";
@@ -61,11 +61,11 @@ export function MemberListCard({
   const listRef = useRiseOn<HTMLUListElement>(`${page}:${items.length}`);
 
   return (
-    <BentoCard
+    <Section
       className={
         hasOrgs
-          ? "md:col-span-6 lg:order-2 lg:col-span-8 lg:col-start-1 lg:row-span-2"
-          : "md:col-span-6 lg:col-span-12"
+          ? " "
+          : " "
       }
     >
       <div data-rise className="flex items-center gap-2">
@@ -152,6 +152,6 @@ export function MemberListCard({
           </>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

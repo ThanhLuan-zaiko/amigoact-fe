@@ -11,7 +11,7 @@ import {
   FiUserPlus,
   FiUsers,
 } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import type { BucketCount, OrgKind, PublicOrgSort } from "../api.ts";
@@ -67,7 +67,7 @@ export function OrgHeroCard({
   const countOf = new Map(counts.map((entry) => [entry.bucket, entry.count]));
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiCompass
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -142,6 +142,6 @@ export function OrgHeroCard({
           </div>
         </div>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

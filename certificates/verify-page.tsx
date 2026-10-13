@@ -1,7 +1,7 @@
 import { useState, type ReactElement } from "react";
 import { FiCheckCircle, FiSearch, FiXCircle } from "react-icons/fi";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import { TextField } from "../core/components/TextField.tsx";
 import { formatDateTime } from "../activities/dates.tsx";
@@ -40,7 +40,7 @@ export function VerifyCertificatePage(): ReactElement {
   };
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8 lg:col-start-3">
+    <Section>
       <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
         Xác thực chứng nhận
       </h1>
@@ -124,6 +124,6 @@ export function VerifyCertificatePage(): ReactElement {
           </dl>
         </div>
       )}
-    </BentoCard>
+    </Section>
   );
 }

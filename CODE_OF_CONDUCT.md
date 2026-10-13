@@ -8,7 +8,7 @@ Nhằm xây dựng môi trường cởi mở và thân thiện, chúng tôi cam 
 
 - Dùng ngôn ngữ lịch sự, tập trung vào vấn đề kỹ thuật.
 - Tôn trọng ý kiến khác biệt, đưa ra phản biện dựa trên bằng chứng (code, ảnh chụp giao diện, test).
-- Chấp nhận góp ý trong review, đặc biệt về tính nhất quán bento grid, màu sắc light/dark, giới hạn dòng file.
+- Chấp nhận góp ý trong review, đặc biệt về tính nhất quán feed kiểu X, màu sắc light/dark, giới hạn dòng file.
 - Ưu tiên giúp người mới hiểu luật trong `AGENTS.md` thay vì chỉ trích.
 
 ## Hành vi không chấp nhận

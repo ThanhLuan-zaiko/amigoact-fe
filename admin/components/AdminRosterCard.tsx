@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { ReactElement } from "react";
 import { FiMail, FiTrash2, FiUserPlus, FiUsers } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import {
   EmptyState,
@@ -53,7 +53,7 @@ export function AdminRosterCard(): ReactElement {
   }
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-12">
+    <Section>
       <div className="flex items-center gap-2">
         <FiUsers
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -157,6 +157,6 @@ export function AdminRosterCard(): ReactElement {
           </ul>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

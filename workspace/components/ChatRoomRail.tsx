@@ -7,7 +7,7 @@ import {
   FiPlus,
 } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import {
   ErrorState,
@@ -100,7 +100,7 @@ export function ChatRoomRail({
   }
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise>
         <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
           <FiHash className="h-5 w-5" aria-hidden="true" />
@@ -207,6 +207,6 @@ export function ChatRoomRail({
           </p>
         )}
       </nav>
-    </BentoCard>
+    </Section>
   );
 }

@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiAlertTriangle } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { DeskCard } from "./DeskCard.tsx";
 
 interface ShelfRailProps {
@@ -15,7 +15,7 @@ export function ShelfRail({ shelf, writeHref }: ShelfRailProps): ReactElement {
     return <DeskCard writeHref={writeHref} />;
   }
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiAlertTriangle
           className="h-5 w-5 text-amber-600 dark:text-amber-400"
@@ -32,6 +32,6 @@ export function ShelfRail({ shelf, writeHref }: ShelfRailProps): ReactElement {
       <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
         Bản nháp trong thùng rác chỉ hiển thị với tác giả.
       </p>
-    </BentoCard>
+    </Section>
   );
 }

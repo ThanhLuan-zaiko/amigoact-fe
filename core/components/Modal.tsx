@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 import { riseIn } from "../motion.ts";
 import { Button } from "./Button.tsx";
@@ -42,7 +43,9 @@ export function Modal({ open, title, onClose, children, wide = false }: ModalPro
 
   if (!open) return null;
 
-  return (
+  // Portaled to <body>: the center column is a size container, which may
+  // otherwise become the containing block of this fixed overlay.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="presentation"
@@ -93,6 +96,7 @@ export function Modal({ open, title, onClose, children, wide = false }: ModalPro
         </div>
         <div className="mt-3">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

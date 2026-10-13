@@ -3,7 +3,7 @@ import type { FormEvent, ReactElement } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiLock, FiLogIn, FiMail } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -71,7 +71,7 @@ export function LoginCard(): ReactElement {
   }
 
   return (
-    <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-5">
+    <Section>
       <div ref={scope} className="flex flex-col">
       <div data-rise className="flex items-center gap-2">
         <FiLogIn
@@ -159,6 +159,6 @@ export function LoginCard(): ReactElement {
         </Link>
       </div>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

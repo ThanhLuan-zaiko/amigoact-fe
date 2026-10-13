@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import { FiPlusCircle, FiTrash2, FiUsers, FiX } from "react-icons/fi";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { Pagination } from "../../core/components/Pagination.tsx";
@@ -106,7 +106,7 @@ export function OrgListCard(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div data-rise className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <FiUsers className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
@@ -209,9 +209,9 @@ export function OrgListCard(): ReactElement {
             </div>
           )}
         </div>
-      </BentoCard>
+      </Section>
       {trashed.length > 0 && (
-        <BentoCard className="md:col-span-6 lg:col-span-12">
+        <Section>
           <div className="flex items-center gap-2">
             <FiTrash2 className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
             <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -233,7 +233,7 @@ export function OrgListCard(): ReactElement {
               />
             ))}
           </ul>
-        </BentoCard>
+        </Section>
       )}
       {mediaOrg && (
         <OrgMediaModal

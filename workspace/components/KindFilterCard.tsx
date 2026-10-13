@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiFilter } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import type { PostKind } from "../board-api.ts";
 import { POST_KIND_LABELS } from "../messages.tsx";
@@ -16,14 +16,14 @@ const FILTERS: { value: PostKind | undefined; label: string }[] = [
   { value: "announcement", label: POST_KIND_LABELS["announcement"] },
 ];
 
-// Kind filter rendered as one bento tile inside the published grid so the
+// Kind filter rendered as one tile inside the published feed so the
 // chips share the same rhythm as the article cards around them.
 export function KindFilterCard({
   kind,
   onKind,
 }: KindFilterCardProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiFilter
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -49,6 +49,6 @@ export function KindFilterCard({
           </Button>
         ))}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

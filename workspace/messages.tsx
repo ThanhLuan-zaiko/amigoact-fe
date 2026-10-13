@@ -41,7 +41,7 @@ export const POST_STATUS_LABELS: Record<string, string> = {
 };
 
 // Row badge for shelves/detail: a draft that stages edits for a live post
-// ("Nháp chờ đăng") and a post pulled back off the board ("Đã gỡ xuống")
+// (pending revision) and a post pulled back off the board (unpublished)
 // both read differently from a fresh draft.
 export function postStatusLabel(post: {
   status: string;

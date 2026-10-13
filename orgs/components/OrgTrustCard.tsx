@@ -6,7 +6,7 @@ import {
   FiMinusCircle,
   FiShield,
 } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import type { PublicOrgDetail } from "../api.ts";
 import { TRUST_CHECK_LABELS, TRUST_CHECK_NOTES } from "../messages.tsx";
 import { buildTrustChecks, trustScore, type TrustState } from "../utils.ts";
@@ -46,7 +46,7 @@ export function OrgTrustCard({ org }: OrgTrustCardProps): ReactElement {
   const checks = buildTrustChecks(org);
   const score = trustScore(checks);
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise>
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -82,6 +82,6 @@ export function OrgTrustCard({ org }: OrgTrustCardProps): ReactElement {
           chứng trước khi tham gia.
         </p>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { FiSend, FiTrash2, FiUsers } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import {
   ErrorState,
@@ -92,7 +92,7 @@ export function ChatPanel({
   }
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8">
+    <Section>
       <div
         data-rise
         className="flex items-center justify-between gap-2"
@@ -230,6 +230,6 @@ export function ChatPanel({
           {error}
         </p>
       )}
-    </BentoCard>
+    </Section>
   );
 }

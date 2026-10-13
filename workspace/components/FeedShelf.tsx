@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -14,7 +14,7 @@ import { ArticleCard } from "./ArticleCard.tsx";
 import { DeskCard } from "./DeskCard.tsx";
 import { KindFilterCard } from "./KindFilterCard.tsx";
 
-const FULL_ROW = "col-span-1 md:col-span-6 lg:col-span-12";
+const FULL_ROW = " ";
 
 interface FeedShelfProps {
   orgId: string;
@@ -31,7 +31,7 @@ interface FeedShelfProps {
 }
 
 // Published tab content: the pinned feature rail (page 1 only), a filter
-// tile flowing in the same bento grid, then the magazine-style article
+// tile flowing in the same feed column, then the magazine-style article
 // cards with numbered pagination and shared loading/error/empty states.
 export function FeedShelf({
   orgId,
@@ -95,24 +95,24 @@ export function FeedShelf({
       )}
       {empty && kind === undefined && (
         <>
-          <BentoCard className="md:col-span-6 lg:col-span-8">
+          <Section>
             <EmptyState
               title="Chưa có bài viết nào"
               message="Bảng tin đang trống. Hãy viết bài đầu tiên cho tổ chức."
             />
-          </BentoCard>
+          </Section>
           <DeskCard writeHref={writeHref} />
         </>
       )}
       {empty && kind !== undefined && (
-        <BentoCard className="md:col-span-6 lg:col-span-8">
+        <Section>
           <EmptyState
             title="Không có bài viết phù hợp"
             message="Thử chọn loại bài khác để xem toàn bộ bảng tin."
             actionLabel="Xem tất cả"
             onAction={() => onKind(undefined)}
           />
-        </BentoCard>
+        </Section>
       )}
       {items.map((post) => (
         <ArticleCard

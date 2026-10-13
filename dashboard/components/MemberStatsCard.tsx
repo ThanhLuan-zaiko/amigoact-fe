@@ -7,7 +7,7 @@ import {
   FiUserMinus,
   FiUsers,
 } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { StatTile } from "../../core/components/StatTile.tsx";
 import type { BucketCount } from "../api.ts";
@@ -77,7 +77,7 @@ export function MemberStatsCard({
   const totalAll = counts.reduce((sum, entry) => sum + entry.count, 0);
 
   return (
-    <BentoCard className="md:col-span-6 lg:order-1 lg:col-span-12">
+    <Section>
       {errorCode !== null && (
         <div className="mb-3" aria-live="polite">
           <ErrorState
@@ -89,7 +89,7 @@ export function MemberStatsCard({
       <div
         role="group"
         aria-label="Lọc theo trạng thái thành viên"
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 @4xl:grid-cols-5"
       >
         {TILES.map(({ key, label, Icon, tone }) => (
           <StatTile
@@ -109,6 +109,6 @@ export function MemberStatsCard({
           />
         ))}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

@@ -3,8 +3,8 @@ import { prefersReducedMotion } from "./motion.ts";
 // App-wide behavior: whenever a form error mounts, smoothly scroll to
 // the first one in document order. Every error surface renders
 // <p role="alert"> (TextField, SelectField, TextArea, ad-hoc form
-// errors), so one MutationObserver covers all forms — including async
-// server errors — without per-form wiring.
+// errors), so one MutationObserver covers all forms, including async
+// server errors, without per-form wiring.
 let started = false;
 
 function isVisible(el: Element): boolean {

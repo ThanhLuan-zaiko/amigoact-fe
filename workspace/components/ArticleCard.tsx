@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiBookmark, FiMessageCircle } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import {
   articleBlocks,
   coverUrl,
@@ -39,10 +39,10 @@ export function ArticleCard({
   const cover = coverUrl(post);
   const pinned = post.pinned_at !== null;
   const span = featured
-    ? "md:col-span-6 lg:col-span-12"
-    : "md:col-span-3 lg:col-span-4";
+    ? " "
+    : " ";
   return (
-    <BentoCard className={span}>
+    <Section className={span}>
       <article data-rise className={featured ? "flex flex-col gap-4 sm:flex-row" : ""}>
         {cover !== null && (
           <img
@@ -105,6 +105,6 @@ export function ArticleCard({
           </div>
         </div>
       </article>
-    </BentoCard>
+    </Section>
   );
 }

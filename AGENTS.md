@@ -7,7 +7,7 @@ Follow it strictly. Do not introduce patterns outside this document without upda
 
 - Build: Vite `^8`, React `^19`, TypeScript `~7`, Tailwind CSS `^4` (`@tailwindcss/vite`).
 - Package manager: `bun`.
-- Router: `react-router-dom` only (`BrowserRouter` + `NavLink` for Navbar active state). No TanStack Router, no other routing libs.
+- Router: `react-router-dom` only (`BrowserRouter` + `Link`; rail active state comes from `core/nav-meta.ts` longest-prefix matching). No TanStack Router, no other routing libs.
 - Data fetching: TanStack Query (`@tanstack/react-query`) only. No SWR, no Apollo, no `fetch` in components.
 - Animation: `animejs` only. No `framer-motion`, no `gsap`, no CSS `@keyframes` sprawl outside `core/motion.ts` presets. All motion goes through `core/motion.ts` and respects `prefers-reduced-motion`.
 - Icons: `react-icons` only. Every icon affordance (buttons, links, nav items, toggles, empty states) uses `react-icons`. No emoji-as-icon, no hand-copied inline SVG, no second icon package.
@@ -36,7 +36,7 @@ Backend contract: API base URL defaults to `http://localhost:8100` (FastAPI on p
    - Extract sub-sections into components in `<feature>/components/*.tsx`.
    - Extract data logic into `<feature>/hooks.ts` or `<feature>/api.ts` (TanStack Query).
    - Extract mappers/formatters/validators into `<feature>/utils.ts`.
-   - Split pages by bento tile, never by arbitrary line ranges.
+   - Split pages by feed section, never by arbitrary line ranges.
 5. If a `.ts` file exceeds 350 lines, split by responsibility (`api.ts` / `hooks.ts` / `keys.ts` / `utils.ts` / `schemas.ts`).
 6. Each new file must have one clear responsibility. Refactors that only move code must preserve behavior.
 
@@ -56,12 +56,23 @@ amigoact-fe/
     theme.ts           # theme mode helpers (light/dark toggle, storage key)
     motion.ts          # animejs presets only (fade/slide/stagger, reduced-motion guard)
     scroll.ts          # initErrorScroll(): MutationObserver smooth-scrolls to new role="alert" nodes inside <form>
+    nav.tsx            # nav config + route titles (Vietnamese labels, so .tsx per §10)
+    nav-meta.ts        # activeEntry() longest-prefix match + pageMeta() header title/back target
+    rail-styles.ts     # shared rail class recipes (kept out of component files for Fast Refresh)
+    dismiss.ts         # useDismiss(): Esc + outside-press close for popovers
     components/
-      PageShell.tsx    # single page shell: header + bento grid + footer slot
-      Navbar.tsx       # global navbar: logo + 5 links + ThemeToggle + account cluster (§7.5)
-      AccountMenu.tsx  # signed-in avatar dropdown: profile, change-password, logout
-      ThemeToggle.tsx  # theme toggle button (react-icons + OS default per §6)
-      BentoCard.tsx    # single card primitive (border only, no shadow)
+      PageShell.tsx    # X-style three-column shell (§7.5): LeftRail | @container column | RightRail
+      LeftRail.tsx     # logo + primary nav (+ nested /manage sections) + MoreMenu + CTA + AccountSwitcher
+      RailNavItem.tsx  # rail pill link (icon + label, bold when active, badge)
+      MoreMenu.tsx     # X "More" popover: secondary links, admin, labeled ThemeToggle
+      AccountSwitcher.tsx # bottom-of-rail avatar/name/email + popover (profile, password, logout)
+      CenterHeader.tsx # sticky blurred column header: title, back arrow, phone drawer trigger
+      RightRail.tsx    # search pill + personal/discovery RailCards + footer
+      RailCards.tsx / RailCard.tsx # right-rail widgets (X widget box, edge-to-edge rows)
+      MobileTabBar.tsx # phone bottom tab bar
+      NavDrawer.tsx    # phone navigation drawer
+      ThemeToggle.tsx  # theme toggle (icon button, or `labeled` menu row) (react-icons + OS default per §6)
+      Section.tsx      # single page surface: full-bleed feed row separated by hairlines
       Button.tsx       # all buttons go through here
       TextField.tsx    # all inputs go through here
       SelectField.tsx  # all selects/dropdowns go through here; native <select> is forbidden
@@ -76,7 +87,6 @@ amigoact-fe/
     components/
       LoginCard.tsx
       RegisterCard.tsx
-      AccountMenu.tsx  # avatar dropdown lives here when Navbar is unavailable
     page.tsx           # login screen (route /login), <= 250 lines
     register-page.tsx  # registration screen (route /register)
     # Multi-screen features may ship extra <screen>-page.tsx beside page.tsx
@@ -134,9 +144,9 @@ Rules:
    - Use instead: `border`, `border-{color}`, `divide-*`, `outline-*` for focus only.
    - Standard card border: `border border-zinc-200 dark:border-zinc-800`. Subtle separation: `divide-zinc-200 dark:divide-zinc-800`.
 3. Radius/spacing scale (do not invent new ones per page):
-   - Cards: `rounded-2xl`, padding `p-4 sm:p-6`.
-   - Inner elements: `rounded-xl`; pills/inputs: `rounded-lg` (inputs) / `rounded-full` (badges, toggles).
-   - Gaps: bento grid `gap-4 sm:gap-6`; stack `space-y-4`; inline `gap-2 sm:gap-3`.
+   - Page sections: no radius, `px-4 py-4`, separated by `border-b` hairlines (the column itself owns the side borders). Right-rail widgets (`RailCard`) and embedded surfaces inside a section (media cards, quote boxes, `Feedback` states): `rounded-2xl border`. Modals: `rounded-2xl`.
+   - Inner elements: `rounded-xl`; buttons `rounded-full` pills (X style); inputs `rounded-lg`; badges/toggles `rounded-full`.
+   - Gaps: the column is a `flex flex-col` stack with zero gap (hairlines do the separating); internal stacks `flex flex-col gap-4`; inline `gap-2 sm:gap-3`.
 4. Focus must be visible and custom (never rely on browser default glow):
    - Interactive primitives use e.g. `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand`.
    - Never remove focus indication (`outline-none` without a `focus-visible:` replacement is forbidden).
@@ -147,7 +157,9 @@ Rules:
 6. Mobile-first responsive (locked):
    - Write base utilities for mobile (`360px`, single column, `min-h`, `p-4`, `text-*` base). Add complexity only via `sm:` (`640px`), `md:` (`768px`), `lg:` (`1024px`), `xl:` (`1280px`) min-width prefixes.
    - Forbidden: desktop-first `max-sm:` / `max-md:` / `max-lg:` chains as the primary layout strategy, fixed pixel widths that overflow `360px`, horizontal scroll, and per-page breakpoint inventions.
-   - Every page and `Navbar` MUST be verified at `360px` (no overflow), `768px`, `1024px`, `1440px` in both themes before merge (screenshots for new shells).
+   - Two responsive axes (locked): the shell (`core/components/PageShell.tsx` and its rails/header/tab bar/drawer) uses viewport prefixes `sm:`/`lg:`/`xl:`. Everything rendered inside the center column (pages, sections, nested grids) uses container-query prefixes against `main.@container`: `@2xl:` (>= 672px, replaces `md:`) and `@4xl:` (>= 896px, replaces `lg:`). Viewport `md:`/`lg:`/`xl:` inside page content is forbidden, because the column is narrower than the viewport. `@2xl:`/`@4xl:` only engage on the wide workspace surfaces (`/manage`, `/admin`, 920px); on the default 600px column they stay inert, which is intended. `sm:` stays allowed for padding/type tweaks.
+   - Fixed overlays (`fixed inset-0` modals, viewers, drawers) rendered from page content MUST portal to `document.body` (`createPortal`): the column's `container-type` may otherwise become their containing block.
+   - Every page and the shell MUST be verified at `360px` (no overflow), `768px`, `1024px`, `1440px` in both themes before merge (screenshots for new shells).
 
 ## 6. Theme: Light/Dark + Brand Accent (#AFF092) + Semantic Colors Only
 
@@ -155,7 +167,7 @@ Rules:
    - First-visit resolution order: (a) stored `amigoact-theme` if present; else (b) `window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'`.
    - `main.tsx` MUST run theme init before first paint, and `index.html` MUST contain a blocking inline `<script>` in `<head>` that reads `amigoact-theme` (or OS preference when absent) and sets/removes `.dark` to avoid FOUC. No `style={}` theming, no theme logic in `App.tsx`.
    - `core/theme.ts` owns: storage key constant, `getStoredTheme()`, `resolveInitialTheme()`, `applyTheme(mode)`, `toggleTheme()`. Components never touch `localStorage` or `document.documentElement.classList` directly.
-   - `ThemeToggle` (in `core/components/ThemeToggle.tsx`) is the only toggle: `react-icons` sun/moon pair (`h-5 w-5`), `aria-label` in Vietnamese, `aria-pressed`, `>= 44px` target, subtle `animejs` icon cross-fade via `core/motion.ts`, disabled motion when `prefers-reduced-motion` is set.
+   - `ThemeToggle` (in `core/components/ThemeToggle.tsx`) is the only toggle: `react-icons` sun/moon pair (`h-5 w-5`), `aria-label` in Vietnamese, `aria-pressed`, `>= 44px` target, subtle `animejs` icon cross-fade via `core/motion.ts`, disabled motion when `prefers-reduced-motion` is set. Its `labeled` variant renders the same switch as a `menuitemcheckbox` row ("Giao diện tối", Bật/Tắt) inside the rail's More popover; the phone drawer uses the icon variant.
 2. Palette (do not add hues without updating this file):
    - Base: light `bg-white text-zinc-900`, dark `bg-zinc-950 text-zinc-100`. Muted text: `text-zinc-500 dark:text-zinc-400`.
    - Decoration/accent: brand only — single token `--color-brand: #AFF092` in `index.css`, no other custom hex. Solid fills use `bg-brand text-zinc-950` (both modes, hover `bg-brand/85`); subtle surfaces use `bg-brand/10` with `border-brand/40` (dark `border-brand/30`); text stays `zinc` for contrast except dark-mode accents (`dark:text-brand`). Brand is the ONLY decorative custom color.
@@ -166,27 +178,30 @@ Rules:
 3. Every color usage must carry both modes: each colored class needs its `dark:` counterpart (or an explicit comment why it is mode-invariant).
 4. Contrast: body text and interactive elements must remain readable in both modes. Brand `#AFF092` is light, so solid fills always pair with `text-zinc-950`, never white text and never lime body text on white. Decorative brand is never used for body text on light backgrounds without a contrast check.
 
-## 7. Design Language: Unified Bento Grid, Zero Drift
+## 7. Design Language: X-Style Feed, Zero Drift
 
-1. Bento grid is the only page language:
-   - Page structure is always `PageShell > bento grid > BentoCard tiles`. No ad-hoc page layouts.
-   - Exception: `/manage` renders one full-row tile (`lg:col-span-12`) that holds an internal `flex flex-col gap-4 lg:flex-row` layout with a left sidebar (`aside`) and a right viewport (`section`). Both regions still render `BentoCard` tiles inside; the exception covers only the two-column shell, never card styling.
-   - Grid: `grid grid-cols-1 items-start gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12` — `items-start` is required so tiles hug their content; a shorter tile must never stretch to match a taller row-mate (no dead space inside cards). Tiles span via `md:col-span-*` / `lg:col-span-*` (typical tiles: `lg:col-span-4`, heroes: `lg:col-span-8`, full rows: `lg:col-span-12`). A tall tile may pin a column across rows with `lg:row-span-*` (e.g. a long form beside a stacked rail); order the DOM so auto-flow backfills the rail — never `grid-flow-dense`.
-   - Tiles are `BentoCard` only: `rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950`. No per-page card restyling (padding/border/radius changes require updating `BentoCard`, not overrides).
-2. Consistency rule: the first shipped page sets the shell (header height, grid, gaps, card style, typography). Every later page MUST reuse `PageShell`, `BentoCard`, `Button`, `TextField`, `Feedback`. A page that looks or spaces differently is a defect.
-   - Typography scale only: display `text-2xl sm:text-3xl font-semibold tracking-tight`, card title `text-base sm:text-lg font-semibold`, body `text-sm text-zinc-600 dark:text-zinc-400`, caption `text-xs text-zinc-500 dark:text-zinc-400`.
-   - Icons: `react-icons` only, one family per release (e.g. Feather `Fi*` or Heroicons `Hi2*` — do not mix families on one screen), one stroke width, fixed sizes (`h-4 w-4` inline, `h-5 w-5` card headers and navbar). Every icon-only button has a Vietnamese `aria-label`. No emoji-as-icon.
-3. Responsive behavior: mobile-first single-column stacking, `md:` 6-col, `lg:` 12-col. No horizontal scroll at `360px`. Touch targets `>= 44px` for primary actions. Base classes are mobile; `sm:/md:/lg:` only add columns, spacing, and type scale.
-4. States are part of the design, not afterthoughts: every data tile specifies `loading` (skeleton), `empty`, and `error` via `Feedback.tsx` with the semantic colors from §6. No blank tiles, no `console.log` errors, no browser `alert()`. Every form error message MUST render as `role="alert"` (TextField/SelectField/TextArea already do) — `core/scroll.ts` observes them inside `<form>` and smooth-scrolls to the first error, honoring `prefers-reduced-motion`.
-5. Navbar (locked spec, `core/components/Navbar.tsx` through `PageShell`):
-   - Order left to right: brand logo (links to `/`, Vietnamese label "Trang chủ" on logo `aria-label`) + primary links + trailing cluster `ThemeToggle` + login `Button`.
-   - Primary links (Vietnamese labels, English routes, `react-router-dom` `NavLink` with active `aria-current="page"`): `Trang chủ -> /`, `Sự kiện -> /events`, `Tổ chức -> /orgs`, `Bảng xếp hạng -> /leaderboard`, `Bảng điều khiển -> /manage`. Auth screens live at `/login`, `/register`, `/verify` (kept functional while the verification gate is deferred), `/forgot-password`, `/reset-password` (guest-only via `RequireGuest`; signed-in users redirect to `/`), `/profile`, `/change-password` (auth-only via `RequireAuth`; guests redirect to `/login`). Registration signs the user in immediately and lands on `/` (falls back to `/login` with a notice only if the auto sign-in fails). Change-password requires the new password to differ from the current password (code `SAME_AS_CURRENT`, validated live on change). `/manage` is the self-serve workspace where individuals or businesses create and manage organizations, clubs, and groups via a left sidebar plus a right viewport (legacy `/my-dashboard/*` URLs redirect to `/manage/*`; the feature folder is `dashboard/`).
-   - Trailing account cluster: guests see a login `Button` (variant `primary`, leading `react-icons` login icon, label `Đăng nhập -> /login`); signed-in users (via `useSession()`) see `AccountMenu`: avatar circle with the name initial + full name (`hidden sm:inline`), opening a small dropdown (`Hồ sơ -> /profile`, `Đổi mật khẩu -> /change-password`, `Đăng xuất` action) with `Esc`/outside-click close, `animejs` open animation, and focus return. The visibility eye on password fields is mouse-only (`tabIndex={-1}`) with a shared per-form state, and every field validates live on change.
-   - Each nav link pairs a `react-icons` glyph + label (`h-4 w-4 sm:h-5 sm:w-5`, `gap-2`); icon is decorative (`aria-hidden="true"`) when the text label is visible, informative with `aria-label` when collapsed to icon-only.
-   - Layout mobile-first: `360px` shows brand + hamburger (`FiMenu`/`FiX`) + `ThemeToggle` + compact login; menu panel expands below header with a short `animejs` slide/fade via `core/motion.ts` and traps no scroll. `md:` and up shows one horizontal row (`hidden md:flex` for links, `md:hidden` for hamburger). Sticky `top-0 z-40` header with `border-b border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur`, never `shadow`/`ring`.
-   - Active link: `bg-brand text-zinc-950 dark:bg-brand dark:text-zinc-950` pill (`rounded-full`) or underline bar; inactive: `text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100`. Focus uses §5.4 outline. Keyboard: hamburger is a real `Button`, `aria-expanded` + `aria-controls`, `Esc` closes, focus returns to the trigger.
+1. The column feed is the only page language:
+   - Page structure is always `PageShell` > center column > flat `flex flex-col` stack > `Section`s. No ad-hoc page layouts, no grid placement on page-level surfaces (`col-span-*`, `order-*`, `row-span-*`, `grid-cols-*` on sections are forbidden — they are leftovers of the old bento grid). `/manage` no longer owns a sidebar: its links live in the shared left rail (§7.5) and its pages render the same feed.
+   - Sections (`core/components/Section.tsx`) are the only page-level surface: `border-b border-zinc-200 dark:border-zinc-800` + `px-4 py-4`, stacked edge to edge so consecutive sections read as one timeline separated by hairlines. No radius, no own background, no floating cards. The column's `sm:border-x` provides the side frame.
+   - Inside a section, either full-bleed divided rows (`-mx-4 px-4`, `border-t`/`divide-y`, edge-to-edge hover like an X timeline row — see `home/page.tsx` `FEED_ROW`) or embedded bordered surfaces (`rounded-2xl border`, e.g. `ActivityCard`, `Feedback` states) are allowed. Never stack a boxed surface inside another boxed surface.
+   - Internal grids are fine for content inside a section (stat grids, card shelves: `sm:grid-cols-*` / `@2xl:` / `@4xl:`); they only arrange children, never the page.
+2. Consistency rule: every page MUST reuse `PageShell`, `Section`, `Button`, `TextField`, `Feedback`. A page that looks or spaces differently is a defect.
+   - Typography scale only: display `text-2xl sm:text-3xl font-semibold tracking-tight`, section title `text-base sm:text-lg font-semibold` (feed headers may use `text-[15px]`/`text-xl font-bold` like X), body `text-sm text-zinc-600 dark:text-zinc-400`, caption `text-xs text-zinc-500 dark:text-zinc-400`.
+   - Icons: `react-icons` only, one family per release (e.g. Feather `Fi*` or Heroicons `Hi2*` — do not mix families on one screen), one stroke width, fixed sizes (`h-4 w-4` inline, `h-5 w-5` section headers, `h-[26px]` primary rail/tab-bar items per §7.5). Every icon-only button has a Vietnamese `aria-label`. No emoji-as-icon.
+3. Responsive behavior: the column is a single feed everywhere — there is no multi-column page placement. `sm:`/`@2xl:`/`@4xl:` on page content only refine internal layouts (e.g. a stat grid gaining columns) on wider columns (`/manage`, `/admin` at 920px). No horizontal scroll at `360px`. Touch targets `>= 44px` for primary actions.
+4. States are part of the design, not afterthoughts: every data section specifies `loading` (skeleton), `empty`, and `error` via `Feedback.tsx` with the semantic colors from §6. No blank sections, no `console.log` errors, no browser `alert()`. Every form error message MUST render as `role="alert"` (TextField/SelectField/TextArea already do) — `core/scroll.ts` observes them inside `<form>` and smooth-scrolls to the first error, honoring `prefers-reduced-motion`.
+5. App shell (locked spec, X/Twitter layout, `core/components/PageShell.tsx`; there is no top navbar):
+   - Three columns centered as one group (`flex justify-center`): left rail `w-[88px]` icon-only from `sm:` and `xl:w-[275px]` with labels; center `main.@container` `max-w-[600px]` with `sm:border-x border-zinc-200 dark:border-zinc-800`; right rail `ml-6 w-[290px] xl:w-[350px]` from `lg:`. Both rails are `sticky top-0 h-dvh`. Phones (< `sm:`) drop the rails for the center header, a bottom tab bar (`MobileTabBar`, fixed, `sm:hidden`, main gets `pb-20`) and the `NavDrawer`.
+   - Wide workspace mode: on `/manage/*` and `/admin/*` the right rail is hidden entirely and the center widens to `max-w-[920px]` (X Messages precedent — work surfaces need the room). `@2xl:`/`@4xl:` container queries inside those pages engage there.
+   - Left rail order: logo disc (links to `/`, `aria-label` "AmigoACT - Trang chủ") + primary links from `core/nav.tsx` (`Trang chủ -> /`, `Sự kiện -> /events`, `Tổ chức -> /orgs`, `Thông báo -> /notifications` with unread badge, `Trò chuyện -> /manage/chat`, `Bảng xếp hạng -> /leaderboard`, `Bảng điều khiển -> /manage`, `Hồ sơ -> /profile`; guests only see the public four) + `Thêm` (More popover: `Xác thực chứng nhận`, `Cài đặt`, `Quản trị` for admins, labeled `ThemeToggle`) + primary CTA pill (`Tạo hoạt động -> /manage/events?create=1`, guests `Đăng nhập -> /login`) + `AccountSwitcher` pinned to the bottom (avatar, name, email, popover `Hồ sơ`, `Đổi mật khẩu`, `Đăng xuất`).
+   - While the dashboard entry is active (`/manage/*` except chat) its workspace sections (`MANAGE_LINKS`) expand in place under it as compact items (indented with a left border from `xl:`); the old `/manage` sidebar card is gone. Active item resolution is longest-prefix (`core/nav-meta.ts`), so exactly one primary item is bold.
+   - Rail item style: `RailNavItem` pill hugging icon + label (`h-[26px]` icon, `text-xl` label; compact `h-5`/`text-[15px]`), `hover:bg-zinc-100 dark:hover:bg-zinc-900` on the pill only, active = `font-bold` + `stroke-[2.75]` icon + `aria-current="page"` (no brand fill). Badges are brand discs (`bg-brand text-zinc-950`). Icon-only rails keep `aria-label` + `title`.
+   - Center header (`CenterHeader`): sticky `top-0 z-30`, `bg-white/85 dark:bg-zinc-950/85 backdrop-blur border-b`, title `text-xl font-bold` from `pageMeta()` (workspace pages add the `Bảng điều khiển` caption), back arrow on detail routes (history back, else the parent route). On phones its leading button opens the drawer (avatar when signed in, `FiMenu` for guests). Pages keep their own `h1` (visually hidden when it would repeat the header title).
+   - Right rail (`RightRail`): sticky search pill (`TextField pill hideLabel`, submits to `/orgs?q=` which the backend searches), then `RailCard` widgets: personal `Hành trình của bạn` (hours, certificates, pending invites, `Xem hồ sơ`) or guest `Mới đến AmigoACT?`, `Sắp diễn ra` (discovery), `Tổ chức nổi bật` (orgs by members), then a footer. `RailCard` (rounded-2xl border, heavy title, edge-to-edge hover rows) is the rail-only widget primitive; page surfaces stay `Section`.
+   - Routes: auth screens live at `/login`, `/register`, `/verify` (kept functional while the verification gate is deferred), `/forgot-password`, `/reset-password` (guest-only via `RequireGuest`; signed-in users redirect to `/`), `/profile`, `/change-password` (auth-only via `RequireAuth`; guests redirect to `/login`). Registration signs the user in immediately and lands on `/` (falls back to `/login` with a notice only if the auto sign-in fails). Change-password requires the new password to differ from the current password (code `SAME_AS_CURRENT`, validated live on change). `/manage` is the self-serve workspace where individuals or businesses create and manage organizations, clubs, and groups (legacy `/my-dashboard/*` URLs redirect to `/manage/*`; the feature folder is `dashboard/`). The visibility eye on password fields is mouse-only (`tabIndex={-1}`) with a shared per-form state, and every field validates live on change.
+   - Popovers (More, account) and the drawer close on `Esc`/outside press (`core/dismiss.ts`), open with the `expandPanel` motion preset, and return focus to their trigger. Never `shadow`/`ring`; surfaces separate by borders only.
 6. Motion (`animejs` only, via `core/motion.ts`):
-   - Allowed uses: navbar mobile-panel open/close, page/hero entrance (fade + `translateY 8-12px`), list stagger (`30-50ms`), `ThemeToggle` icon cross-fade, micro-feedback on primary buttons. Durations `150-300ms`, easing `ease-out`.
+   - Allowed uses: drawer/popover open, page/hero entrance (fade + `translateY 8-12px`), list stagger (`30-50ms`), `ThemeToggle` icon cross-fade, micro-feedback on primary buttons. Durations `150-300ms`, easing `ease-out`.
    - Forbidden: looping/ambient animation on chrome, scroll-jacking, parallax, layout-thrashing loops, per-page `anime()` one-offs bypassing `core/motion.ts`, any second animation library.
    - Accessibility: `core/motion.ts` MUST check `window.matchMedia('(prefers-reduced-motion: reduce)')` and skip/jump-to-end when set. No content may depend on animation to be visible (final state is always rendered even if `animejs` fails to load).
 7. Icons (`react-icons` everywhere):
@@ -195,8 +210,8 @@ Rules:
 8. Buttons: compact, content-sized, never stretched horizontally:
    - All buttons go through `core/components/Button.tsx` with locked size variants only (e.g. `sm: px-3 py-1.5 text-sm`, `md: px-4 py-2 text-sm`). No per-page padding inventions such as `px-8 / px-10 / px-12` or arbitrary `px-[...]` to make buttons look longer.
    - Buttons are `inline-flex items-center justify-center gap-2 whitespace-nowrap` and size to their content (icon + label). Forbidden: horizontally long buttons with excess horizontal padding and empty space on both sides.
-   - Forbidden stretch patterns: `w-full` on desktop or inside toolbars/cards, `flex-1` / `grow` buttons in a row, `justify-between` stretching a single label across the full tile width. `w-full` is allowed only for a single-column form submit on mobile (`360px`) with justification, and must revert to content-sized (`sm:w-auto`) from `sm:` up.
-   - Reach the `>= 44px` touch target with height (`py-2 / min-h-[44px]`), never by widening horizontal padding. Icon stays fixed (`h-4 w-4` inline, `h-5 w-5` headers/navbar) with `gap-2`; do not pad the icon away from the label.
+   - Forbidden stretch patterns: `w-full` on desktop or inside toolbars/cards, `flex-1` / `grow` buttons in a row, `justify-between` stretching a single label across the full section width. `w-full` is allowed only for a single-column form submit on mobile (`360px`) with justification, and must revert to content-sized (`sm:w-auto`) from `sm:` up. Single shell exception: the left-rail primary CTA pill (X "Post" equivalent, `h-[52px] rounded-full`) is full rail width from `xl:` and a 52px icon disc below it; shell rail/menu rows (`RailNavItem`, popover rows) are navigation chrome, not buttons.
+   - Reach the `>= 44px` touch target with height (`py-2 / min-h-[44px]`), never by widening horizontal padding. Icon stays fixed (`h-4 w-4` inline, `h-5 w-5` headers) with `gap-2`; do not pad the icon away from the label.
    - A button that looks like a wide empty bar with small centered text is a defect. Review new buttons side-by-side with existing `Button` variants for drift.
 9. Deep-linkable tabs (locked):
    - Every tab or sidebar view inside a single page MUST have its own URL.
@@ -215,14 +230,14 @@ Minimize anything that looks like an unstyled browser:
 
 - Strict TypeScript: no `any` (use `unknown` + narrowing), no unused locals/params, explicit return types on exported functions, typed API contracts per feature.
 - React: functional components only, no class components; keys on lists; no nested component definitions inside render; effects only for non-server concerns (theme, focus, subscriptions).
-- Accessibility: semantic landmarks (`header/main/nav/footer`), labels for every input, `aria-busy`/`aria-live` on async tiles, keyboard-reachable actions, visible focus per §5.4.
+- Accessibility: semantic landmarks (`header/main/nav/footer`), labels for every input, `aria-busy`/`aria-live` on async sections, keyboard-reachable actions, visible focus per §5.4.
 - DoD for every change:
   1. `bun run build` (tsc + vite) passes.
   2. `bun run lint` passes with no new warnings.
   3. `.tsx <= 250` / `.ts <= 350` lines; Tailwind-only; zero `shadow`/`ring` hits; every color has `dark:` coverage.
-  4. Data flows through TanStack Query hooks with loading/empty/error states on the bento grid.
-  5. New/changed tiles reviewed side-by-side with an existing page for drift (spacing, cards, type, colors).
-  6. Mobile-first + motion + icons + theme verified: no overflow at `360px`; only `animejs` via `core/motion.ts` with `prefers-reduced-motion` guard (no second animation lib); every button/nav affordance renders a `react-icons` glyph with Vietnamese accessible label; first-visit theme follows OS (`prefers-color-scheme`) with no FOUC and persisted toggle; `Navbar` order/routes/labels match §7.5 (`/`, `/events`, `/orgs`, `/leaderboard`, `/manage`, `ThemeToggle`, `/login`).
+  4. Data flows through TanStack Query hooks with loading/empty/error states in each feed section.
+  5. New/changed sections reviewed side-by-side with an existing page for drift (spacing, surfaces, type, colors).
+  6. Mobile-first + motion + icons + theme verified: no overflow at `360px`; only `animejs` via `core/motion.ts` with `prefers-reduced-motion` guard (no second animation lib); every button/nav affordance renders a `react-icons` glyph with Vietnamese accessible label; first-visit theme follows OS (`prefers-color-scheme`) with no FOUC and persisted toggle; shell rails/header/tab bar/drawer order, routes and labels match §7.5, and page content uses only container-query breakpoints (§5.6).
 
 ## 10. Documentation, Code, and UI Language
 
@@ -246,8 +261,8 @@ Minimize anything that looks like an unstyled browser:
 Realtime updates and instant navigation are designed in from day one: WebSocket for live data, Speculation Rules API for prerender/prefetch. No polling-first, no prefetch library, no third-party realtime SaaS.
 
 1. WebSocket client lives in exactly one module: `core/realtime.ts`. It owns ticket fetch (`POST /ws/tickets`), `WebSocket` lifecycle, exponential-backoff reconnect, heartbeat watchdog, and resubscribe-on-reconnect. Components and features never call `new WebSocket` directly — they use typed hooks from `<feature>/hooks.ts` (e.g. `useLiveAttendance(activityId)`).
-2. TanStack Query stays the source of truth (§4). WS messages only invalidate exact query keys or apply narrow deltas — never replace whole caches. Every live tile keeps the same loading/empty/error states via `Feedback.tsx`.
-3. Channels mirror the backend (§16 of backend AGENTS.md): `notifications:{userId}`, `attendance:{activityId}`, `activities:{orgId}`, `members:{orgId}`. Subscribe only to channels the current user is authorized for; render `403`-style denial through `Feedback.tsx` in Vietnamese, never a blank tile.
+2. TanStack Query stays the source of truth (§4). WS messages only invalidate exact query keys or apply narrow deltas — never replace whole caches. Every live section keeps the same loading/empty/error states via `Feedback.tsx`.
+3. Channels mirror the backend (§16 of backend AGENTS.md): `notifications:{userId}`, `attendance:{activityId}`, `activities:{orgId}`, `members:{orgId}`. Subscribe only to channels the current user is authorized for; render `403`-style denial through `Feedback.tsx` in Vietnamese, never a blank section.
 4. Speculation Rules API from day one: `index.html` MUST contain a `<script type="speculationrules">` block with same-origin `prefetch` (moderate eagerness) and `prerender` for safe GET navigations. Exclude `/auth/*`, logout, export downloads, and any mutation URL. When routes are added, the rules JSON is updated in the same change. No `instant.page`-style library, no manual `<link rel="prefetch">` hacks.
 5. Language: all user-visible realtime copy (toasts, connection banners, live badges) is Vietnamese (§10.5). Connection loss shows a `Feedback`-style banner with retry, never `alert()` or console-only errors.
 6. DoD for realtime work: reconnect + resume verified, query invalidation asserted in tests, speculation-rules JSON validated (parses, excludes unsafe URLs), light/dark screenshots of live states attached to the PR.

@@ -2,15 +2,15 @@
 
 ## 1. Tổng quan
 
-`amigoact-fe` là SPA React + Vite + TypeScript, styling bằng Tailwind duy nhất, dữ liệu qua TanStack Query tới `amigoact-be` (`http://localhost:8100`). Ngôn ngữ thiết kế duy nhất là bento grid, theme light/dark, màu trang trí xanh non `#AFF092`.
+`amigoact-fe` là SPA React + Vite + TypeScript, styling bằng Tailwind duy nhất, dữ liệu qua TanStack Query tới `amigoact-be` (`http://localhost:8100`). Ngôn ngữ thiết kế duy nhất là feed một cột kiểu X, theme light/dark, màu trang trí xanh non `#AFF092`.
 
 Mục tiêu: mọi trang nhìn thống nhất, không lệch spacing/card/typography/màu, file ngắn (`.tsx` ≤ 250, `.ts` ≤ 350), logic dữ liệu tách khỏi giao diện.
 
 ## 2. Nguyên tắc tổ chức
 
 - Không có thư mục `src/`. Mỗi tính năng là một thư mục ở root (`auth/`, `users/`).
-- `core/` chứa duy nhất phần dùng chung: `api.ts`, `queryClient.ts`, `theme.ts`, `components/` (`PageShell`, `BentoCard`, `Button`, `TextField`, `Feedback`).
-- Mỗi tính năng gồm: `api.ts` (hàm gọi HTTP thuần), `keys.ts` (query-key factory), `hooks.ts` (`useQuery`/`useMutation`), `schemas.ts` (type + validator), `components/` (tile con), `page.tsx` (ghép `PageShell` + `BentoCard`).
+- `core/` chứa duy nhất phần dùng chung: `api.ts`, `queryClient.ts`, `theme.ts`, `components/` (`PageShell`, `Section`, `Button`, `TextField`, `Feedback`).
+- Mỗi tính năng gồm: `api.ts` (hàm gọi HTTP thuần), `keys.ts` (query-key factory), `hooks.ts` (`useQuery`/`useMutation`), `schemas.ts` (type + validator), `components/` (khối con), `page.tsx` (ghép `PageShell` + `Section`).
 - `main.tsx` chỉ khởi tạo provider + router + theme. `App.tsx` chỉ là route shell. Cấm fetch và logic nghiệp vụ ở hai file này.
 
 ## 3. Luồng dữ liệu
@@ -40,15 +40,14 @@ page.tsx / components/*.tsx
   - Lỗi: đỏ. Cảnh báo: vàng/amber. Thành công: xanh lá. Info: màu brand (phân biệt bằng icon + nhãn).
   - Cấm tím, hồng, cam, teal, cyan, xanh dương, indigo cho khung UI.
 
-## 5. Bento grid và chống lệch giao diện
+## 5. Feed kiểu X và chống lệch giao diện
 
-- Cấu trúc mọi trang: `PageShell > grid bento > BentoCard`.
-- Ngoại lệ: `/manage` dùng một tile full-row chứa sidebar trái (`aside`) và viewport phải (`section`), bên trong vẫn là các `BentoCard`.
-- Grid chuẩn: `grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-6 lg:grid-cols-12`, tile dùng `md:col-span-*`/`lg:col-span-*` (`4` thường, `8` hero, `12` full-row).
-- Trang đầu tiên chốt shell (chiều cao header, gap, card, typography). Trang sau tái sử dụng `PageShell`, `BentoCard`, `Button`, `TextField`, `Feedback`. Đổi card phải sửa `BentoCard`, không override từng trang.
-- Typography chuẩn: display `text-2xl sm:text-3xl font-semibold tracking-tight`, tiêu đề card `text-base sm:text-lg font-semibold`, thân `text-sm`, caption `text-xs`.
-- Responsive: mobile 1 cột, `md` 6 cột, `lg` 12 cột, không tràn ngang ở 360px, nút chính cao ≥ 44px.
-- Mỗi tile dữ liệu phải có skeleton loading, empty, error. Không tile trống, không `alert()`, không `console.log` lỗi.
+- Cấu trúc mọi trang: `PageShell > cột feed (flex flex-col) > Section`.
+- `Section` là bề mặt duy nhất ở cấp trang: `border-b` + `px-4 py-4`, xếp sát nhau như timeline X (không radius, không card nổi). `/manage` và `/admin` cùng chung feed này, chỉ khác là cột giữa rộng 920px và ẩn rail phải.
+- Trang đầu tiên chốt shell (chiều cao header, hairline, typography). Trang sau tái sử dụng `PageShell`, `Section`, `Button`, `TextField`, `Feedback`. Đổi bề mặt phải sửa `Section`, không override từng trang.
+- Typography chuẩn: display `text-2xl sm:text-3xl font-semibold tracking-tight`, tiêu đề section `text-base sm:text-lg font-semibold`, thân `text-sm`, caption `text-xs`.
+- Responsive: một cột feed ở mọi kích thước; bên trong section được dùng lưới nội bộ (`sm:grid-cols-*`, `@2xl:`, `@4xl:`) cho nội dung, không tràn ngang ở 360px, nút chính cao ≥ 44px.
+- Mỗi section dữ liệu phải có skeleton loading, empty, error. Không section trống, không `alert()`, không `console.log` lỗi.
 
 ## 6. Chống style mặc định của trình duyệt
 

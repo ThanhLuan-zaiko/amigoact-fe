@@ -4,6 +4,7 @@ import {
   EmptyState,
   LoadingState,
 } from "../../core/components/Feedback.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { FiLogIn } from "react-icons/fi";
 import { useSession } from "../../auth/hooks.ts";
@@ -18,14 +19,18 @@ export function AdminGuard({
   const status = useAdminStatus(session.data != null);
 
   if (session.isPending || status.isPending) {
-    return <LoadingState label="Đang kiểm tra quyền quản trị…" />;
+    return (
+      <Section>
+        <LoadingState label="Đang kiểm tra quyền quản trị…" />
+      </Section>
+    );
   }
   if (!session.data) {
     return <Navigate to="/login" replace />;
   }
   if (!status.data?.is_admin) {
     return (
-      <div className="col-span-1 md:col-span-6 lg:col-span-12">
+      <Section>
         <EmptyState
           title="Khu vực quản trị"
           message="Trang này chỉ dành cho quản trị viên nền tảng."
@@ -39,7 +44,7 @@ export function AdminGuard({
             Về trang chủ
           </Button>
         </div>
-      </div>
+      </Section>
     );
   }
   return <>{children}</>;

@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiBriefcase } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import type { DashboardOrg } from "../api.ts";
 import { JOIN_POLICY_LABELS, ORG_KIND_LABELS } from "../messages.tsx";
 import type { OrgRole } from "../members-api.ts";
@@ -40,7 +40,7 @@ export function MemberOrgCard({
   onCloseInvite,
 }: MemberOrgCardProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:order-3 lg:col-span-4 lg:col-start-9 lg:self-start">
+    <Section className=" @4xl:self-start">
       <div data-rise className="flex items-center gap-2">
         <FiBriefcase
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -82,6 +82,6 @@ export function MemberOrgCard({
           onClose={onCloseInvite}
         />
       )}
-    </BentoCard>
+    </Section>
   );
 }

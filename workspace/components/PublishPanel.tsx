@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { FiCheckCircle, FiSend } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { cleanBlocks, readingMinutes, wordCount } from "../article.ts";
@@ -22,7 +22,7 @@ interface PublishPanelProps {
 }
 
 // Right rail of the write page: status chip, kind toggle (standalone
-// drafts only — revisions follow the live post's kind), cover picker,
+// drafts only - revisions follow the live post's kind), cover picker,
 // live stats, and the save-draft / publish pipeline.
 export function PublishPanel({
   editor,
@@ -53,7 +53,7 @@ export function PublishPanel({
   const draftLabel = published ? "Lưu nháp riêng" : "Lưu nháp";
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise className="flex items-center justify-between gap-2">
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Xuất bản
@@ -146,6 +146,6 @@ export function PublishPanel({
           {editor.saving ? "Đang lưu…" : draftLabel}
         </Button>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

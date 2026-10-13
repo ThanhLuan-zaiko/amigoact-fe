@@ -6,7 +6,7 @@ import {
   FiMapPin,
   FiUsers,
 } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { orgMediaUrl, type PublicOrg } from "../api.ts";
 import { JOIN_POLICY_LABELS } from "../messages.tsx";
@@ -21,7 +21,7 @@ interface OrgSpotlightCardProps {
 export function OrgSpotlightCard({ org }: OrgSpotlightCardProps): ReactElement {
   const location = orgLocation(org);
   return (
-    <BentoCard className="relative transition-colors hover:border-brand/40 dark:hover:border-brand/30 md:col-span-6 lg:col-span-8">
+    <Section className="relative transition-colors hover:border-brand/40 dark:hover:border-brand/30 ">
       <div data-rise>
         {org.cover_url ? (
           <img
@@ -86,6 +86,6 @@ export function OrgSpotlightCard({ org }: OrgSpotlightCardProps): ReactElement {
           </div>
         </div>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

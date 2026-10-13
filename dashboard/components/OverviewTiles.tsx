@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiCalendar, FiPlusCircle, FiUsers } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { ApiError } from "../../core/api.ts";
@@ -17,7 +17,7 @@ export function OverviewTiles(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-2 lg:col-span-4">
+      <Section>
         <div data-rise className="flex items-center gap-2">
           <FiUsers className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
           <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -41,8 +41,8 @@ export function OverviewTiles(): ReactElement {
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           {totalMembers} thành viên đang tham gia.
         </p>
-      </BentoCard>
-      <BentoCard className="md:col-span-2 lg:col-span-4">
+      </Section>
+      <Section>
         <div data-rise className="flex items-center gap-2">
           <FiCalendar className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
           <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -55,8 +55,8 @@ export function OverviewTiles(): ReactElement {
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Sự kiện do các tổ chức của bạn tổ chức.
         </p>
-      </BentoCard>
-      <BentoCard className="md:col-span-2 lg:col-span-4">
+      </Section>
+      <Section>
         <div data-rise className="flex items-center gap-2">
           <FiPlusCircle className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
           <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -95,7 +95,7 @@ export function OverviewTiles(): ReactElement {
             Mới nhất: {items[0].name} · {ORG_KIND_LABELS[items[0].kind] ?? items[0].kind}
           </p>
         )}
-      </BentoCard>
+      </Section>
     </>
   );
 }

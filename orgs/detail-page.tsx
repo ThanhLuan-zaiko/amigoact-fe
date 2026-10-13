@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { useParams } from "react-router-dom";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -26,24 +26,24 @@ export function OrgDetailPage(): ReactElement {
 
   if (slug === undefined || (org.isError && org.error instanceof ApiError && org.error.status === 404)) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <EmptyState
           title="Không tìm thấy tổ chức"
           message="Tổ chức này không tồn tại hoặc không còn hiển thị công khai. Quay lại danh sách để khám phá tổ chức khác."
         />
-      </BentoCard>
+      </Section>
     );
   }
   if (org.isPending) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <LoadingState label="Đang tải hồ sơ tổ chức…" />
-      </BentoCard>
+      </Section>
     );
   }
   if (org.isError || org.data === undefined) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <ErrorState
           title="Không tải được hồ sơ"
           message={toVietnameseOrgsMessage(
@@ -54,7 +54,7 @@ export function OrgDetailPage(): ReactElement {
           actionLabel="Thử lại"
           onAction={() => void org.refetch()}
         />
-      </BentoCard>
+      </Section>
     );
   }
   const detail = org.data;

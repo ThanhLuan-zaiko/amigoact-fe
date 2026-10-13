@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { FiCheckCircle, FiImage, FiMapPin, FiUsers } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { orgMediaUrl, type PublicOrg } from "../api.ts";
 import { JOIN_POLICY_LABELS } from "../messages.tsx";
 import { orgLocation } from "../utils.ts";
@@ -15,7 +15,7 @@ interface OrgCardProps {
 export function OrgCard({ org }: OrgCardProps): ReactElement {
   const location = orgLocation(org);
   return (
-    <BentoCard className="relative transition-colors hover:border-brand/40 dark:hover:border-brand/30 md:col-span-3 lg:col-span-4">
+    <Section className="relative transition-colors hover:border-brand/40 dark:hover:border-brand/30 ">
       <div data-rise className="flex h-full flex-col">
         {org.cover_url ? (
           <img
@@ -75,6 +75,6 @@ export function OrgCard({ org }: OrgCardProps): ReactElement {
         aria-label={org.name}
         className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand"
       />
-    </BentoCard>
+    </Section>
   );
 }

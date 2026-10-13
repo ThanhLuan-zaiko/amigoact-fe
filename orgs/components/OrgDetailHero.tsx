@@ -11,7 +11,7 @@ import {
   FiUsers,
 } from "react-icons/fi";
 import { useSession } from "../../auth/hooks.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { orgMediaUrl, type PublicOrgDetail } from "../api.ts";
 import { useJoinOrg } from "../hooks.ts";
@@ -79,7 +79,7 @@ export function OrgDetailHero({ org }: OrgDetailHeroProps): ReactElement {
     year: "numeric",
   });
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8">
+    <Section>
       <div data-rise>
         {org.cover_url ? (
           <img
@@ -152,6 +152,6 @@ export function OrgDetailHero({ org }: OrgDetailHeroProps): ReactElement {
           </div>
         </div>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

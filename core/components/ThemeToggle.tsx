@@ -5,8 +5,15 @@ import { swapGlyph } from "../motion.ts";
 import { applyTheme, resolveInitialTheme } from "../theme.ts";
 import type { ThemeMode } from "../theme.ts";
 import { Button } from "./Button.tsx";
+import { MENU_ITEM_CLASS } from "./RailMenu.tsx";
 
-export function ThemeToggle(): ReactElement {
+// The only theme switch. `labeled` renders it as a popover/drawer row
+// (X keeps display settings under "More"); the default is an icon button.
+export function ThemeToggle({
+  labeled = false,
+}: {
+  labeled?: boolean;
+}): ReactElement {
   const [mode, setMode] = useState<ThemeMode>(() => resolveInitialTheme());
   const glyphRef = useRef<HTMLSpanElement>(null);
 
@@ -17,8 +24,31 @@ export function ThemeToggle(): ReactElement {
     if (glyphRef.current) swapGlyph(glyphRef.current);
   }
 
-  const label = mode === "dark" ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối";
-  const Icon = mode === "dark" ? FiSun : FiMoon;
+  const dark = mode === "dark";
+  const Icon = dark ? FiSun : FiMoon;
+  const glyph = (
+    <span ref={glyphRef} className="inline-flex" aria-hidden="true">
+      <Icon className="h-5 w-5" />
+    </span>
+  );
+
+  if (labeled) {
+    return (
+      <button
+        type="button"
+        role="menuitemcheckbox"
+        aria-checked={dark}
+        onClick={handleClick}
+        className={MENU_ITEM_CLASS}
+      >
+        {glyph}
+        <span className="flex-1">Giao diện tối</span>
+        <span className="text-[13px] font-normal text-zinc-500 dark:text-zinc-400">
+          {dark ? "Bật" : "Tắt"}
+        </span>
+      </button>
+    );
+  }
 
   return (
     <Button
@@ -26,12 +56,10 @@ export function ThemeToggle(): ReactElement {
       variant="ghost"
       size="icon"
       onClick={handleClick}
-      aria-label={label}
-      aria-pressed={mode === "dark"}
+      aria-label={dark ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối"}
+      aria-pressed={dark}
     >
-      <span ref={glyphRef} className="inline-flex" aria-hidden="true">
-        <Icon className="h-5 w-5" />
-      </span>
+      {glyph}
     </Button>
   );
 }

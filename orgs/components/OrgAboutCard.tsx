@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiFileText } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import type { PublicOrgDetail } from "../api.ts";
 
@@ -10,7 +10,7 @@ interface OrgAboutCardProps {
 
 export function OrgAboutCard({ org }: OrgAboutCardProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8">
+    <Section>
       <div data-rise>
         <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
           <FiFileText
@@ -32,6 +32,6 @@ export function OrgAboutCard({ org }: OrgAboutCardProps): ReactElement {
           </div>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

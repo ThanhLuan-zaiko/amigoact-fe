@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { FiChevronRight, FiClock } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import type { PublicOrg } from "../api.ts";
 import { orgLocation } from "../utils.ts";
 import { OrgLogo } from "./OrgLogo.tsx";
@@ -12,7 +12,7 @@ interface OrgNewestRailProps {
 
 export function OrgNewestRail({ items }: OrgNewestRailProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiClock
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -50,6 +50,6 @@ export function OrgNewestRail({ items }: OrgNewestRailProps): ReactElement {
           </li>
         ))}
       </ul>
-    </BentoCard>
+    </Section>
   );
 }

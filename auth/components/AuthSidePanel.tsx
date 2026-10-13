@@ -8,7 +8,7 @@ import {
   FiUsers,
 } from "react-icons/fi";
 import type { IconType } from "react-icons";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { useRiseIn } from "../../core/motion.ts";
 
 interface Benefit {
@@ -62,7 +62,7 @@ export function AuthSidePanel({
   const isLogin = variant === "login";
   const items = isLogin ? LOGIN_BENEFITS : REGISTER_STEPS;
   return (
-    <BentoCard className="order-2 w-full self-start border-brand/40 bg-brand/10 md:col-span-6 lg:order-1 lg:col-span-7 lg:sticky lg:top-20 dark:border-brand/30 dark:bg-brand/10">
+    <Section className=" w-full self-start border-brand/40 bg-brand/10 @4xl:sticky @4xl:top-20 dark:border-brand/30 dark:bg-brand/10">
       <div ref={scope} className="flex flex-col justify-start gap-5 p-2 sm:p-4">
         <div data-rise className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
@@ -98,6 +98,6 @@ export function AuthSidePanel({
           ))}
         </ul>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

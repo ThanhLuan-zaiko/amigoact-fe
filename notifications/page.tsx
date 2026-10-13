@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiBell, FiCheck, FiChevronRight } from "react-icons/fi";
+import { FiCheck, FiChevronRight } from "react-icons/fi";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -205,18 +205,11 @@ function NotificationInbox(): ReactElement {
 export function NotificationsPage(): ReactElement {
   return (
     <RequireAuth>
-      <BentoCard className="col-span-1 md:col-span-6 lg:col-span-8 lg:col-start-3">
-        <div className="mb-4 flex items-center gap-2">
-          <FiBell
-            className="h-5 w-5 text-zinc-900 dark:text-brand"
-            aria-hidden="true"
-          />
-          <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Thông báo
-          </h1>
-        </div>
+      <Section>
+        {/* The sticky shell header already shows the visible title. */}
+        <h1 className="sr-only">Thông báo</h1>
         <NotificationInbox />
-      </BentoCard>
+      </Section>
     </RequireAuth>
   );
 }

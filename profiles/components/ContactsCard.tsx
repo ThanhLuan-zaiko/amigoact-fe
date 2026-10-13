@@ -2,7 +2,7 @@ import type { FormEvent, ReactElement } from "react";
 import { useState } from "react";
 import { FiPlus, FiTrash2, FiUserCheck } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -56,7 +56,7 @@ export function ContactsCard({
   };
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div className="flex items-center gap-2">
         <FiUserCheck className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -150,6 +150,6 @@ export function ContactsCard({
           {error}
         </p>
       )}
-    </BentoCard>
+    </Section>
   );
 }

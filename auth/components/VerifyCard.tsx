@@ -3,7 +3,7 @@ import type { FormEvent, ReactElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FiMail, FiRefreshCw, FiShield } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -71,7 +71,7 @@ export function VerifyCard(): ReactElement {
   }
 
   return (
-    <BentoCard className="md:col-span-4 md:col-start-2 lg:col-span-6 lg:col-start-4">
+    <Section className=" @2xl:col-start-2 ">
       <div className="flex items-center gap-2">
         <FiShield
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -142,6 +142,6 @@ export function VerifyCard(): ReactElement {
           {resend.isPending ? "Đang gửi lại…" : "Gửi lại mã"}
         </Button>
       </form>
-    </BentoCard>
+    </Section>
   );
 }

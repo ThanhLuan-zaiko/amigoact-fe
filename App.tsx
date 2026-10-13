@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { FiHome } from "react-icons/fi";
 import { PageShell } from "./core/components/PageShell.tsx";
-import { BentoCard } from "./core/components/BentoCard.tsx";
+import { Section } from "./core/components/Section.tsx";
 import { Button } from "./core/components/Button.tsx";
 import { EmptyState } from "./core/components/Feedback.tsx";
 import { AdminAdminsPage } from "./admin/admins-page.tsx";
@@ -53,8 +53,8 @@ function LegacyDashboardRedirect(): ReactElement {
 
 function NotFoundPage(): ReactElement {
   return (
-    <div className="col-span-1 md:col-span-6 lg:col-span-12">
-      <BentoCard>
+    <div>
+      <Section>
         <EmptyState
           title="Không tìm thấy trang"
           message="Trang bạn tìm không tồn tại hoặc đã được di chuyển."
@@ -68,7 +68,7 @@ function NotFoundPage(): ReactElement {
             Về trang chủ
           </Button>
         </div>
-      </BentoCard>
+      </Section>
     </div>
   );
 }

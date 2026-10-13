@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { FiCalendar, FiChevronRight, FiFileText, FiUser } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import type { PublicOrgDetail } from "../api.ts";
 import { orgMediaUrl } from "../api.ts";
@@ -14,7 +14,7 @@ interface OrgNewsCardProps {
 // public reader at /orgs/:slug/posts/:postId; discussions stay internal.
 export function OrgNewsCard({ org }: OrgNewsCardProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-12">
+    <Section>
       <div data-rise>
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
@@ -90,6 +90,6 @@ export function OrgNewsCard({ org }: OrgNewsCardProps): ReactElement {
           </div>
         )}
       </div>
-    </BentoCard>
+    </Section>
   );
 }

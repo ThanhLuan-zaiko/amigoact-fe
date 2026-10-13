@@ -1,6 +1,6 @@
 import { useState, type ReactElement } from "react";
 import { FiCompass, FiFilter } from "react-icons/fi";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
   EmptyState,
@@ -18,7 +18,7 @@ export function EventsPage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div data-rise className="flex items-center gap-2">
           <FiCompass
             className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -53,13 +53,13 @@ export function EventsPage(): ReactElement {
             </Button>
           ))}
         </div>
-      </BentoCard>
+      </Section>
       {categoryId === undefined && (
-        <BentoCard className="md:col-span-6 lg:col-span-12">
+        <Section>
           <DiscoverySections />
-        </BentoCard>
+        </Section>
       )}
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         {feed.isPending && <LoadingState label="Đang tải hoạt động…" />}
         {feed.isError && (
           <ErrorState
@@ -83,7 +83,7 @@ export function EventsPage(): ReactElement {
             </li>
           ))}
         </ul>
-      </BentoCard>
+      </Section>
     </>
   );
 }

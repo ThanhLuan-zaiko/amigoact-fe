@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { ReactElement } from "react";
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import type { DashboardOrg } from "../api.ts";
@@ -38,7 +39,8 @@ export function OrgMediaModal({ org, canManage, onClose }: OrgMediaModalProps): 
     };
   }, []);
 
-  return (
+  // Portaled so the fixed overlay escapes the center column's container.
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -73,6 +75,7 @@ export function OrgMediaModal({ org, canManage, onClose }: OrgMediaModalProps): 
           <MediaDropzone orgId={org.id} canManage={canManage} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

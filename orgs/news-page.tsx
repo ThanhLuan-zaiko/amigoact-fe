@@ -8,7 +8,7 @@ import {
   FiUser,
 } from "react-icons/fi";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
   EmptyState,
@@ -53,7 +53,7 @@ export function OrgNewsPage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div data-rise className="flex items-center justify-between gap-2">
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             {org.data === undefined
@@ -68,14 +68,14 @@ export function OrgNewsPage(): ReactElement {
             Về trang tổ chức
           </Button>
         </div>
-      </BentoCard>
+      </Section>
       {posts.isPending && (
-        <div className="col-span-1 md:col-span-6 lg:col-span-12">
+        <div>
           <LoadingState label="Đang tải tin tức…" />
         </div>
       )}
       {posts.isError && (
-        <div className="col-span-1 md:col-span-6 lg:col-span-12">
+        <div>
           <ErrorState
             title="Không tải được tin tức"
             message={toVietnameseOrgsMessage(
@@ -89,7 +89,7 @@ export function OrgNewsPage(): ReactElement {
         </div>
       )}
       {posts.data !== undefined && posts.data.total === 0 && (
-        <div className="col-span-1 md:col-span-6 lg:col-span-12">
+        <div>
           <EmptyState
             title="Chưa có tin tức"
             message="Tổ chức chưa đăng thông báo nào trên AmigoACT."
@@ -104,7 +104,7 @@ export function OrgNewsPage(): ReactElement {
         </div>
       )}
       {posts.data !== undefined && totalPages > 1 && (
-        <BentoCard className="md:col-span-6 lg:col-span-12">
+        <Section>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               {`Trang ${page} / ${totalPages} · ${posts.data.total} tin tức`}
@@ -115,7 +115,7 @@ export function OrgNewsPage(): ReactElement {
               onPage={setPage}
             />
           </div>
-        </BentoCard>
+        </Section>
       )}
     </>
   );
@@ -129,7 +129,7 @@ function NewsCard({
   post: PublicOrgPost;
 }): ReactElement {
   return (
-    <BentoCard className="relative transition-colors hover:border-brand/40 dark:hover:border-brand/30 md:col-span-3 lg:col-span-4">
+    <Section className="relative transition-colors hover:border-brand/40 dark:hover:border-brand/30 ">
       <div data-rise className="flex h-full flex-col">
         {post.cover_url !== null ? (
           <img
@@ -173,6 +173,6 @@ function NewsCard({
         aria-label={post.title}
         className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand"
       />
-    </BentoCard>
+    </Section>
   );
 }

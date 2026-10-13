@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
 import { FiKey, FiLock } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -65,7 +65,7 @@ export function ChangePasswordCard(): ReactElement {
   }
 
   return (
-    <BentoCard className="order-1 md:col-span-6 lg:order-2 lg:col-span-7">
+    <Section>
       <div className="flex items-center gap-2">
         <FiKey
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -157,6 +157,6 @@ export function ChangePasswordCard(): ReactElement {
           {change.isPending ? "Đang đổi…" : "Đổi mật khẩu"}
         </Button>
       </form>
-    </BentoCard>
+    </Section>
   );
 }

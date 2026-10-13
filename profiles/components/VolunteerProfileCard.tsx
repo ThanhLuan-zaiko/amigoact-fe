@@ -2,7 +2,7 @@ import type { FormEvent, ReactElement } from "react";
 import { useState } from "react";
 import { FiSave, FiUser } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { SelectField } from "../../core/components/SelectField.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -97,7 +97,7 @@ export function VolunteerProfileCard({
   };
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-8 lg:row-span-2">
+    <Section>
       <div className="flex items-center gap-2">
         <FiUser className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -205,6 +205,6 @@ export function VolunteerProfileCard({
           </Button>
         </div>
       </form>
-    </BentoCard>
+    </Section>
   );
 }

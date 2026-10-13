@@ -7,13 +7,13 @@ Thư mục guest (không cần đăng nhập), đọc `GET /orgs` và
 (`api.ts`, `keys.ts`, `hooks.ts`, `messages.tsx`, `utils.ts`,
 `components/`), không lẫn với `dashboard/` quản trị.
 
-- `/orgs` là "discovery board" bento: tile hero (search debounce + chip
-  `kind` + chip `sort`), tile thống kê theo `counts`, tile nổi bật
-  (org đầu kết quả theo sort), rail "Vừa tham gia", mosaic card, tile
+- `/orgs` là "discovery board" kiểu feed: section hero (search debounce + chip
+  `kind` + chip `sort`), section thống kê theo `counts`, section nổi bật
+  (org đầu kết quả theo sort), rail "Vừa tham gia", mosaic card, section
   phân trang. Filter/pagination nằm trên URL (`?q&kind&sort&page`) nên
   deep-link được; `splitDirectory` trong `utils.ts` chia items thành
   spotlight/rail/mosaic.
-- `/orgs/:slug` render 6 tile: hero (cover + logo + nút `Tham gia`),
+- `/orgs/:slug` render 6 section: hero (cover + logo + nút `Tham gia`),
   `Đánh giá tin cậy`, giới thiệu, liên hệ & pháp lý, hoạt động đã tổ
   chức, thư viện ảnh. `OrgTrustCard` dựng checklist 6 tiêu chí từ tín
   hiệu thô của API (verified, legal_status, activity_count, liên hệ,

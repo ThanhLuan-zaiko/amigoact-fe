@@ -5,7 +5,7 @@ import {
   FiClock,
   FiUserCheck,
 } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import {
   EmptyState,
   LoadingState,
@@ -26,19 +26,19 @@ export function OrgStatsCard(): ReactElement {
 
   if (orgs.isPending) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <LoadingState label="Đang tải thống kê…" />
-      </BentoCard>
+      </Section>
     );
   }
   if (!first) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <EmptyState
           title="Chưa có thống kê"
           message="Tạo tổ chức để xem số liệu hoạt động."
         />
-      </BentoCard>
+      </Section>
     );
   }
 
@@ -77,7 +77,7 @@ export function OrgStatsCard(): ReactElement {
   ];
 
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-12">
+    <Section>
       <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
         Thống kê · {first.name}
       </h3>
@@ -85,7 +85,7 @@ export function OrgStatsCard(): ReactElement {
         <LoadingState label="Đang tải số liệu…" />
       )}
       {s && (
-        <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 @4xl:grid-cols-6">
           {tiles.map((tile) => (
             <li
               key={tile.label}
@@ -102,6 +102,6 @@ export function OrgStatsCard(): ReactElement {
           ))}
         </ul>
       )}
-    </BentoCard>
+    </Section>
   );
 }

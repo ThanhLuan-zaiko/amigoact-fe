@@ -1,6 +1,7 @@
 import { useState, type ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FiCalendar, FiPlus } from "react-icons/fi";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
   EmptyState,
@@ -16,7 +17,20 @@ import { useCategories, useCreateActivity, useOrgActivities } from "./hooks.ts";
 export function ManageEventsPage(): ReactElement {
   const orgs = useMyOrgs();
   const [orgId, setOrgId] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
+  // The create form is deep-linkable (?create=1) so the rail's primary
+  // action lands straight on it.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const creating = searchParams.get("create") === "1";
+  const setCreating = (next: boolean): void => {
+    setSearchParams(
+      (params) => {
+        if (next) params.set("create", "1");
+        else params.delete("create");
+        return params;
+      },
+      { replace: true },
+    );
+  };
   const selected = orgId ?? orgs.data?.items[0]?.id ?? null;
   const activities = useOrgActivities(selected);
   const categories = useCategories(selected ?? undefined);
@@ -24,7 +38,7 @@ export function ManageEventsPage(): ReactElement {
 
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div data-rise className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <FiCalendar
@@ -38,7 +52,7 @@ export function ManageEventsPage(): ReactElement {
           {selected && (
             <Button
               variant={creating ? "secondary" : "primary"}
-              onClick={() => setCreating((v) => !v)}
+              onClick={() => setCreating(!creating)}
               icon={<FiPlus className="h-4 w-4" aria-hidden="true" />}
             >
               {creating ? "Đóng" : "Tạo hoạt động"}
@@ -59,10 +73,10 @@ export function ManageEventsPage(): ReactElement {
             onSelect={setOrgId}
           />
         )}
-      </BentoCard>
+      </Section>
 
       {creating && selected && (
-        <BentoCard className="md:col-span-6 lg:col-span-12">
+        <Section>
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
             Hoạt động mới
           </h2>
@@ -74,11 +88,11 @@ export function ManageEventsPage(): ReactElement {
               onDone={() => setCreating(false)}
             />
           </div>
-        </BentoCard>
+        </Section>
       )}
 
       {selected && (
-        <BentoCard className="md:col-span-6 lg:col-span-12">
+        <Section>
           {activities.isPending && (
             <LoadingState label="Đang tải hoạt động…" />
           )}
@@ -104,7 +118,7 @@ export function ManageEventsPage(): ReactElement {
               </li>
             ))}
           </ul>
-        </BentoCard>
+        </Section>
       )}
     </>
   );

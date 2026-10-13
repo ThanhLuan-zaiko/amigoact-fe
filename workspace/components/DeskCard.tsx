@@ -1,17 +1,17 @@
 import type { ReactElement } from "react";
 import { FiEdit3 } from "react-icons/fi";
-import { BentoCard } from "../../core/components/BentoCard.tsx";
+import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 
 interface DeskCardProps {
   writeHref: string;
 }
 
-// Small bento tile inviting the member back to the writing desk; sits next
+// Small feed tile inviting the member back to the writing desk; sits next
 // to empty states and the drafts shelf so the CTA is never a bare row.
 export function DeskCard({ writeHref }: DeskCardProps): ReactElement {
   return (
-    <BentoCard className="md:col-span-6 lg:col-span-4">
+    <Section>
       <div data-rise className="flex items-center gap-2">
         <FiEdit3
           className="h-5 w-5 text-zinc-900 dark:text-brand"
@@ -34,6 +34,6 @@ export function DeskCard({ writeHref }: DeskCardProps): ReactElement {
           Viết bài mới
         </Button>
       </div>
-    </BentoCard>
+    </Section>
   );
 }

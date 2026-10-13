@@ -42,7 +42,7 @@ interface ArticleActionsProps {
 
 // Article lifecycle buttons mirroring /manage/orgs: read/edit links, pin
 // rail, publish/unpublish, soft delete, restore, two-step hard delete.
-// "Sửa" on a live post opens its private revision draft; live stays up.
+// Editing a live post opens its private revision draft; live stays up.
 export function ArticleActions({
   orgId,
   post,

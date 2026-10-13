@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { FiClock } from "react-icons/fi";
 import { ApiError } from "../core/api.ts";
-import { BentoCard } from "../core/components/BentoCard.tsx";
+import { Section } from "../core/components/Section.tsx";
 import {
   ErrorState,
   LoadingState,
@@ -20,9 +20,9 @@ export function VolunteerProfilePage(): ReactElement {
 
   if (profile.isPending) {
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <LoadingState label="Đang tải hồ sơ tình nguyện…" />
-      </BentoCard>
+      </Section>
     );
   }
   if (profile.isError) {
@@ -31,19 +31,19 @@ export function VolunteerProfilePage(): ReactElement {
         ? profile.error.code
         : "REQUEST_FAILED";
     return (
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <ErrorState
           title="Không tải được hồ sơ"
           message={profileMessage(code)}
         />
-      </BentoCard>
+      </Section>
     );
   }
 
   const data = profile.data;
   return (
     <>
-      <BentoCard className="md:col-span-6 lg:col-span-12">
+      <Section>
         <div className="flex flex-wrap items-center gap-3">
           <div>
             <h1 className="text-lg font-semibold text-zinc-900 sm:text-xl dark:text-zinc-100">
@@ -63,7 +63,7 @@ export function VolunteerProfilePage(): ReactElement {
             </span>
           </div>
         </div>
-      </BentoCard>
+      </Section>
       <VolunteerProfileCard key={data.updated_at ?? "new"} profile={data} />
       <AvatarCard
         avatarUrl={data.avatar_url}

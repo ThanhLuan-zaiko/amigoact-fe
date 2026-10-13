@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiArchive,
   FiBookmark,
@@ -16,6 +17,7 @@ import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import type { OrgPost } from "../board-api.ts";
 import {
+  useCreateRevision,
   useHardDeletePost,
   usePublishPost,
   useRestorePost,
@@ -38,9 +40,9 @@ interface ArticleActionsProps {
   onDone?: () => void;
 }
 
-// Article lifecycle buttons mirroring the /manage/orgs card actions:
-// read/edit links, pin rail, publish/unpublish, soft delete, restore and
-// a two-step permanent delete on the trash shelf.
+// Article lifecycle buttons mirroring /manage/orgs: read/edit links, pin
+// rail, publish/unpublish, soft delete, restore, two-step hard delete.
+// "Sửa" on a live post opens its private revision draft; live stays up.
 export function ArticleActions({
   orgId,
   post,
@@ -56,6 +58,8 @@ export function ArticleActions({
   const hardDelete = useHardDeletePost(orgId);
   const restore = useRestorePost(orgId);
   const pin = useSetPostPinned(orgId);
+  const revise = useCreateRevision(orgId);
+  const navigate = useNavigate();
   const [confirmErase, setConfirmErase] = useState(false);
   const [serverCode, setServerCode] = useState<string | null>(null);
   const busy =
@@ -64,12 +68,15 @@ export function ArticleActions({
     softDelete.isPending ||
     hardDelete.isPending ||
     restore.isPending ||
-    pin.isPending;
+    pin.isPending ||
+    revise.isPending;
 
   const mine = post.author_id === selfId;
   const pinned = post.pinned_at !== null;
-  const announceBlocked =
-    post.kind === "announcement" && !canAnnounce;
+  const announceBlocked = post.kind === "announcement" && !canAnnounce;
+  const publishTitle = announceBlocked
+    ? "Chỉ quản lý mới đăng được thông báo"
+    : undefined;
   const writeHref = `/manage/board/write?org=${orgId}&post=${post.post_id}`;
   const readHref = `/manage/board/post?org=${orgId}&post=${post.post_id}`;
 
@@ -78,6 +85,16 @@ export function ArticleActions({
     try {
       await task;
       onDone?.();
+    } catch (error) {
+      setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
+    }
+  }
+
+  async function openRevision(): Promise<void> {
+    setServerCode(null);
+    try {
+      const rev = await revise.mutateAsync(post.post_id);
+      navigate(`/manage/board/write?org=${orgId}&post=${rev.post_id}`);
     } catch (error) {
       setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
     }
@@ -97,11 +114,13 @@ export function ArticleActions({
             </Button>
             {mine && (
               <Button
-                to={writeHref}
+                type="button"
                 variant="secondary"
+                disabled={busy}
+                onClick={() => void openRevision()}
                 icon={<FiEdit2 className="h-4 w-4" aria-hidden="true" />}
               >
-                Sửa
+                {revise.isPending ? "Đang mở…" : "Sửa"}
               </Button>
             )}
             {canManage && (
@@ -126,7 +145,7 @@ export function ArticleActions({
                 onClick={() => run(unpublish.mutateAsync(post.post_id))}
                 icon={<FiArchive className="h-4 w-4" aria-hidden="true" />}
               >
-                {unpublish.isPending ? "Đang chuyển…" : "Về nháp"}
+                {unpublish.isPending ? "Đang gỡ…" : "Gỡ xuống"}
               </Button>
             )}
           </>
@@ -145,15 +164,15 @@ export function ArticleActions({
                 type="button"
                 variant="secondary"
                 disabled={busy || announceBlocked}
-                title={
-                  announceBlocked
-                    ? "Chỉ quản lý mới đăng được thông báo"
-                    : undefined
-                }
+                title={publishTitle}
                 onClick={() => run(publish.mutateAsync(post.post_id))}
                 icon={<FiSend className="h-4 w-4" aria-hidden="true" />}
               >
-                {publish.isPending ? "Đang đăng…" : "Đăng bài"}
+                {publish.isPending
+                  ? "Đang đăng…"
+                  : post.revision_of !== null
+                    ? "Đăng lại"
+                    : "Đăng bài"}
               </Button>
             )}
           </>
@@ -177,7 +196,7 @@ export function ArticleActions({
             onClick={() => run(softDelete.mutateAsync(post.post_id))}
             icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
           >
-            {softDelete.isPending ? "Đang xóa…" : "Xóa"}
+            {softDelete.isPending ? "Đang xóa…" : "Bỏ vào thùng rác"}
           </Button>
         )}
         {shelf === "trash" && (mine || canManage) && (

@@ -43,7 +43,7 @@ const EMPTY_COPY: Record<string, { title: string; message: string }> = {
 const TITLES: Record<string, { title: string; hint: string }> = {
   draft: {
     title: "Bản nháp của tôi",
-    hint: "Chỉ bạn thấy các bản nháp. Đăng bài khi đã hoàn thiện.",
+    hint: "Nháp mới, nháp chờ đăng của bài đang hiển thị và bài đã gỡ xuống — chỉ bạn thấy.",
   },
   trash: {
     title: "Thùng rác",

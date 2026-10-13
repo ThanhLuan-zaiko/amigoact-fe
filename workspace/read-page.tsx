@@ -23,7 +23,7 @@ import { useBoardRealtime } from "./realtime-hooks.ts";
 import {
   formatTime,
   POST_KIND_LABELS,
-  POST_STATUS_LABELS,
+  postStatusLabel,
   readingTimeLabel,
   toVietnameseWorkspaceMessage,
 } from "./messages.tsx";
@@ -121,7 +121,7 @@ export function WorkspaceReadPage(): ReactElement {
                 )}
                 {article.status === "draft" && (
                   <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                    {POST_STATUS_LABELS[article.status]}
+                    {postStatusLabel(article)}
                   </span>
                 )}
                 {article.pinned_at !== null && (
@@ -166,7 +166,11 @@ export function WorkspaceReadPage(): ReactElement {
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt>Trạng thái</dt>
-                  <dd>{POST_STATUS_LABELS[article.status]}</dd>
+                  <dd>
+                    {article.deleted_at !== null
+                      ? "Đang ở thùng rác"
+                      : postStatusLabel(article)}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-2">
                   <dt>Thời gian đọc</dt>
@@ -190,7 +194,9 @@ export function WorkspaceReadPage(): ReactElement {
                 selfId={selfId}
                 canManage={canManage}
                 canAnnounce={canAnnounce}
-                shelf={article.status}
+                shelf={
+                  article.deleted_at !== null ? "trash" : article.status
+                }
                 onDone={() => navigate(boardHref)}
               />
             </div>

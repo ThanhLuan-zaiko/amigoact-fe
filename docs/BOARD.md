@@ -11,12 +11,12 @@ tách file (`api.ts` + `hooks.ts` giữ chat và re-export board).
 | File | Vai trò |
 |---|---|
 | `board-api.ts` | Hợp đồng bài viết (`OrgPost`, `ArticleBlock`, `PostPage`) + hàm API (feed, drafts, trash, detail, CRUD, lifecycle, comments) |
-| `board-hooks.ts` | TanStack Query: `useOrgPosts` (paged), `usePostShelf` (drafts/trash), `useOrgPost`, mutation lifecycle, comments (infinite) |
+| `board-hooks.ts` | TanStack Query: `useOrgPosts` (paged), `usePostShelf` (drafts/trash), `useOrgPost`, mutation lifecycle + `useCreateRevision`, comments (infinite) |
 | `api.ts` / `hooks.ts` | Chat giữ nguyên; `export *` từ board module để import cũ không vỡ |
 | `keys.ts` | Mọi key bảng tin nằm dưới `["workspace","posts",orgId]` nên một prefix invalidate phủ feed + detail + drafts + trash |
 | `article.ts` | Pure helpers: `EditorBlock` (kèm React key), convert bài legacy `body`+media thành blocks, `coverUrl`, `excerpt`, `wordCount`, `cleanBlocks` |
-| `editor-hooks.ts` | `useArticleEditor` — toàn bộ state editor: blocks, cover, upload inline (role `attachment`), pipeline Lưu nháp/Đăng bài |
-| `messages.tsx` | Copy tiếng Việt + `postEventToast` cho realtime |
+| `editor-hooks.ts` | `useArticleEditor` — toàn bộ state editor: blocks, cover, upload inline (role `attachment`), `revisionOf`/`wasPublished`, pipeline Lưu nháp/Đăng bài/Đăng lại |
+| `messages.tsx` | Copy tiếng Việt, `postStatusLabel` (Nháp / Nháp chờ đăng / Đã gỡ xuống / Đã đăng) + `postEventToast` cho realtime |
 
 ## 2. Trang `/manage/board` (`board-page.tsx`)
 
@@ -30,8 +30,10 @@ trên `?tab=` (`published` mặc định, `draft`, `trash`) nên deep-link đư�
   `?page=` + `PostPage.total` — `Pagination` giống `/manage/orgs`; `pinned[]`
   chỉ kèm ở trang 1, đổi tab/kind reset về trang 1.
 - **Nháp**: `ShelfCard` liệt kê `ArticleRow` từ `GET .../posts/drafts`
-  (chỉ bài của mình). Nút `Viết tiếp` mở editor, `Đăng bài` publish tại
-  chỗ, `Xóa` đưa vào thùng rác.
+  (chỉ bài của mình). Nút `Viết tiếp` mở editor, `Đăng bài`/`Đăng lại`
+  publish tại chỗ, `Bỏ vào thùng rác` đưa vào thùng rác. Chip phân biệt
+  `Nháp` (chưa đăng), `Nháp chờ đăng` (revision của bài đang live, kèm link
+  "Xem bài đang hiển thị") và `Đã gỡ xuống` (bài từng đăng bị rút về).
 - **Thùng rác**: cùng `ShelfCard` với `GET .../posts/trash` (member thấy
   bài mình, manager thấy hết). Hành động `Khôi phục` + `Xóa vĩnh viễn`
   xác nhận 2 bước (lần 1 đổi viền đỏ + nhãn `Bấm lại để xóa vĩnh viễn`,
@@ -42,8 +44,8 @@ trên `?tab=` (`published` mặc định, `draft`, `trash`) nên deep-link đư�
 
 | Shelf | Nút |
 |---|---|
-| Đã đăng | `Đọc`, `Sửa` (tác giả), `Ghim`/`Bỏ ghim` (manager), `Về nháp` (tác giả), `Xóa` (tác giả/manager) |
-| Nháp | `Viết tiếp`, `Đăng bài` (khóa nếu announcement mà thiếu `post:announce`), `Xóa` |
+| Đã đăng | `Đọc`, `Sửa` (tác giả — mở/tạo revision nháp riêng, bài live vẫn hiển thị), `Ghim`/`Bỏ ghim` (manager), `Gỡ xuống` (tác giả — rút bài về nháp, hấp thụ revision đang mở), `Bỏ vào thùng rác` (tác giả/manager — xóa mềm, khôi phục được) |
+| Nháp | `Viết tiếp`, `Đăng bài`/`Đăng lại` cho revision (khóa nếu announcement mà thiếu `post:announce`), `Bỏ vào thùng rác` |
 | Thùng rác | `Khôi phục`, `Xóa vĩnh viễn` (2 bước) |
 
 Mọi mutation invalidate `[workspace,"posts"]` + `[workspace,"comments"]`;
@@ -70,11 +72,14 @@ phải (`lg:col-span-4`) `PublishPanel`.
   gạch đầu dòng/đánh số), `MediaBlockEditor` (preview `img`/`video
   controls preload="metadata"`, trạng thái đang tải/lỗi + thử lại, đổi
   file, `Chú thích`), divider chỉ là `<hr>`.
-- `PublishPanel`: chip trạng thái (`Bản nháp mới`/`Nháp`/`Đã đăng`), chọn
-  `Loại bài viết` chỉ khi chưa đăng (announcement khóa nếu thiếu quyền),
-  `CoverPicker` (chọn/đổi/gỡ ảnh bìa), stats `n khối · m từ · x phút đọc`,
-  nhãn `Chưa lưu`/`Đã lưu lúc`, `Lưu nháp` (secondary) + `Đăng bài`/`Lưu
-  thay đổi` (primary).
+- `PublishPanel`: chip trạng thái (`Bản nháp mới`/`Nháp`/`Nháp chờ
+  đăng`/`Đã gỡ xuống`/`Đã đăng`), chọn `Loại bài viết` chỉ trên nháp độc
+  lập (revision khóa theo bài gốc), link "Xem bài đang hiển thị" khi đang
+  sửa revision, `CoverPicker` (chọn/đổi/gỡ ảnh bìa), stats `n khối · m từ ·
+  x phút đọc`, nhãn `Chưa lưu`/`Đã lưu lúc`. Nút primary: `Đăng bài`
+  (nháp mới), `Đăng lại` (revision/bài đã gỡ), `Lưu thay đổi` (bài live —
+  patch trực tiếp); secondary `Lưu nháp`/`Lưu nháp riêng` (trên bài live
+  tự tạo revision trước khi lưu).
 
 `useArticleEditor` (`editor-hooks.ts`) giữ `dirty`, `savedAt`, `uploads`
 (per block key + `cover`), `errorCode`. Validate client trước khi gọi API:
@@ -83,21 +88,54 @@ publish cần nội dung (`POST_CONTENT_REQUIRED`), announcement cần tiêu đ�
 nháp chỉ cần không rỗng. Media block rỗng asset bị `cleanBlocks` loại.
 Save pipeline: chưa có `post_id` → `POST` (status draft/published); đã có
 → `PATCH` rồi `POST .../publish` nếu mục tiêu là đăng; `cover_media_id`
-luôn gửi (kể cả `null`) để đồng bộ `touches_cover`; `kind` chỉ gửi khi
-còn nháp. Publish xong gọi `onPublished` → điều hướng sang trang đọc.
+luôn gửi (kể cả `null`) để đồng bộ `touches_cover`; `kind` chỉ gửi cho
+nháp độc lập. `Lưu nháp` trên bài đã đăng gọi `POST .../revisions` trước
+(get-or-create) rồi PATCH vào revision — bài live không đổi cho tới khi
+revision được đăng lại (server gộp nội dung vào bài gốc, trả về snapshot
+bài gốc). Publish xong gọi `onPublished` → điều hướng sang trang đọc.
 
 ## 4. Trang `/manage/board/post` (`read-page.tsx`)
 
-Cột bài (`lg:col-span-8`): cover, badge kind/`Nháp`/ghim, title display,
-byline (tác giả + `published_at` + `đã chỉnh sửa`), `ArticleBody` render
-blocks (paragraph/heading/quote/list/figure ảnh+video/divider; media chỉ
-giải qua `media[]` nên asset rác không vỡ layout). `CommentThread` chỉ
-hiện khi `status === "published"`. Cột phải (`lg:col-span-4`): dl meta
-(tác giả, trạng thái, thời gian đọc, bình luận) + `ArticleActions` với
-`onDone` điều hướng về bảng tin. Quyền lấy từ `useOrgPosts` (cache chung
-với board). `useBoardRealtime` mount để bình luận/bài tươi theo kênh.
+Cột bài (`lg:col-span-8`): cover, badge kind/`postStatusLabel` (`Nháp`,
+`Nháp chờ đăng`, `Đã gỡ xuống`)/ghim, title display, byline (tác giả +
+`published_at` + `đã chỉnh sửa`), `ArticleBody` render blocks
+(paragraph/heading/quote/list/figure ảnh+video/divider; media chỉ giải
+qua `media[]` nên asset rác không vỡ layout). `CommentThread` chỉ hiện
+khi `status === "published"`. Cột phải (`lg:col-span-4`): dl meta (tác
+giả, trạng thái — `Đang ở thùng rác` khi `deleted_at` khác null, thời
+gian đọc, bình luận) + `ArticleActions` với `onDone` điều hướng về bảng
+tin — shelf suy từ `deleted_at` trước rồi `status` nên bài trong thùng
+rác hiện đúng cặp Khôi phục/Xóa vĩnh viễn. Quyền lấy từ `useOrgPosts`
+(cache chung với board). `useBoardRealtime` mount để bình luận/bài tươi
+theo kênh.
 
-## 5. Tương thích bài cũ
+## 5. Cổng public (`/orgs/:slug`)
+
+Chỉ bài `announcement` đã đăng ra ngoài board; discussion/nháp/revision/
+thùng rác vẫn nội bộ.
+
+- `orgs/api.ts`: `PublicOrgDetail.announcements` + `announcement_count` —
+  teaser `title/excerpt/cover_url/author_name/published_at/comment_count`
+  nhúng trong `GET /orgs/{slug}`.
+- `orgs/components/OrgNewsCard.tsx`: tile `lg:col-span-12` "Tin tức từ tổ
+  chức" trên profile, teaser link sang trang đọc public; link "Xem tất cả"
+  (khi `announcement_count > announcements.length`) sang trang danh sách.
+- `orgs/news-page.tsx` — route `/orgs/:slug/posts`, khách không cần đăng
+  nhập. Lưới teaser (cover/title/excerpt/ngày+tác giả+comment) link sang
+  trang đọc; đọc `GET /orgs/{slug}/announcements?limit&page` qua
+  `listPublicOrgPosts` + `usePublicOrgPosts` (key `orgKeys.posts(slug,page)`,
+  `ORG_NEWS_PAGE_SIZE` = 9). Số trang nằm ở `?page=` (deep-linkable), đổi
+  trang qua `Pagination`; header có nút "Về trang tổ chức".
+- `workspace/org-post-page.tsx` — route `/orgs/:slug/posts/:postId`, khách
+  không cần đăng nhập. Đọc qua `GET /orgs/{slug}/announcements/{postId}`
+  (`getPublicOrgPost` + `usePublicOrgPost`; key `publicPost` tách khỏi
+  prefix `posts` vì không gắn board mutation/realtime). Reuse `ArticleBody`
+  + `coverUrl`/`formatTime`; rail phải link về profile org (qua
+  `usePublicOrg` — contract import từ `orgs/hooks.ts`) + meta (ngày đăng,
+  thời gian đọc, số bình luận). `CommentThread`/`ArticleActions` không
+  render — khách chỉ đọc; lỗi 404 → `ErrorState` + nút về profile.
+
+## 6. Tương thích bài cũ
 
 Bài kiểu cũ (`body` + `media_ids`, không blocks) vẫn hiển thị: feed/detail
 render `body` + dải ảnh. Mở trong editor, `articleBlocks()` convert thành

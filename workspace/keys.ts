@@ -15,6 +15,8 @@ export const workspaceKeys = {
     ] as const,
   post: (orgId: string | null, postId: string | null) =>
     [...workspaceKeys.all, "posts", orgId, "detail", postId] as const,
+  publicPost: (slug: string | null, postId: string | null) =>
+    [...workspaceKeys.all, "public-post", slug, postId] as const,
   drafts: (orgId: string | null, page = 1) =>
     [...workspaceKeys.all, "posts", orgId, "drafts", page] as const,
   trash: (orgId: string | null, page = 1) =>

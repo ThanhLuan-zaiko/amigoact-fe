@@ -13,9 +13,11 @@ import { ApiError } from "../core/api.ts";
 import {
   addComment,
   createPost,
+  createRevision,
   deleteComment,
   deletePost,
   getPost,
+  getPublicOrgPost,
   listComments,
   listDraftPosts,
   listPosts,
@@ -97,6 +99,20 @@ export function useOrgPost(
   });
 }
 
+// Guest read of a published announcement on /orgs/:slug/posts/:postId.
+export function usePublicOrgPost(
+  slug: string | undefined,
+  postId: string | undefined,
+): UseQueryResult<OrgPost, ApiError> {
+  return useQuery({
+    queryKey: workspaceKeys.publicPost(slug ?? null, postId ?? null),
+    queryFn: () => getPublicOrgPost(slug as string, postId as string),
+    ...QUERY_DEFAULTS,
+    retry: (count, error) => error.status !== 404 && count < 1,
+    enabled: slug !== undefined && slug !== "" && postId != null,
+  });
+}
+
 async function invalidateBoard(
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<void> {
@@ -137,6 +153,12 @@ export function usePublishPost(
   orgId: string,
 ): UseMutationResult<OrgPost, ApiError, string> {
   return useBoardMutation((postId: string) => publishPost(orgId, postId));
+}
+
+export function useCreateRevision(
+  orgId: string,
+): UseMutationResult<OrgPost, ApiError, string> {
+  return useBoardMutation((postId: string) => createRevision(orgId, postId));
 }
 
 export function useUnpublishPost(

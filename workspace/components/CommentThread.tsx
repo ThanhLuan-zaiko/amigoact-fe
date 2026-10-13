@@ -120,6 +120,7 @@ export function CommentThread({
           placeholder="Viết bình luận…"
           maxLength={2000}
           rows={2}
+          autoGrow
           error={error ?? undefined}
         />
         <div className="flex justify-end">

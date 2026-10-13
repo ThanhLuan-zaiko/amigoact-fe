@@ -24,7 +24,7 @@ const SHELVES: ShelfTile[] = [
   {
     value: "draft",
     label: "Nháp",
-    hint: "Bản nháp riêng tư, chỉ bạn nhìn thấy.",
+    hint: "Nháp mới, nháp chờ đăng và bài đã gỡ — chỉ bạn thấy.",
     icon: <FiEdit3 className="h-5 w-5" aria-hidden="true" />,
   },
   {

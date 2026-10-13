@@ -33,6 +33,7 @@ export interface OrgPost {
   body: string;
   blocks: ArticleBlock[];
   cover_media_id: string | null;
+  revision_of: string | null;
   pinned_at: string | null;
   edited_at: string | null;
   published_at: string | null;
@@ -133,6 +134,17 @@ export function getPost(orgId: string, postId: string): Promise<OrgPost> {
   return apiFetch<OrgPost>(`/orgs/${orgId}/posts/${postId}`);
 }
 
+// Guest read of one published announcement on the public org profile
+// (no auth). Only announcements are exposed; drafts/discussions 404.
+export function getPublicOrgPost(
+  slug: string,
+  postId: string,
+): Promise<OrgPost> {
+  return apiFetch<OrgPost>(
+    `/orgs/${encodeURIComponent(slug)}/announcements/${postId}`,
+  );
+}
+
 export function createPost(orgId: string, input: CreatePostInput): Promise<OrgPost> {
   return apiFetch<OrgPost>(`/orgs/${orgId}/posts`, {
     method: "POST",
@@ -163,6 +175,15 @@ export function publishPost(orgId: string, postId: string): Promise<OrgPost> {
 
 export function unpublishPost(orgId: string, postId: string): Promise<OrgPost> {
   return postAction(orgId, postId, "unpublish");
+}
+
+// Get-or-create the author's private revision of a live post. Publishing
+// the revision folds it back onto the original post (same post_id).
+export function createRevision(
+  orgId: string,
+  postId: string,
+): Promise<OrgPost> {
+  return postAction(orgId, postId, "revisions");
 }
 
 export function restorePost(orgId: string, postId: string): Promise<OrgPost> {

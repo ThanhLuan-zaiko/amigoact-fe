@@ -137,6 +137,7 @@ function BlockFields({
             placeholder="Nhập câu trích dẫn…"
             rows={2}
             maxLength={1000}
+            autoGrow
           />
           <TextField
             label="Nguồn trích dẫn"
@@ -179,8 +180,9 @@ function BlockFields({
           autoFocus={focused}
           onChange={(event) => onPatch(key, { text: event.target.value })}
           placeholder="Viết nội dung đoạn này…"
-          rows={3}
+          rows={4}
           maxLength={5000}
+          autoGrow
         />
       );
   }

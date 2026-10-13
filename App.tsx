@@ -38,6 +38,8 @@ import { OrgsPage } from "./orgs/page.tsx";
 import { PublicVolunteerPage } from "./profiles/public-page.tsx";
 import { MyRegistrationsPage } from "./registrations/mine-page.tsx";
 import { VolunteerProfilePage } from "./profiles/volunteer-page.tsx";
+import { OrgNewsPage } from "./orgs/news-page.tsx";
+import { OrgPostPage } from "./workspace/org-post-page.tsx";
 import { WorkspaceBoardPage } from "./workspace/board-page.tsx";
 import { WorkspaceChatPage } from "./workspace/chat-page.tsx";
 import { WorkspaceReadPage } from "./workspace/read-page.tsx";
@@ -82,6 +84,11 @@ export default function App(): ReactElement {
         <Route path="events/:orgId/:slug" element={<EventDetailPage />} />
         <Route path="orgs" element={<OrgsPage />} />
         <Route path="orgs/:slug" element={<OrgDetailPage />} />
+        <Route path="orgs/:slug/posts" element={<OrgNewsPage />} />
+        <Route
+          path="orgs/:slug/posts/:postId"
+          element={<OrgPostPage />}
+        />
         <Route path="my-dashboard/*" element={<LegacyDashboardRedirect />} />
         <Route path="manage" element={<DashboardPage />}>
           <Route index element={<Navigate to="overview" replace />} />

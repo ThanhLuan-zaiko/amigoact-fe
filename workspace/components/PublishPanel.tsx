@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { Link } from "react-router-dom";
 import { FiCheckCircle, FiSend } from "react-icons/fi";
 import { BentoCard } from "../../core/components/BentoCard.tsx";
 import { Button } from "../../core/components/Button.tsx";
@@ -16,27 +17,40 @@ import { CoverPicker } from "./CoverPicker.tsx";
 
 interface PublishPanelProps {
   editor: ArticleEditorState;
+  orgId: string;
   canAnnounce: boolean;
 }
 
-// Right rail of the write page: status chip, kind toggle (drafts only),
-// cover picker, live stats, and the save-draft / publish pipeline.
+// Right rail of the write page: status chip, kind toggle (standalone
+// drafts only — revisions follow the live post's kind), cover picker,
+// live stats, and the save-draft / publish pipeline.
 export function PublishPanel({
   editor,
+  orgId,
   canAnnounce,
 }: PublishPanelProps): ReactElement {
   const blocks = cleanBlocks(editor.blocks);
   const words = wordCount(blocks);
   const minutes = readingMinutes(words);
   const published = editor.status === "published";
+  const isRevision = editor.revisionOf !== null;
   const statusLabel =
-    editor.status === "new" ? "Bản nháp mới" : POST_STATUS_LABELS[editor.status];
+    editor.status === "new"
+      ? "Bản nháp mới"
+      : isRevision
+        ? "Nháp chờ đăng"
+        : editor.status === "draft" && editor.wasPublished
+          ? "Đã gỡ xuống"
+          : POST_STATUS_LABELS[editor.status];
   const announceBlocked = editor.kind === "announcement" && !canAnnounce;
   const saveLabel = published
     ? "Lưu thay đổi"
     : announceBlocked
       ? "Cần quyền đăng thông báo"
-      : "Đăng bài";
+      : isRevision || editor.wasPublished
+        ? "Đăng lại"
+        : "Đăng bài";
+  const draftLabel = published ? "Lưu nháp riêng" : "Lưu nháp";
 
   return (
     <BentoCard className="md:col-span-6 lg:col-span-4">
@@ -48,7 +62,7 @@ export function PublishPanel({
           {statusLabel}
         </span>
       </div>
-      {!published && (
+      {!published && !isRevision && (
         <div className="mt-3">
           <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
             Loại bài viết
@@ -73,6 +87,18 @@ export function PublishPanel({
             ))}
           </div>
         </div>
+      )}
+      {isRevision && (
+        <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+          Đây là bản nháp riêng của bài đang hiển thị — đăng lại sẽ thay
+          thế bản đang hiển thị.{" "}
+          <Link
+            to={`/manage/board/post?org=${orgId}&post=${editor.revisionOf}`}
+            className="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:decoration-zinc-600 dark:hover:text-zinc-200 dark:focus-visible:outline-brand"
+          >
+            Xem bài đang hiển thị
+          </Link>
+        </p>
       )}
       <div className="mt-3">
         <CoverPicker
@@ -110,17 +136,15 @@ export function PublishPanel({
         >
           {editor.saving ? "Đang lưu…" : saveLabel}
         </Button>
-        {!published && (
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={editor.saving}
-            onClick={() => void editor.save("draft")}
-            icon={<FiCheckCircle className="h-4 w-4" aria-hidden="true" />}
-          >
-            {editor.saving ? "Đang lưu…" : "Lưu nháp"}
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="secondary"
+          disabled={editor.saving}
+          onClick={() => void editor.save("draft")}
+          icon={<FiCheckCircle className="h-4 w-4" aria-hidden="true" />}
+        >
+          {editor.saving ? "Đang lưu…" : draftLabel}
+        </Button>
       </div>
     </BentoCard>
   );

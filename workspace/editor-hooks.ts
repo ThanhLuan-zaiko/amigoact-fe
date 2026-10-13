@@ -18,6 +18,7 @@ import {
 import type { BlockType, OrgPost, PostKind, PostStatus } from "./board-api.ts";
 import {
   useCreatePost,
+  useCreateRevision,
   usePublishPost,
   useUpdatePost,
 } from "./board-hooks.ts";
@@ -49,10 +50,19 @@ export function useArticleEditor(
   orgId: string,
   initial: OrgPost | null,
   onPublished?: (post: OrgPost) => void,
+  canAnnounce = false,
 ) {
   const [postId, setPostId] = useState<string | null>(initial?.post_id ?? null);
   const [status, setStatus] = useState<EditorStatus>(initial?.status ?? "new");
-  const [kind, setKindState] = useState<PostKind>(initial?.kind ?? "discussion");
+  const [revisionOf, setRevisionOf] = useState<string | null>(
+    initial?.revision_of ?? null,
+  );
+  const [wasPublished] = useState(initial?.published_at != null);
+  // Managers default to "announcement" (org news is their fast path);
+  // plain members get "discussion" since announce is blocked for them.
+  const [kind, setKindState] = useState<PostKind>(
+    initial?.kind ?? (canAnnounce ? "announcement" : "discussion"),
+  );
   const [title, setTitleState] = useState(initial?.title ?? "");
   const [coverId, setCoverId] = useState<string | null>(initial?.cover_media_id ?? null);
   const [blocks, setBlocks] = useState<EditorBlock[]>(() => startingBlocks(initial));
@@ -67,6 +77,7 @@ export function useArticleEditor(
   const create = useCreatePost(orgId);
   const update = useUpdatePost(orgId);
   const publish = usePublishPost(orgId);
+  const revise = useCreateRevision(orgId);
 
   const touch = useCallback(() => {
     editTick.current += 1;
@@ -196,8 +207,11 @@ export function useArticleEditor(
     return null;
   }
 
-  // Draft saves keep the post private; publish creates/updates and then
-  // flips a draft onto the board. Returns the saved post or null.
+  // Draft saves keep the post private; a draft save on a published post
+  // stages a private revision (the live version stays up). Publish
+  // creates/updates and then flips a draft onto the board — for a
+  // revision the server folds it back onto the original post. Returns
+  // the saved post or null.
   async function save(mode: SaveMode): Promise<OrgPost | null> {
     const problem = validate(mode);
     setErrorCode(problem);
@@ -217,16 +231,28 @@ export function useArticleEditor(
           status: mode === "publish" ? "published" : "draft",
         });
       } else {
+        let target = postId;
+        let parent = revisionOf;
+        if (mode === "draft" && status === "published") {
+          const rev = await revise.mutateAsync(postId);
+          target = rev.post_id;
+          parent = postId;
+          setRevisionOf(parent);
+        }
         saved = await update.mutateAsync({
-          postId,
-          input: { ...payload, kind: status === "draft" ? kind : undefined },
+          postId: target,
+          input: {
+            ...payload,
+            kind: status === "draft" && parent === null ? kind : undefined,
+          },
         });
         if (mode === "publish" && saved.status === "draft") {
-          saved = await publish.mutateAsync(postId);
+          saved = await publish.mutateAsync(target);
         }
       }
       setPostId(saved.post_id);
       setStatus(saved.status);
+      if (saved.status === "published") setRevisionOf(null);
       setSavedAt(saved.updated_at ?? new Date().toISOString());
       if (editTick.current === tick) setDirty(false);
       if (saved.status === "published") onPublished?.(saved);
@@ -240,6 +266,8 @@ export function useArticleEditor(
   return {
     postId,
     status,
+    revisionOf,
+    wasPublished,
     kind,
     title,
     coverId,
@@ -250,7 +278,11 @@ export function useArticleEditor(
     savedAt,
     errorCode,
     focusKey,
-    saving: create.isPending || update.isPending || publish.isPending,
+    saving:
+      create.isPending ||
+      update.isPending ||
+      publish.isPending ||
+      revise.isPending,
     setKind: (next: PostKind) => {
       setKindState(next);
       touch();

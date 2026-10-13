@@ -11,11 +11,13 @@ import { subscribeChannel } from "../core/realtime.ts";
 import {
   fetchPublicOrg,
   joinOrg,
+  listPublicOrgPosts,
   listPublicOrgs,
   type OrgMembership,
   type PublicOrgDetail,
   type PublicOrgPage,
   type PublicOrgParams,
+  type PublicPostPage,
 } from "./api.ts";
 import { orgKeys } from "./keys.ts";
 
@@ -35,6 +37,25 @@ export function usePublicOrg(
   return useQuery({
     queryKey: orgKeys.detail(slug ?? ""),
     queryFn: () => fetchPublicOrg(slug ?? ""),
+    enabled: slug !== undefined && slug !== "",
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+export const ORG_NEWS_PAGE_SIZE = 9;
+
+export function usePublicOrgPosts(
+  slug: string | undefined,
+  page = 1,
+): UseQueryResult<PublicPostPage, ApiError> {
+  return useQuery({
+    queryKey: orgKeys.posts(slug ?? "", page),
+    queryFn: () =>
+      listPublicOrgPosts(slug ?? "", {
+        limit: ORG_NEWS_PAGE_SIZE,
+        page,
+      }),
     enabled: slug !== undefined && slug !== "",
     retry: false,
     staleTime: 60_000,

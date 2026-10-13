@@ -40,7 +40,10 @@ export function WorkspaceWritePage(): ReactElement {
   const canAnnounce = permissions.includes("post:announce");
   const orgName = orgs.find((org) => org.id === orgId)?.name ?? "";
   const boardHref = orgId === null ? "/manage/board" : `/manage/board?org=${orgId}`;
-  const ready = postId === null || post.data !== undefined;
+  // Wait for the feed envelope too: viewer_permissions decides the
+  // default kind (announcement for managers) and the kind toggle state.
+  const ready =
+    (postId === null || post.data !== undefined) && !feed.isPending;
 
   return (
     <>
@@ -74,9 +77,15 @@ export function WorkspaceWritePage(): ReactElement {
           />
         </div>
       )}
-      {orgId !== null && postId !== null && post.isPending && (
+      {orgId !== null && !ready && !post.isError && (
         <div className="col-span-1 md:col-span-6 lg:col-span-12">
-          <LoadingState label="Đang tải bài viết…" />
+          <LoadingState
+            label={
+              postId === null
+                ? "Đang chuẩn bị trang viết…"
+                : "Đang tải bài viết…"
+            }
+          />
         </div>
       )}
       {orgId !== null && postId !== null && post.isError && (

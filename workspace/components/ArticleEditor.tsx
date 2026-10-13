@@ -22,7 +22,7 @@ export function ArticleEditor({
   canAnnounce,
   onPublished,
 }: ArticleEditorProps): ReactElement {
-  const editor = useArticleEditor(orgId, initial, onPublished);
+  const editor = useArticleEditor(orgId, initial, onPublished, canAnnounce);
   return (
     <>
       <BentoCard className="md:col-span-6 lg:col-span-8">
@@ -69,7 +69,7 @@ export function ArticleEditor({
           ))}
         </div>
       </BentoCard>
-      <PublishPanel editor={editor} canAnnounce={canAnnounce} />
+      <PublishPanel editor={editor} orgId={orgId} canAnnounce={canAnnounce} />
     </>
   );
 }

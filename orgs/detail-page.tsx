@@ -15,6 +15,7 @@ import { OrgActivityList } from "./components/OrgActivityList.tsx";
 import { OrgContactCard } from "./components/OrgContactCard.tsx";
 import { OrgDetailHero } from "./components/OrgDetailHero.tsx";
 import { OrgGalleryCard } from "./components/OrgGalleryCard.tsx";
+import { OrgNewsCard } from "./components/OrgNewsCard.tsx";
 import { OrgTrustCard } from "./components/OrgTrustCard.tsx";
 
 export function OrgDetailPage(): ReactElement {
@@ -63,6 +64,7 @@ export function OrgDetailPage(): ReactElement {
       <OrgTrustCard org={detail} />
       <OrgAboutCard org={detail} />
       <OrgContactCard org={detail} />
+      <OrgNewsCard org={detail} />
       <OrgActivityList org={detail} />
       <OrgGalleryCard org={detail} />
     </div>

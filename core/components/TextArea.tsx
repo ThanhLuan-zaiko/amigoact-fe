@@ -4,6 +4,9 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string;
   error?: string;
   hint?: string;
+  // field-sizing: content — the field grows/shrinks with its text, with
+  // `rows` acting as the minimum height instead of a fixed frame.
+  autoGrow?: boolean;
 }
 
 export function TextArea({
@@ -13,6 +16,7 @@ export function TextArea({
   id,
   className = "",
   rows = 3,
+  autoGrow = false,
   ...rest
 }: TextAreaProps): ReactElement {
   const fieldId = id ?? `area-${label.length}-${rest.name ?? "text"}`;
@@ -34,6 +38,8 @@ export function TextArea({
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:outline-brand ${
+          autoGrow ? "field-sizing-content" : ""
+        } ${
           error
             ? "border-red-600 dark:border-red-400"
             : "border-zinc-300 dark:border-zinc-700"

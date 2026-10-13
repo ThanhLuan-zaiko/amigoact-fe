@@ -40,6 +40,20 @@ export const POST_STATUS_LABELS: Record<string, string> = {
   draft: "Nháp",
 };
 
+// Row badge for shelves/detail: a draft that stages edits for a live post
+// ("Nháp chờ đăng") and a post pulled back off the board ("Đã gỡ xuống")
+// both read differently from a fresh draft.
+export function postStatusLabel(post: {
+  status: string;
+  published_at: string | null;
+  revision_of: string | null;
+}): string {
+  if (post.status !== "draft") return POST_STATUS_LABELS[post.status] ?? "";
+  if (post.revision_of !== null) return "Nháp chờ đăng";
+  if (post.published_at !== null) return "Đã gỡ xuống";
+  return POST_STATUS_LABELS.draft;
+}
+
 export const BLOCK_TYPE_LABELS: Record<string, string> = {
   paragraph: "Đoạn văn",
   heading: "Tiêu đề phụ",
@@ -69,7 +83,7 @@ export function postEventToast(
     case "post.unpinned":
       return `${actor} vừa bỏ ghim một bài viết.`;
     case "post.unpublished":
-      return `${actor} vừa chuyển một bài viết về nháp.`;
+      return `${actor} vừa gỡ một bài viết khỏi bảng tin.`;
     case "post.restored":
       return `${actor} vừa khôi phục một bài viết.`;
     case "post.purged":

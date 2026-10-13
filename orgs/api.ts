@@ -66,6 +66,16 @@ export interface PublicOrgActivity {
   start_at: string | null;
 }
 
+export interface PublicOrgPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  cover_url: string | null;
+  author_name: string;
+  published_at: string | null;
+  comment_count: number;
+}
+
 export interface PublicOrgDetail {
   id: string;
   name: string;
@@ -90,6 +100,8 @@ export interface PublicOrgDetail {
   gallery: string[];
   activity_count: number;
   activities: PublicOrgActivity[];
+  announcement_count: number;
+  announcements: PublicOrgPost[];
   created_at: string;
 }
 
@@ -97,6 +109,27 @@ export async function fetchPublicOrg(
   slug: string,
 ): Promise<PublicOrgDetail> {
   return apiFetch<PublicOrgDetail>(`/orgs/${encodeURIComponent(slug)}`);
+}
+
+export interface PublicPostPage {
+  items: PublicOrgPost[];
+  total: number;
+}
+
+// Guest listing of every published announcement of one org (no auth).
+export async function listPublicOrgPosts(
+  slug: string,
+  params: { limit?: number; page?: number } = {},
+): Promise<PublicPostPage> {
+  const search = new URLSearchParams();
+  if (params.limit !== undefined) search.set("limit", String(params.limit));
+  if (params.page !== undefined && params.page > 1) {
+    search.set("page", String(params.page));
+  }
+  const query = search.toString();
+  return apiFetch<PublicPostPage>(
+    `/orgs/${encodeURIComponent(slug)}/announcements${query ? `?${query}` : ""}`,
+  );
 }
 
 export interface OrgMembership {

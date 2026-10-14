@@ -65,5 +65,5 @@ page.tsx / components/*.tsx
 
 - `docs/AUTH.md`: wizard đăng ký theo bước, validation `touched`, hai tầng tài khoản, thẻ phụ sticky.
 - `docs/BOARD.md`: bảng tin bài viết — tab đã đăng/nháp/thùng rác, block editor (chèn ảnh/video mọi vị trí), trang đọc, vòng đời xóa mềm/khôi phục/xóa cứng.
-- `docs/ORGS.md`: thư mục public trên `/` (`/orgs` redirect về `/`) + timeline thông báo `announcements:feed` + `/orgs/:slug` (discovery board, trust checklist, realtime `orgs:directory`), CRUD tổ chức (xóa mềm/khôi phục/xóa cứng), thùng rác, dropzone ảnh/video, upload `FormData`.
+- `docs/ORGS.md`: trang chủ 2 tab `Bài đăng`/`Tổ chức` (`/orgs` redirect về `/?tab=orgs`) + timeline thông báo `announcements:feed` + `/orgs/:slug` (discovery board, trust checklist, realtime `orgs:directory`), CRUD tổ chức (xóa mềm/khôi phục/xóa cứng), thùng rác, dropzone ảnh/video, upload `FormData`.
 - `docs/REALTIME.md`: singleton socket `core/realtime.ts`, ticket một lần, socket ẩn danh cho kênh public, resubscribe + backoff.

@@ -1,13 +1,7 @@
 import { useEffect, useRef, type ReactElement } from "react";
-import {
-  FiCalendar,
-  FiChevronRight,
-  FiFileText,
-  FiMessageSquare,
-  FiUser,
-} from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { FiMessageSquare } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
+import { Avatar } from "../../core/components/Avatar.tsx";
 import { Section } from "../../core/components/Section.tsx";
 import {
   EmptyState,
@@ -21,69 +15,58 @@ import {
   useAnnouncementsRealtime,
 } from "../hooks.ts";
 import { toVietnameseOrgsMessage } from "../messages.tsx";
-import { OrgLogo } from "./OrgLogo.tsx";
+import { OrgFeedRow } from "./OrgFeedRow.tsx";
 
 function TimelineRow({ item }: { item: PublicTimelineItem }): ReactElement {
   const published =
     item.published_at === null
-      ? null
+      ? undefined
       : new Date(item.published_at).toLocaleDateString("vi-VN");
+  const avatar =
+    item.author_avatar_url === null ? (
+      <Avatar name={item.author_name} />
+    ) : (
+      <img
+        src={orgMediaUrl(item.author_avatar_url)}
+        alt=""
+        loading="lazy"
+        className="h-10 w-10 shrink-0 rounded-full border border-zinc-200 bg-white object-cover dark:border-zinc-800 dark:bg-zinc-900"
+      />
+    );
   return (
-    <li>
-      <Link
-        to={`/orgs/${item.org.slug}/posts/${item.id}`}
-        className="group flex gap-3 px-4 py-3 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
-      >
-        <OrgLogo org={item.org} className="h-10 w-10 shrink-0" />
-        <div className="min-w-0 flex-1">
-          <p className="flex flex-wrap items-baseline gap-x-2 text-sm">
-            <span className="font-bold text-zinc-900 group-hover:underline dark:text-zinc-100">
-              {item.org.name}
-            </span>
-            {published !== null && (
-              <span className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                <FiCalendar className="h-3 w-3" aria-hidden="true" />
-                {published}
-              </span>
-            )}
-          </p>
-          <div className="mt-1 flex items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[15px] font-medium text-zinc-900 dark:text-zinc-100">
-                {item.title}
-              </p>
-              {item.excerpt !== "" && (
-                <p className="mt-0.5 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
-                  {item.excerpt}
-                </p>
-              )}
-            </div>
-            {item.cover_url !== null && (
-              <img
-                src={orgMediaUrl(item.cover_url)}
-                alt=""
-                loading="lazy"
-                className="h-14 w-20 shrink-0 rounded-lg border border-zinc-200 object-cover dark:border-zinc-800"
-              />
-            )}
-          </div>
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-            <span className="flex items-center gap-1">
-              <FiUser className="h-3.5 w-3.5" aria-hidden="true" />
-              {item.author_name}
-            </span>
-            <span className="flex items-center gap-1">
-              <FiMessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
-              {`${item.comment_count} bình luận`}
-            </span>
-          </p>
-        </div>
-        <FiChevronRight
-          className="mt-1 h-4 w-4 shrink-0 self-center text-zinc-400 dark:text-zinc-500"
-          aria-hidden="true"
+    <OrgFeedRow
+      avatar={avatar}
+      title={item.author_name}
+      meta={
+        published === undefined
+          ? `đăng trong ${item.org.name}`
+          : `đăng trong ${item.org.name} · ${published}`
+      }
+      href={`/orgs/${item.org.slug}/posts/${item.id}`}
+      footer={
+        <span className="flex items-center gap-1">
+          <FiMessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
+          {`${item.comment_count} bình luận`}
+        </span>
+      }
+    >
+      <p className="mt-0.5 text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+        {item.title}
+      </p>
+      {item.excerpt !== "" && (
+        <p className="line-clamp-2 text-[15px] text-zinc-600 dark:text-zinc-400">
+          {item.excerpt}
+        </p>
+      )}
+      {item.cover_url !== null && (
+        <img
+          src={orgMediaUrl(item.cover_url)}
+          alt=""
+          loading="lazy"
+          className="mt-2 aspect-video w-full rounded-xl border border-zinc-200 object-cover dark:border-zinc-800"
         />
-      </Link>
-    </li>
+      )}
+    </OrgFeedRow>
   );
 }
 
@@ -130,21 +113,7 @@ export function AnnouncementTimeline(): ReactElement {
   }, [fetchNextPage, hasNextPage, pageCount]);
 
   return (
-    <section aria-busy={feed.isPending}>
-      <Section>
-        <div data-rise>
-          <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            <FiFileText
-              className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
-              aria-hidden="true"
-            />
-            Bảng tin từ các tổ chức
-          </h2>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Thông báo mới nhất từ mọi tổ chức trên AmigoACT.
-          </p>
-        </div>
-      </Section>
+    <section aria-busy={feed.isPending} aria-label="Bài đăng từ các tổ chức">
       {feed.isPending && (
         <Section>
           <LoadingState label="Đang tải bảng tin…" />

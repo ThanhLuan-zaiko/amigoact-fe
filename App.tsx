@@ -50,11 +50,13 @@ function LegacyDashboardRedirect(): ReactElement {
   return <Navigate to={`/manage/${splat}${search}${hash}`} replace />;
 }
 
-// The org directory moved to the home column; keep /orgs?q&kind&sort&page
-// deep links working by forwarding the query string.
+// The org directory is the "Tổ chức" tab of the home column; keep legacy
+// /orgs?q&kind&sort&page deep links working by forwarding the query string.
 function OrgsDirectoryRedirect(): ReactElement {
   const { search } = useLocation();
-  return <Navigate to={`/${search}`} replace />;
+  const params = new URLSearchParams(search);
+  params.set("tab", "orgs");
+  return <Navigate to={`/?${params.toString()}`} replace />;
 }
 
 function NotFoundPage(): ReactElement {

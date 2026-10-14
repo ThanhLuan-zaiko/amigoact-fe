@@ -17,6 +17,8 @@ export interface PublicOrg {
   verified_at: string | null;
   logo_url: string | null;
   cover_url: string | null;
+  owner_name: string | null;
+  owner_avatar_url: string | null;
   created_at: string;
 }
 
@@ -145,6 +147,7 @@ export interface PublicTimelineItem {
   excerpt: string;
   cover_url: string | null;
   author_name: string;
+  author_avatar_url: string | null;
   published_at: string | null;
   comment_count: number;
   org: PublicTimelineOrg;

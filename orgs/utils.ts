@@ -1,24 +1,5 @@
 import type { PublicOrg, PublicOrgDetail } from "./api.ts";
 
-export interface DirectorySplit {
-  spotlight: PublicOrg | null;
-  rail: PublicOrg[];
-  rest: PublicOrg[];
-}
-
-// One page splits into a featured tile, a compact "newest" rail and the
-// remaining mosaic cards so the grid keeps an asymmetric rhythm.
-export function splitDirectory(
-  items: PublicOrg[],
-  railSize = 4,
-): DirectorySplit {
-  return {
-    spotlight: items[0] ?? null,
-    rail: items.slice(1, 1 + railSize),
-    rest: items.slice(1 + railSize),
-  };
-}
-
 export function orgLocation(org: PublicOrg): string | null {
   return org.city ?? org.country;
 }

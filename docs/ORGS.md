@@ -7,23 +7,38 @@ Thư mục guest (không cần đăng nhập), đọc `GET /orgs` và
 (`api.ts`, `keys.ts`, `hooks.ts`, `messages.tsx`, `utils.ts`,
 `components/`), không lẫn với `dashboard/` quản trị.
 
-- Thư mục "discovery board" kiểu feed render ngay trên trang chủ `/` qua
-  `orgs/components/OrgDirectory.tsx` (bên dưới `DiscoverySection` của home):
-  section hero (search debounce + chip `kind` + chip `sort`), section thống
-  kê theo `counts`, section nổi bật (org đầu kết quả theo sort), rail "Vừa
-  tham gia", mosaic card, section phân trang. Filter/pagination nằm trên URL
-  (`/?q&kind&sort&page`) nên deep-link được; `splitDirectory` trong
-  `utils.ts` chia items thành spotlight/rail/mosaic. Route `/orgs` cũ
-  redirect về `/` và forward nguyên query string nên link/search cũ không
-  gãy (`OrgsDirectoryRedirect` trong `App.tsx`).
-- Timeline toàn cục trên `/` qua `orgs/components/AnnouncementTimeline.tsx`
-  (đứng trước `DiscoverySection`): đọc `GET /announcements?limit&cursor`
-  (guest, cursor = `post_id` cuối trang) render từng teaser dạng dòng feed —
-  logo + tên org, ngày đăng, tiêu đề, excerpt, cover nhỏ, tác giả, số bình
-  luận — mỗi dòng mở `/orgs/:slug/posts/:postId`. Sentinel `IntersectionObserver`
+Cột trang chủ `/` chia hai tab kiểu X qua `home/components/HomeTabs.tsx`
+(sticky ngay dưới `CenterHeader`, mỗi tab một URL riêng): `Bài đăng` tại
+`/` và `Tổ chức` tại `/?tab=orgs`.
+
+- Tab `Bài đăng` (`/`): hero khách + hàng lời mời tổ chức (khi có) rồi
+  timeline toàn cục qua `orgs/components/AnnouncementTimeline.tsx`: đọc
+  `GET /announcements?limit&cursor` (guest, cursor = `post_id` cuối trang)
+  render từng teaser dạng dòng feed — avatar + tên tác giả (`author_name`,
+  `author_avatar_url`), meta `đăng trong {tên org} · ngày`, tiêu đề,
+  excerpt, cover 16:9, số bình luận — mỗi dòng mở
+  `/orgs/:slug/posts/:postId`. Sentinel `IntersectionObserver`
   (`rootMargin` 600px) tự gọi `fetchNextPage` của `useAnnouncementFeed`
   (infinite query, trang 12 item) khi user lướt gần cuối — cuộn vô tận
   không nút, kèm spinner nhỏ khi đang tải và dòng kết feed khi hết dữ liệu.
+- Tab `Tổ chức` (`/?tab=orgs`): thư mục public qua
+  `orgs/components/OrgDirectory.tsx` — danh sách phẳng, mỗi org một dòng
+  `OrgFeedRow` định danh theo chủ sở hữu (`owner_name`/`owner_avatar_url`:
+  avatar chủ sở hữu, tên đậm, meta `sở hữu {tên org} ✓`, mô tả, meta
+  loại/thành viên/địa điểm/chính sách tham gia; org thiếu owner brief vẫn
+  hiện logo + tên + `@slug` như cũ), kèm section phân trang.
+  Ô `Tìm tổ chức` ở rail phải submit `/?tab=orgs&q=`; khi có `q` tab hiện
+  một dòng `Kết quả cho "…"` kèm nút xóa. Phân trang nằm trên URL
+  (`/?tab=orgs&q&page`) nên deep-link được. Route `/orgs` cũ redirect về
+  `/?tab=orgs` và forward nguyên query string nên link/search cũ không gãy
+  (`OrgsDirectoryRedirect` trong `App.tsx`); URL `/` trần kèm
+  `q/kind/sort/page` cũng tự mở tab `Tổ chức`.
+- `orgs/components/OrgFeedRow.tsx` là khung dòng kiểu X dùng chung cho cả
+  hai tab: `<li>` + link full-bleed, avatar tròn 40px (`avatar` prop — bài
+  đăng: ảnh/`Avatar` chữ cái của tác giả; tổ chức: `OrgLogo`), header
+  `title` đậm + `badge` + meta muted, body tùy biến (bài đăng: tiêu đề +
+  excerpt + cover 16:9; tổ chức: mô tả + pill meta), footer muted — đổi một
+  chỗ là cả hai tab đổi theo, bảo đảm bố cục đồng nhất.
 - `/orgs/:slug` render 6 section: hero (cover + logo + nút `Tham gia`),
   `Đánh giá tin cậy`, giới thiệu, liên hệ & pháp lý, hoạt động đã tổ
   chức, thư viện ảnh. `OrgTrustCard` dựng checklist 6 tiêu chí từ tín

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
 import { useSession } from "../../auth/hooks.ts";
 import {
@@ -17,17 +17,31 @@ const FOOTER_LINK =
   "rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 " +
   "focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400";
 
-// Search pill: the home directory owns server-side org search (GET /orgs?q=).
+// Search pill: the home column's "Tổ chức" tab owns server-side org search
+// (GET /orgs?q=), so a submit opens that tab with the query attached. The
+// box mirrors the active ?q= like X keeps the searched term visible -
+// clearing the tab's "Kết quả" strip empties it too.
 function SearchBox(): ReactElement {
   const navigate = useNavigate();
-  const [term, setTerm] = useState("");
+  const [searchParams] = useSearchParams();
+  const active = searchParams.get("q") ?? "";
+  const [term, setTerm] = useState(active);
+  const [prevActive, setPrevActive] = useState(active);
+  if (prevActive !== active) {
+    setPrevActive(active);
+    setTerm(active);
+  }
   return (
     <form
       role="search"
       onSubmit={(event) => {
         event.preventDefault();
         const query = term.trim();
-        navigate(query ? `/?q=${encodeURIComponent(query)}` : "/");
+        navigate(
+          query
+            ? `/?tab=orgs&q=${encodeURIComponent(query)}`
+            : "/?tab=orgs",
+        );
       }}
     >
       <TextField

@@ -1,14 +1,26 @@
 import type { ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FiChevronRight, FiLogIn, FiMail, FiUserPlus } from "react-icons/fi";
 import { useSession } from "../auth/hooks.ts";
 import { Button } from "../core/components/Button.tsx";
-import { ErrorState } from "../core/components/Feedback.tsx";
 import { Section } from "../core/components/Section.tsx";
-import { DiscoverySections } from "../activities/components/DiscoverySections.tsx";
-import { useDiscovery } from "../activities/hooks.ts";
 import { useMyMemberships } from "../dashboard/members-hooks.ts";
 import { OrgDirectory } from "../orgs/components/OrgDirectory.tsx";
 import { AnnouncementTimeline } from "../orgs/components/AnnouncementTimeline.tsx";
+import { HomeTabs, type HomeTab } from "./components/HomeTabs.tsx";
+
+// Params that belong to the orgs tab, including retired filters: a legacy
+// /?q&kind&sort&page URL still opens "Tổ chức" instead of dying on the feed.
+const ORG_PARAMS = ["q", "kind", "sort", "page"];
+
+function resolveTab(params: URLSearchParams): HomeTab {
+  const tab = params.get("tab");
+  if (tab === "orgs") return "orgs";
+  if (tab === null && ORG_PARAMS.some((key) => params.has(key))) {
+    return "orgs";
+  }
+  return "posts";
+}
 
 function GuestHero(): ReactElement {
   return (
@@ -73,40 +85,23 @@ function InviteSection(): ReactElement | null {
   );
 }
 
-function DiscoverySection(): ReactElement | null {
-  const discovery = useDiscovery();
-  const data = discovery.data;
-  const hasItems =
-    data !== undefined &&
-    (data.featured.length > 0 ||
-      data.upcoming.length > 0 ||
-      data.categories.some((c) => c.items.length > 0));
-  if (discovery.isSuccess && !hasItems) return null;
-  return (
-    <Section>
-      <h2 className="sr-only">Khám phá hoạt động</h2>
-      {discovery.isError ? (
-        <ErrorState
-          title="Không tải được gợi ý"
-          message="Vui lòng thử lại sau ít phút."
-        />
-      ) : (
-        <DiscoverySections />
-      )}
-    </Section>
-  );
-}
-
 export function HomePage(): ReactElement {
   const session = useSession();
+  const [searchParams] = useSearchParams();
+  const tab = resolveTab(searchParams);
   return (
     <>
       <h1 className="sr-only">Trang chủ</h1>
-      {!session.isPending && session.data === null && <GuestHero />}
-      {session.data != null && <InviteSection />}
-      <AnnouncementTimeline />
-      <DiscoverySection />
-      <OrgDirectory />
+      <HomeTabs active={tab} />
+      {tab === "orgs" ? (
+        <OrgDirectory />
+      ) : (
+        <>
+          {!session.isPending && session.data === null && <GuestHero />}
+          {session.data != null && <InviteSection />}
+          <AnnouncementTimeline />
+        </>
+      )}
     </>
   );
 }

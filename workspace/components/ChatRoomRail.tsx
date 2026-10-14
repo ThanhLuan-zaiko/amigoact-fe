@@ -50,8 +50,7 @@ function RoomButton({
       icon={icon}
       className={`${ROOM_BASE} ${
         active
-          ? "bg-brand/15 text-zinc-900 hover:bg-brand/20 " +
-            "dark:bg-brand/20 dark:text-zinc-100 dark:hover:bg-brand/25"
+          ? "bg-zinc-200 text-zinc-900 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
           : ""
       }`}
     >

@@ -186,7 +186,7 @@ export function ActivityForm({
             type="checkbox"
             checked={isRemote}
             onChange={(e) => setIsRemote(e.target.checked)}
-            className="h-4 w-4 accent-brand"
+            className="h-4 w-4 accent-zinc-900 dark:accent-zinc-100"
           />
           Hoạt động trực tuyến
         </label>

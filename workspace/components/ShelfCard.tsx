@@ -72,9 +72,9 @@ export function ShelfCard({
   const head = TITLES[shelf];
   const icon =
     shelf === "trash" ? (
-      <FiTrash2 className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+      <FiTrash2 className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
     ) : (
-      <FiEdit3 className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+      <FiEdit3 className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
     );
 
   return (

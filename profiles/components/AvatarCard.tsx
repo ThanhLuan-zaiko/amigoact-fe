@@ -1,12 +1,15 @@
 import type { ReactElement } from "react";
 import { useRef, useState } from "react";
 import { FiCamera, FiUser } from "react-icons/fi";
-import { ApiError } from "../../core/api.ts";
 import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { apiBaseUrl } from "../../core/api.ts";
 import { useUploadAvatar } from "../hooks.ts";
-import { profileMessage } from "../messages.tsx";
+import {
+  PROFILE_TOAST,
+  toastKnownError,
+  toastProfileError,
+} from "../messages.tsx";
 
 export function AvatarCard({
   avatarUrl,
@@ -16,7 +19,7 @@ export function AvatarCard({
   fullName: string;
 }): ReactElement {
   const inputRef = useRef<HTMLInputElement>(null);
-  const upload = useUploadAvatar();
+  const upload = useUploadAvatar(PROFILE_TOAST.avatarSaved);
   const [error, setError] = useState<string | null>(null);
   const src = avatarUrl ? `${apiBaseUrl()}${avatarUrl}` : null;
 
@@ -25,11 +28,12 @@ export function AvatarCard({
   const onFile = (file: File | undefined): void => {
     if (!file) return;
     setError(null);
+    if (file.type !== "" && !file.type.startsWith("image/")) {
+      setError(toastKnownError("UNSUPPORTED_MEDIA"));
+      return;
+    }
     upload.mutate(file, {
-      onError: (err) =>
-        setError(
-          profileMessage(err instanceof ApiError ? err.code : "REQUEST_FAILED"),
-        ),
+      onError: (err) => setError(toastProfileError(err)),
     });
   };
 

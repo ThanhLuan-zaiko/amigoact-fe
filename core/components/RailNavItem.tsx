@@ -10,7 +10,7 @@ export function RailBadge({ count }: { count: number }): ReactElement | null {
   return (
     <span
       aria-hidden="true"
-      className="absolute -right-2 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-white bg-brand px-1 text-[11px] font-bold leading-none text-zinc-950 dark:border-zinc-950 dark:bg-brand dark:text-zinc-950"
+      className="absolute -right-2 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border border-white bg-zinc-900 px-1 text-[11px] font-bold leading-none text-white dark:border-zinc-950 dark:bg-zinc-100 dark:text-zinc-950"
     >
       {count > 99 ? "99+" : count}
     </span>

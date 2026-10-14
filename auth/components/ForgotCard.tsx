@@ -42,7 +42,7 @@ export function ForgotCard(): ReactElement {
     <Section className=" @2xl:col-start-2 ">
       <div className="flex items-center gap-2">
         <FiKey
-          className="h-5 w-5 text-zinc-900 dark:text-brand"
+          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
@@ -64,7 +64,7 @@ export function ForgotCard(): ReactElement {
       {sent && (
         <p
           role="status"
-          className="mt-4 rounded-xl border border-brand/40 bg-brand/10 p-3 text-sm text-zinc-900 dark:border-brand/30 dark:bg-brand/10 dark:text-zinc-100"
+          className="mt-4 rounded-xl border border-zinc-300 bg-zinc-100 p-3 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         >
           Yêu cầu đã được ghi nhận.{" "}
           <Link to="/reset-password" className="font-semibold hover:underline">
@@ -95,7 +95,7 @@ export function ForgotCard(): ReactElement {
       </form>
       <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
         Nhớ mật khẩu rồi?{" "}
-        <Link to="/login" className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand">
+        <Link to="/login" className="text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 hover:bg-zinc-100 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900">
           Đăng nhập
         </Link>
       </p>

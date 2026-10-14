@@ -22,7 +22,7 @@ export function RailCard({
       {moreTo !== undefined && (
         <Link
           to={moreTo}
-          className="block px-4 py-4 text-[15px] text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand dark:text-brand dark:hover:bg-zinc-900 dark:focus-visible:outline-brand"
+          className="block px-4 py-4 text-[15px] text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
         >
           Xem thêm
         </Link>
@@ -33,5 +33,5 @@ export function RailCard({
 
 export const RAIL_ROW =
   "block px-4 py-3 transition-colors hover:bg-zinc-50 focus-visible:outline-2 " +
-  "focus-visible:-outline-offset-2 focus-visible:outline-brand dark:hover:bg-zinc-900 " +
-  "dark:focus-visible:outline-brand";
+  "focus-visible:-outline-offset-2 focus-visible:outline-zinc-500 dark:hover:bg-zinc-900 " +
+  "dark:focus-visible:outline-zinc-400";

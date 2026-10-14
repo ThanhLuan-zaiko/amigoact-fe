@@ -51,12 +51,12 @@ export function OrgTrustCard({ org }: OrgTrustCardProps): ReactElement {
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
             <FiShield
-              className="h-5 w-5 text-zinc-900 dark:text-brand"
+              className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
               aria-hidden="true"
             />
             Đánh giá độ tin cậy
           </h2>
-          <span className="rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-xs font-semibold text-zinc-700 dark:border-brand/30 dark:text-brand">
+          <span className="rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
             {`${score}/${checks.length}`}
           </span>
         </div>

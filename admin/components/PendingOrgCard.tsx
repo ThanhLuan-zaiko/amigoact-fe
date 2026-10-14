@@ -137,7 +137,7 @@ export function PendingOrgCard(): ReactElement {
     <Section>
       <div className="flex items-center gap-2">
         <FiCheckSquare
-          className="h-5 w-5 text-zinc-900 dark:text-brand"
+          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
         <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">

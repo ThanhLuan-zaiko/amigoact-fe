@@ -17,7 +17,7 @@ export function OrgActivityList({ org }: OrgActivityListProps): ReactElement {
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
             <FiZap
-              className="h-5 w-5 text-zinc-900 dark:text-brand"
+              className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
               aria-hidden="true"
             />
             Hoạt động đã tổ chức
@@ -32,7 +32,7 @@ export function OrgActivityList({ org }: OrgActivityListProps): ReactElement {
               <li key={activity.id}>
                 <Link
                   to={`/events/${org.id}/${activity.slug}`}
-                  className="group flex items-center gap-3 rounded-lg py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand"
+                  className="group flex items-center gap-3 rounded-lg py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-zinc-900 group-hover:underline dark:text-zinc-100">

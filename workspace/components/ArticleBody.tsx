@@ -36,7 +36,7 @@ function BlockView({
       );
     case "quote":
       return (
-        <figure className="border-l-4 border-brand pl-4">
+        <figure className="border-l-4 border-zinc-300 pl-4 dark:border-zinc-600">
           <blockquote className="text-base break-words whitespace-pre-wrap text-zinc-700 italic sm:text-lg dark:text-zinc-300">
             {block.text}
           </blockquote>

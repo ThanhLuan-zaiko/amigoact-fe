@@ -129,7 +129,7 @@ function NewsCard({
   post: PublicOrgPost;
 }): ReactElement {
   return (
-    <Section className="relative transition-colors hover:border-brand/40 dark:hover:border-brand/30 ">
+    <Section className="relative transition-colors hover:border-zinc-400 dark:hover:border-zinc-600 ">
       <div data-rise className="flex h-full flex-col">
         {post.cover_url !== null ? (
           <img
@@ -139,7 +139,7 @@ function NewsCard({
             className="aspect-video w-full rounded-xl border border-zinc-200 object-cover dark:border-zinc-800"
           />
         ) : (
-          <div className="flex aspect-video w-full items-center justify-center rounded-xl border border-brand/40 bg-brand/10 text-zinc-400 dark:border-brand/30 dark:text-zinc-500">
+          <div className="flex aspect-video w-full items-center justify-center rounded-xl border border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:text-zinc-500">
             <FiImage className="h-5 w-5" aria-hidden="true" />
           </div>
         )}
@@ -171,7 +171,7 @@ function NewsCard({
       <Link
         to={`/orgs/${slug}/posts/${post.id}`}
         aria-label={post.title}
-        className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand"
+        className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400"
       />
     </Section>
   );

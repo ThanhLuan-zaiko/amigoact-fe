@@ -146,7 +146,7 @@ export function SelectField({
           aria-required={required || undefined}
           onClick={() => (open ? setOpen(false) : openList(true))}
           onKeyDown={onKeyDown}
-          className={`flex min-h-[44px] w-full items-center justify-between gap-2 rounded-lg border bg-white px-3 py-2 text-left text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-60 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:outline-brand ${borderClass}`}
+          className={`flex min-h-[44px] w-full items-center justify-between gap-2 rounded-lg border bg-white px-3 py-2 text-left text-sm text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:opacity-60 dark:bg-zinc-950 dark:text-zinc-100 dark:focus-visible:outline-zinc-400 ${borderClass}`}
         >
           <span className={`min-w-0 flex-1 truncate${selected ? "" : " text-zinc-400"}`}>
             {selected?.label ?? placeholder}
@@ -179,7 +179,7 @@ export function SelectField({
                 >
                   <span className="min-w-0 flex-1 truncate">{option.label}</span>
                   {isSelected && <FiCheck aria-hidden="true"
-                    className="h-4 w-4 shrink-0 text-zinc-900 dark:text-brand" />}
+                    className="h-4 w-4 shrink-0 text-zinc-900 dark:text-zinc-100" />}
                 </li>
               );
             })}

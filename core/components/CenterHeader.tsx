@@ -9,8 +9,8 @@ import { Button } from "./Button.tsx";
 const ROUND_BUTTON =
   "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-900 " +
   "transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-brand dark:text-zinc-100 dark:hover:bg-zinc-900 " +
-  "dark:focus-visible:outline-brand";
+  "focus-visible:outline-zinc-500 dark:text-zinc-100 dark:hover:bg-zinc-900 " +
+  "dark:focus-visible:outline-zinc-400";
 
 // Sticky, blurred column header (X): section title, a back arrow on detail
 // pages, and on phones the avatar that opens the navigation drawer.

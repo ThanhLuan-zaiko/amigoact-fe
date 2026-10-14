@@ -6,7 +6,12 @@ import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { LoadingState } from "../../core/components/Feedback.tsx";
 import { useSetSkills, useSkillsCatalog } from "../hooks.ts";
-import { LEVEL_LABELS, profileMessage } from "../messages.tsx";
+import {
+  LEVEL_LABELS,
+  PROFILE_TOAST,
+  profileMessage,
+  toastProfileError,
+} from "../messages.tsx";
 import type { VolunteerProfile } from "../api.ts";
 
 interface Pick {
@@ -19,17 +24,15 @@ export function SkillPickerCard({
   profile: VolunteerProfile;
 }): ReactElement {
   const catalog = useSkillsCatalog();
-  const save = useSetSkills();
+  const save = useSetSkills(PROFILE_TOAST.skillsSaved);
   const [picks, setPicks] = useState<Record<string, Pick>>(() =>
     Object.fromEntries(
       profile.skills.map((edge) => [edge.id, { level: edge.level }]),
     ),
   );
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
 
   const toggle = (skillId: string): void => {
-    setSaved(false);
     setPicks((prev) => {
       const next = { ...prev };
       if (next[skillId]) delete next[skillId];
@@ -39,10 +42,10 @@ export function SkillPickerCard({
   };
 
   const setLevel = (skillId: string, level: number): void => {
-    setSaved(false);
-    setPicks((prev) =>
-      prev[skillId] ? { ...prev, [skillId]: { level } } : prev,
-    );
+    setPicks((prev) => {
+      if (!prev[skillId]) return prev;
+      return { ...prev, [skillId]: { level } };
+    });
   };
 
   const onSave = (): void => {
@@ -53,13 +56,7 @@ export function SkillPickerCard({
         level: pick.level,
       })),
       {
-        onSuccess: () => setSaved(true),
-        onError: (err) =>
-          setError(
-            profileMessage(
-              err instanceof ApiError ? err.code : "REQUEST_FAILED",
-            ),
-          ),
+        onError: (err) => setError(toastProfileError(err)),
       },
     );
   };
@@ -67,12 +64,12 @@ export function SkillPickerCard({
   const CHIP =
     "inline-flex min-h-[36px] items-center gap-1 rounded-full border px-3 " +
     "text-xs font-medium transition-colors focus-visible:outline-2 " +
-    "focus-visible:outline-offset-2 focus-visible:outline-brand";
+    "focus-visible:outline-offset-2 focus-visible:outline-zinc-500";
 
   return (
     <Section>
       <div className="flex items-center gap-2">
-        <FiAward className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+        <FiAward className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Kỹ năng của bạn
         </h2>
@@ -82,6 +79,14 @@ export function SkillPickerCard({
       </p>
       {catalog.isPending ? (
         <LoadingState label="Đang tải danh mục kỹ năng…" />
+      ) : catalog.isError ? (
+        <p role="alert" className="mt-3 text-xs text-red-600 dark:text-red-400">
+          {profileMessage(
+            catalog.error instanceof ApiError
+              ? catalog.error.code
+              : "REQUEST_FAILED",
+          )}
+        </p>
       ) : (
         <ul className="mt-4 grid items-start gap-2 sm:grid-cols-2">
           {(catalog.data ?? []).map((skill) => {
@@ -97,7 +102,7 @@ export function SkillPickerCard({
                   onClick={() => toggle(skill.id)}
                   className={
                     picked
-                      ? `${CHIP} border-brand bg-brand text-zinc-950`
+                      ? `${CHIP} border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950`
                       : `${CHIP} border-zinc-300 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900`
                   }
                 >
@@ -112,9 +117,9 @@ export function SkillPickerCard({
                         aria-label={`${skill.name} mức ${level} — ${LEVEL_LABELS[level]}`}
                         aria-pressed={picked.level === level}
                         onClick={() => setLevel(skill.id, level)}
-                        className={`h-8 w-8 rounded-full border text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                        className={`h-8 w-8 rounded-full border text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 ${
                           level <= picked.level
-                            ? "border-brand bg-brand text-zinc-950"
+                            ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
                             : "border-zinc-300 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
                         }`}
                       >
@@ -133,15 +138,10 @@ export function SkillPickerCard({
           {error}
         </p>
       )}
-      {saved && (
-        <p className="mt-3 text-xs text-emerald-600 dark:text-emerald-400">
-          Đã lưu kỹ năng.
-        </p>
-      )}
       <div className="mt-4">
         <Button
           variant="primary"
-          disabled={save.isPending}
+          disabled={save.isPending || catalog.isPending || catalog.isError}
           onClick={onSave}
           icon={<FiSave className="h-4 w-4" aria-hidden="true" />}
         >

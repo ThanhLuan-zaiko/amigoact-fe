@@ -21,7 +21,7 @@ export function LeaderboardPage(): ReactElement {
       <Section>
         <div data-rise className="flex items-center gap-2">
           <FiTrendingUp
-            className="h-5 w-5 text-zinc-900 dark:text-brand"
+            className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
             aria-hidden="true"
           />
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -68,7 +68,7 @@ export function LeaderboardPage(): ReactElement {
                 key={row.student_id}
                 className={`flex items-center justify-between gap-3 rounded-xl border p-3 ${
                   row.rank <= 3
-                    ? "border-brand/40 bg-brand/10 dark:border-brand/30"
+                    ? "border-zinc-300 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900"
                     : "border-zinc-200 dark:border-zinc-800"
                 }`}
               >
@@ -76,7 +76,7 @@ export function LeaderboardPage(): ReactElement {
                   <span
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
                       row.rank <= 3
-                        ? "bg-brand text-white"
+                        ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950"
                         : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                     }`}
                   >
@@ -92,7 +92,7 @@ export function LeaderboardPage(): ReactElement {
                   </div>
                 </div>
                 <p className="flex items-center gap-1 font-semibold text-zinc-900 dark:text-zinc-100">
-                  <FiAward className="h-4 w-4 text-brand" aria-hidden="true" />
+                  <FiAward className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />
                   {row.total_hours} giờ
                 </p>
               </li>

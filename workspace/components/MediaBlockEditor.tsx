@@ -49,7 +49,7 @@ export function MediaBlockEditor({
           className="flex items-center gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
         >
           <FiLoader
-            className="h-4 w-4 animate-spin text-zinc-500 dark:text-brand"
+            className="h-4 w-4 animate-spin text-zinc-500 dark:text-zinc-400"
             aria-hidden="true"
           />
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -79,7 +79,7 @@ export function MediaBlockEditor({
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="flex min-h-[96px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-300 text-zinc-500 hover:border-brand hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-brand dark:hover:text-zinc-100 dark:focus-visible:outline-brand"
+          className="flex min-h-[96px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-400"
         >
           <FiImage className="h-5 w-5" aria-hidden="true" />
           <span className="text-sm">Chọn {label.toLowerCase()} để chèn</span>

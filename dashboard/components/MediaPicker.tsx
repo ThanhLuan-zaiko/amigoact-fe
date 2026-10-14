@@ -131,9 +131,9 @@ export function MediaPicker({ items, disabled, allowRoles = true, hint, onAdd, o
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
         aria-label="Chọn ảnh hoặc video"
-        className={`flex min-h-[88px] flex-col items-center justify-center gap-1 rounded-xl border border-dashed p-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:outline-brand ${
+        className={`flex min-h-[88px] flex-col items-center justify-center gap-1 rounded-xl border border-dashed p-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:outline-zinc-400 ${
           dragging
-            ? "border-brand bg-brand/10 text-zinc-900 dark:border-brand dark:bg-brand/10 dark:text-zinc-100"
+            ? "border-zinc-900 bg-zinc-100 text-zinc-900 dark:border-zinc-100 dark:bg-zinc-900 dark:text-zinc-100"
             : "border-zinc-300 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400"
         }`}
       >

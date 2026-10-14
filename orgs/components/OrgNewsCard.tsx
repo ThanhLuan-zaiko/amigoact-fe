@@ -19,7 +19,7 @@ export function OrgNewsCard({ org }: OrgNewsCardProps): ReactElement {
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
             <FiFileText
-              className="h-5 w-5 text-zinc-900 dark:text-brand"
+              className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
               aria-hidden="true"
             />
             Tin tức từ tổ chức
@@ -31,7 +31,7 @@ export function OrgNewsCard({ org }: OrgNewsCardProps): ReactElement {
             {org.announcement_count > org.announcements.length && (
               <Link
                 to={`/orgs/${org.slug}/posts`}
-                className="text-xs font-medium text-zinc-600 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-zinc-300 dark:focus-visible:outline-brand"
+                className="text-xs font-medium text-zinc-600 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-300 dark:focus-visible:outline-zinc-400"
               >
                 Xem tất cả
               </Link>
@@ -44,7 +44,7 @@ export function OrgNewsCard({ org }: OrgNewsCardProps): ReactElement {
               <li key={post.id}>
                 <Link
                   to={`/orgs/${org.slug}/posts/${post.id}`}
-                  className="group flex items-center gap-3 rounded-lg py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand"
+                  className="group flex items-center gap-3 rounded-lg py-2.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400"
                 >
                   {post.cover_url !== null && (
                     <img

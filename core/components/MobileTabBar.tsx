@@ -31,7 +31,7 @@ export function MobileTabBar(): ReactElement {
             to={to}
             aria-label={count > 0 ? `${label} (${count} mới)` : label}
             aria-current={isActive ? "page" : undefined}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-zinc-900 transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-zinc-100 dark:hover:bg-zinc-900 dark:focus-visible:outline-brand"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-zinc-900 transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-100 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
           >
             <span className="relative inline-flex">
               <Icon

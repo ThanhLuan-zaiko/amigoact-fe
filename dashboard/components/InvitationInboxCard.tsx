@@ -53,7 +53,7 @@ export function InvitationInboxCard(): ReactElement | null {
   return (
     <Section>
       <div data-rise className="flex items-center gap-2">
-        <FiMail className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+        <FiMail className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Lời mời của tôi
         </h3>
@@ -76,7 +76,7 @@ export function InvitationInboxCard(): ReactElement | null {
         {noteCode && (
           <p
             role="status"
-            className="mb-3 flex items-center gap-2 rounded-xl border border-brand/40 bg-brand/10 p-3 text-sm text-zinc-900 dark:border-brand/30 dark:bg-brand/10 dark:text-zinc-100"
+            className="mb-3 flex items-center gap-2 rounded-xl border border-zinc-300 bg-zinc-100 p-3 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           >
             <FiCheck className="h-5 w-5 shrink-0" aria-hidden="true" />
             {toVietnameseDashboardMessage(noteCode)}

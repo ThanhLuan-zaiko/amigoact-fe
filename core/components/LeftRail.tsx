@@ -6,16 +6,17 @@ import { useMyMemberships } from "../../dashboard/members-hooks.ts";
 import { useUnreadCount } from "../../notifications/hooks.ts";
 import { activeEntry } from "../nav-meta.ts";
 import { MANAGE_LINKS, MANAGE_ROOT, PRIMARY_LINKS } from "../nav.tsx";
+import { RAIL_SCROLL } from "../rail-styles.ts";
 import { AccountSwitcher } from "./AccountSwitcher.tsx";
 import { MoreMenu } from "./MoreMenu.tsx";
 import { RailNavItem } from "./RailNavItem.tsx";
 
 // The rail's single full-width pill, X "Post" equivalent (see AGENTS 7.8).
 const CTA_CLASS =
-  "flex h-[52px] items-center justify-center gap-2 rounded-full border border-brand bg-brand " +
-  "text-zinc-950 transition-colors hover:bg-brand/85 focus-visible:outline-2 " +
-  "focus-visible:outline-offset-2 focus-visible:outline-brand dark:border-brand " +
-  "dark:bg-brand dark:text-zinc-950 dark:hover:bg-brand/85 dark:focus-visible:outline-brand";
+  "flex h-[52px] items-center justify-center gap-2 rounded-full border border-zinc-900 bg-zinc-900 " +
+  "text-white transition-colors hover:bg-zinc-800 focus-visible:outline-2 " +
+  "focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-100 " +
+  "dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200 dark:focus-visible:outline-zinc-400";
 
 // Shared left rail for every page: logo, primary destinations (the
 // dashboard expands into its workspace sections in place), More, the
@@ -37,14 +38,14 @@ export function LeftRail(): ReactElement {
         <Link
           to="/"
           aria-label="AmigoACT - Trang chủ"
-          className="inline-flex h-[52px] w-[52px] items-center justify-center rounded-full transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:hover:bg-zinc-900 dark:focus-visible:outline-brand"
+          className="inline-flex h-[52px] w-[52px] items-center justify-center rounded-full transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">
             <FiActivity className="h-5 w-5" aria-hidden="true" />
           </span>
         </Link>
       </div>
-      <nav aria-label="Điều hướng chính" className="min-h-0 overflow-y-auto">
+      <nav aria-label="Điều hướng chính" className={`min-h-0 ${RAIL_SCROLL}`}>
         <ul className="flex flex-col gap-0.5">
           {links.map((entry) => (
             <li key={entry.to}>

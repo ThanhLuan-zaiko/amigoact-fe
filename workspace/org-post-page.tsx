@@ -112,7 +112,7 @@ export function OrgPostPage(): ReactElement {
               {org.data !== undefined && (
                 <Link
                   to={profileHref}
-                  className="flex items-center gap-2 rounded-lg border border-zinc-200 p-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-900 dark:focus-visible:outline-brand"
+                  className="flex items-center gap-2 rounded-lg border border-zinc-200 p-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
                 >
                   {org.data.logo_url !== null && (
                     <img

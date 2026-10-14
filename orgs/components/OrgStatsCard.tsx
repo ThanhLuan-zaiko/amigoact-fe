@@ -19,7 +19,7 @@ export function OrgStatsCard({
     <Section>
       <div data-rise className="flex items-center gap-2">
         <FiPieChart
-          className="h-5 w-5 text-zinc-900 dark:text-brand"
+          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -42,7 +42,7 @@ export function OrgStatsCard({
               <span className="h-1.5 flex-1 rounded-full bg-zinc-100 dark:bg-zinc-800">
                 {/* Dynamic measured width: bar length is data-driven. */}
                 <span
-                  className="block h-1.5 rounded-full bg-brand"
+                  className="block h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-100"
                   style={{
                     width: `${total > 0 ? Math.round((count / total) * 100) : 0}%`,
                   }}

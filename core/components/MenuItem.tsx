@@ -8,8 +8,8 @@ interface MenuItemProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "r
 
 const BASE =
   "flex min-h-[44px] w-full items-center gap-2 rounded-lg px-3 text-left text-sm font-medium " +
-  "transition-colors focus-visible:outline-2 focus-visible:outline-brand " +
-  "dark:focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60";
+  "transition-colors focus-visible:outline-2 focus-visible:outline-zinc-500 " +
+  "dark:focus-visible:outline-zinc-400 disabled:cursor-not-allowed disabled:opacity-60";
 
 const TONES: Record<NonNullable<MenuItemProps["tone"]>, string> = {
   default:

@@ -62,7 +62,7 @@ export function BlockInserter({
         onClick={() => setOpen((cur) => !cur)}
         aria-expanded={open}
         aria-label="Chèn khối nội dung tại đây"
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 text-zinc-500 transition-colors hover:border-brand hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-brand dark:hover:text-zinc-100 dark:focus-visible:outline-brand"
+        className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 text-zinc-500 transition-colors hover:border-zinc-400 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-400"
       >
         <FiPlus className="h-4 w-4" aria-hidden="true" />
       </button>

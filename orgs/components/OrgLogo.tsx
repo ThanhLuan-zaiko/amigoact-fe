@@ -33,8 +33,8 @@ export function OrgLogo({
       aria-hidden="true"
       className={
         `${className} flex items-center justify-center rounded-full ` +
-        "border border-brand/40 bg-brand/10 text-zinc-700 " +
-        "dark:border-brand/30 dark:text-brand"
+        "border border-zinc-300 bg-zinc-100 text-zinc-700 " +
+        "dark:border-zinc-700 dark:text-zinc-300"
       }
     >
       <FiUsers className={iconClassName} />

@@ -15,7 +15,7 @@ export function OrgNewestRail({ items }: OrgNewestRailProps): ReactElement {
     <Section>
       <div data-rise className="flex items-center gap-2">
         <FiClock
-          className="h-5 w-5 text-zinc-900 dark:text-brand"
+          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -27,7 +27,7 @@ export function OrgNewestRail({ items }: OrgNewestRailProps): ReactElement {
           <li key={org.id}>
             <Link
               to={`/orgs/${org.slug}`}
-              className="group flex items-center gap-3 rounded-lg px-1 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand"
+              className="group flex items-center gap-3 rounded-lg px-1 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400"
             >
               <OrgLogo
                 org={org}
@@ -35,7 +35,7 @@ export function OrgNewestRail({ items }: OrgNewestRailProps): ReactElement {
                 iconClassName="h-4 w-4"
               />
               <span className="min-w-0">
-                <span className="block truncate text-sm font-medium text-zinc-900 group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-brand">
+                <span className="block truncate text-sm font-medium text-zinc-900 group-hover:text-zinc-700 dark:text-zinc-100 dark:group-hover:text-zinc-300">
                   {org.name}
                 </span>
                 <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">

@@ -74,10 +74,10 @@ export function AccountSidePanel({
   const items = isProfile ? PROFILE_BENEFITS : PASSWORD_RULES;
   const HeadIcon = isProfile ? FiShield : FiKey;
   return (
-    <Section className=" w-full self-start border-brand/40 bg-brand/10 @4xl:sticky @4xl:top-20 dark:border-brand/30 dark:bg-brand/10">
+    <Section className=" w-full self-start border-zinc-300 bg-zinc-100 @4xl:sticky @4xl:top-20 dark:border-zinc-700 dark:bg-zinc-900">
       <div ref={scope} className="flex flex-col justify-start gap-5 p-2 sm:p-4">
         <div data-rise className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">
             <HeadIcon className="h-5 w-5" aria-hidden="true" />
           </span>
           <span className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -95,7 +95,7 @@ export function AccountSidePanel({
         <ul className="flex flex-col gap-4">
           {items.map(({ Icon, title, body }) => (
             <li key={title} data-rise className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">
                 <Icon className="h-5 w-5" aria-hidden="true" />
               </span>
               <span>

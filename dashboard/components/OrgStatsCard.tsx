@@ -47,32 +47,32 @@ export function OrgStatsCard(): ReactElement {
     {
       label: "Hoạt động",
       value: s ? String(s.activities_total) : "—",
-      icon: <FiActivity className="h-5 w-5 text-brand" aria-hidden="true" />,
+      icon: <FiActivity className="h-5 w-5 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />,
     },
     {
       label: "Thành viên",
       value: s ? String(s.members_total) : "—",
-      icon: <FiUserCheck className="h-5 w-5 text-brand" aria-hidden="true" />,
+      icon: <FiUserCheck className="h-5 w-5 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />,
     },
     {
       label: "Lượt tham gia",
       value: s ? String(s.participants_total) : "—",
-      icon: <FiUserCheck className="h-5 w-5 text-brand" aria-hidden="true" />,
+      icon: <FiUserCheck className="h-5 w-5 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />,
     },
     {
       label: "Giờ đã duyệt",
       value: s ? String(s.hours_approved) : "—",
-      icon: <FiClock className="h-5 w-5 text-brand" aria-hidden="true" />,
+      icon: <FiClock className="h-5 w-5 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />,
     },
     {
       label: "Giờ chờ duyệt",
       value: s ? String(s.hours_pending) : "—",
-      icon: <FiClock className="h-5 w-5 text-brand" aria-hidden="true" />,
+      icon: <FiClock className="h-5 w-5 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />,
     },
     {
       label: "Chứng nhận",
       value: s ? String(s.certificates_issued) : "—",
-      icon: <FiAward className="h-5 w-5 text-brand" aria-hidden="true" />,
+      icon: <FiAward className="h-5 w-5 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />,
     },
   ];
 

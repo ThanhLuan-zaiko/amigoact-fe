@@ -15,8 +15,8 @@ interface OrgMediaStripProps {
 
 const THUMB_BUTTON =
   "relative h-16 w-24 overflow-hidden rounded-lg border border-zinc-200 " +
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand " +
-  "dark:border-zinc-800 dark:focus-visible:outline-brand";
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 " +
+  "dark:border-zinc-800 dark:focus-visible:outline-zinc-400";
 
 export function OrgMediaStrip({ media, onBrowse }: OrgMediaStripProps): ReactElement | null {
   const images = media.filter((item) => item.kind === "image");
@@ -92,7 +92,7 @@ export function OrgMediaStrip({ media, onBrowse }: OrgMediaStripProps): ReactEle
           <button
             type="button"
             onClick={onBrowse}
-            className="flex h-16 w-24 items-center justify-center rounded-lg border border-dashed border-zinc-300 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:focus-visible:outline-brand"
+            className="flex h-16 w-24 items-center justify-center rounded-lg border border-dashed border-zinc-300 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
           >
             {`+${rest} tệp`}
           </button>

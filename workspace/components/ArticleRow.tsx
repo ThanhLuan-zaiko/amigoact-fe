@@ -59,7 +59,7 @@ export function ArticleRow({
           {post.revision_of !== null && (
             <Link
               to={`/manage/board/post?org=${orgId}&post=${post.revision_of}`}
-              className="text-xs text-zinc-500 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-zinc-400 dark:decoration-zinc-600 dark:hover:text-zinc-200 dark:focus-visible:outline-brand"
+              className="text-xs text-zinc-500 underline decoration-zinc-300 underline-offset-2 hover:text-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-400 dark:decoration-zinc-600 dark:hover:text-zinc-200 dark:focus-visible:outline-zinc-400"
             >
               Xem bài đang hiển thị
             </Link>

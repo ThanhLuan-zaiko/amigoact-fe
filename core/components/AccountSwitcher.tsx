@@ -48,7 +48,7 @@ export function AccountSwitcher(): ReactElement | null {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={`Tài khoản của ${profile.full_name}`}
-        className="flex items-center gap-3 rounded-full p-3 text-left transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand xl:w-full dark:hover:bg-zinc-900 dark:focus-visible:outline-brand"
+        className="flex items-center gap-3 rounded-full p-3 text-left transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 xl:w-full dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
       >
         <Avatar name={profile.full_name} />
         <span className="hidden min-w-0 flex-1 xl:block">

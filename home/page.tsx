@@ -20,8 +20,8 @@ import { usePublicOrgs } from "../orgs/hooks.ts";
 const FEED_ROW =
   "-mx-4 flex items-center gap-3 border-t border-zinc-200 px-4 py-3 " +
   "transition-colors first:border-t-0 hover:bg-zinc-50 " +
-  "focus-visible:outline-2 focus-visible:outline-brand " +
-  "dark:border-zinc-800 dark:hover:bg-zinc-900 dark:focus-visible:outline-brand";
+  "focus-visible:outline-2 focus-visible:outline-zinc-500 " +
+  "dark:border-zinc-800 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400";
 
 function GuestHero(): ReactElement {
   return (
@@ -63,7 +63,7 @@ function InviteSection(): ReactElement | null {
   return (
     <Section>
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/15 text-brand dark:bg-brand/10">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
           <FiMail className="h-5 w-5" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
@@ -121,7 +121,7 @@ function OrgFeed(): ReactElement {
         </h2>
         <Link
           to="/orgs"
-          className="shrink-0 text-sm font-medium text-zinc-500 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-brand dark:text-zinc-400 dark:hover:text-zinc-100 dark:focus-visible:outline-brand"
+          className="shrink-0 text-sm font-medium text-zinc-500 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-zinc-500 dark:text-zinc-400 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-400"
         >
           Xem tất cả
         </Link>

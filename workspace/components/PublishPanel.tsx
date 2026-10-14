@@ -94,7 +94,7 @@ export function PublishPanel({
           thế bản đang hiển thị.{" "}
           <Link
             to={`/manage/board/post?org=${orgId}&post=${editor.revisionOf}`}
-            className="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:decoration-zinc-600 dark:hover:text-zinc-200 dark:focus-visible:outline-brand"
+            className="underline decoration-zinc-300 underline-offset-2 hover:text-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:decoration-zinc-600 dark:hover:text-zinc-200 dark:focus-visible:outline-zinc-400"
           >
             Xem bài đang hiển thị
           </Link>

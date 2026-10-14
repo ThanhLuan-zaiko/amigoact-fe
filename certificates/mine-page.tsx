@@ -16,7 +16,7 @@ export function MyCertificatesPage(): ReactElement {
   return (
     <Section>
       <div data-rise className="flex items-center gap-2">
-        <FiAward className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+        <FiAward className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Chứng nhận của tôi
         </h1>
@@ -39,7 +39,7 @@ export function MyCertificatesPage(): ReactElement {
           {mine.data.map((row) => (
             <li
               key={row.certificate_id}
-              className="rounded-xl border border-brand/40 bg-brand/10 p-4 dark:border-brand/30"
+              className="rounded-xl border border-zinc-300 bg-zinc-100 p-4 dark:border-zinc-700 dark:bg-zinc-900"
             >
               <p className="text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
                 {CERTIFICATE_STATUS_LABELS[row.status] ?? row.status}

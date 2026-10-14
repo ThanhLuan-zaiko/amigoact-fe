@@ -19,7 +19,7 @@ export function OverviewTiles(): ReactElement {
     <>
       <Section>
         <div data-rise className="flex items-center gap-2">
-          <FiUsers className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+          <FiUsers className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
           <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Tổ chức
           </h3>
@@ -44,7 +44,7 @@ export function OverviewTiles(): ReactElement {
       </Section>
       <Section>
         <div data-rise className="flex items-center gap-2">
-          <FiCalendar className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+          <FiCalendar className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
           <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Sự kiện
           </h3>
@@ -58,7 +58,7 @@ export function OverviewTiles(): ReactElement {
       </Section>
       <Section>
         <div data-rise className="flex items-center gap-2">
-          <FiPlusCircle className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+          <FiPlusCircle className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
           <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Bắt đầu mới
           </h3>

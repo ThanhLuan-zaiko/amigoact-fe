@@ -19,9 +19,9 @@ export function StepProgress({ step, total, label }: StepProgressProps): ReactEl
               key={index}
               className={
                 done
-                  ? "flex h-6 w-6 items-center justify-center rounded-full border border-brand bg-brand text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950"
+                  ? "flex h-6 w-6 items-center justify-center rounded-full border border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
                   : active
-                    ? "h-6 w-6 rounded-full border-2 border-zinc-900 dark:border-brand"
+                    ? "h-6 w-6 rounded-full border-2 border-zinc-900 dark:border-zinc-100"
                     : "h-6 w-6 rounded-full border border-zinc-300 dark:border-zinc-700"
               }
             >

@@ -60,7 +60,7 @@ function NotificationRow({
       <span
         className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
           highlight
-            ? "bg-brand text-zinc-950 dark:bg-brand dark:text-zinc-950"
+            ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950"
             : "bg-zinc-100 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400"
         }`}
       >
@@ -103,7 +103,7 @@ function NotificationRow({
     <li
       className={`rounded-xl border p-3 sm:p-4 ${
         highlight
-          ? "border-brand/40 bg-brand/5 dark:border-brand/30 dark:bg-brand/10"
+          ? "border-zinc-300 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900"
           : "border-zinc-200 dark:border-zinc-800"
       }`}
     >
@@ -117,7 +117,7 @@ function NotificationRow({
               ? `Mở thông báo: ${item.title}`
               : `Đánh dấu đã đọc: ${item.title}`
           }
-          className="flex w-full cursor-pointer items-start gap-3 rounded-lg text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:outline-brand"
+          className="flex w-full cursor-pointer items-start gap-3 rounded-lg text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:cursor-not-allowed disabled:opacity-60 dark:focus-visible:outline-zinc-400"
         >
           {inner}
         </button>

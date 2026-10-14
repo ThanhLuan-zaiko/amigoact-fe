@@ -29,7 +29,7 @@ export function MyHoursPage(): ReactElement {
     <>
       <Section>
         <div data-rise className="flex items-center gap-2">
-          <FiAward className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+          <FiAward className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Tổng giờ tình nguyện
           </h1>
@@ -52,7 +52,7 @@ export function MyHoursPage(): ReactElement {
             {mine.data.summaries.map((s) => (
               <li
                 key={s.term}
-                className="rounded-xl border border-brand/40 bg-brand/10 p-3 dark:border-brand/30"
+                className="rounded-xl border border-zinc-300 bg-zinc-100 p-3 dark:border-zinc-700 dark:bg-zinc-900"
               >
                 <p className="text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
                   {s.term}
@@ -73,7 +73,7 @@ export function MyHoursPage(): ReactElement {
       </Section>
       <Section>
         <div data-rise className="flex items-center gap-2">
-          <FiClock className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+          <FiClock className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
             Lịch sử giờ
           </h2>

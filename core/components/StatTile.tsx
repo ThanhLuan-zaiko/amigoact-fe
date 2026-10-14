@@ -11,9 +11,9 @@ interface StatTileProps
 const BASE =
   "flex min-h-[44px] items-center gap-3 rounded-xl border p-3 text-left transition-colors " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-brand dark:focus-visible:outline-brand";
+  "focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400";
 
-const ACTIVE = "border-brand bg-brand/10 dark:border-brand dark:bg-brand/10";
+const ACTIVE = "border-zinc-900 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900";
 
 const IDLE =
   "border-zinc-200 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900";

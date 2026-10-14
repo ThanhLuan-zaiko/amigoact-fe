@@ -109,7 +109,7 @@ export function OrgListCard(): ReactElement {
       <Section>
         <div data-rise className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <FiUsers className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+            <FiUsers className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
             <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
               Tổ chức của tôi
             </h3>
@@ -213,7 +213,7 @@ export function OrgListCard(): ReactElement {
       {trashed.length > 0 && (
         <Section>
           <div className="flex items-center gap-2">
-            <FiTrash2 className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+            <FiTrash2 className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
             <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
               Thùng rác
             </h3>

@@ -70,7 +70,7 @@ export function CoverPicker({
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={upload === "uploading"}
-          className="flex min-h-[88px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-300 text-zinc-500 hover:border-brand hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-brand dark:hover:text-zinc-100 dark:focus-visible:outline-brand"
+          className="flex min-h-[88px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-400"
         >
           {upload === "uploading" ? (
             <>

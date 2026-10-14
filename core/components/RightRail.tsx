@@ -15,7 +15,7 @@ const YEAR = new Date().getFullYear();
 
 const FOOTER_LINK =
   "rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-brand dark:focus-visible:outline-brand";
+  "focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400";
 
 // Search pill: the org directory owns server-side search (GET /orgs?q=).
 function SearchBox(): ReactElement {

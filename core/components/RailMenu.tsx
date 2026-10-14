@@ -6,8 +6,8 @@ import type { IconType } from "react-icons";
 export const MENU_ITEM_CLASS =
   "flex min-h-[44px] w-full items-center gap-3 px-4 py-3 text-left text-[15px] font-bold " +
   "text-zinc-900 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60 " +
-  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand " +
-  "dark:text-zinc-100 dark:hover:bg-zinc-900 dark:focus-visible:outline-brand";
+  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-zinc-500 " +
+  "dark:text-zinc-100 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400";
 
 export const MENU_PANEL_CLASS =
   "absolute z-50 w-72 overflow-hidden rounded-2xl border border-zinc-200 bg-white py-2 " +

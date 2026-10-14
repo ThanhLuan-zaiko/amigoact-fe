@@ -21,7 +21,7 @@ export function VisibilityToggle({
       onClick={onToggle}
       aria-label={label}
       aria-pressed={visible}
-      className="flex h-11 w-11 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-zinc-400 dark:hover:text-zinc-100 dark:focus-visible:outline-brand"
+      className="flex h-11 w-11 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-400 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-400"
     >
       <Icon className="h-4 w-4" aria-hidden="true" />
     </button>

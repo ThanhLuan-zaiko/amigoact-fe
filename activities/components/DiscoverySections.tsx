@@ -52,13 +52,13 @@ export function DiscoverySections(): ReactElement | null {
     <div className="flex flex-col gap-4">
       <Shelf
         title="Nổi bật"
-        icon={<FiStar className="h-4 w-4 text-brand" aria-hidden="true" />}
+        icon={<FiStar className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />}
         items={featured}
       />
       <Shelf
         title="Sắp diễn ra"
         icon={
-          <FiCalendar className="h-4 w-4 text-brand" aria-hidden="true" />
+          <FiCalendar className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />
         }
         items={upcoming}
       />
@@ -66,7 +66,7 @@ export function DiscoverySections(): ReactElement | null {
         <Shelf
           key={bucket.category_id}
           title={bucket.name}
-          icon={<FiTag className="h-4 w-4 text-brand" aria-hidden="true" />}
+          icon={<FiTag className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />}
           items={bucket.items}
         />
       ))}

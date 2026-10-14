@@ -36,7 +36,7 @@ export function OrgContactCard({ org }: OrgContactCardProps): ReactElement {
       <div data-rise>
         <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
           <FiMail
-            className="h-5 w-5 text-zinc-900 dark:text-brand"
+            className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
             aria-hidden="true"
           />
           Liên hệ
@@ -49,7 +49,7 @@ export function OrgContactCard({ org }: OrgContactCardProps): ReactElement {
                   href={websiteHref(org.website)}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-2 break-all text-zinc-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-zinc-300 dark:focus-visible:outline-brand"
+                  className="flex items-center gap-2 break-all text-zinc-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-300 dark:focus-visible:outline-zinc-400"
                 >
                   <FiGlobe className="h-4 w-4 shrink-0" aria-hidden="true" />
                   {org.website}
@@ -61,7 +61,7 @@ export function OrgContactCard({ org }: OrgContactCardProps): ReactElement {
               <li>
                 <a
                   href={`mailto:${org.email}`}
-                  className="flex items-center gap-2 break-all text-zinc-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-zinc-300 dark:focus-visible:outline-brand"
+                  className="flex items-center gap-2 break-all text-zinc-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-300 dark:focus-visible:outline-zinc-400"
                 >
                   <FiMail className="h-4 w-4 shrink-0" aria-hidden="true" />
                   {org.email}
@@ -72,7 +72,7 @@ export function OrgContactCard({ org }: OrgContactCardProps): ReactElement {
               <li>
                 <a
                   href={`tel:${org.phone}`}
-                  className="flex items-center gap-2 text-zinc-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:text-zinc-300 dark:focus-visible:outline-brand"
+                  className="flex items-center gap-2 text-zinc-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-300 dark:focus-visible:outline-zinc-400"
                 >
                   <FiPhone className="h-4 w-4 shrink-0" aria-hidden="true" />
                   {org.phone}

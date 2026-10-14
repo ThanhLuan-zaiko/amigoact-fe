@@ -33,7 +33,7 @@ export function TicketCard({
   };
 
   return (
-    <div className="rounded-xl border border-brand/40 bg-brand/10 p-3 dark:border-brand/30">
+    <div className="rounded-xl border border-zinc-300 bg-zinc-100 p-3 dark:border-zinc-700 dark:bg-zinc-900">
       <p className="text-xs font-medium tracking-wide text-zinc-500 uppercase dark:text-zinc-400">
         Mã điểm danh của bạn
       </p>
@@ -47,7 +47,7 @@ export function TicketCard({
         type="button"
         onClick={() => void copy()}
         aria-label="Sao chép mã điểm danh"
-        className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:border-zinc-700 dark:text-zinc-200 dark:focus-visible:outline-brand"
+        className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-zinc-300 px-3 text-sm text-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-700 dark:text-zinc-200 dark:focus-visible:outline-zinc-400"
       >
         {copied ? (
           <FiCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />

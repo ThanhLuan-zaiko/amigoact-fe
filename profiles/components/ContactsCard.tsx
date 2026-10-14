@@ -1,13 +1,18 @@
 import type { FormEvent, ReactElement } from "react";
 import { useState } from "react";
 import { FiPlus, FiTrash2, FiUserCheck } from "react-icons/fi";
-import { ApiError } from "../../core/api.ts";
 import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useAddContact, useRemoveContact } from "../hooks.ts";
-import { profileMessage } from "../messages.tsx";
+import {
+  PROFILE_TOAST,
+  fieldText,
+  toastProfileBlocked,
+  toastProfileError,
+} from "../messages.tsx";
+import { contactFieldErrors } from "../validate.ts";
 import type { VolunteerProfile } from "../api.ts";
 
 const MAX_CONTACTS = 3;
@@ -17,24 +22,25 @@ export function ContactsCard({
 }: {
   profile: VolunteerProfile;
 }): ReactElement {
-  const add = useAddContact();
-  const remove = useRemoveContact();
+  const add = useAddContact(PROFILE_TOAST.contactAdded);
+  const remove = useRemoveContact(PROFILE_TOAST.contactRemoved);
   const [name, setName] = useState("");
   const [relation, setRelation] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const full = profile.contacts.length >= MAX_CONTACTS;
 
-  const report = (err: unknown): void =>
-    setError(
-      profileMessage(err instanceof ApiError ? err.code : "REQUEST_FAILED"),
-    );
+  const report = (err: unknown): void => setError(toastProfileError(err));
 
   const onSubmit = (event: FormEvent): void => {
     event.preventDefault();
     setError(null);
-    if (name.trim() === "" || phone.trim() === "") {
-      setError("Vui lòng nhập tên và số điện thoại liên hệ.");
+    const errors = contactFieldErrors(name, phone);
+    setFieldErrors(errors);
+    const codes = Object.values(errors);
+    if (codes.length > 0) {
+      toastProfileBlocked(PROFILE_TOAST.contactBlocked, codes);
       return;
     }
     add.mutate(
@@ -49,6 +55,7 @@ export function ContactsCard({
           setName("");
           setRelation("");
           setPhone("");
+          setFieldErrors({});
         },
         onError: report,
       },
@@ -58,7 +65,7 @@ export function ContactsCard({
   return (
     <Section>
       <div className="flex items-center gap-2">
-        <FiUserCheck className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+        <FiUserCheck className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Liên hệ khẩn cấp
         </h2>
@@ -84,7 +91,7 @@ export function ContactsCard({
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {contact.name}
                   {contact.is_primary && (
-                    <span className="ml-2 rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-xs text-zinc-700 dark:border-brand/30 dark:text-zinc-300">
+                    <span className="ml-2 rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-xs text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
                       Ưu tiên
                     </span>
                   )}
@@ -100,7 +107,9 @@ export function ContactsCard({
                 aria-label={`Xoá liên hệ ${contact.name}`}
                 disabled={remove.isPending}
                 onClick={() =>
-                  remove.mutate(contact.contact_id, { onError: report })
+                  remove.mutate(contact.contact_id, {
+                    onError: report,
+                  })
                 }
               >
                 <FiTrash2 className="h-4 w-4" aria-hidden="true" />
@@ -114,13 +123,16 @@ export function ContactsCard({
           <TextField
             label="Họ tên"
             name="contact_name"
+            maxLength={120}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            error={fieldText(fieldErrors, "contact_name")}
             placeholder="VD: Nguyễn Văn A"
           />
           <TextField
             label="Mối quan hệ"
             name="contact_relation"
+            maxLength={60}
             value={relation}
             onChange={(e) => setRelation(e.target.value)}
             placeholder="VD: Mẹ, Anh trai…"
@@ -129,8 +141,11 @@ export function ContactsCard({
             label="Số điện thoại"
             name="contact_phone"
             inputMode="tel"
+            maxLength={20}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            error={fieldText(fieldErrors, "contact_phone")}
+            hint="Từ 8 đến 20 ký tự."
             placeholder="VD: 0901234567"
           />
           <div>

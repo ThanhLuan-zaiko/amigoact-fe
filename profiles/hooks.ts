@@ -6,6 +6,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import type { ApiError } from "../core/api.ts";
+import { pushToast } from "../core/toast.ts";
 import {
   addMyContact,
   getMyProfile,
@@ -61,11 +62,13 @@ export function usePublicProfile(
 
 function useProfileMutation<TArgs>(
   mutationFn: (args: TArgs) => Promise<VolunteerProfile>,
+  successTitle: string,
 ): UseMutationResult<VolunteerProfile, ApiError, TArgs> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn,
     onSuccess: async (fresh) => {
+      pushToast({ tone: "success", title: successTitle });
       queryClient.setQueryData(profileKeys.mine, fresh);
       await queryClient.invalidateQueries({
         queryKey: profileKeys.mine,
@@ -74,47 +77,42 @@ function useProfileMutation<TArgs>(
   });
 }
 
-export function useUpdateProfile(): UseMutationResult<
-  VolunteerProfile,
-  ApiError,
-  ProfilePayload
-> {
-  return useProfileMutation(updateMyProfile);
+export function useUpdateProfile(
+  successTitle: string,
+): UseMutationResult<VolunteerProfile, ApiError, ProfilePayload> {
+  return useProfileMutation(updateMyProfile, successTitle);
 }
 
-export function useSetSkills(): UseMutationResult<
+export function useSetSkills(
+  successTitle: string,
+): UseMutationResult<
   VolunteerProfile,
   ApiError,
   { skill_id: string; level: number }[]
 > {
-  return useProfileMutation(setMySkills);
+  return useProfileMutation(setMySkills, successTitle);
 }
 
-export function useAddContact(): UseMutationResult<
-  VolunteerProfile,
-  ApiError,
-  ContactPayload
-> {
-  return useProfileMutation(addMyContact);
+export function useAddContact(
+  successTitle: string,
+): UseMutationResult<VolunteerProfile, ApiError, ContactPayload> {
+  return useProfileMutation(addMyContact, successTitle);
 }
 
-export function useRemoveContact(): UseMutationResult<
-  VolunteerProfile,
-  ApiError,
-  string
-> {
-  return useProfileMutation(removeMyContact);
+export function useRemoveContact(
+  successTitle: string,
+): UseMutationResult<VolunteerProfile, ApiError, string> {
+  return useProfileMutation(removeMyContact, successTitle);
 }
 
-export function useUploadAvatar(): UseMutationResult<
-  { avatar_url: string },
-  ApiError,
-  File
-> {
+export function useUploadAvatar(
+  successTitle: string,
+): UseMutationResult<{ avatar_url: string }, ApiError, File> {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: uploadMyAvatar,
     onSuccess: async () => {
+      pushToast({ tone: "success", title: successTitle });
       await queryClient.invalidateQueries({
         queryKey: profileKeys.mine,
       });

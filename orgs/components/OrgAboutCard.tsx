@@ -14,7 +14,7 @@ export function OrgAboutCard({ org }: OrgAboutCardProps): ReactElement {
       <div data-rise>
         <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
           <FiFileText
-            className="h-5 w-5 text-zinc-900 dark:text-brand"
+            className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
             aria-hidden="true"
           />
           Giới thiệu

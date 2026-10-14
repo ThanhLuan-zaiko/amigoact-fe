@@ -57,7 +57,7 @@ export function VolunteerProfilePage(): ReactElement {
             <span className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">
               {profileStatusLabel(data.status)}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full border border-brand/40 bg-brand/10 px-3 py-1 text-xs font-semibold text-zinc-700 dark:border-brand/30 dark:text-zinc-300">
+            <span className="inline-flex items-center gap-1 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
               <FiClock className="h-3.5 w-3.5" aria-hidden="true" />
               {data.total_hours.toFixed(1)} giờ
             </span>

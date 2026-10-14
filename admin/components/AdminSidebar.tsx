@@ -18,11 +18,11 @@ const ENTRIES: AdminEntry[] = [
 const BASE =
   "inline-flex min-h-[44px] w-full items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-brand dark:focus-visible:outline-brand";
+  "focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400";
 
 function itemClass(isActive: boolean): string {
   if (isActive) {
-    return `${BASE} bg-brand text-zinc-950 dark:bg-brand dark:text-zinc-950`;
+    return `${BASE} bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950`;
   }
   return (
     `${BASE} text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 ` +
@@ -35,7 +35,7 @@ export function AdminSidebar(): ReactElement {
     <Section className="w-full shrink-0 @4xl:sticky @4xl:top-20 @4xl:w-64">
       <div className="flex items-center gap-2">
         <FiShield
-          className="h-5 w-5 text-zinc-900 dark:text-brand"
+          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
         <div>

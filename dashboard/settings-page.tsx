@@ -8,7 +8,7 @@ export function DashboardSettingsPage(): ReactElement {
     <>
       <Section>
         <div data-rise className="flex items-center gap-2">
-          <FiSettings className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+          <FiSettings className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
           <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Cài đặt tài khoản
           </h3>

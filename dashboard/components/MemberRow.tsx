@@ -18,7 +18,7 @@ const ROLE_BADGES: Record<string, string> = {
   owner:
     "border-amber-300 bg-amber-50 text-amber-700 " +
     "dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400",
-  admin: "border-brand/40 bg-brand/10 text-zinc-900 dark:border-brand/30 dark:text-brand",
+  admin: "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-zinc-700 dark:text-zinc-100",
 };
 
 const CUSTOM_BADGE =

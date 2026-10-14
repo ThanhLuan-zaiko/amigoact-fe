@@ -38,14 +38,14 @@ const SHELVES: ShelfTile[] = [
 const TILE_BASE =
   "flex h-full w-full flex-col items-start gap-1 rounded-2xl border p-4 text-left " +
   "sm:p-6 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 " +
-  "focus-visible:outline-brand dark:focus-visible:outline-brand";
+  "focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400";
 
 const TILE_IDLE =
   "border-zinc-200 bg-white hover:bg-zinc-50 " +
   "dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900";
 
 const TILE_ACTIVE =
-  "border-brand/40 bg-brand/10 dark:border-brand/30 dark:bg-brand/10";
+  "border-zinc-300 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900";
 
 // Clickable shelf selector tiles standing in for a tab strip: each tile is
 // a content cell so the row reads as part of the feed instead of a toolbar.
@@ -68,7 +68,7 @@ export function ShelfTabs({ tab, onSelect }: ShelfTabsProps): ReactElement {
             <span
               className={`flex items-center gap-2 text-base font-semibold sm:text-lg ${
                 active
-                  ? "text-zinc-900 dark:text-brand"
+                  ? "text-zinc-900 dark:text-zinc-100"
                   : "text-zinc-900 dark:text-zinc-100"
               }`}
             >

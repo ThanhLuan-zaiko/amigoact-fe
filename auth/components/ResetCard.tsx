@@ -66,7 +66,7 @@ export function ResetCard(): ReactElement {
     <Section className=" @2xl:col-start-2 ">
       <div className="flex items-center gap-2">
         <FiRefreshCw
-          className="h-5 w-5 text-zinc-900 dark:text-brand"
+          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
@@ -155,7 +155,7 @@ export function ResetCard(): ReactElement {
         Chưa nhận mã?{" "}
         <Link
           to="/forgot-password"
-          className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand"
+          className="text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 hover:bg-zinc-100 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900"
         >
           Gửi lại mã
         </Link>

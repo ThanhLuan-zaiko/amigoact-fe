@@ -74,7 +74,7 @@ export function MemberOrgPicker({
         <>
           <div className="flex flex-wrap items-center gap-2">
             {selected && (
-              <span className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-brand bg-brand px-4 py-2 text-sm font-semibold whitespace-nowrap text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950">
+              <span className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-lg border border-zinc-900 bg-zinc-900 px-4 py-2 text-sm font-semibold whitespace-nowrap text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">
                 <FiBriefcase className="h-4 w-4" aria-hidden="true" />
                 {selected.name}
               </span>

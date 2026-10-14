@@ -126,7 +126,7 @@ export function WorkspaceReadPage(): ReactElement {
                 )}
                 {article.pinned_at !== null && (
                   <FiBookmark
-                    className="h-4 w-4 text-zinc-900 dark:text-brand"
+                    className="h-4 w-4 text-zinc-900 dark:text-zinc-100"
                     aria-label="Bài viết đã ghim"
                   />
                 )}

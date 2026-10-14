@@ -88,7 +88,7 @@ export function OrgDetailHero({ org }: OrgDetailHeroProps): ReactElement {
             className="h-36 w-full rounded-xl object-cover sm:h-44"
           />
         ) : (
-          <div className="flex h-28 w-full items-center justify-center rounded-xl border border-brand/40 bg-brand/10 text-zinc-400 dark:border-brand/30 dark:text-zinc-500">
+          <div className="flex h-28 w-full items-center justify-center rounded-xl border border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:text-zinc-500">
             <FiImage className="h-6 w-6" aria-hidden="true" />
           </div>
         )}

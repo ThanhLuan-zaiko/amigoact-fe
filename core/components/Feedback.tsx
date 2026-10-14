@@ -61,7 +61,7 @@ export function EmptyState(props: FeedbackProps): ReactElement {
       icon={
         props.icon ?? (
           <FiInbox
-            className="h-5 w-5 text-zinc-900 dark:text-brand"
+            className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
             aria-hidden="true"
           />
         )
@@ -79,7 +79,7 @@ export function LoadingState({ label }: { label: string }): ReactElement {
       className="flex items-center gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
     >
       <FiLoader
-        className="h-5 w-5 animate-spin text-zinc-500 dark:text-brand"
+        className="h-5 w-5 animate-spin text-zinc-500 dark:text-zinc-400"
         aria-hidden="true"
       />
       <p className="text-sm text-zinc-600 dark:text-zinc-400">{label}</p>

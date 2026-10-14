@@ -64,7 +64,7 @@ export function ArticleCard({
               </span>
             )}
             {pinned && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-xs font-semibold text-zinc-950 dark:border-brand/30 dark:bg-brand/10 dark:text-brand">
+              <span className="inline-flex items-center gap-1 rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-xs font-semibold text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100">
                 <FiBookmark className="h-3.5 w-3.5" aria-hidden="true" />
                 Đã ghim
               </span>

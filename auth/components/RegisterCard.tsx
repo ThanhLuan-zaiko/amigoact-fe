@@ -152,7 +152,7 @@ export function RegisterCard(): ReactElement {
     <Section>
       <div ref={scope} className="flex flex-col">
       <div data-rise className="flex items-center gap-2">
-        <FiUserPlus className="h-5 w-5 text-zinc-900 dark:text-brand" aria-hidden="true" />
+        <FiUserPlus className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           Đăng ký
         </h1>
@@ -227,7 +227,7 @@ export function RegisterCard(): ReactElement {
       </form>
       <p data-rise className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
         Đã có tài khoản?{" "}
-        <Link to="/login" className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand">
+        <Link to="/login" className="text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 hover:bg-zinc-100 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900">
           Đăng nhập
         </Link>
       </p>

@@ -15,7 +15,7 @@ interface OrgCardProps {
 export function OrgCard({ org }: OrgCardProps): ReactElement {
   const location = orgLocation(org);
   return (
-    <Section className="relative transition-colors hover:border-brand/40 dark:hover:border-brand/30 ">
+    <Section className="relative transition-colors hover:border-zinc-400 dark:hover:border-zinc-600 ">
       <div data-rise className="flex h-full flex-col">
         {org.cover_url ? (
           <img
@@ -25,7 +25,7 @@ export function OrgCard({ org }: OrgCardProps): ReactElement {
             className="h-24 w-full rounded-xl object-cover"
           />
         ) : (
-          <div className="flex h-24 w-full items-center justify-center rounded-xl border border-brand/40 bg-brand/10 text-zinc-400 dark:border-brand/30 dark:text-zinc-500">
+          <div className="flex h-24 w-full items-center justify-center rounded-xl border border-zinc-300 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:text-zinc-500">
             <FiImage className="h-5 w-5" aria-hidden="true" />
           </div>
         )}
@@ -47,7 +47,7 @@ export function OrgCard({ org }: OrgCardProps): ReactElement {
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           <KindPill kind={org.kind} />
           {org.join_policy === "open" && (
-            <span className="rounded-full border border-brand/40 bg-brand/10 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:border-brand/30 dark:text-brand">
+            <span className="rounded-full border border-zinc-300 bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
               {JOIN_POLICY_LABELS[org.join_policy]}
             </span>
           )}
@@ -73,7 +73,7 @@ export function OrgCard({ org }: OrgCardProps): ReactElement {
       <Link
         to={`/orgs/${org.slug}`}
         aria-label={org.name}
-        className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:focus-visible:outline-brand"
+        className="absolute inset-0 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400"
       />
     </Section>
   );

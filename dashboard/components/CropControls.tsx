@@ -33,7 +33,7 @@ export function SliderRow({ icon, label, min, max, step, value, display, disable
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="min-w-0 flex-1 accent-brand disabled:opacity-60"
+        className="min-w-0 flex-1 accent-zinc-900 disabled:opacity-60 dark:accent-zinc-100"
         aria-label={label}
       />
       <span className="w-11 shrink-0 text-right text-xs tabular-nums text-zinc-500 dark:text-zinc-400">{display}</span>

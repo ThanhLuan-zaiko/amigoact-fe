@@ -37,7 +37,7 @@ const TILES: StatSpec[] = [
     key: "all",
     label: "Tất cả",
     Icon: FiUsers,
-    tone: "text-zinc-900 dark:text-brand",
+    tone: "text-zinc-900 dark:text-zinc-100",
   },
   {
     key: "active",

@@ -72,7 +72,7 @@ export function PublicVolunteerPage(): ReactElement {
               {data.class_name ? ` · ${data.class_name}` : ""}
             </p>
           )}
-          <p className="mt-3 inline-flex items-center gap-1 rounded-full border border-brand/40 bg-brand/10 px-3 py-1 text-sm font-semibold text-zinc-700 dark:border-brand/30 dark:text-zinc-300">
+          <p className="mt-3 inline-flex items-center gap-1 rounded-full border border-zinc-300 bg-zinc-100 px-3 py-1 text-sm font-semibold text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
             <FiClock className="h-4 w-4" aria-hidden="true" />
             {data.total_hours.toFixed(1)} giờ tình nguyện
           </p>
@@ -98,7 +98,7 @@ export function PublicVolunteerPage(): ReactElement {
         {data.interests.length > 0 && (
           <div className="mt-4">
             <h2 className="inline-flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-              <FiHeart className="h-4 w-4 text-zinc-900 dark:text-brand" aria-hidden="true" />
+              <FiHeart className="h-4 w-4 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
               Sở thích
             </h2>
             <ul className="mt-2 flex flex-wrap gap-2">
@@ -115,7 +115,7 @@ export function PublicVolunteerPage(): ReactElement {
         )}
         <div className="mt-4">
           <h2 className="inline-flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            <FiAward className="h-4 w-4 text-zinc-900 dark:text-brand" aria-hidden="true" />
+            <FiAward className="h-4 w-4 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
             Kỹ năng
           </h2>
           {data.skills.length === 0 ? (
@@ -139,7 +139,7 @@ export function PublicVolunteerPage(): ReactElement {
                         aria-hidden="true"
                         className={`h-2 w-2 rounded-full ${
                           dot <= skill.level
-                            ? "bg-brand"
+                            ? "bg-zinc-900 dark:bg-zinc-100"
                             : "bg-zinc-200 dark:bg-zinc-700"
                         }`}
                       />

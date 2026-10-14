@@ -26,7 +26,7 @@ export function AuditPage(): ReactElement {
     <Section>
       <div data-rise className="flex items-center gap-2">
         <FiActivity
-          className="h-5 w-5 text-zinc-900 dark:text-brand"
+          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
         <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -45,7 +45,7 @@ export function AuditPage(): ReactElement {
               onClick={() => setSelected(org.id)}
               className={`min-h-[44px] rounded-xl border px-3 text-sm font-medium transition-colors ${
                 org.id === orgId
-                  ? "border-brand bg-brand text-zinc-950"
+                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
                   : "border-zinc-200 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
               }`}
             >

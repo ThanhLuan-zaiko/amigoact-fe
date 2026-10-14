@@ -92,21 +92,21 @@ export function EventDetailPage(): ReactElement {
         </div>
         <ul className="mt-3 flex flex-col gap-2">
           <MetaRow
-            icon={<FiClock className="h-4 w-4 text-brand" aria-hidden="true" />}
+            icon={<FiClock className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />}
             label="Bắt đầu"
             value={formatDateTime(a.start_at)}
           />
           <MetaRow
-            icon={<FiClock className="h-4 w-4 text-brand" aria-hidden="true" />}
+            icon={<FiClock className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />}
             label="Kết thúc"
             value={formatDateTime(a.end_at)}
           />
           <MetaRow
             icon={
               a.is_remote ? (
-                <FiGlobe className="h-4 w-4 text-brand" aria-hidden="true" />
+                <FiGlobe className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />
               ) : (
-                <FiMapPin className="h-4 w-4 text-brand" aria-hidden="true" />
+                <FiMapPin className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />
               )
             }
             label="Địa điểm"
@@ -119,20 +119,20 @@ export function EventDetailPage(): ReactElement {
             }
           />
           <MetaRow
-            icon={<FiAward className="h-4 w-4 text-brand" aria-hidden="true" />}
+            icon={<FiAward className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />}
             label="Giờ tình nguyện"
             value={`${a.hours_awarded} giờ`}
           />
           {a.max_participants && (
             <MetaRow
-              icon={<FiUsers className="h-4 w-4 text-brand" aria-hidden="true" />}
+              icon={<FiUsers className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />}
               label="Số lượng"
               value={`Tối đa ${a.max_participants} người`}
             />
           )}
           {a.registration_deadline && (
             <MetaRow
-              icon={<FiClock className="h-4 w-4 text-brand" aria-hidden="true" />}
+              icon={<FiClock className="h-4 w-4 text-zinc-600 dark:text-zinc-300" aria-hidden="true" />}
               label="Hạn đăng ký"
               value={formatDateTime(a.registration_deadline)}
             />

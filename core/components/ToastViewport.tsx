@@ -26,7 +26,7 @@ const TONE_ICON: Record<ToastTone, ReactNode> = {
   ),
   info: (
     <FiInfo
-      className="h-5 w-5 shrink-0 text-zinc-900 dark:text-brand"
+      className="h-5 w-5 shrink-0 text-zinc-900 dark:text-zinc-100"
       aria-hidden="true"
     />
   ),
@@ -35,7 +35,7 @@ const TONE_ICON: Record<ToastTone, ReactNode> = {
 const TONE_BORDER: Record<ToastTone, string> = {
   success: "border-emerald-300 dark:border-emerald-800",
   error: "border-red-300 dark:border-red-800",
-  info: "border-brand/40 dark:border-brand/30",
+  info: "border-zinc-300 dark:border-zinc-700",
 };
 
 function ToastCard({ toast }: { toast: Toast }): ReactElement {

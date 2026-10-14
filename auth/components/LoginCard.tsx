@@ -75,7 +75,7 @@ export function LoginCard(): ReactElement {
       <div ref={scope} className="flex flex-col">
       <div data-rise className="flex items-center gap-2">
         <FiLogIn
-          className="h-5 w-5 text-zinc-900 dark:text-brand"
+          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
@@ -88,7 +88,7 @@ export function LoginCard(): ReactElement {
       {(state?.verified || state?.registered) && (
         <p
           role="status"
-          className="mt-4 rounded-xl border border-brand/40 bg-brand/10 p-3 text-sm text-zinc-900 dark:border-brand/30 dark:bg-brand/10 dark:text-zinc-100"
+          className="mt-4 rounded-xl border border-zinc-300 bg-zinc-100 p-3 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         >
           {state?.verified
             ? "Xác minh thành công. Mời bạn đăng nhập."
@@ -147,13 +147,13 @@ export function LoginCard(): ReactElement {
       <div data-rise className="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:gap-4">
         <Link
           to="/forgot-password"
-          className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand"
+          className="text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 hover:bg-zinc-100 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900"
         >
           Quên mật khẩu?
         </Link>
         <Link
           to="/register"
-          className="text-zinc-900 underline decoration-brand decoration-2 underline-offset-2 hover:bg-brand/15 dark:text-brand"
+          className="text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 hover:bg-zinc-100 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900"
         >
           Chưa có tài khoản? Đăng ký
         </Link>

@@ -9,17 +9,17 @@ import { MobileTabBar } from "./MobileTabBar.tsx";
 import { NavDrawer } from "./NavDrawer.tsx";
 import { RightRail } from "./RightRail.tsx";
 import { ToastViewport } from "./ToastViewport.tsx";
+import { RAIL_SCROLL } from "../rail-styles.ts";
 
 // X-style three-column shell, centered as one group:
 // left rail (icons sm-xl, labels xl+) | 600px bordered column | right rail
-// (lg+). Phones get a sticky header, a drawer and a bottom tab bar. The
-// column is a size container: page layouts respond to its width (@2xl/@4xl),
-// not the viewport. Workspace surfaces (/manage, /admin) drop the right
-// rail and widen the column to 920px, like X Messages.
+// (lg+, every route). Phones get a sticky header, a drawer and a bottom tab
+// bar. The frame is identical on every route: the column width never changes,
+// so the rails never shift while navigating. The column is a size container:
+// page layouts respond to its width (@2xl/@4xl), not the viewport.
 export function PageShell(): ReactElement {
   const { pathname } = useLocation();
   const session = useSession();
-  const wide = pathname.startsWith("/manage") || pathname.startsWith("/admin");
   // Live badge: notification pings invalidate the unread count everywhere.
   useNotificationsRealtime(session.data?.id);
   // The drawer toggle only holds while the route it was opened on stays
@@ -37,9 +37,7 @@ export function PageShell(): ReactElement {
           <LeftRail />
         </header>
         <main
-          className={`@container min-h-dvh w-full min-w-0 border-zinc-200 pb-20 sm:border-x sm:pb-0 dark:border-zinc-800 ${
-            wide ? "max-w-[920px]" : "max-w-[600px]"
-          }`}
+          className="@container min-h-dvh w-full min-w-0 max-w-[600px] border-zinc-200 pb-20 sm:border-x sm:pb-0 dark:border-zinc-800"
         >
           <CenterHeader
             drawerOpen={drawerOpen}
@@ -49,14 +47,12 @@ export function PageShell(): ReactElement {
             <Outlet />
           </div>
         </main>
-        {!wide && (
-          <aside
-            aria-label="Thông tin cá nhân"
-            className="sticky top-0 ml-6 hidden h-dvh w-[290px] shrink-0 overflow-y-auto lg:block xl:w-[350px]"
-          >
-            <RightRail />
-          </aside>
-        )}
+        <aside
+          aria-label="Thông tin cá nhân"
+          className={`sticky top-0 ml-6 hidden h-dvh w-[290px] shrink-0 lg:block xl:w-[350px] ${RAIL_SCROLL}`}
+        >
+          <RightRail />
+        </aside>
       </div>
       <MobileTabBar />
       <NavDrawer open={drawerOpen} onClose={closeDrawer} />

@@ -62,7 +62,7 @@ export function JourneyCard(): ReactElement {
         {invites > 0 && (
           <Link
             to="/manage/members"
-            className="mt-3 flex items-center gap-2 rounded-xl border border-brand/40 bg-brand/10 px-3 py-2 text-sm font-medium text-zinc-900 transition-colors hover:bg-brand/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:border-brand/30 dark:text-zinc-100 dark:focus-visible:outline-brand"
+            className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-300 bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:outline-zinc-400"
           >
             <FiMail className="h-4 w-4 shrink-0" aria-hidden="true" />
             {`${invites} lời mời tham gia tổ chức đang chờ`}

@@ -38,7 +38,7 @@ export function ActivityCard({
   return (
     <Link
       to={href}
-      className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 p-4 transition-colors hover:border-brand dark:border-zinc-800 dark:hover:border-brand"
+      className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-500"
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">

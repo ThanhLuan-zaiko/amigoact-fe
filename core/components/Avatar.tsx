@@ -10,7 +10,7 @@ function initialOf(name: string): string {
   return first ? first.toUpperCase() : "?";
 }
 
-// Brand initial disc; decorative because a name label always sits beside it.
+// Neutral initial disc; decorative because a name label always sits beside it.
 export function Avatar({
   name,
   size = "md",
@@ -21,7 +21,7 @@ export function Avatar({
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-full border border-brand bg-brand font-semibold text-zinc-950 dark:border-brand dark:bg-brand dark:text-zinc-950 ${SIZES[size]}`}
+      className={`flex shrink-0 items-center justify-center rounded-full border border-zinc-900 bg-zinc-900 font-semibold text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950 ${SIZES[size]}`}
     >
       {initialOf(name)}
     </span>

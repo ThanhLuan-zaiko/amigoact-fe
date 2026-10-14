@@ -2,12 +2,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-  --color-brand: #aff092;
-}
-
-/* Brand uses only #aff092. Tints use opacity modifiers (bg-brand/10). */
-
 /* Slim scrollbar shared by the whole site (section 5.1 exception).
    Firefox uses scrollbar-width/color; Chromium/Safari use the pseudo-elements below. */
 html {

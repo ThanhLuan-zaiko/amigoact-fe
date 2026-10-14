@@ -153,7 +153,7 @@ export function SuggestedOrgsCard(): ReactElement {
   const items = orgs.data?.items ?? [];
 
   return (
-    <RailCard title="Tổ chức nổi bật" moreTo={items.length > 0 ? "/orgs" : undefined}>
+    <RailCard title="Tổ chức nổi bật" moreTo={items.length > 0 ? "/" : undefined}>
       {orgs.isPending ? (
         <div className="px-4 pb-4"><LoadingState label="Đang tải tổ chức…" /></div>
       ) : orgs.isError ? (

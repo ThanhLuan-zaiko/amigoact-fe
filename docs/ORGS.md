@@ -1,18 +1,29 @@
 # Tổ chức và thư viện media — `dashboard/` + `orgs/` (public)
 
-## 1. Trang công khai `/orgs` và `/orgs/:slug` (`orgs/`)
+## 1. Thư mục công khai trên `/` và `/orgs/:slug` (`orgs/`)
 
 Thư mục guest (không cần đăng nhập), đọc `GET /orgs` và
 `GET /orgs/{slug}` của backend — feature module riêng `orgs/`
 (`api.ts`, `keys.ts`, `hooks.ts`, `messages.tsx`, `utils.ts`,
 `components/`), không lẫn với `dashboard/` quản trị.
 
-- `/orgs` là "discovery board" kiểu feed: section hero (search debounce + chip
-  `kind` + chip `sort`), section thống kê theo `counts`, section nổi bật
-  (org đầu kết quả theo sort), rail "Vừa tham gia", mosaic card, section
-  phân trang. Filter/pagination nằm trên URL (`?q&kind&sort&page`) nên
-  deep-link được; `splitDirectory` trong `utils.ts` chia items thành
-  spotlight/rail/mosaic.
+- Thư mục "discovery board" kiểu feed render ngay trên trang chủ `/` qua
+  `orgs/components/OrgDirectory.tsx` (bên dưới `DiscoverySection` của home):
+  section hero (search debounce + chip `kind` + chip `sort`), section thống
+  kê theo `counts`, section nổi bật (org đầu kết quả theo sort), rail "Vừa
+  tham gia", mosaic card, section phân trang. Filter/pagination nằm trên URL
+  (`/?q&kind&sort&page`) nên deep-link được; `splitDirectory` trong
+  `utils.ts` chia items thành spotlight/rail/mosaic. Route `/orgs` cũ
+  redirect về `/` và forward nguyên query string nên link/search cũ không
+  gãy (`OrgsDirectoryRedirect` trong `App.tsx`).
+- Timeline toàn cục trên `/` qua `orgs/components/AnnouncementTimeline.tsx`
+  (đứng trước `DiscoverySection`): đọc `GET /announcements?limit&cursor`
+  (guest, cursor = `post_id` cuối trang) render từng teaser dạng dòng feed —
+  logo + tên org, ngày đăng, tiêu đề, excerpt, cover nhỏ, tác giả, số bình
+  luận — mỗi dòng mở `/orgs/:slug/posts/:postId`. Sentinel `IntersectionObserver`
+  (`rootMargin` 600px) tự gọi `fetchNextPage` của `useAnnouncementFeed`
+  (infinite query, trang 12 item) khi user lướt gần cuối — cuộn vô tận
+  không nút, kèm spinner nhỏ khi đang tải và dòng kết feed khi hết dữ liệu.
 - `/orgs/:slug` render 6 section: hero (cover + logo + nút `Tham gia`),
   `Đánh giá tin cậy`, giới thiệu, liên hệ & pháp lý, hoạt động đã tổ
   chức, thư viện ảnh. `OrgTrustCard` dựng checklist 6 tiêu chí từ tín
@@ -34,6 +45,15 @@ khỏi card và trang chi tiết chuyển sang EmptyState 404 mà không cần
 F5. Payload chỉ là gợi ý refetch; REST vẫn là fact source nên event giả
 không thể đưa org đã ẩn quay lại. Guest kết nối bằng socket ẩn danh —
 xem `docs/REALTIME.md`.
+
+### Realtime bảng tin (`useAnnouncementsRealtime`)
+
+`AnnouncementTimeline` mount `useAnnouncementsRealtime()`: subscribe kênh
+public `announcements:feed`, nhận `{action, post_id, org_id}`
+(`created`/`updated`/`removed`) rồi invalidate `orgKeys.feed()` +
+`orgKeys.orgDetails()` + `orgKeys.orgPosts()` — teaser, đếm bình luận và
+tin tức trên trang org cập nhật không cần F5. Cùng nguyên tắc refetch-hint:
+REST vẫn là fact source.
 
 ## 2. Trang `/manage/orgs`
 

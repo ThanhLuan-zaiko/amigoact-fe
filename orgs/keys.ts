@@ -7,4 +7,7 @@ export const orgKeys = {
   detail: (slug: string) => [...orgKeys.all, "detail", slug] as const,
   posts: (slug: string, page: number) =>
     [...orgKeys.all, "posts", slug, page] as const,
+  feed: () => [...orgKeys.all, "feed"] as const,
+  orgDetails: () => [...orgKeys.all, "detail"] as const,
+  orgPosts: () => [...orgKeys.all, "posts"] as const,
 };

@@ -1,34 +1,36 @@
 import { useCallback, useEffect } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ApiError } from "../core/api.ts";
-import { Section } from "../core/components/Section.tsx";
+import { ApiError } from "../../core/api.ts";
+import { Section } from "../../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
-} from "../core/components/Feedback.tsx";
-import { Pagination } from "../core/components/Pagination.tsx";
-import { useRiseOn } from "../core/motion.ts";
-import type { OrgKind, PublicOrgSort } from "./api.ts";
-import { useOrgsRealtime, usePublicOrgs } from "./hooks.ts";
-import { toVietnameseOrgsMessage } from "./messages.tsx";
-import { splitDirectory } from "./utils.ts";
-import { OrgCard } from "./components/OrgCard.tsx";
-import { OrgHeroCard } from "./components/OrgHeroCard.tsx";
-import { OrgNewestRail } from "./components/OrgNewestRail.tsx";
-import { OrgSpotlightCard } from "./components/OrgSpotlightCard.tsx";
-import { OrgStatsCard } from "./components/OrgStatsCard.tsx";
+} from "../../core/components/Feedback.tsx";
+import { Pagination } from "../../core/components/Pagination.tsx";
+import { useRiseOn } from "../../core/motion.ts";
+import type { OrgKind, PublicOrgSort } from "../api.ts";
+import { useOrgsRealtime, usePublicOrgs } from "../hooks.ts";
+import { toVietnameseOrgsMessage } from "../messages.tsx";
+import { splitDirectory } from "../utils.ts";
+import { OrgCard } from "./OrgCard.tsx";
+import { OrgHeroCard } from "./OrgHeroCard.tsx";
+import { OrgNewestRail } from "./OrgNewestRail.tsx";
+import { OrgSpotlightCard } from "./OrgSpotlightCard.tsx";
+import { OrgStatsCard } from "./OrgStatsCard.tsx";
 
 const PAGE_SIZE = 24;
 const KINDS: string[] = ["organization", "club", "group", "business"];
 const SORTS: string[] = ["newest", "name", "members"];
 
-export function OrgsPage(): ReactElement {
+// The full public directory rendered on the home column: filter state lives
+// in the URL so every view is deep-linkable (AGENTS.md 7.9). The legacy
+// /orgs route redirects here, forwarding the same query params.
+export function OrgDirectory(): ReactElement {
   const [searchParams, setSearchParams] = useSearchParams();
   useOrgsRealtime();
 
-  // Filter state lives in the URL so every view is deep-linkable (AGENTS.md 7.9).
   const query = searchParams.get("q") ?? "";
   const kindParam = searchParams.get("kind") ?? "all";
   const kind = KINDS.includes(kindParam) ? kindParam : "all";

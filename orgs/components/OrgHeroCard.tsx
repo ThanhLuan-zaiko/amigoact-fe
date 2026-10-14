@@ -73,9 +73,9 @@ export function OrgHeroCard({
           className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
         />
-        <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Khám phá cộng đồng
-        </h1>
+        </h2>
       </div>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
         Tìm tổ chức, câu lạc bộ và hội nhóm đang mở cửa chào bạn.

@@ -1,8 +1,11 @@
 import { useEffect } from "react";
 import {
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
+  type InfiniteData,
+  type UseInfiniteQueryResult,
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
@@ -11,6 +14,7 @@ import { subscribeChannel } from "../core/realtime.ts";
 import {
   fetchPublicOrg,
   joinOrg,
+  listAnnouncementFeed,
   listPublicOrgPosts,
   listPublicOrgs,
   type OrgMembership,
@@ -18,6 +22,7 @@ import {
   type PublicOrgPage,
   type PublicOrgParams,
   type PublicPostPage,
+  type PublicTimelinePage,
 } from "./api.ts";
 import { orgKeys } from "./keys.ts";
 
@@ -62,6 +67,25 @@ export function usePublicOrgPosts(
   });
 }
 
+export const FEED_PAGE_SIZE = 12;
+
+export function useAnnouncementFeed(): UseInfiniteQueryResult<
+  InfiniteData<PublicTimelinePage>,
+  ApiError
+> {
+  return useInfiniteQuery({
+    queryKey: orgKeys.feed(),
+    queryFn: ({ pageParam }) =>
+      listAnnouncementFeed({
+        limit: FEED_PAGE_SIZE,
+        cursor: pageParam,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    staleTime: 30_000,
+  });
+}
+
 export const ORGS_DIRECTORY_CHANNEL = "orgs:directory";
 
 /**
@@ -77,6 +101,26 @@ export function useOrgsRealtime(): void {
     () =>
       subscribeChannel(ORGS_DIRECTORY_CHANNEL, () => {
         void queryClient.invalidateQueries({ queryKey: orgKeys.all });
+      }),
+    [queryClient],
+  );
+}
+
+export const ANNOUNCEMENTS_FEED_CHANNEL = "announcements:feed";
+
+/**
+ * Live public timeline: a hint revalidates the feed plus the affected
+ * org surfaces (detail teaser, news list), since the same payload backs
+ * all three. Refetch hints only - REST stays the fact source.
+ */
+export function useAnnouncementsRealtime(): void {
+  const queryClient = useQueryClient();
+  useEffect(
+    () =>
+      subscribeChannel(ANNOUNCEMENTS_FEED_CHANNEL, () => {
+        void queryClient.invalidateQueries({ queryKey: orgKeys.feed() });
+        void queryClient.invalidateQueries({ queryKey: orgKeys.orgDetails() });
+        void queryClient.invalidateQueries({ queryKey: orgKeys.orgPosts() });
       }),
     [queryClient],
   );

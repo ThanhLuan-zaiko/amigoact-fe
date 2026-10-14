@@ -28,8 +28,8 @@ Hợp đồng với backend (`amigoact-be` AGENTS.md §16):
    một lần nên mỗi lần (re)connect đều xin ticket mới.
 2. **Guest**: `401` khi xin ticket (chưa đăng nhập) → client mở
    `ws(s)://<api>/ws` không ticket — socket ẩn danh của backend chỉ
-   subscribe được kênh public (hiện là `orgs:directory`); kênh private
-   vẫn nhận `FORBIDDEN` + `4403` như thường.
+   subscribe được kênh public (`orgs:directory`, `announcements:feed`);
+   kênh private vẫn nhận `FORBIDDEN` + `4403` như thường.
 3. Sau khi mở, server gửi `ready.v1` (`heartbeat_seconds` được dùng để chỉnh
    watchdog) rồi client `subscribe.v1` lại toàn bộ kênh đang giữ
    (resubscribe-on-reconnect). Kênh `notifications:{userId}` server tự join
@@ -52,10 +52,10 @@ API xuất ra:
 | `realtime` | Singleton client (dùng nội bộ hai hàm trên) |
 
 Socket tự teardown về `idle` khi không còn subscriber/status listener nào.
-Kênh public của thư mục tổ chức (`orgs:directory`, subscribe qua
-`useOrgsRealtime` trong `orgs/hooks.ts`) là trường hợp duy nhất hoạt động
-trên socket ẩn danh — payload `{action, org_id, slug}` luôn chỉ là gợi ý
-invalidate query, không phải sự thật.
+Hai kênh public hoạt động trên socket ẩn danh: `orgs:directory` (qua
+`useOrgsRealtime`) và `announcements:feed` (qua `useAnnouncementsRealtime`,
+payload `{action, post_id, org_id}`). Cả hai chỉ là gợi ý invalidate query,
+không phải sự thật.
 
 ### Toast realtime (thành viên)
 

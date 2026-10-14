@@ -17,7 +17,7 @@ const FOOTER_LINK =
   "rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 " +
   "focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400";
 
-// Search pill: the org directory owns server-side search (GET /orgs?q=).
+// Search pill: the home directory owns server-side org search (GET /orgs?q=).
 function SearchBox(): ReactElement {
   const navigate = useNavigate();
   const [term, setTerm] = useState("");
@@ -27,7 +27,7 @@ function SearchBox(): ReactElement {
       onSubmit={(event) => {
         event.preventDefault();
         const query = term.trim();
-        navigate(query ? `/orgs?q=${encodeURIComponent(query)}` : "/orgs");
+        navigate(query ? `/?q=${encodeURIComponent(query)}` : "/");
       }}
     >
       <TextField
@@ -67,8 +67,8 @@ export function RightRail(): ReactElement {
           <Link to="/leaderboard" className={FOOTER_LINK}>
             Bảng xếp hạng
           </Link>
-          <Link to="/orgs" className={FOOTER_LINK}>
-            Tổ chức
+          <Link to="/events" className={FOOTER_LINK}>
+            Sự kiện
           </Link>
         </nav>
         <p className="mt-1">{`© ${YEAR} AmigoACT`}</p>

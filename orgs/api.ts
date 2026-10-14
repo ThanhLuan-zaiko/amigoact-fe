@@ -132,6 +132,42 @@ export async function listPublicOrgPosts(
   );
 }
 
+export interface PublicTimelineOrg {
+  id: string;
+  name: string;
+  slug: string;
+  logo_url: string | null;
+}
+
+export interface PublicTimelineItem {
+  id: string;
+  title: string;
+  excerpt: string;
+  cover_url: string | null;
+  author_name: string;
+  published_at: string | null;
+  comment_count: number;
+  org: PublicTimelineOrg;
+}
+
+export interface PublicTimelinePage {
+  items: PublicTimelineItem[];
+  next_cursor: string | null;
+}
+
+// Guest timeline: newest published announcements across every org (no auth).
+export async function listAnnouncementFeed(
+  params: { limit?: number; cursor?: string } = {},
+): Promise<PublicTimelinePage> {
+  const search = new URLSearchParams();
+  if (params.limit !== undefined) search.set("limit", String(params.limit));
+  if (params.cursor) search.set("cursor", params.cursor);
+  const query = search.toString();
+  return apiFetch<PublicTimelinePage>(
+    `/announcements${query ? `?${query}` : ""}`,
+  );
+}
+
 export interface OrgMembership {
   org_id: string;
   user_id: string;

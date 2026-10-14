@@ -34,7 +34,6 @@ import { DashboardPage } from "./dashboard/page.tsx";
 import { MembershipRealtime } from "./dashboard/components/MembershipRealtime.tsx";
 import { NotificationsPage } from "./notifications/page.tsx";
 import { OrgDetailPage } from "./orgs/detail-page.tsx";
-import { OrgsPage } from "./orgs/page.tsx";
 import { PublicVolunteerPage } from "./profiles/public-page.tsx";
 import { MyRegistrationsPage } from "./registrations/mine-page.tsx";
 import { VolunteerProfilePage } from "./profiles/volunteer-page.tsx";
@@ -49,6 +48,13 @@ function LegacyDashboardRedirect(): ReactElement {
   const { "*": splat = "" } = useParams();
   const { search, hash } = useLocation();
   return <Navigate to={`/manage/${splat}${search}${hash}`} replace />;
+}
+
+// The org directory moved to the home column; keep /orgs?q&kind&sort&page
+// deep links working by forwarding the query string.
+function OrgsDirectoryRedirect(): ReactElement {
+  const { search } = useLocation();
+  return <Navigate to={`/${search}`} replace />;
 }
 
 function NotFoundPage(): ReactElement {
@@ -82,7 +88,7 @@ export default function App(): ReactElement {
         <Route index element={<HomePage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="events/:orgId/:slug" element={<EventDetailPage />} />
-        <Route path="orgs" element={<OrgsPage />} />
+        <Route path="orgs" element={<OrgsDirectoryRedirect />} />
         <Route path="orgs/:slug" element={<OrgDetailPage />} />
         <Route path="orgs/:slug/posts" element={<OrgNewsPage />} />
         <Route

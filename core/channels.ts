@@ -23,6 +23,11 @@ export function postsChannel(orgId: string): string {
   return `posts:${orgId}`;
 }
 
+// Public guest channel for the global announcement timeline (no UUID).
+export function announcementsChannel(): string {
+  return "announcements:feed";
+}
+
 export function chatChannel(roomId: string): string {
   return `chat:${roomId}`;
 }

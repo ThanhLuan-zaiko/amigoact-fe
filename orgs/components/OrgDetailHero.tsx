@@ -138,7 +138,7 @@ export function OrgDetailHero({ org }: OrgDetailHeroProps): ReactElement {
           <div className="mt-4 flex flex-wrap items-center gap-3">
             {joinCta(org, session.data != null, join)}
             <Button
-              to="/orgs"
+              to="/"
               variant="ghost"
               icon={<FiArrowLeft className="h-4 w-4" aria-hidden="true" />}
             >

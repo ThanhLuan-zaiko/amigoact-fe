@@ -21,7 +21,6 @@ import {
   FiStar,
   FiUser,
   FiUserCheck,
-  FiUsers,
 } from "react-icons/fi";
 
 export interface NavEntry {
@@ -45,7 +44,6 @@ export interface RouteTitle {
 export const PRIMARY_LINKS: NavEntry[] = [
   { to: "/", label: "Trang chủ", Icon: FiHome, end: true },
   { to: "/events", label: "Sự kiện", Icon: FiCompass },
-  { to: "/orgs", label: "Tổ chức", Icon: FiUsers },
   {
     to: "/notifications",
     label: "Thông báo",
@@ -111,10 +109,11 @@ export const TAB_PATHS_MEMBER = [
   "/manage/chat",
   "/manage",
 ];
-export const TAB_PATHS_GUEST = ["/", "/events", "/orgs", "/leaderboard"];
+export const TAB_PATHS_GUEST = ["/", "/events", "/leaderboard"];
 
 // Header titles for routes that are not nav destinations.
 export const ROUTE_TITLES: Record<string, RouteTitle> = {
+  "/orgs": { title: "Tổ chức", parent: "/" },
   "/login": { title: "Đăng nhập" },
   "/register": { title: "Tạo tài khoản" },
   "/verify": { title: "Xác thực email" },

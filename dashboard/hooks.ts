@@ -84,7 +84,8 @@ export function useSoftDeleteOrg(
   return useMutation({
     meta: { successToast: successTitle },
     mutationFn: softDeleteOrg,
-    onSuccess: async () => {
+    onSuccess: async (_org, orgId) => {
+      queryClient.removeQueries({ queryKey: dashboardKeys.orgMedia(orgId) });
       await queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
   });
@@ -97,7 +98,8 @@ export function useHardDeleteOrg(
   return useMutation({
     meta: { successToast: successTitle },
     mutationFn: hardDeleteOrg,
-    onSuccess: async () => {
+    onSuccess: async (_data, orgId) => {
+      queryClient.removeQueries({ queryKey: dashboardKeys.orgMedia(orgId) });
       await queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
   });
@@ -110,7 +112,8 @@ export function useRestoreOrg(
   return useMutation({
     meta: { successToast: successTitle },
     mutationFn: restoreOrg,
-    onSuccess: async () => {
+    onSuccess: async (_org, orgId) => {
+      queryClient.removeQueries({ queryKey: dashboardKeys.orgMedia(orgId) });
       await queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
     },
   });
@@ -124,7 +127,10 @@ export function useOrgMedia(
     queryKey: dashboardKeys.orgMedia(orgId),
     queryFn: () => listOrgMedia(orgId),
     staleTime: 30_000,
-    retry: 1,
+    // 4xx answers (410 ORG_DELETED, 403) are terminal; retrying just spams.
+    retry: (failureCount, error) =>
+      failureCount === 0 &&
+      !(error instanceof ApiError && error.status >= 400 && error.status < 500),
     refetchOnWindowFocus: false,
     enabled,
   });

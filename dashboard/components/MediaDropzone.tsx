@@ -183,6 +183,16 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
       )}
       <div aria-live="polite" aria-busy={gallery.isPending}>
         {gallery.isPending && gallery.data === undefined && <LoadingState label="Đang tải thư viện…" />}
+        {gallery.isError && gallery.data === undefined && (
+          <ErrorState
+            title="Không tải được thư viện"
+            message={toVietnameseDashboardMessage(
+              gallery.error instanceof ApiError ? gallery.error.code : "REQUEST_FAILED",
+            )}
+            actionLabel="Thử lại"
+            onAction={() => void gallery.refetch()}
+          />
+        )}
         {gallery.data && total === 0 && <EmptyState title="Chưa có tệp nào" message="Ảnh và video của tổ chức sẽ hiện ở đây." />}
         {total > 0 && (
           <>

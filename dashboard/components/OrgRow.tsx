@@ -41,7 +41,7 @@ export function OrgRow({
   onEdit,
   onOpenMedia,
 }: OrgRowProps): ReactElement {
-  const gallery = useOrgMedia(org.id, !compact);
+  const gallery = useOrgMedia(org.id, !compact && org.deleted_at === null);
   const join = useJoinOrg();
   const [joinCode, setJoinCode] = useState<string | null>(null);
   const [joined, setJoined] = useState(false);

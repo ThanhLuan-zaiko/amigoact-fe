@@ -59,6 +59,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
     ...init,
+    // API JSON must never sit in the HTTP cache; query state is the cache.
+    cache: "no-store",
     credentials: "include",
     headers,
   });
@@ -116,6 +118,7 @@ async function uploadRequest<T>(path: string, form: FormData, method = "POST"): 
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
     method,
+    cache: "no-store",
     credentials: "include",
     headers,
     body: form,

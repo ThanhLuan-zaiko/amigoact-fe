@@ -14,6 +14,7 @@ export const NOTIFICATION_MESSAGES: Record<string, string> = {
   NOT_FOUND: "Không tìm thấy thông báo.",
   FORBIDDEN: "Bạn không có quyền với thông báo này.",
   UNAUTHORIZED: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Yêu cầu thất bại, vui lòng thử lại.",
 };
 

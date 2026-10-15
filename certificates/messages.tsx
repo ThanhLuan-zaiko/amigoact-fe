@@ -11,6 +11,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Chỉ cấp chứng nhận cho đăng ký đã điểm danh.",
   NOT_FOUND: "Không tìm thấy chứng nhận hoặc mã không hợp lệ.",
   FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
 };
 
 export function toVietnameseCertificateError(

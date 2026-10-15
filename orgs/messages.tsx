@@ -48,6 +48,7 @@ const MESSAGES: Record<string, string> = {
   INVITE_ONLY: "Tổ chức này chỉ nhận thành viên qua lời mời.",
   UNAUTHORIZED: "Vui lòng đăng nhập để tham gia.",
   ORG_DELETED: "Tổ chức này không còn hoạt động.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
 };
 

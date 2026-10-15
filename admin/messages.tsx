@@ -4,6 +4,7 @@ export const ADMIN_MESSAGES: Record<string, string> = {
   NOT_FOUND: "Không tìm thấy tổ chức.",
   USER_NOT_FOUND: "Không tìm thấy tài khoản với email này.",
   INVALID_ORG_STATE: "Tổ chức không ở trạng thái chờ xác minh.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Yêu cầu thất bại, vui lòng thử lại.",
 };
 

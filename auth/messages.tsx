@@ -23,6 +23,7 @@ const MESSAGES: Record<string, string> = {
     "Tài khoản chưa xác minh email. Vui lòng nhập mã đã gửi tới hộp thư của bạn.",
   CODE_EXPIRED: "Mã đã hết hạn. Vui lòng yêu cầu mã mới.",
   TOO_MANY_REQUESTS: "Bạn thao tác quá nhiều. Vui lòng thử lại sau ít phút.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   NOT_FOUND: "Không tìm thấy thông tin yêu cầu.",
   UNAUTHORIZED: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
   ACCOUNT_SUSPENDED: "Tài khoản đang bị tạm khóa.",

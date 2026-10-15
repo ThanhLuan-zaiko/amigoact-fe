@@ -22,6 +22,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_REGISTRATION_STATE: "Trạng thái đăng ký không hợp lệ.",
   NOT_FOUND: "Không tìm thấy dữ liệu hoặc mã không hợp lệ.",
   FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
 };
 
 export function toVietnameseRegistrationError(

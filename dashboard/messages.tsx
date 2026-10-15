@@ -49,6 +49,7 @@ const MESSAGES: Record<string, string> = {
   MEMBER_REMOVED: "Đã xóa thành viên.",
   MEMBER_LEFT: "Bạn đã rời tổ chức.",
   JOINED_ORG: "Bạn đã gia nhập tổ chức.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
 };
 

@@ -11,6 +11,7 @@ export const PROFILE_MESSAGES: Record<string, string> = {
   MEDIA_TOO_LARGE: "Tệp vượt quá dung lượng cho phép.",
   FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
   UNAUTHORIZED: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Yêu cầu thất bại, vui lòng thử lại.",
   VALIDATION_ERROR: "Dữ liệu chưa hợp lệ, hãy kiểm tra lại các ô.",
   STUDENT_CODE_REQUIRED: "Vui lòng nhập mã sinh viên.",

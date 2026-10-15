@@ -5,6 +5,7 @@ const MESSAGES: Record<string, string> = {
   FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
   NOT_FOUND: "Không tìm thấy nội dung yêu cầu.",
   TOO_MANY_REQUESTS: "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
+  SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
   REQUIRED: "Trường này là bắt buộc.",
   MEMBER_NOT_FOUND: "Thành viên không còn trong tổ chức.",

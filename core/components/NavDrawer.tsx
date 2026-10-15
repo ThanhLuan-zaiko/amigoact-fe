@@ -4,14 +4,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { FiLogIn, FiLogOut, FiUserPlus } from "react-icons/fi";
 import { useAdminStatus } from "../../admin/hooks.ts";
 import { useLogout, useSession } from "../../auth/hooks.ts";
-import { useMyMemberships } from "../../dashboard/members-hooks.ts";
 import { useUnreadCount } from "../../notifications/hooks.ts";
 import { expandPanel } from "../motion.ts";
 import { activeEntry } from "../nav-meta.ts";
 import {
   ADMIN_LINK,
-  MANAGE_LINKS,
-  MANAGE_ROOT,
   MORE_LINKS,
   PASSWORD_LINK,
   PRIMARY_LINKS,
@@ -39,9 +36,7 @@ export function NavDrawer({
   const signedIn = profile !== null;
   const admin = useAdminStatus(signedIn);
   const active = activeEntry(pathname, PRIMARY_LINKS);
-  const inManage = signedIn && active?.to === MANAGE_ROOT;
   const unread = useUnreadCount(signedIn).data?.unread ?? 0;
-  const invites = useMyMemberships("invited", inManage).data?.total ?? 0;
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -67,7 +62,6 @@ export function NavDrawer({
   if (!open) return null;
 
   const links = PRIMARY_LINKS.filter((entry) => signedIn || !entry.auth);
-  const manageActive = inManage ? activeEntry(pathname, MANAGE_LINKS) : null;
   const extras = [
     ...MORE_LINKS.filter((entry) => signedIn || !entry.auth),
     ...(admin.data?.is_admin ? [ADMIN_LINK] : []),
@@ -99,7 +93,7 @@ export function NavDrawer({
       >
         {profile ? (
           <div className="px-4 pb-3">
-            <Avatar name={profile.full_name} />
+            <Avatar name={profile.full_name} src={profile.avatar_url} />
             <p className="mt-2 truncate text-[17px] font-bold text-zinc-900 dark:text-zinc-100">
               {profile.full_name}
             </p>
@@ -135,25 +129,6 @@ export function NavDrawer({
                   count={entry.badge === "notifications" ? unread : 0}
                   onNavigate={onClose}
                 />
-                {entry.to === MANAGE_ROOT && inManage && (
-                  <ul
-                    aria-label="Không gian quản lý"
-                    className="my-1 ml-[25px] flex flex-col gap-0.5 border-l border-zinc-200 pl-3 dark:border-zinc-800"
-                  >
-                    {MANAGE_LINKS.map((sub) => (
-                      <li key={sub.to}>
-                        <RailNavItem
-                          entry={sub}
-                          compact
-                          expanded
-                          active={sub === manageActive}
-                          count={sub.badge === "invites" ? invites : 0}
-                          onNavigate={onClose}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </li>
             ))}
           </ul>

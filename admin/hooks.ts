@@ -53,7 +53,8 @@ export function useVerifyOrg(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: verifyOrg,
+        meta: { successToast: "admin.verify" },
+mutationFn: verifyOrg,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminKeys.all });
     },
@@ -67,7 +68,8 @@ export function useRejectOrg(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+        meta: { successToast: "admin.reject" },
+mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       rejectOrg(id, reason),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminKeys.all });
@@ -91,7 +93,8 @@ export function useAdmins(enabled = true): UseQueryResult<
 export function useGrantAdmin(): UseMutationResult<void, ApiError, string> {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: grantAdmin,
+        meta: { successToast: "admin.grant" },
+mutationFn: grantAdmin,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminKeys.all });
     },
@@ -101,7 +104,8 @@ export function useGrantAdmin(): UseMutationResult<void, ApiError, string> {
 export function useRevokeAdmin(): UseMutationResult<void, ApiError, string> {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: revokeAdmin,
+        meta: { successToast: "admin.revoke" },
+mutationFn: revokeAdmin,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminKeys.all });
     },

@@ -101,7 +101,8 @@ export function useUpdateNotificationPreferences(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: updatePreferences,
+        meta: { successToast: "notification.prefs" },
+mutationFn: updatePreferences,
     onSuccess: (data) => {
       queryClient.setQueryData(notificationKeys.prefs(), data);
     },

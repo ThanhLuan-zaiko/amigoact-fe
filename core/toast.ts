@@ -70,3 +70,19 @@ export function dismissToast(id: number): void {
   toasts = next;
   emit();
 }
+
+/**
+ * Mutation toast contract read by the global MutationCache.
+ * `successToast`/`errorToast` are either keys in MUTATION_TOAST_TITLES
+ * (core/mutation-copy.tsx) or literal Vietnamese titles from .tsx callers.
+ * Absent keys mean the mutation stays silent - declaring meta is the
+ * decision of when to toast.
+ */
+export interface MutationToastMeta {
+  successToast?: string;
+  errorToast?: string;
+}
+
+export function mutationToastMeta(meta: MutationToastMeta): MutationToastMeta {
+  return meta;
+}

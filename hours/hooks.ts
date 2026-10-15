@@ -61,7 +61,8 @@ export function useSubmitManualHours(
   note?: string;
 }> {
   return useMutation({
-    mutationFn: (input) => submitManualHours(orgId, input),
+        meta: { successToast: "hours.log" },
+mutationFn: (input) => submitManualHours(orgId, input),
     ...useInvalidateHours(),
   });
 }
@@ -72,7 +73,8 @@ export function useReviewHours(): Mutation<{
   note?: string;
 }> {
   return useMutation({
-    mutationFn: ({ entryId, status, note }) =>
+        meta: { successToast: "hours.approve" },
+mutationFn: ({ entryId, status, note }) =>
       reviewHours(entryId, status, note),
     ...useInvalidateHours(),
   });

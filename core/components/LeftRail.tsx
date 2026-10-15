@@ -2,10 +2,9 @@ import type { ReactElement } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { FiActivity, FiLogIn, FiPlus } from "react-icons/fi";
 import { useSession } from "../../auth/hooks.ts";
-import { useMyMemberships } from "../../dashboard/members-hooks.ts";
 import { useUnreadCount } from "../../notifications/hooks.ts";
 import { activeEntry } from "../nav-meta.ts";
-import { MANAGE_LINKS, MANAGE_ROOT, PRIMARY_LINKS } from "../nav.tsx";
+import { PRIMARY_LINKS } from "../nav.tsx";
 import { RAIL_SCROLL } from "../rail-styles.ts";
 import { AccountSwitcher } from "./AccountSwitcher.tsx";
 import { MoreMenu } from "./MoreMenu.tsx";
@@ -18,18 +17,15 @@ const CTA_CLASS =
   "focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-100 " +
   "dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200 dark:focus-visible:outline-zinc-400";
 
-// Shared left rail for every page: logo, primary destinations (the
-// dashboard expands into its workspace sections in place), More, the
-// primary action and the account switcher pinned to the bottom.
+// Shared left rail for every page: logo, primary destinations, More, the
+// primary action and the account switcher pinned to the bottom. Workspace
+// sections live in the ManageTabs strip on /manage pages, not in the rail.
 export function LeftRail(): ReactElement {
   const { pathname } = useLocation();
   const session = useSession();
   const signedIn = session.data != null;
   const active = activeEntry(pathname, PRIMARY_LINKS);
-  const inManage = signedIn && active?.to === MANAGE_ROOT;
   const unread = useUnreadCount(signedIn).data?.unread ?? 0;
-  const invites = useMyMemberships("invited", inManage).data?.total ?? 0;
-  const manageActive = inManage ? activeEntry(pathname, MANAGE_LINKS) : null;
   const links = PRIMARY_LINKS.filter((entry) => signedIn || !entry.auth);
 
   return (
@@ -54,23 +50,6 @@ export function LeftRail(): ReactElement {
                 active={entry === active}
                 count={entry.badge === "notifications" ? unread : 0}
               />
-              {entry.to === MANAGE_ROOT && inManage && (
-                <ul
-                  aria-label="Không gian quản lý"
-                  className="my-1 flex flex-col gap-0.5 border-y border-zinc-200 py-1 xl:ml-[25px] xl:border-y-0 xl:border-l xl:py-0 xl:pl-3 dark:border-zinc-800"
-                >
-                  {MANAGE_LINKS.map((sub) => (
-                    <li key={sub.to}>
-                      <RailNavItem
-                        entry={sub}
-                        compact
-                        active={sub === manageActive}
-                        count={sub.badge === "invites" ? invites : 0}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
             </li>
           ))}
         </ul>

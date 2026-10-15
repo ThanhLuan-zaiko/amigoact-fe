@@ -15,6 +15,56 @@ const RESULT_LABELS: Record<string, string> = {
   denied: "Từ chối",
 };
 
+// Vietnamese labels for org.update / org.legal:* metadata diffs.
+const FIELD_LABELS: Record<string, string> = {
+  name: "Tên tổ chức",
+  description: "Mô tả",
+  join_policy: "Chính sách tham gia",
+  tax_code: "Mã số thuế",
+  legal_rep_name: "Người đại diện",
+  legal_rep_id: "CCCD đại diện",
+  legal_rep_position: "Chức danh",
+  email: "Email",
+  phone: "Điện thoại",
+  website: "Website",
+  address: "Địa chỉ",
+  city: "Thành phố",
+  country: "Quốc gia",
+  legal_name: "Tên pháp lý",
+  license_number: "Số giấy phép",
+  is_personal: "Cá nhân",
+};
+
+function formatDetailValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Có" : "Không";
+  return String(value);
+}
+
+function DetailLines({ detail }: { detail: string | null }): ReactElement | null {
+  if (!detail) return null;
+  let parsed: Record<string, { old?: unknown; new?: unknown }>;
+  try {
+    parsed = JSON.parse(detail);
+  } catch {
+    return null;
+  }
+  const rows = Object.entries(parsed);
+  if (rows.length === 0) return null;
+  return (
+    <ul className="mt-1 flex w-full flex-col gap-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+      {rows.map(([field, diff]) => (
+        <li key={field}>
+          <span className="font-medium text-zinc-600 dark:text-zinc-300">
+            {FIELD_LABELS[field] ?? field}
+          </span>
+          {`: ${formatDetailValue(diff?.old)} → ${formatDetailValue(diff?.new)}`}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function AuditPage(): ReactElement {
   const orgs = useMyOrgs(false, { limit: 100 });
   const items = orgs.data?.items ?? [];
@@ -102,6 +152,7 @@ export function AuditPage(): ReactElement {
                 >
                   {RESULT_LABELS[entry.result] ?? entry.result}
                 </span>
+                <DetailLines detail={entry.detail} />
               </li>
             ))}
           </ul>

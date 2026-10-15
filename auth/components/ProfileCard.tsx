@@ -1,17 +1,13 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
 import { FiCalendar, FiCheckCircle, FiClock, FiEdit2, FiKey, FiLogOut, FiMail, FiMapPin, FiPhone, FiUser } from "react-icons/fi";
+import { Avatar } from "../../core/components/Avatar.tsx";
 import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import { useLogoutAll, useSession } from "../hooks.ts";
 import { GENDER_LABELS } from "../messages.tsx";
 import { ProfileEditCard } from "./ProfileEditCard.tsx";
-
-function initialOf(name: string): string {
-  const first = name.trim().charAt(0);
-  return first ? first.toUpperCase() : "?";
-}
 
 function dateLabel(iso: string | null): string {
   if (!iso) return "";
@@ -52,12 +48,7 @@ export function ProfileCard(): ReactElement {
   return (
     <Section>
       <div className="flex items-center gap-3">
-        <span
-          aria-hidden="true"
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-zinc-900 bg-zinc-900 text-lg font-semibold text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-        >
-          {initialOf(profile.full_name)}
-        </span>
+        <Avatar name={profile.full_name} src={profile.avatar_url} size="lg" />
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
             {profile.full_name}

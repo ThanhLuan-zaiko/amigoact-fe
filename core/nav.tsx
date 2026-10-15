@@ -40,7 +40,7 @@ export interface RouteTitle {
   parent?: string;
 }
 
-// Left rail destinations in X order; the manage entry expands in place.
+// Left rail destinations in X order; the manage entry opens /manage/overview.
 export const PRIMARY_LINKS: NavEntry[] = [
   { to: "/", label: "Trang chủ", Icon: FiHome, end: true },
   { to: "/events", label: "Sự kiện", Icon: FiCompass },
@@ -60,7 +60,7 @@ export const PRIMARY_LINKS: NavEntry[] = [
 export const MANAGE_ROOT = "/manage";
 export const MANAGE_LABEL = "Bảng điều khiển";
 
-// Workspace sections nested under the dashboard entry while it is active.
+// Workspace sections rendered as the ManageTabs strip on /manage pages.
 export const MANAGE_LINKS: NavEntry[] = [
   { to: "/manage/overview", label: "Tổng quan", Icon: FiBarChart2 },
   { to: "/manage/volunteer", label: "Hồ sơ tình nguyện", Icon: FiHeart },

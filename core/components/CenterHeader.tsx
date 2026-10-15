@@ -55,7 +55,7 @@ export function CenterHeader({
           className={`${ROUND_BUTTON} sm:hidden`}
         >
           {profile ? (
-            <Avatar name={profile.full_name} size="sm" />
+            <Avatar name={profile.full_name} src={profile.avatar_url} size="sm" />
           ) : (
             <FiMenu className="h-5 w-5" aria-hidden="true" />
           )}

@@ -96,6 +96,10 @@ export interface UpdateOrgInput {
   name: string;
   description: string;
   join_policy?: JoinPolicy;
+  tax_code?: string | null;
+  legal_rep_name?: string | null;
+  legal_rep_id?: string | null;
+  legal_rep_position?: string | null;
   email?: string | null;
   phone?: string | null;
   website?: string | null;

@@ -1,27 +1,39 @@
 import type { ReactElement } from "react";
-import { FiCheckCircle, FiPlusCircle } from "react-icons/fi";
+import { FiArrowRight, FiCheckCircle, FiPlusCircle } from "react-icons/fi";
+import { Button } from "../../core/components/Button.tsx";
 
 interface OrgCreateNotesProps {
-  createdName: string | null;
+  created: { name: string; slug: string } | null;
   uploading: boolean;
   uploadNote: string | null;
 }
 
 export function OrgCreateNotes({
-  createdName,
+  created,
   uploading,
   uploadNote,
 }: OrgCreateNotesProps): ReactElement | null {
   return (
     <>
-      {createdName && (
-        <p
+      {created && (
+        <div
           role="status"
-          className="mt-3 flex items-center gap-2 rounded-xl border border-zinc-300 bg-zinc-100 p-3 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="mt-3 rounded-xl border border-zinc-300 bg-zinc-100 p-3 dark:border-zinc-700 dark:bg-zinc-900"
         >
-          <FiCheckCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
-          Đã tạo “{createdName}”. Mời thêm thành viên và mở sự kiện đầu tiên.
-        </p>
+          <p className="flex items-center gap-2 text-sm text-zinc-900 dark:text-zinc-100">
+            <FiCheckCircle className="h-5 w-5 shrink-0" aria-hidden="true" />
+            Đã tạo “{created.name}”. Mời thêm thành viên và mở sự kiện đầu tiên.
+          </p>
+          <div className="mt-2">
+            <Button
+              to={`/orgs/${created.slug}`}
+              variant="secondary"
+              icon={<FiArrowRight className="h-4 w-4" aria-hidden="true" />}
+            >
+              Xem tổ chức
+            </Button>
+          </div>
+        </div>
       )}
       {(uploading || uploadNote) && (
         <p

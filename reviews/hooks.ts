@@ -33,7 +33,8 @@ export function useCreateReview(
 > {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => createReview(activityId, input),
+        meta: { successToast: "review.submit" },
+mutationFn: (input) => createReview(activityId, input),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: reviewKeys.activity(activityId),

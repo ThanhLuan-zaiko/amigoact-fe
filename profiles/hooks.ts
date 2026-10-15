@@ -6,7 +6,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import type { ApiError } from "../core/api.ts";
-import { pushToast } from "../core/toast.ts";
+import { authKeys } from "../auth/keys.ts";
 import {
   addMyContact,
   getMyProfile,
@@ -66,9 +66,9 @@ function useProfileMutation<TArgs>(
 ): UseMutationResult<VolunteerProfile, ApiError, TArgs> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn,
     onSuccess: async (fresh) => {
-      pushToast({ tone: "success", title: successTitle });
       queryClient.setQueryData(profileKeys.mine, fresh);
       await queryClient.invalidateQueries({
         queryKey: profileKeys.mine,
@@ -110,11 +110,16 @@ export function useUploadAvatar(
 ): UseMutationResult<{ avatar_url: string }, ApiError, File> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: uploadMyAvatar,
     onSuccess: async () => {
-      pushToast({ tone: "success", title: successTitle });
+      // avatar_url also rides on the session payload, so shell chrome
+      // (AccountSwitcher, header, drawer) refreshes with the profile card.
       await queryClient.invalidateQueries({
         queryKey: profileKeys.mine,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: authKeys.session(),
       });
     },
   });

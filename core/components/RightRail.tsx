@@ -17,10 +17,10 @@ const FOOTER_LINK =
   "rounded hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 " +
   "focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400";
 
-// Search pill: the home column's "Tổ chức" tab owns server-side org search
+// Search pill: the home column's "To chuc" tab owns server-side org search
 // (GET /orgs?q=), so a submit opens that tab with the query attached. The
 // box mirrors the active ?q= like X keeps the searched term visible -
-// clearing the tab's "Kết quả" strip empties it too.
+// clearing the tab's "Ket qua" strip empties it too.
 function SearchBox(): ReactElement {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();

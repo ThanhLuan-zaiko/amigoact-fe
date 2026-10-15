@@ -50,7 +50,7 @@ function LegacyDashboardRedirect(): ReactElement {
   return <Navigate to={`/manage/${splat}${search}${hash}`} replace />;
 }
 
-// The org directory is the "Tổ chức" tab of the home column; keep legacy
+// The org directory is the "To chuc" tab of the home column; keep legacy
 // /orgs?q&kind&sort&page deep links working by forwarding the query string.
 function OrgsDirectoryRedirect(): ReactElement {
   const { search } = useLocation();

@@ -8,7 +8,7 @@ interface OrgFeedRowProps {
   title: ReactNode;
   /** Inline mark right after the title (e.g. the verified check). */
   badge?: ReactNode;
-  /** Muted header tail after the title ("@slug", "đăng trong …"). */
+  /** Muted header tail after the title ("@slug", "dang trong ..."). */
   meta?: ReactNode;
   href: string;
   /** Bottom meta/action row (icons, counts, pills). */
@@ -17,8 +17,8 @@ interface OrgFeedRowProps {
   children?: ReactNode;
 }
 
-// One X-style row shape shared by the "Bài đăng" and "Tổ chức" tabs so both
-// read as the same timeline: round avatar, "Name ✓ meta" header, free-form
+// One X-style row shape shared by the "Bai dang" and "To chuc" tabs so both
+// read as the same timeline: round avatar, "Name + meta" header, free-form
 // body, muted meta footer, edge-to-edge divided rows.
 export function OrgFeedRow({
   avatar,

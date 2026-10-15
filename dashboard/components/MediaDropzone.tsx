@@ -31,11 +31,11 @@ interface MediaDropzoneProps {
 
 export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactElement {
   const gallery = useOrgMedia(orgId);
-  const upload = useUploadOrgMedia(orgId);
-  const setRole = useSetOrgMediaRole(orgId);
-  const remove = useDeleteOrgMedia(orgId);
-  const wipe = useDeleteAllOrgMedia(orgId);
-  const replace = useReplaceOrgMediaFile(orgId);
+  const upload = useUploadOrgMedia(orgId, "Đã tải ảnh lên.");
+  const setRole = useSetOrgMediaRole(orgId, "Đã cập nhật vai trò ảnh.");
+  const remove = useDeleteOrgMedia(orgId, "Đã xóa ảnh.");
+  const wipe = useDeleteAllOrgMedia(orgId, "Đã xóa toàn bộ ảnh.");
+  const replace = useReplaceOrgMediaFile(orgId, "Đã thay ảnh.");
   const listRef = useRiseOn<HTMLUListElement>(gallery.data?.length);
   const [pending, setPending] = useState<PendingMedia[]>([]);
   const [confirmWipe, setConfirmWipe] = useState(false);

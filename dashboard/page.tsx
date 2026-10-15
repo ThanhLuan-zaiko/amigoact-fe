@@ -5,7 +5,9 @@ import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import { EmptyState } from "../core/components/Feedback.tsx";
 import { useRiseIn } from "../core/motion.ts";
+import { MANAGE_ROOT } from "../core/nav.tsx";
 import { useSession } from "../auth/hooks.ts";
+import { ManageTabs } from "./components/ManageTabs.tsx";
 
 export function DashboardPage(): ReactElement {
   const session = useSession();
@@ -35,6 +37,7 @@ export function DashboardPage(): ReactElement {
   return (
     <>
       <h1 className="sr-only">Bảng điều khiển</h1>
+      {!pathname.startsWith(`${MANAGE_ROOT}/chat`) && <ManageTabs />}
       <div ref={scope} className="flex min-w-0 flex-col">
         <Outlet />
         <Section>

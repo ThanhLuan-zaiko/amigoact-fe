@@ -50,7 +50,7 @@ export function AccountSwitcher(): ReactElement | null {
         aria-label={`Tài khoản của ${profile.full_name}`}
         className="flex items-center gap-3 rounded-full p-3 text-left transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 xl:w-full dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
       >
-        <Avatar name={profile.full_name} />
+        <Avatar name={profile.full_name} src={profile.avatar_url} />
         <span className="hidden min-w-0 flex-1 xl:block">
           <span className="block truncate text-[15px] font-bold text-zinc-900 dark:text-zinc-100">
             {profile.full_name}

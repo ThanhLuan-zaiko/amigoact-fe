@@ -91,7 +91,7 @@ function DirectoryRow({ org }: { org: PublicOrg }): ReactElement {
   );
 }
 
-// The full public directory on the home column's "Tổ chức" tab: one uniform
+// The full public directory on the home column's "To chuc" tab: one uniform
 // X-style row per org, no in-feed filter chrome. The right-rail search pill
 // drives ?q=, and the strip below echoes the active query with a clear
 // action. Query and page state live in the URL so views stay deep-linkable.

@@ -115,7 +115,8 @@ export function useCreateActivity(
   orgId: string,
 ): OrgActivityMutation<ActivityInput> {
   return useMutation({
-    mutationFn: (input: ActivityInput) => createActivity(orgId, input),
+        meta: { successToast: "activity.save" },
+mutationFn: (input: ActivityInput) => createActivity(orgId, input),
     ...useInvalidateActivities(),
   });
 }
@@ -124,7 +125,8 @@ export function useUpdateActivity(
   orgId: string,
 ): OrgActivityMutation<{ activityId: string; input: ActivityInput }> {
   return useMutation({
-    mutationFn: ({ activityId, input }) =>
+        meta: { successToast: "activity.save" },
+mutationFn: ({ activityId, input }) =>
       updateActivity(orgId, activityId, input),
     ...useInvalidateActivities(),
   });
@@ -134,7 +136,8 @@ export function useTransitionActivity(
   orgId: string,
 ): OrgActivityMutation<{ activityId: string; status: string }> {
   return useMutation({
-    mutationFn: ({ activityId, status }) =>
+        meta: { successToast: "activity.save" },
+mutationFn: ({ activityId, status }) =>
       transitionActivity(orgId, activityId, status),
     ...useInvalidateActivities(),
   });
@@ -144,7 +147,8 @@ export function useCreateCategory(
   orgId: string,
 ): OrgActivityMutation<Parameters<typeof createCategory>[1]> {
   return useMutation({
-    mutationFn: (input) => createCategory(orgId, input),
+        meta: { successToast: "activity.category" },
+mutationFn: (input) => createCategory(orgId, input),
     ...useInvalidateActivities(),
   });
 }
@@ -154,7 +158,8 @@ export function useSetSkills(
   activityId: string,
 ): OrgActivityMutation<{ skill_id: string; is_required: boolean }[]> {
   return useMutation({
-    mutationFn: (skills) => setActivitySkills(orgId, activityId, skills),
+        meta: { successToast: "activity.save" },
+mutationFn: (skills) => setActivitySkills(orgId, activityId, skills),
     ...useInvalidateActivities(),
   });
 }
@@ -164,7 +169,8 @@ export function useSetStaff(
   activityId: string,
 ): OrgActivityMutation<{ user_id: string; staff_role: string }[]> {
   return useMutation({
-    mutationFn: (staff) => setActivityStaff(orgId, activityId, staff),
+        meta: { successToast: "activity.save" },
+mutationFn: (staff) => setActivityStaff(orgId, activityId, staff),
     ...useInvalidateActivities(),
   });
 }
@@ -174,7 +180,8 @@ export function useAddSchedule(
   activityId: string,
 ): OrgActivityMutation<Parameters<typeof addSchedule>[2]> {
   return useMutation({
-    mutationFn: (input) => addSchedule(orgId, activityId, input),
+        meta: { successToast: "activity.save" },
+mutationFn: (input) => addSchedule(orgId, activityId, input),
     ...useInvalidateActivities(),
   });
 }
@@ -184,7 +191,8 @@ export function useDeleteSchedule(
   activityId: string,
 ): OrgActivityMutation<string> {
   return useMutation({
-    mutationFn: (scheduleId) =>
+        meta: { successToast: "activity.delete" },
+mutationFn: (scheduleId) =>
       deleteSchedule(orgId, activityId, scheduleId),
     ...useInvalidateActivities(),
   });
@@ -195,7 +203,8 @@ export function useAddAnnouncement(
   activityId: string,
 ): OrgActivityMutation<{ title: string; body?: string }> {
   return useMutation({
-    mutationFn: (input) => addAnnouncement(orgId, activityId, input),
+        meta: { successToast: "activity.announce" },
+mutationFn: (input) => addAnnouncement(orgId, activityId, input),
     ...useInvalidateActivities(),
   });
 }

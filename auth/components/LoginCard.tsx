@@ -144,7 +144,7 @@ export function LoginCard(): ReactElement {
           {login.isPending ? "Đang đăng nhập…" : "Đăng nhập"}
         </Button>
       </form>
-      <div data-rise className="mt-4 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:gap-4">
+      <div data-rise className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <Link
           to="/forgot-password"
           className="text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 hover:bg-zinc-100 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900"

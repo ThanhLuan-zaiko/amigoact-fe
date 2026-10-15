@@ -6,6 +6,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { ApiError } from "../core/api.ts";
+import { useUploadAvatar } from "../profiles/hooks.ts";
 import {
   changePasswordAccount,
   clearSessionToken,
@@ -24,6 +25,7 @@ import {
   type UpdateProfileInput,
 } from "./api.ts";
 import { authKeys } from "./keys.ts";
+import type { RegisterForm } from "./schemas.ts";
 
 export function useSession(): UseQueryResult<SessionProfile | null> {
   return useQuery({
@@ -71,7 +73,8 @@ export function useResendVerification(): UseMutationResult<
   ApiError,
   string
 > {
-  return useMutation({ mutationFn: resendVerificationCode });
+  return useMutation({     meta: { successToast: "auth.resend" },
+mutationFn: resendVerificationCode });
 }
 
 export function useLogin(): UseMutationResult<
@@ -95,7 +98,8 @@ export function useUpdateProfile(): UseMutationResult<
   UpdateProfileInput
 > {
   return useMutation({
-    mutationFn: updateProfile,
+        meta: { successToast: "auth.profile" },
+mutationFn: updateProfile,
     ...useInvalidateSession<SessionProfile>(),
   });
 }
@@ -144,5 +148,66 @@ export function useChangePassword(): UseMutationResult<
   ApiError,
   { current_password: string; new_password: string }
 > {
-  return useMutation({ mutationFn: changePasswordAccount });
+  return useMutation({     meta: { successToast: "auth.password" },
+mutationFn: changePasswordAccount });
+}
+
+export interface RegisterFlowOutcome {
+  dest: "home" | "login";
+  avatarError?: string;
+}
+
+// Orchestrates the register wizard finish: create the account, open the
+// session, then push the optional avatar through the shared profile upload
+// (the same field /manage/volunteer edits). Only the register call throws;
+// login and avatar failures degrade to outcomes so the flow never strands
+// a freshly created account.
+export function useRegisterFlow(
+  avatarSavedTitle: string,
+): UseMutationResult<
+  RegisterFlowOutcome,
+  ApiError,
+  { form: RegisterForm; avatar: File | null }
+> {
+  const register = useRegister();
+  const login = useLogin();
+  const avatarUpload = useUploadAvatar(avatarSavedTitle);
+  return useMutation({
+    mutationFn: async ({ form, avatar }): Promise<RegisterFlowOutcome> => {
+      const email = form.email.trim().toLowerCase();
+      await register.mutateAsync({
+        email,
+        phone: form.phone.replace(/[\s.]/g, ""),
+        password: form.password,
+        full_name: form.fullName.trim(),
+        account_type: form.accountType,
+        ...(form.accountType === "business"
+          ? {
+              tax_code: form.taxCode.trim(),
+              company_name: form.companyName.trim(),
+              legal_rep_name: form.legalRepName.trim(),
+              legal_rep_id: form.legalRepId.trim(),
+              legal_rep_position: form.legalRepPosition.trim() || undefined,
+            }
+          : {}),
+      });
+      try {
+        await login.mutateAsync({ email, password: form.password });
+      } catch {
+        return { dest: "login" };
+      }
+      if (avatar) {
+        try {
+          await avatarUpload.mutateAsync(avatar);
+        } catch (error) {
+          return {
+            dest: "home",
+            avatarError:
+              error instanceof ApiError ? error.code : "REQUEST_FAILED",
+          };
+        }
+      }
+      return { dest: "home" };
+    },
+  });
 }

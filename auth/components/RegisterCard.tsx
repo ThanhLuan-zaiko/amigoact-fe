@@ -8,10 +8,12 @@ import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { StepProgress } from "../../core/components/StepProgress.tsx";
 import { useRiseIn } from "../../core/motion.ts";
-import { useLogin, useRegister } from "../hooks.ts";
+import { pushToast } from "../../core/toast.ts";
+import { useRegisterFlow, type RegisterFlowOutcome } from "../hooks.ts";
 import { validateRegisterField, validateRegisterForm, type FieldErrors, type RegisterForm } from "../schemas.ts";
 import { toVietnameseMessage } from "../messages.tsx";
 import { AccountTypeStep } from "./AccountTypeStep.tsx";
+import { AvatarField } from "./AvatarField.tsx";
 import { BusinessAccountFields } from "./BusinessAccountFields.tsx";
 import { PersonalInfoStep } from "./PersonalInfoStep.tsx";
 
@@ -22,9 +24,9 @@ const STEP_LABELS = ["Chọn loại tài khoản", "Thông tin cá nhân", "Thô
 
 export function RegisterCard(): ReactElement {
   const navigate = useNavigate();
-  const register = useRegister();
-  const login = useLogin();
-  const busy = register.isPending || login.isPending;
+  const flow = useRegisterFlow("Đã cập nhật ảnh đại diện.");
+  const busy = flow.isPending;
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [form, setForm] = useState<RegisterForm>({
     fullName: "", email: "", phone: "", password: "", confirmPassword: "",
     accountType: "individual", companyName: "", taxCode: "",
@@ -112,24 +114,9 @@ export function RegisterCard(): ReactElement {
       if (validation.fullName || validation.email || validation.phone || validation.password || validation.confirmPassword) setStep(2);
       return;
     }
-    const email = form.email.trim().toLowerCase();
+    let outcome: RegisterFlowOutcome;
     try {
-      await register.mutateAsync({
-        email,
-        phone: form.phone.replace(/[\s.]/g, ""),
-        password: form.password,
-        full_name: form.fullName.trim(),
-        account_type: form.accountType,
-        ...(form.accountType === "business"
-          ? {
-              tax_code: form.taxCode.trim(),
-              company_name: form.companyName.trim(),
-              legal_rep_name: form.legalRepName.trim(),
-              legal_rep_id: form.legalRepId.trim(),
-              legal_rep_position: form.legalRepPosition.trim() || undefined,
-            }
-          : {}),
-      });
+      outcome = await flow.mutateAsync({ form, avatar: avatarFile });
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.code === "EMAIL_TAKEN") { setErrors({ email: error.code }); markTouched("email"); setStep(2); }
@@ -140,12 +127,18 @@ export function RegisterCard(): ReactElement {
       }
       return;
     }
-    try {
-      await login.mutateAsync({ email, password: form.password });
-      navigate("/", { replace: true });
-    } catch {
+    if (outcome.dest === "login") {
       navigate("/login", { state: { registered: true } });
+      return;
     }
+    if (outcome.avatarError) {
+      pushToast({
+        tone: "error",
+        title: "Chưa lưu được ảnh đại diện.",
+        message: `${toVietnameseMessage(outcome.avatarError)} Bạn có thể tải lại trong Hồ sơ tình nguyện.`,
+      });
+    }
+    navigate("/", { replace: true });
   }
 
   return (
@@ -172,15 +165,22 @@ export function RegisterCard(): ReactElement {
           <AccountTypeStep value={form.accountType} onSelect={(value) => update("accountType", value)} />
         )}
         {current === 2 && (
-          <PersonalInfoStep
-            form={form}
-            errors={errors}
-            touched={touched}
-            showPasswords={showPasswords}
-            onUpdate={update}
-            onBlurField={blurField}
-            onTogglePasswords={() => setShowPasswords((value) => !value)}
-          />
+          <>
+            <PersonalInfoStep
+              form={form}
+              errors={errors}
+              touched={touched}
+              showPasswords={showPasswords}
+              onUpdate={update}
+              onBlurField={blurField}
+              onTogglePasswords={() => setShowPasswords((value) => !value)}
+            />
+            <AvatarField
+              file={avatarFile}
+              onChange={setAvatarFile}
+              disabled={busy}
+            />
+          </>
         )}
         {current === 3 && (
           <BusinessAccountFields form={form} errors={errors} touched={touched} onUpdate={update} onBlurField={blurField} />

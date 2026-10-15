@@ -46,20 +46,12 @@ export function useMyOrgs(
   });
 }
 
-function useInvalidateOrgs(): {
-  onSuccess: () => Promise<void>;
-} {
-  const queryClient = useQueryClient();
-  return {
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
-    },
-  };
-}
-
-export function useCreateOrg(): UseMutationResult<DashboardOrg, ApiError, CreateOrgInput> {
+export function useCreateOrg(
+  successTitle: string,
+): UseMutationResult<DashboardOrg, ApiError, CreateOrgInput> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: createOrg,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: dashboardKeys.myOrgs() });
@@ -67,36 +59,60 @@ export function useCreateOrg(): UseMutationResult<DashboardOrg, ApiError, Create
   });
 }
 
-export function useUpdateOrg(): UseMutationResult<
+export function useUpdateOrg(
+  successTitle: string,
+): UseMutationResult<
   DashboardOrg,
   ApiError,
   { id: string; input: UpdateOrgInput }
 > {
+  const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: ({ id, input }: { id: string; input: UpdateOrgInput }) =>
       updateOrg(id, input),
-    ...useInvalidateOrgs(),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    },
   });
 }
 
-export function useSoftDeleteOrg(): UseMutationResult<DashboardOrg, ApiError, string> {
+export function useSoftDeleteOrg(
+  successTitle: string,
+): UseMutationResult<DashboardOrg, ApiError, string> {
+  const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: softDeleteOrg,
-    ...useInvalidateOrgs(),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    },
   });
 }
 
-export function useHardDeleteOrg(): UseMutationResult<void, ApiError, string> {
+export function useHardDeleteOrg(
+  successTitle: string,
+): UseMutationResult<void, ApiError, string> {
+  const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: hardDeleteOrg,
-    ...useInvalidateOrgs(),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    },
   });
 }
 
-export function useRestoreOrg(): UseMutationResult<DashboardOrg, ApiError, string> {
+export function useRestoreOrg(
+  successTitle: string,
+): UseMutationResult<DashboardOrg, ApiError, string> {
+  const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: restoreOrg,
-    ...useInvalidateOrgs(),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+    },
   });
 }
 
@@ -114,11 +130,15 @@ export function useOrgMedia(
   });
 }
 
+// successTitle optional: the post editor has its own per-block upload
+// progress UI, so it passes nothing and stays silent.
 export function useUploadOrgMedia(
   orgId: string,
+  successTitle?: string,
 ): UseMutationResult<OrgMedia, ApiError, { file: File; role: MediaRole }> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: ({ file, role }: { file: File; role: MediaRole }) =>
       uploadOrgMedia(orgId, file, role),
     onSuccess: async () => {
@@ -131,13 +151,14 @@ export function useUploadOrgMedia(
 
 // Org-agnostic upload for flows where the target org only exists after
 // a preceding mutation (e.g. create-then-upload in OrgCreateCard).
-export function useUploadOrgMediaFile(): UseMutationResult<
+export function useUploadOrgMediaFile(successTitle?: string): UseMutationResult<
   OrgMedia,
   ApiError,
   { orgId: string; file: File; role: MediaRole }
 > {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: ({ orgId, file, role }: { orgId: string; file: File; role: MediaRole }) =>
       uploadOrgMedia(orgId, file, role),
     onSuccess: async (media) => {
@@ -150,9 +171,11 @@ export function useUploadOrgMediaFile(): UseMutationResult<
 
 export function useSetOrgMediaRole(
   orgId: string,
+  successTitle: string,
 ): UseMutationResult<OrgMedia, ApiError, { mediaId: string; role: MediaRole }> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: ({ mediaId, role }: { mediaId: string; role: MediaRole }) =>
       setOrgMediaRole(orgId, mediaId, role),
     onSuccess: async () => {
@@ -165,9 +188,11 @@ export function useSetOrgMediaRole(
 
 export function useReplaceOrgMediaFile(
   orgId: string,
+  successTitle: string,
 ): UseMutationResult<OrgMedia, ApiError, { mediaId: string; file: File }> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: ({ mediaId, file }: { mediaId: string; file: File }) =>
       replaceOrgMediaFile(orgId, mediaId, file),
     onSuccess: async () => {
@@ -180,9 +205,11 @@ export function useReplaceOrgMediaFile(
 
 export function useDeleteOrgMedia(
   orgId: string,
+  successTitle: string,
 ): UseMutationResult<void, ApiError, string> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: (mediaId: string) => deleteOrgMedia(orgId, mediaId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
@@ -194,9 +221,11 @@ export function useDeleteOrgMedia(
 
 export function useDeleteAllOrgMedia(
   orgId: string,
+  successTitle: string,
 ): UseMutationResult<void, ApiError, void> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: successTitle },
     mutationFn: () => deleteAllOrgMedia(orgId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({

@@ -62,7 +62,7 @@ export function AuthSidePanel({
   const isLogin = variant === "login";
   const items = isLogin ? LOGIN_BENEFITS : REGISTER_STEPS;
   return (
-    <Section className=" w-full self-start border-zinc-300 bg-zinc-100 @4xl:sticky @4xl:top-20 dark:border-zinc-700 dark:bg-zinc-900">
+    <Section>
       <div ref={scope} className="flex flex-col justify-start gap-5 p-2 sm:p-4">
         <div data-rise className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">

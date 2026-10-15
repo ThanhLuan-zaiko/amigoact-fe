@@ -103,7 +103,8 @@ export function useApply(
   activityId: string,
 ): Mutation<{ note?: string }> {
   return useMutation({
-    mutationFn: ({ note }) => applyToActivity(activityId, note),
+        meta: { successToast: "registration.apply" },
+mutationFn: ({ note }) => applyToActivity(activityId, note),
     ...useInvalidateRegistrations(),
   });
 }
@@ -116,7 +117,8 @@ export function useReview(
   reviewNote?: string;
 }> {
   return useMutation({
-    mutationFn: ({ registrationId, status, reviewNote }) =>
+        meta: { successToast: "registration.save" },
+mutationFn: ({ registrationId, status, reviewNote }) =>
       reviewRegistration(activityId, registrationId, status, reviewNote),
     ...useInvalidateRegistrations(),
   });
@@ -127,7 +129,8 @@ export function useCancelRegistration(): Mutation<{
   registrationId: string;
 }> {
   return useMutation({
-    mutationFn: ({ activityId, registrationId }) =>
+        meta: { successToast: "registration.cancel" },
+mutationFn: ({ activityId, registrationId }) =>
       cancelRegistration(activityId, registrationId),
     ...useInvalidateRegistrations(),
   });
@@ -137,7 +140,8 @@ export function useCheckIn(
   activityId: string,
 ): Mutation<{ checkinToken: string }> {
   return useMutation({
-    mutationFn: ({ checkinToken }) =>
+        meta: { successToast: "registration.checkin" },
+mutationFn: ({ checkinToken }) =>
       checkInByToken(activityId, checkinToken),
     ...useInvalidateRegistrations(),
   });
@@ -147,7 +151,8 @@ export function useManualCheckIn(
   activityId: string,
 ): Mutation<{ registrationId: string }> {
   return useMutation({
-    mutationFn: ({ registrationId }) =>
+        meta: { successToast: "registration.checkin" },
+mutationFn: ({ registrationId }) =>
       checkInManual(activityId, registrationId),
     ...useInvalidateRegistrations(),
   });
@@ -157,7 +162,8 @@ export function useCheckOut(
   activityId: string,
 ): Mutation<{ recordId: string; actualHours?: number }> {
   return useMutation({
-    mutationFn: ({ recordId, actualHours }) =>
+        meta: { successToast: "registration.checkout" },
+mutationFn: ({ recordId, actualHours }) =>
       checkOut(activityId, recordId, actualHours),
     ...useInvalidateRegistrations(),
   });

@@ -23,7 +23,7 @@ export function MemberManageActions({
   inviting,
   onToggleInvite,
 }: MemberManageActionsProps): ReactElement | null {
-  const updateOrg = useUpdateOrg();
+  const updateOrg = useUpdateOrg("Đã cập nhật chính sách tham gia.");
   const [serverCode, setServerCode] = useState<string | null>(null);
   const isOwner = org.owner_id === selfId;
   if (!isOwner && !canInvite) return null;

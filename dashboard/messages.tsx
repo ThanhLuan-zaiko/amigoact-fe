@@ -15,6 +15,7 @@ const MESSAGES: Record<string, string> = {
   INVALID_CONTACT_FIELD: "Thông tin liên hệ vượt quá độ dài cho phép.",
   INVALID_CCCD: "CCCD gồm 12 chữ số.",
   INVALID_LEGAL_REP: "Tên người đại diện từ 2 đến 100 ký tự.",
+  INVALID_LEGAL_REP_POSITION: "Chức danh từ 2 đến 100 ký tự.",
   INVALID_BUSINESS_PROFILE: "Hồ sơ doanh nghiệp còn thiếu MST và người đại diện.",
   ORG_UPDATED: "Đã lưu thay đổi.",
   ORG_TRASHED: "Đã chuyển vào thùng rác. Có thể khôi phục.",

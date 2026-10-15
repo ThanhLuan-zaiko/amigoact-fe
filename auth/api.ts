@@ -17,6 +17,7 @@ export interface SessionProfile {
   last_login_at: string | null;
   email_verified: boolean;
   created_at: string;
+  avatar_url: string | null;
 }
 
 export type ProfileGender = "male" | "female" | "other" | "unspecified";

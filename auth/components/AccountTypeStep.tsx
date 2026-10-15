@@ -11,14 +11,13 @@ interface AccountTypeStepProps {
 export function AccountTypeStep({ value, onSelect }: AccountTypeStepProps): ReactElement {
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           type="button"
           variant={value === "individual" ? "primary" : "secondary"}
           onClick={() => onSelect("individual")}
           aria-pressed={value === "individual"}
           icon={<FiUser className="h-4 w-4" aria-hidden="true" />}
-          className="w-full"
         >
           Cá nhân
         </Button>
@@ -28,7 +27,6 @@ export function AccountTypeStep({ value, onSelect }: AccountTypeStepProps): Reac
           onClick={() => onSelect("business")}
           aria-pressed={value === "business"}
           icon={<FiBriefcase className="h-4 w-4" aria-hidden="true" />}
-          className="w-full"
         >
           Doanh nghiệp
         </Button>

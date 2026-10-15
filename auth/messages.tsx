@@ -30,6 +30,8 @@ const MESSAGES: Record<string, string> = {
   INVALID_GENDER: "Giới tính không hợp lệ.",
   INVALID_ADDRESS: "Địa chỉ tối đa 255 ký tự.",
   PROFILE_UPDATED: "Đã cập nhật hồ sơ.",
+  UNSUPPORTED_MEDIA: "Ảnh đại diện chỉ nhận tệp hình ảnh.",
+  MEDIA_TOO_LARGE: "Tệp vượt quá dung lượng cho phép.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
 };
 

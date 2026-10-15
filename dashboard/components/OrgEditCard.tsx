@@ -1,33 +1,50 @@
 import { useState } from "react";
-import type { FormEvent, MouseEvent as ReactMouseEvent, ReactElement } from "react";
-import { FiArrowLeft, FiArrowRight, FiSave, FiType, FiX } from "react-icons/fi";
+import type { FormEvent, ReactElement } from "react";
+import { FiSave, FiType, FiX } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
-import { StepProgress } from "../../core/components/StepProgress.tsx";
+import { TextArea } from "../../core/components/TextArea.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useContactForm } from "../contact-form.ts";
 import { useUpdateOrg } from "../hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
-import { validateUpdateForm } from "../schemas.ts";
-import type { UpdateFieldErrors } from "../schemas.ts";
+import { emptyOrgForm, validateOrgField, validateUpdateForm } from "../schemas.ts";
+import type { OrgFieldErrors, UpdateFieldErrors } from "../schemas.ts";
 import type { DashboardOrg, JoinPolicy } from "../api.ts";
+import { BusinessOrgFields } from "./BusinessOrgFields.tsx";
+import type { BusinessKey } from "./BusinessOrgFields.tsx";
 import { OrgContactFields } from "./OrgContactFields.tsx";
 import { OrgPolicyChips } from "./OrgPolicyChips.tsx";
 
-const STEP_LABELS = ["Thông tin cơ bản", "Liên hệ & pháp lý"];
+// Legal fields use snake_case state but camelCase error keys.
+const LEGAL_ERROR_KEYS: Record<BusinessKey, keyof OrgFieldErrors> = {
+  tax_code: "taxCode",
+  legal_rep_name: "legalRepName",
+  legal_rep_id: "legalRepId",
+  legal_rep_position: "legalRepPosition",
+};
 
 interface OrgEditCardProps {
   org: DashboardOrg;
   onDone: () => void;
 }
 
+// Single scrollable form (was a 2-step wizard that hid the contact block).
+// Business legal identity is editable; the backend audits every change.
 export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
-  const update = useUpdateOrg();
+  const update = useUpdateOrg("Đã lưu thay đổi.");
   const [form, setForm] = useState({
     name: org.name,
     description: org.description ?? "",
   });
+  const [legal, setLegal] = useState<Record<BusinessKey, string>>({
+    tax_code: org.tax_code ?? "",
+    legal_rep_name: org.legal_rep_name ?? "",
+    legal_rep_id: org.legal_rep_id ?? "",
+    legal_rep_position: org.legal_rep_position ?? "",
+  });
+  const [legalErrors, setLegalErrors] = useState<OrgFieldErrors>({});
   const contact = useContactForm({
     email: org.email ?? "",
     phone: org.phone ?? "",
@@ -42,14 +59,12 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
   const [errors, setErrors] = useState<UpdateFieldErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
-  const [step, setStep] = useState(1);
-  const isLast = step === STEP_LABELS.length;
-  const stepValidation = validateUpdateForm({ ...form, ...contact.form });
-  const canContinue = !stepValidation.name && !stepValidation.description;
+  const isBusiness = org.kind === "business";
 
   function blurField(key: "name" | "description"): void {
     setTouched((prev) => ({ ...prev, [key]: true }));
-    const invalid = stepValidation[key] ?? null;
+    const invalid =
+      validateUpdateForm({ ...form, ...contact.form })[key] ?? null;
     setErrors((prev) => {
       const copy = { ...prev };
       if (invalid) copy[key] = invalid;
@@ -63,41 +78,39 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
     return trimmed.length > 0 ? trimmed : null;
   }
 
-  // preventDefault: swapping this button for a `type="submit"` one mid-gesture
-  // lets Chromium retarget the click's activation onto the new submitter and
-  // auto-submit the form (modal closes instantly). Suppressing the default
-  // action blocks that retargeted activation.
-  function goNext(event?: ReactMouseEvent<HTMLButtonElement>): void {
-    event?.preventDefault();
-    setTouched({ name: true, description: true });
-    const part: UpdateFieldErrors = {};
-    if (stepValidation.name) part.name = stepValidation.name;
-    if (stepValidation.description) part.description = stepValidation.description;
-    setErrors((prev) => ({ ...prev, ...part }));
-    if (Object.keys(part).length === 0) setStep(2);
+  function changeLegal(key: BusinessKey, value: string): void {
+    setLegal((prev) => ({ ...prev, [key]: value }));
+    setLegalErrors((prev) => {
+      const copy = { ...prev };
+      delete copy[LEGAL_ERROR_KEYS[key]];
+      return copy;
+    });
   }
 
-  function goBack(event?: ReactMouseEvent<HTMLButtonElement>): void {
-    event?.preventDefault();
-    setServerCode(null);
-    setStep(1);
+  function validateLegal(): OrgFieldErrors {
+    const probe = { ...emptyOrgForm(), kind: "business" as const, ...legal };
+    const result: OrgFieldErrors = {};
+    for (const key of Object.keys(LEGAL_ERROR_KEYS) as BusinessKey[]) {
+      const invalid = validateOrgField(probe, key);
+      if (invalid) result[LEGAL_ERROR_KEYS[key]] = invalid;
+    }
+    return result;
   }
 
   async function handleSubmit(event: FormEvent): Promise<void> {
     event.preventDefault();
-    if (!isLast) {
-      goNext();
-      return;
-    }
-    const validation = stepValidation;
+    const validation = validateUpdateForm({ ...form, ...contact.form });
+    const invalidLegal = isBusiness ? validateLegal() : {};
     setErrors(validation);
+    setLegalErrors(invalidLegal);
     setTouched({ name: true, description: true });
     contact.validateAll();
     setServerCode(null);
-    if (Object.keys(validation).length > 0) {
-      if (validation.name || validation.description) setStep(1);
+    if (
+      Object.keys(validation).length > 0 ||
+      Object.keys(invalidLegal).length > 0
+    )
       return;
-    }
     try {
       await update.mutateAsync({
         id: org.id,
@@ -115,6 +128,14 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
           legal_name: nullable(contact.form.legal_name),
           license_number: nullable(contact.form.license_number),
           is_personal: org.is_personal,
+          ...(isBusiness
+            ? {
+                tax_code: nullable(legal.tax_code),
+                legal_rep_name: nullable(legal.legal_rep_name),
+                legal_rep_id: nullable(legal.legal_rep_id),
+                legal_rep_position: nullable(legal.legal_rep_position),
+              }
+            : {}),
         },
       });
       onDone();
@@ -125,86 +146,62 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
-      <StepProgress step={step} total={STEP_LABELS.length} label={STEP_LABELS[step - 1]} />
       {serverCode && (
         <ErrorState title="Không lưu được" message={toVietnameseDashboardMessage(serverCode)} />
       )}
-      {step === 1 && (
-        <>
-          <TextField
-            label="Tên tổ chức"
-            name={`name-${org.id}`}
-            value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-            onBlur={() => blurField("name")}
-            error={touched.name && errors.name ? toVietnameseDashboardMessage(errors.name) : undefined}
-            icon={<FiType className="h-4 w-4" aria-hidden="true" />}
+      <TextField
+        label="Tên tổ chức"
+        name={`name-${org.id}`}
+        value={form.name}
+        onChange={(event) => setForm({ ...form, name: event.target.value })}
+        onBlur={() => blurField("name")}
+        error={touched.name && errors.name ? toVietnameseDashboardMessage(errors.name) : undefined}
+        icon={<FiType className="h-4 w-4" aria-hidden="true" />}
+      />
+      <TextArea
+        label="Mô tả"
+        name={`description-${org.id}`}
+        rows={3}
+        autoGrow
+        value={form.description}
+        onChange={(event) => setForm({ ...form, description: event.target.value })}
+        onBlur={() => blurField("description")}
+        error={touched.description && errors.description ? toVietnameseDashboardMessage(errors.description) : undefined}
+      />
+      <OrgPolicyChips value={policy} onChange={setPolicy} />
+      {isBusiness && (
+        <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800">
+          <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            Thông tin pháp lý
+          </p>
+          <BusinessOrgFields
+            form={legal}
+            errors={legalErrors}
+            onChange={changeLegal}
           />
-          <TextField
-            label="Mô tả"
-            name={`description-${org.id}`}
-            value={form.description}
-            onChange={(event) => setForm({ ...form, description: event.target.value })}
-            onBlur={() => blurField("description")}
-            error={touched.description && errors.description ? toVietnameseDashboardMessage(errors.description) : undefined}
-          />
-          <OrgPolicyChips value={policy} onChange={setPolicy} />
-        </>
+        </div>
       )}
-      {step === 2 && (
-        <OrgContactFields
-          form={contact.form}
-          errors={contact.errors}
-          touched={contact.touched}
-          onChange={contact.change}
-          onBlur={contact.blur}
-        />
-      )}
-      {!isLast && !canContinue && (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Điền đầy đủ thông tin hợp lệ để tiếp tục.
-        </p>
-      )}
+      <OrgContactFields
+        form={contact.form}
+        errors={contact.errors}
+        touched={contact.touched}
+        onChange={contact.change}
+        onBlur={contact.blur}
+      />
       <div className="flex flex-wrap gap-2">
-        {step > 1 && (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={goBack}
-            icon={<FiArrowLeft className="h-4 w-4" aria-hidden="true" />}
-          >
-            Quay lại
-          </Button>
-        )}
-        {isLast ? (
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={update.isPending}
-            icon={<FiSave className="h-4 w-4" aria-hidden="true" />}
-            className="w-full sm:w-auto"
-          >
-            {update.isPending ? "Đang lưu…" : "Lưu"}
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            variant="primary"
-            onClick={goNext}
-            disabled={!canContinue}
-            icon={<FiArrowRight className="h-4 w-4" aria-hidden="true" />}
-            className="w-full sm:w-auto"
-          >
-            Tiếp tục
-          </Button>
-        )}
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={update.isPending}
+          icon={<FiSave className="h-4 w-4" aria-hidden="true" />}
+          className="w-full sm:w-auto"
+        >
+          {update.isPending ? "Đang lưu…" : "Lưu"}
+        </Button>
         <Button
           type="button"
           variant="secondary"
-          onClick={(event) => {
-            event.preventDefault();
-            onDone();
-          }}
+          onClick={onDone}
           icon={<FiX className="h-4 w-4" aria-hidden="true" />}
         >
           Hủy

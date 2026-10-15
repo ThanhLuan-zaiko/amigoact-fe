@@ -1,45 +1,51 @@
 import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FiPlusCircle, FiTag, FiType } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
+import { TextArea } from "../../core/components/TextArea.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { contactPayload, emptyContact, useContactForm } from "../contact-form.ts";
 import { useCreateOrg, useUploadOrgMediaFile } from "../hooks.ts";
 import { toVietnameseDashboardMessage, ORG_KIND_LABELS } from "../messages.tsx";
-import { assignMediaRole, ORG_KINDS, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
+import { assignMediaRole, emptyOrgForm, kindSearchParams, ORG_KINDS, orgFormDirty, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
 import type { PendingMedia } from "../schemas.ts";
 import type { CreateOrgInput, JoinPolicy, OrgKind } from "../api.ts";
 import type { OrgFieldErrors } from "../schemas.ts";
 import { BusinessOrgFields } from "./BusinessOrgFields.tsx";
 import { MediaPicker } from "./MediaPicker.tsx";
 import { OrgContactFields } from "./OrgContactFields.tsx";
+import { UnsavedGuard } from "../../core/components/UnsavedGuard.tsx";
 import { OrgCreateNotes } from "./OrgCreateNotes.tsx";
 import { OrgPolicyChips } from "./OrgPolicyChips.tsx";
 
 export function OrgCreateCard(): ReactElement {
-  const create = useCreateOrg();
+  const create = useCreateOrg("Đã tạo tổ chức");
   const uploadMedia = useUploadOrgMediaFile();
-  const [form, setForm] = useState<CreateOrgInput>({
-    name: "",
-    slug: "",
-    description: "",
-    kind: "organization",
-    join_policy: "invite",
-    tax_code: "",
-    legal_rep_name: "",
-    legal_rep_id: "",
-    legal_rep_position: "",
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const kindParam = searchParams.get("kind");
+  // ?kind= deep-links the org-type selector (e.g. /manage/orgs/create?kind=business).
+  const urlKind: OrgKind = ORG_KINDS.includes(kindParam as OrgKind) ? (kindParam as OrgKind) : "organization";
+  const [form, setForm] = useState<CreateOrgInput>(() => ({
+    ...emptyOrgForm(),
+    kind: urlKind,
+  }));
   const [errors, setErrors] = useState<OrgFieldErrors>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
-  const [createdName, setCreatedName] = useState<string | null>(null);
+  const [created, setCreated] = useState<{ name: string; slug: string } | null>(null);
   const [pendingFiles, setPendingFiles] = useState<PendingMedia[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState<string | null>(null);
   const contact = useContactForm(emptyContact());
+  // The kind selector mirrors the URL, so a bare tab click is not "data at
+  // risk" - the dirty baseline uses the URL kind, not the form default.
+  const dirty =
+    orgFormDirty({ ...form, kind: urlKind }) ||
+    pendingFiles.length > 0 ||
+    Object.values(contact.form).some((value) => value.trim() !== "");
 
   function update(
     key: "name" | "slug" | "description" | "tax_code" | "legal_rep_name" | "legal_rep_id" | "legal_rep_position",
@@ -52,10 +58,10 @@ export function OrgCreateCard(): ReactElement {
     setForm(next);
     const single = validateOrgField(next, key);
     const errorKey =
-      key === "tax_code" ? "taxCode" : key === "legal_rep_name" ? "legalRepName" : key === "legal_rep_id" ? "legalRepId" : key;
+      key === "tax_code" ? "taxCode" : key === "legal_rep_name" ? "legalRepName" : key === "legal_rep_id" ? "legalRepId" : key === "legal_rep_position" ? "legalRepPosition" : key;
     setErrors((current) => {
       const copy = { ...current };
-      if (single && (errorKey === "name" || errorKey === "slug" || errorKey === "description" || errorKey === "taxCode" || errorKey === "legalRepName" || errorKey === "legalRepId")) copy[errorKey] = single;
+      if (single && (errorKey === "name" || errorKey === "slug" || errorKey === "description" || errorKey === "taxCode" || errorKey === "legalRepName" || errorKey === "legalRepId" || errorKey === "legalRepPosition")) copy[errorKey] = single;
       else if (errorKey in copy) delete copy[errorKey as keyof OrgFieldErrors];
       return copy;
     });
@@ -63,6 +69,9 @@ export function OrgCreateCard(): ReactElement {
 
   function selectKind(kind: OrgKind): void {
     setForm((current) => ({ ...current, kind }));
+    // replace (not push): tab clicks must not stack history entries - that
+    // would both spam Back and defeat UnsavedGuard's sentinel entry.
+    setSearchParams((prev) => kindSearchParams(prev, kind), { replace: true });
   }
 
   function selectPolicy(policy: JoinPolicy): void {
@@ -75,7 +84,7 @@ export function OrgCreateCard(): ReactElement {
     const contactErrors = contact.validateAll();
     setErrors(validation);
     setServerCode(null);
-    setCreatedName(null);
+    setCreated(null);
     setUploadNote(null);
     if (Object.keys(validation).length > 0 || Object.keys(contactErrors).length > 0) return;
     try {
@@ -95,7 +104,7 @@ export function OrgCreateCard(): ReactElement {
             }
           : {}),
       });
-      setCreatedName(org.name);
+      setCreated({ name: org.name, slug: org.slug });
       const files = pendingFiles;
       setPendingFiles([]); if (files.length > 0) {
         setUploading(true);
@@ -117,10 +126,7 @@ export function OrgCreateCard(): ReactElement {
             : `Đã tải lên ${done}/${files.length} tệp. Mở mục Tệp ở trang Tổ chức để xem.`,
         );
       }
-      setForm({
-        name: "", slug: "", description: "", kind: form.kind, join_policy: "invite",
-        tax_code: "", legal_rep_name: "", legal_rep_id: "", legal_rep_position: "",
-      });
+      setForm({ ...emptyOrgForm(), kind: form.kind });
       contact.reset();
     } catch (error) {
       setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
@@ -163,7 +169,7 @@ export function OrgCreateCard(): ReactElement {
           />
         </div>
       )}
-      <OrgCreateNotes createdName={createdName} uploading={uploading} uploadNote={uploadNote} />
+      <OrgCreateNotes created={created} uploading={uploading} uploadNote={uploadNote} />
       <form onSubmit={handleSubmit} noValidate className="mt-3 flex flex-col gap-3">
         <TextField
           label="Tên tổ chức"
@@ -184,9 +190,11 @@ export function OrgCreateCard(): ReactElement {
           hint="Dùng trong đường dẫn công khai của tổ chức."
           icon={<FiTag className="h-4 w-4" aria-hidden="true" />}
         />
-        <TextField
+        <TextArea
           label="Mô tả"
           name="description"
+          rows={3}
+          autoGrow
           placeholder="Sứ mệnh, hoạt động chính, cách tham gia…"
           value={form.description}
           onChange={(event) => update("description", event.target.value)}
@@ -233,6 +241,7 @@ export function OrgCreateCard(): ReactElement {
           {create.isPending ? "Đang tạo…" : uploading ? "Đang tải tệp…" : "Tạo tổ chức"}
         </Button>
       </form>
+      <UnsavedGuard active={dirty || uploading} />
     </Section>
   );
 }

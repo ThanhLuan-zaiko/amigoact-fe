@@ -45,7 +45,8 @@ export function useIssueCertificate(
   activityId: string,
 ): Mutation<{ studentId: string }> {
   return useMutation({
-    mutationFn: ({ studentId }) =>
+        meta: { successToast: "certificate.issue" },
+mutationFn: ({ studentId }) =>
       issueCertificate(activityId, studentId),
     ...useInvalidateCertificates(),
   });
@@ -55,7 +56,8 @@ export function useRevokeCertificate(
   activityId: string,
 ): Mutation<{ studentId: string; reason?: string }> {
   return useMutation({
-    mutationFn: ({ studentId, reason }) =>
+        meta: { successToast: "certificate.revoke" },
+mutationFn: ({ studentId, reason }) =>
       revokeCertificate(activityId, studentId, reason),
     ...useInvalidateCertificates(),
   });

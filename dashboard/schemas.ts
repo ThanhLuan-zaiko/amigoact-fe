@@ -34,7 +34,16 @@ export function defaultAspectForRole(role: MediaRole): number {
 }
 
 export type OrgFieldErrors = Partial<
-  Record<"name" | "slug" | "description" | "taxCode" | "legalRepName" | "legalRepId", string>
+  Record<
+    | "name"
+    | "slug"
+    | "description"
+    | "taxCode"
+    | "legalRepName"
+    | "legalRepId"
+    | "legalRepPosition",
+    string
+  >
 >;
 
 const TAX_PATTERN = /^\d{10}(-\d{3})?$/;
@@ -58,6 +67,37 @@ export function validateCccdValue(value: string): string | null {
 
 function isValidSlug(value: string): boolean {
   return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+}
+
+// Baseline for the create-org form and for its unsaved-changes guard.
+export function emptyOrgForm(): CreateOrgInput {
+  return {
+    name: "",
+    slug: "",
+    description: "",
+    kind: "organization",
+    join_policy: "invite",
+    tax_code: "",
+    legal_rep_name: "",
+    legal_rep_id: "",
+    legal_rep_position: "",
+  };
+}
+
+export function orgFormDirty(form: CreateOrgInput): boolean {
+  const empty = emptyOrgForm();
+  return Object.entries(form).some(
+    ([key, value]) => value !== empty[key as keyof CreateOrgInput],
+  );
+}
+
+// SearchParams patch for the create form's ?kind= deep link: the default kind
+// leaves no trace in the URL.
+export function kindSearchParams(prev: URLSearchParams, kind: OrgKind): URLSearchParams {
+  const next = new URLSearchParams(prev);
+  if (kind === "organization") next.delete("kind");
+  else next.set("kind", kind);
+  return next;
 }
 
 export function validateOrgField(form: CreateOrgInput, key: keyof CreateOrgInput): string | null {
@@ -87,6 +127,14 @@ export function validateOrgField(form: CreateOrgInput, key: keyof CreateOrgInput
   if (key === "legal_rep_id") {
     return form.kind === "business" ? validateCccdValue(form.legal_rep_id ?? "") : null;
   }
+  if (key === "legal_rep_position") {
+    if (form.kind !== "business") return null;
+    const position = (form.legal_rep_position ?? "").trim();
+    if (position.length === 0) return null;
+    return position.length >= 2 && position.length <= 100
+      ? null
+      : "INVALID_LEGAL_REP_POSITION";
+  }
   return null;
 }
 
@@ -105,6 +153,8 @@ export function validateOrgForm(form: CreateOrgInput): OrgFieldErrors {
     if (rep) errors.legalRepName = rep;
     const cccd = validateOrgField(form, "legal_rep_id");
     if (cccd) errors.legalRepId = cccd;
+    const position = validateOrgField(form, "legal_rep_position");
+    if (position) errors.legalRepPosition = position;
   }
   return errors;
 }

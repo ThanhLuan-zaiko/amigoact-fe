@@ -10,7 +10,7 @@ import { AnnouncementTimeline } from "../orgs/components/AnnouncementTimeline.ts
 import { HomeTabs, type HomeTab } from "./components/HomeTabs.tsx";
 
 // Params that belong to the orgs tab, including retired filters: a legacy
-// /?q&kind&sort&page URL still opens "Tổ chức" instead of dying on the feed.
+// /?q&kind&sort&page URL still opens "To chuc" instead of dying on the feed.
 const ORG_PARAMS = ["q", "kind", "sort", "page"];
 
 function resolveTab(params: URLSearchParams): HomeTab {

@@ -9,6 +9,7 @@ export interface AuditEntry {
   resource_type: string;
   resource_id: string | null;
   result: string;
+  detail: string | null;
 }
 
 interface AuditFeedResponse {

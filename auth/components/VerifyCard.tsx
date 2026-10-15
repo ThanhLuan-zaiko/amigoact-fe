@@ -71,7 +71,7 @@ export function VerifyCard(): ReactElement {
   }
 
   return (
-    <Section className=" @2xl:col-start-2 ">
+    <Section>
       <div className="flex items-center gap-2">
         <FiShield
           className="h-5 w-5 text-zinc-900 dark:text-zinc-100"

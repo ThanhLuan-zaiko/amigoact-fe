@@ -131,7 +131,8 @@ export function useJoinOrg(
 ): UseMutationResult<OrgMembership, ApiError, string> {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (orgId: string) => joinOrg(orgId),
+        meta: { successToast: "org.join" },
+mutationFn: (orgId: string) => joinOrg(orgId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: orgKeys.all });
       await queryClient.invalidateQueries({ queryKey: orgKeys.detail(slug) });

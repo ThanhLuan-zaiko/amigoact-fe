@@ -126,9 +126,11 @@ async function invalidateBoard(
 
 function useBoardMutation<TVars, TResult>(
   mutationFn: (vars: TVars) => Promise<TResult>,
+  toastKey?: string,
 ): UseMutationResult<TResult, ApiError, TVars> {
   const queryClient = useQueryClient();
   return useMutation({
+    meta: { successToast: toastKey },
     mutationFn,
     onSuccess: () => invalidateBoard(queryClient),
   });
@@ -137,7 +139,7 @@ function useBoardMutation<TVars, TResult>(
 export function useCreatePost(
   orgId: string,
 ): UseMutationResult<OrgPost, ApiError, CreatePostInput> {
-  return useBoardMutation((input: CreatePostInput) => createPost(orgId, input));
+  return useBoardMutation((input: CreatePostInput) => createPost(orgId, input), "post.save");
 }
 
 export function useUpdatePost(
@@ -146,13 +148,14 @@ export function useUpdatePost(
   return useBoardMutation(
     ({ postId, input }: { postId: string; input: UpdatePostInput }) =>
       updatePost(orgId, postId, input),
+    "post.save",
   );
 }
 
 export function usePublishPost(
   orgId: string,
 ): UseMutationResult<OrgPost, ApiError, string> {
-  return useBoardMutation((postId: string) => publishPost(orgId, postId));
+  return useBoardMutation((postId: string) => publishPost(orgId, postId), "post.publish");
 }
 
 export function useCreateRevision(
@@ -164,25 +167,25 @@ export function useCreateRevision(
 export function useUnpublishPost(
   orgId: string,
 ): UseMutationResult<OrgPost, ApiError, string> {
-  return useBoardMutation((postId: string) => unpublishPost(orgId, postId));
+  return useBoardMutation((postId: string) => unpublishPost(orgId, postId), "post.unpublish");
 }
 
 export function useSoftDeletePost(
   orgId: string,
 ): UseMutationResult<void, ApiError, string> {
-  return useBoardMutation((postId: string) => deletePost(orgId, postId));
+  return useBoardMutation((postId: string) => deletePost(orgId, postId), "post.delete");
 }
 
 export function useHardDeletePost(
   orgId: string,
 ): UseMutationResult<void, ApiError, string> {
-  return useBoardMutation((postId: string) => deletePost(orgId, postId, true));
+  return useBoardMutation((postId: string) => deletePost(orgId, postId, true), "post.delete");
 }
 
 export function useRestorePost(
   orgId: string,
 ): UseMutationResult<OrgPost, ApiError, string> {
-  return useBoardMutation((postId: string) => restorePost(orgId, postId));
+  return useBoardMutation((postId: string) => restorePost(orgId, postId), "post.restore");
 }
 
 export function useSetPostPinned(
@@ -191,6 +194,7 @@ export function useSetPostPinned(
   return useBoardMutation(
     ({ postId, pinned }: { postId: string; pinned: boolean }) =>
       setPostPinned(orgId, postId, pinned),
+    "post.pin",
   );
 }
 

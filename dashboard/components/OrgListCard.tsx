@@ -15,6 +15,7 @@ import { OrgEditModal } from "./OrgEditModal.tsx";
 import { OrgListToolbar, type OrgSort } from "./OrgListToolbar.tsx";
 import { OrgMediaModal } from "./OrgMediaModal.tsx";
 import { OrgRow } from "./OrgRow.tsx";
+import { OrgTrashList } from "./OrgTrashList.tsx";
 
 const PAGE_SIZE = 5;
 const TRASH_LIMIT = 100;
@@ -35,6 +36,9 @@ export function OrgListCard(): ReactElement {
   const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
   const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
   const mediaOrgId = searchParams.get("media");
+  // "trash" is a client-side bucket: the live list query never sends it to the
+  // server, it only swaps which collection the section renders.
+  const trashView = bucket === "trash";
 
   const updateParams = useCallback(
     (patch: Record<string, string | null>, replace = false): void => {
@@ -56,7 +60,7 @@ export function OrgListCard(): ReactElement {
   // Live list is server-driven; trash and modal lookup fetch wide instead.
   const orgs = useMyOrgs(false, {
     q: query || undefined,
-    status: bucket === "all" ? undefined : bucket,
+    status: bucket === "all" || trashView ? undefined : bucket,
     sort,
     limit: PAGE_SIZE,
     offset: (page - 1) * PAGE_SIZE,
@@ -72,13 +76,17 @@ export function OrgListCard(): ReactElement {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const current = Math.min(page, totalPages);
   const outOfRange = orgs.data !== undefined && page > totalPages;
-  const filtering = query.trim() !== "" || bucket !== "all";
-  const trashed = (trash.data?.items ?? []).filter((org) => org.deleted_at !== null);
+  const filtering = query.trim() !== "" || (bucket !== "all" && !trashView);
+  const trashedAll = (trash.data?.items ?? []).filter((org) => org.deleted_at !== null);
+  const needle = query.trim().toLowerCase();
+  const trashed = needle === "" ? trashedAll : trashedAll.filter(
+    (org) => `${org.name} ${org.slug}`.toLowerCase().includes(needle),
+  );
   const mediaOrg = mediaOrgId === null ? null : (allOrgs.data?.items.find((org) => org.id === mediaOrgId) ?? null);
   const editingOrg = editingId === null ? null : (items.find((org) => org.id === editingId) ?? null);
 
   const listRef = useRiseOn<HTMLUListElement>(`${current}:${items.length}`);
-  const trashRef = useRiseOn<HTMLUListElement>(trashed.length);
+  const HeaderIcon = trashView ? FiTrash2 : FiUsers;
 
   // Pull an out-of-range ?page= back once totals arrive.
   useEffect(() => {
@@ -109,13 +117,13 @@ export function OrgListCard(): ReactElement {
       <Section>
         <div data-rise className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <FiUsers className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
+            <HeaderIcon className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
             <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-              Tổ chức của tôi
+              {trashView ? "Thùng rác" : "Tổ chức của tôi"}
             </h3>
-            {orgs.data && total > 0 && (
+            {(trashView ? trash.data && trashedAll.length > 0 : orgs.data && total > 0) && (
               <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                {total}
+                {trashView ? trashedAll.length : total}
               </span>
             )}
           </div>
@@ -127,19 +135,35 @@ export function OrgListCard(): ReactElement {
             Tạo mới
           </Button>
         </div>
-        {(total > 0 || filtering) && (
+        {(total > 0 || filtering || trashedAll.length > 0) && (
           <OrgListToolbar
             query={query}
             onQuery={(value) => updateParams({ q: value || null, page: null }, true)}
             bucket={bucket}
             onBucket={(key) => updateParams({ status: key === "all" ? null : key, page: null })}
             counts={counts}
+            trashCount={trashedAll.length}
             sort={sort}
             onSort={(key) => updateParams({ sort: key === "newest" ? null : key, page: null })}
             total={total}
           />
         )}
-        <div className="mt-3" aria-live="polite" aria-busy={orgs.isPending}>
+        <div
+          className="mt-3"
+          aria-live="polite"
+          aria-busy={trashView ? trash.isPending : orgs.isPending}
+        >
+          {trashView ? (
+            <OrgTrashList
+              isPending={trash.isPending}
+              isError={trash.isError}
+              error={trash.error}
+              items={trashed}
+              filtering={needle !== ""}
+              onResetFilters={resetFilters}
+            />
+          ) : (
+            <>
           {orgs.isPending && <LoadingState label="Đang tải danh sách tổ chức…" />}
           {orgs.isError && (
             <ErrorState
@@ -208,33 +232,10 @@ export function OrgListCard(): ReactElement {
               </Button>
             </div>
           )}
+            </>
+          )}
         </div>
       </Section>
-      {trashed.length > 0 && (
-        <Section>
-          <div className="flex items-center gap-2">
-            <FiTrash2 className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
-            <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-              Thùng rác
-            </h3>
-          </div>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Tổ chức đã xóa mềm. Khôi phục để dùng tiếp, hoặc xóa cứng để xóa vĩnh viễn cùng toàn bộ tệp.
-          </p>
-          <ul ref={trashRef} className="mt-3 flex flex-col gap-3">
-            {trashed.map((org) => (
-              <OrgRow
-                key={org.id}
-                org={org}
-                editing={false}
-                compact={true}
-                onEdit={() => {}}
-                onOpenMedia={() => {}}
-              />
-            ))}
-          </ul>
-        </Section>
-      )}
       {mediaOrg && (
         <OrgMediaModal
           org={mediaOrg}

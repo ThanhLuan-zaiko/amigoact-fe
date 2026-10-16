@@ -13,7 +13,9 @@ import {
   LoadingState,
 } from "../../core/components/Feedback.tsx";
 import { formatDateTime } from "../../activities/dates.tsx";
+import { useRegistrationForm } from "../../activities/hooks.ts";
 import { toVietnameseCertificateError } from "../../certificates/messages.tsx";
+import { parseQuestion } from "../form-utils.ts";
 import { useManualCheckIn, useReview, useRoster } from "../hooks.ts";
 import { RosterCertActions } from "./RosterCertActions.tsx";
 import {
@@ -23,6 +25,7 @@ import {
 
 interface RosterPanelProps {
   activityId: string;
+  orgId: string;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -42,8 +45,10 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function RosterPanel({
   activityId,
+  orgId,
 }: RosterPanelProps): ReactElement {
   const roster = useRoster(activityId);
+  const form = useRegistrationForm(orgId, activityId);
   const review = useReview(activityId);
   const checkIn = useManualCheckIn(activityId);
   const [error, setError] = useState("");
@@ -115,6 +120,17 @@ export function RosterPanel({
                     “{row.note}”
                   </p>
                 )}
+                {row.form_data &&
+                  (form.data ?? []).map((q) =>
+                    row.form_data?.[q.question_id] ? (
+                      <p
+                        key={q.question_id}
+                        className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400"
+                      >
+                        {parseQuestion(q).label}: {row.form_data[q.question_id]}
+                      </p>
+                    ) : null,
+                  )}
                 <span
                   className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[row.status] ?? STATUS_STYLES.waitlisted}`}
                 >
@@ -177,6 +193,7 @@ export function RosterPanel({
                 {row.status === "attended" && (
                   <RosterCertActions
                     activityId={activityId}
+                    orgId={orgId}
                     studentId={row.student_id}
                     act={act}
                   />

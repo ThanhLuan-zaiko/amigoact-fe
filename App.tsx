@@ -7,6 +7,7 @@ import { Button } from "./core/components/Button.tsx";
 import { EmptyState } from "./core/components/Feedback.tsx";
 import { AdminAdminsPage } from "./admin/admins-page.tsx";
 import { AuditPage } from "./audit/page.tsx";
+import { AdminModerationPage } from "./admin/moderation-page.tsx";
 import { AdminOrgsPage } from "./admin/orgs-page.tsx";
 import { AdminPage } from "./admin/page.tsx";
 import { ChangePasswordPage } from "./auth/change-password-page.tsx";
@@ -132,6 +133,7 @@ export default function App(): ReactElement {
         <Route path="admin" element={<AdminPage />}>
           <Route index element={<Navigate to="orgs" replace />} />
           <Route path="orgs" element={<AdminOrgsPage />} />
+          <Route path="moderation" element={<AdminModerationPage />} />
           <Route path="admins" element={<AdminAdminsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

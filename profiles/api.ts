@@ -20,6 +20,8 @@ export interface ContactItem {
 
 export interface VolunteerProfile {
   student_code: string | null;
+  campus_id: string | null;
+  department_id: string | null;
   class_name: string | null;
   enrollment_year: number | null;
   school_name: string | null;
@@ -35,6 +37,8 @@ export interface VolunteerProfile {
 
 export interface ProfilePayload {
   student_code: string | null;
+  campus_id: string | null;
+  department_id: string | null;
   class_name: string | null;
   enrollment_year: number | null;
   school_name: string | null;

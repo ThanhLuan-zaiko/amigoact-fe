@@ -7,6 +7,8 @@ import {
 } from "@tanstack/react-query";
 import { ApiError } from "../core/api.ts";
 import {
+  listModeration,
+  reviewModeration,
   getAdminStatus,
   grantAdmin,
   listAdminOrgs,
@@ -18,6 +20,7 @@ import {
   type AdminOrgPage,
   type AdminStatus,
   type AdminUserItem,
+  type ModerationItem,
 } from "./api.ts";
 import { adminKeys } from "./keys.ts";
 
@@ -108,6 +111,36 @@ export function useRevokeAdmin(): UseMutationResult<void, ApiError, string> {
 mutationFn: revokeAdmin,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: adminKeys.all });
+    },
+  });
+}
+
+export function useModerationQueue(
+  status = "pending",
+  enabled = true,
+): UseQueryResult<ModerationItem[], ApiError> {
+  return useQuery({
+    queryKey: adminKeys.moderation(status),
+    queryFn: () => listModeration(status),
+    staleTime: 15_000,
+    enabled,
+  });
+}
+
+export function useReviewModeration(): UseMutationResult<
+  void,
+  ApiError,
+  { item: ModerationItem; approve: boolean; note?: string }
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: { successToast: "admin.moderation" },
+    mutationFn: ({ item, approve, note }) =>
+      reviewModeration(item, approve, note),
+    onSettled: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: [...adminKeys.all, "moderation"],
+      });
     },
   });
 }

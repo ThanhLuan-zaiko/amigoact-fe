@@ -13,4 +13,10 @@ export const activityKeys = {
     [...activityKeys.all, "org", orgId] as const,
   view: (orgId: string, activityId: string) =>
     [...activityKeys.all, "view", orgId, activityId] as const,
+  form: (orgId: string, activityId: string) =>
+    [...activityKeys.all, "form", orgId, activityId] as const,
+  slots: (orgId: string, activityId: string) =>
+    [...activityKeys.all, "slots", orgId, activityId] as const,
+  media: (activityId: string) =>
+    [...activityKeys.all, "media", activityId] as const,
 };

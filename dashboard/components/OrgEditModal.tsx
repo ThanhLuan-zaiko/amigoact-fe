@@ -4,6 +4,8 @@ import { Modal } from "../../core/components/Modal.tsx";
 import { UnsavedChangesDialog } from "../../core/components/UnsavedGuard.tsx";
 import type { DashboardOrg } from "../api.ts";
 import { OrgEditCard } from "./OrgEditCard.tsx";
+import { StructurePanel } from "./StructurePanel.tsx";
+import { ApiKeysPanel } from "./ApiKeysPanel.tsx";
 
 interface OrgEditModalProps {
   org: DashboardOrg;
@@ -29,6 +31,8 @@ export function OrgEditModal({ org, onClose }: OrgEditModalProps): ReactElement 
         onCancel={requestClose}
         onDirtyChange={setDirty}
       />
+      <StructurePanel orgId={org.id} />
+      <ApiKeysPanel orgId={org.id} />
       {confirming && (
         <UnsavedChangesDialog
           onStay={() => setConfirming(false)}

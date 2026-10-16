@@ -5,4 +5,6 @@ export const hourKeys = {
     [...hourKeys.all, "activity", activityId] as const,
   pending: (orgId: string) =>
     [...hourKeys.all, "pending", orgId] as const,
+  rules: (orgId: string) =>
+    [...hourKeys.all, "rules", orgId] as const,
 };

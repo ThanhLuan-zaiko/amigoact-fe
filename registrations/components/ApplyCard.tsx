@@ -9,11 +9,14 @@ import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useSession } from "../../auth/hooks.ts";
+import { useRegistrationForm } from "../../activities/hooks.ts";
+import { useSlots } from "../../activities/slots-hooks.ts";
 import {
   useApply,
   useCancelRegistration,
   useMyRegistrations,
 } from "../hooks.ts";
+import { FormFields } from "./FormFields.tsx";
 import {
   REGISTRATION_STATUS_LABELS,
   toVietnameseRegistrationError,
@@ -21,6 +24,7 @@ import {
 import { TicketCard } from "./TicketCard.tsx";
 
 interface ApplyCardProps {
+  orgId: string;
   activityId: string;
   activityStatus: string;
 }
@@ -28,6 +32,7 @@ interface ApplyCardProps {
 const CANCELLABLE = new Set(["pending", "approved", "waitlisted"]);
 
 export function ApplyCard({
+  orgId,
   activityId,
   activityStatus,
 }: ApplyCardProps): ReactElement {
@@ -35,7 +40,11 @@ export function ApplyCard({
   const mine = useMyRegistrations(session.data != null);
   const apply = useApply(activityId);
   const cancel = useCancelRegistration();
+  const form = useRegistrationForm(orgId, activityId);
+  const slots = useSlots(orgId, activityId);
   const [note, setNote] = useState("");
+  const [slotId, setSlotId] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
 
   if (!session.data) {
@@ -68,7 +77,12 @@ export function ApplyCard({
   const onApply = async (): Promise<void> => {
     setError("");
     try {
-      await apply.mutateAsync({ note: note.trim() || undefined });
+      await apply.mutateAsync({
+        note: note.trim() || undefined,
+        formData:
+          (form.data?.length ?? 0) > 0 ? answers : undefined,
+        slotId: slotId ?? undefined,
+      });
     } catch (err) {
       setError(failMessage(err));
     }
@@ -155,6 +169,53 @@ export function ApplyCard({
         placeholder="Giới thiệu ngắn về bạn…"
         maxLength={500}
       />
+      {(slots.data?.length ?? 0) > 0 && (
+        <fieldset className="flex flex-col gap-2">
+          <legend className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            Chọn ca tham gia
+          </legend>
+          {slots.data!.map((s) => {
+            const full =
+              s.capacity != null && s.registered >= s.capacity;
+            return (
+              <label
+                key={s.slot_id}
+                className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm ${
+                  slotId === s.slot_id
+                    ? "border-zinc-900 dark:border-zinc-100"
+                    : "border-zinc-200 dark:border-zinc-800"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="slot"
+                    checked={slotId === s.slot_id}
+                    onChange={() => setSlotId(s.slot_id)}
+                  />
+                  <span className="text-zinc-900 dark:text-zinc-100">
+                    {s.title}
+                  </span>
+                </span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {s.capacity != null
+                    ? `${s.registered}/${s.capacity}${full ? " · đầy" : ""}`
+                    : `${s.registered} đã đăng ký`}
+                </span>
+              </label>
+            );
+          })}
+        </fieldset>
+      )}
+      {form.data && form.data.length > 0 && (
+        <FormFields
+          questions={form.data}
+          answers={answers}
+          onChange={(qid, v) =>
+            setAnswers((prev) => ({ ...prev, [qid]: v }))
+          }
+        />
+      )}
       <div>
         <Button
           disabled={apply.isPending}

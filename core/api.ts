@@ -113,6 +113,35 @@ export async function apiFetch<T>(
   }
 }
 
+async function textRequest(path: string): Promise<string> {
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+  const response = await fetch(`${resolveBaseUrl()}${path}`, {
+    cache: "no-store",
+    credentials: "include",
+    headers,
+  });
+  if (!response.ok) throw toApiError(response.status, await readBody(response));
+  return response.text();
+}
+
+export async function apiTextFetch(path: string): Promise<string> {
+  try {
+    return await textRequest(path);
+  } catch (error) {
+    const needsRetry =
+      error instanceof ApiError && error.status === 401;
+    if (!needsRetry) throw error;
+    try {
+      await refreshAccessToken();
+    } catch {
+      accessToken = null;
+      throw error;
+    }
+    return textRequest(path);
+  }
+}
+
 async function uploadRequest<T>(path: string, form: FormData, method = "POST"): Promise<T> {
   const headers: Record<string, string> = {};
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;

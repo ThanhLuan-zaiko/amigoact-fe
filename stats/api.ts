@@ -12,3 +12,32 @@ export interface OrgStats {
 export function getOrgStats(orgId: string): Promise<OrgStats> {
   return apiFetch<OrgStats>(`/orgs/${orgId}/stats`);
 }
+
+export interface DailyStats {
+  day: string;
+  registrations: number;
+  attendees: number;
+  hours_awarded: number;
+}
+
+export interface MonthlyStats {
+  month: string;
+  activities: number;
+  participants: number;
+  hours: number;
+  certificates: number;
+}
+
+export function getDailyStats(
+  activityId: string,
+): Promise<DailyStats[]> {
+  return apiFetch<DailyStats[]>(
+    `/activities/${activityId}/stats/daily`,
+  );
+}
+
+export function getMonthlyStats(
+  orgId: string,
+): Promise<MonthlyStats[]> {
+  return apiFetch<MonthlyStats[]>(`/orgs/${orgId}/stats/monthly`);
+}

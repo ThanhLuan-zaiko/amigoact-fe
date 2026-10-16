@@ -283,3 +283,36 @@ export function addAnnouncement(
     { method: "POST", body: JSON.stringify(input) },
   );
 }
+
+export interface FormQuestion {
+  question_id: string;
+  label: string;
+  field_type: string;
+  required: boolean;
+}
+
+export interface FormQuestionInput {
+  label: string;
+  field_type: string;
+  required: boolean;
+}
+
+export function getRegistrationForm(
+  orgId: string,
+  activityId: string,
+): Promise<FormQuestion[]> {
+  return apiFetch<FormQuestion[]>(
+    `/orgs/${orgId}/activities/${activityId}/form`,
+  );
+}
+
+export function setRegistrationForm(
+  orgId: string,
+  activityId: string,
+  questions: FormQuestionInput[],
+): Promise<FormQuestion[]> {
+  return apiFetch<FormQuestion[]>(
+    `/orgs/${orgId}/activities/${activityId}/form`,
+    { method: "PUT", body: JSON.stringify({ questions }) },
+  );
+}

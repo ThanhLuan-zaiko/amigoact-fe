@@ -17,10 +17,12 @@ import {
   fetchDiscovery,
   getActivityBySlug,
   getActivityDetail,
+  getRegistrationForm,
   listActivities,
   listCategories,
   listOrgActivities,
   setActivityPartners,
+  setRegistrationForm,
   setActivitySkills,
   setActivityStaff,
   transitionActivity,
@@ -31,6 +33,8 @@ import {
   type ActivitySummary,
   type CategoryItem,
   type DiscoveryResponse,
+  type FormQuestion,
+  type FormQuestionInput,
 } from "./api.ts";
 import { activityKeys } from "./keys.ts";
 
@@ -234,6 +238,30 @@ export function useAddAnnouncement(
   return useMutation({
         meta: { successToast: "activity.announce" },
 mutationFn: (input) => addAnnouncement(orgId, activityId, input),
+    ...useInvalidateActivities(),
+  });
+}
+
+export function useRegistrationForm(
+  orgId: string | undefined,
+  activityId: string | undefined,
+): UseQueryResult<FormQuestion[], ApiError> {
+  return useQuery({
+    queryKey: activityKeys.form(orgId ?? "", activityId ?? ""),
+    queryFn: () =>
+      getRegistrationForm(orgId as string, activityId as string),
+    enabled: Boolean(orgId && activityId),
+  });
+}
+
+export function useSetForm(
+  orgId: string,
+  activityId: string,
+): OrgActivityMutation<FormQuestionInput[]> {
+  return useMutation({
+        meta: { successToast: "activity.save" },
+mutationFn: (questions) =>
+      setRegistrationForm(orgId, activityId, questions),
     ...useInvalidateActivities(),
   });
 }

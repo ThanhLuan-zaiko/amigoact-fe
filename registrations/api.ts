@@ -10,6 +10,7 @@ export interface Registration {
   registered_at: string | null;
   reviewed_at: string | null;
   cancelled_at: string | null;
+  slot_id: string | null;
 }
 
 export interface RosterItem {
@@ -21,6 +22,8 @@ export interface RosterItem {
   note: string | null;
   review_note: string | null;
   registered_at: string | null;
+  form_data?: Record<string, string> | null;
+  slot_id?: string | null;
 }
 
 export interface HistoryEntry {
@@ -53,10 +56,16 @@ export interface AttendanceRecord {
 export function applyToActivity(
   activityId: string,
   note?: string,
+  formData?: Record<string, string>,
+  slotId?: string,
 ): Promise<Registration> {
   return apiFetch<Registration>(`/activities/${activityId}/registrations`, {
     method: "POST",
-    body: JSON.stringify({ note: note ?? null }),
+    body: JSON.stringify({
+      note: note ?? null,
+      form_data: formData ?? null,
+      slot_id: slotId ?? null,
+    }),
   });
 }
 

@@ -14,6 +14,10 @@ export const MUTATION_TOAST_TITLES: Record<string, string> = {
   "auth.password": "Đã cập nhật mật khẩu.",
   "auth.resend": "Đã gửi lại mã xác minh.",
   "auth.profile": "Đã cập nhật hồ sơ.",
+  "auth.sessionRevoked": "Đã đăng xuất thiết bị đó.",
+  "apikey.revoked": "Đã thu hồi khóa API.",
+  "report.snapshot": "Đã lưu báo cáo.",
+  "admin.moderation": "Đã cập nhật kiểm duyệt.",
   // dashboard / orgs
   "org.create": "Đã tạo tổ chức.",
   "org.update": "Đã lưu thay đổi.",
@@ -51,6 +55,8 @@ export const MUTATION_TOAST_TITLES: Record<string, string> = {
   "certificate.issue": "Đã cấp chứng nhận.",
   "certificate.revoke": "Đã thu hồi chứng nhận.",
   "review.submit": "Đã gửi đánh giá.",
+  "media.upload": "Đã tải media lên.",
+  "media.delete": "Đã xóa media.",
   // workspace / posts / notifications / admin
   "post.save": "Đã lưu bài viết.",
   "post.publish": "Đã đăng bài viết.",

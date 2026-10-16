@@ -10,8 +10,11 @@ import { EmptyState, ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import type { ScheduleItem } from "../api.ts";
 import { formatDateTime } from "../dates.tsx";
+import { SlotEditor } from "./SlotEditor.tsx";
 
 interface SchedulePanelProps {
+  orgId: string;
+  activityId: string;
   schedules: ScheduleItem[];
   canManage: boolean;
   onAdd: (input: {
@@ -24,6 +27,8 @@ interface SchedulePanelProps {
 }
 
 export function SchedulePanel({
+  orgId,
+  activityId,
   schedules,
   canManage,
   onAdd,
@@ -64,26 +69,35 @@ export function SchedulePanel({
           {schedules.map((s) => (
             <li
               key={s.id}
-              className="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800"
+              className="rounded-lg border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800"
             >
-              <div>
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
-                  {s.title}
-                </p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {s.location ?? ""} · {formatDateTime(s.start_at)}
-                </p>
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {s.title}
+                  </p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {s.location ?? ""} · {formatDateTime(s.start_at)}
+                  </p>
+                </div>
+                {canManage && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Xóa lịch"
+                    onClick={() => void onDelete(s.id)}
+                    icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
+                  >
+                    <span className="sr-only">Xóa</span>
+                  </Button>
+                )}
               </div>
               {canManage && (
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  aria-label="Xóa lịch"
-                  onClick={() => void onDelete(s.id)}
-                  icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
-                >
-                  <span className="sr-only">Xóa</span>
-                </Button>
+                <SlotEditor
+                  orgId={orgId}
+                  activityId={activityId}
+                  scheduleId={s.id}
+                />
               )}
             </li>
           ))}

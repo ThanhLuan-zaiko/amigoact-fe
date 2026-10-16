@@ -14,6 +14,7 @@ import {
   useReviewHours,
   useSubmitManualHours,
 } from "../hooks.ts";
+import { AdjustBox } from "./AdjustBox.tsx";
 import {
   HOUR_SOURCE_LABELS,
   HOUR_STATUS_LABELS,
@@ -180,6 +181,19 @@ export function HoursPanel({
           </Button>
         </div>
       </div>
+      <AdjustBox
+        orgId={orgId}
+        activityId={activityId}
+        failMessage={failMessage}
+        onError={(m) => {
+          setError(m);
+          setNotice("");
+        }}
+        onDone={(m) => {
+          setNotice(m);
+          setError("");
+        }}
+      />
       {notice && (
         <p
           role="status"

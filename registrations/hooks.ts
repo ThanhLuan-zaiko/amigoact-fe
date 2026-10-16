@@ -118,10 +118,15 @@ function useInvalidateRegistrations() {
 
 export function useApply(
   activityId: string,
-): Mutation<{ note?: string }, Registration> {
+): Mutation<{
+  note?: string;
+  formData?: Record<string, string>;
+  slotId?: string;
+}, Registration> {
   return useMutation({
         meta: { successToast: "registration.apply" },
-mutationFn: ({ note }) => applyToActivity(activityId, note),
+mutationFn: ({ note, formData, slotId }) =>
+      applyToActivity(activityId, note, formData, slotId),
     ...useInvalidateRegistrations(),
   });
 }

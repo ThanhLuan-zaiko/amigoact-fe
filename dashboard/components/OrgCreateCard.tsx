@@ -11,8 +11,9 @@ import { TextField } from "../../core/components/TextField.tsx";
 import { contactPayload, emptyContact, useContactForm } from "../contact-form.ts";
 import { useCreateOrg, useUploadOrgMediaFile } from "../hooks.ts";
 import { toVietnameseDashboardMessage, ORG_KIND_LABELS } from "../messages.tsx";
-import { assignMediaRole, emptyOrgForm, kindSearchParams, ORG_KINDS, orgFormDirty, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
-import type { PendingMedia } from "../schemas.ts";
+import { useOrgTypes } from "../structure-hooks.ts";
+import { usePendingMedia } from "../pending-media.ts";
+import { emptyOrgForm, kindSearchParams, ORG_KINDS, orgFormDirty, slugifyName, validateOrgField, validateOrgForm } from "../schemas.ts";
 import type { CreateOrgInput, JoinPolicy, OrgKind } from "../api.ts";
 import type { OrgFieldErrors } from "../schemas.ts";
 import { BusinessOrgFields } from "./BusinessOrgFields.tsx";
@@ -22,11 +23,36 @@ import { UnsavedGuard } from "../../core/components/UnsavedGuard.tsx";
 import { OrgCreateNotes } from "./OrgCreateNotes.tsx";
 import { OrgPolicyChips } from "./OrgPolicyChips.tsx";
 
+function uploadNoteFor(failedCode: string | null, done: number, total: number): string {
+  if (failedCode) {
+    return `${toVietnameseDashboardMessage("UPLOAD_PARTIAL")} (${done}/${total}, ${toVietnameseDashboardMessage(failedCode)})`;
+  }
+  return `Đã tải lên ${done}/${total} tệp. Mở mục Tệp ở trang Tổ chức để xem.`;
+}
+
+type OrgTextField = "name" | "slug" | "description" | "tax_code" | "legal_rep_name" | "legal_rep_id" | "legal_rep_position";
+
+const FIELD_ERROR_KEYS: Record<string, keyof OrgFieldErrors> = {
+  tax_code: "taxCode",
+  legal_rep_name: "legalRepName",
+  legal_rep_id: "legalRepId",
+  legal_rep_position: "legalRepPosition",
+};
+
+function fieldErrorKey(key: OrgTextField): keyof OrgFieldErrors {
+  return FIELD_ERROR_KEYS[key] ?? key;
+}
+
 export function OrgCreateCard(): ReactElement {
   const create = useCreateOrg("Đã tạo tổ chức");
   const uploadMedia = useUploadOrgMediaFile();
   const [searchParams, setSearchParams] = useSearchParams();
   const kindParam = searchParams.get("kind");
+  const orgTypes = useOrgTypes();
+  const kindOptions: { code: OrgKind; label: string }[] =
+    (orgTypes.data ?? []).length > 0
+      ? (orgTypes.data ?? []).map((t) => ({ code: t.code as OrgKind, label: t.name }))
+      : ORG_KINDS.map((k) => ({ code: k, label: ORG_KIND_LABELS[k] }));
   // ?kind= deep-links the org-type selector (e.g. /manage/orgs/create?kind=business).
   const urlKind: OrgKind = ORG_KINDS.includes(kindParam as OrgKind) ? (kindParam as OrgKind) : "organization";
   const [form, setForm] = useState<CreateOrgInput>(() => ({
@@ -36,7 +62,7 @@ export function OrgCreateCard(): ReactElement {
   const [errors, setErrors] = useState<OrgFieldErrors>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
   const [created, setCreated] = useState<{ name: string; slug: string } | null>(null);
-  const [pendingFiles, setPendingFiles] = useState<PendingMedia[]>([]);
+  const media = usePendingMedia();
   const [uploading, setUploading] = useState(false);
   const [uploadNote, setUploadNote] = useState<string | null>(null);
   const contact = useContactForm(emptyContact());
@@ -44,25 +70,21 @@ export function OrgCreateCard(): ReactElement {
   // risk" - the dirty baseline uses the URL kind, not the form default.
   const dirty =
     orgFormDirty({ ...form, kind: urlKind }) ||
-    pendingFiles.length > 0 ||
+    media.pendingFiles.length > 0 ||
     Object.values(contact.form).some((value) => value.trim() !== "");
 
-  function update(
-    key: "name" | "slug" | "description" | "tax_code" | "legal_rep_name" | "legal_rep_id" | "legal_rep_position",
-    value: string,
-  ): void {
+  function update(key: OrgTextField, value: string): void {
     const next = { ...form, [key]: value };
     if (key === "name" && (form.slug.length === 0 || form.slug === slugifyName(form.name))) {
       next.slug = slugifyName(value);
     }
     setForm(next);
     const single = validateOrgField(next, key);
-    const errorKey =
-      key === "tax_code" ? "taxCode" : key === "legal_rep_name" ? "legalRepName" : key === "legal_rep_id" ? "legalRepId" : key === "legal_rep_position" ? "legalRepPosition" : key;
+    const errorKey = fieldErrorKey(key);
     setErrors((current) => {
       const copy = { ...current };
-      if (single && (errorKey === "name" || errorKey === "slug" || errorKey === "description" || errorKey === "taxCode" || errorKey === "legalRepName" || errorKey === "legalRepId" || errorKey === "legalRepPosition")) copy[errorKey] = single;
-      else if (errorKey in copy) delete copy[errorKey as keyof OrgFieldErrors];
+      if (single) copy[errorKey] = single;
+      else delete copy[errorKey];
       return copy;
     });
   }
@@ -105,8 +127,9 @@ export function OrgCreateCard(): ReactElement {
           : {}),
       });
       setCreated({ name: org.name, slug: org.slug });
-      const files = pendingFiles;
-      setPendingFiles([]); if (files.length > 0) {
+      const files = media.pendingFiles;
+      media.clear();
+      if (files.length > 0) {
         setUploading(true);
         let done = 0;
         let failedCode: string | null = null;
@@ -120,11 +143,7 @@ export function OrgCreateCard(): ReactElement {
           }
         }
         setUploading(false);
-        setUploadNote(
-          failedCode
-            ? `${toVietnameseDashboardMessage("UPLOAD_PARTIAL")} (${done}/${files.length}, ${toVietnameseDashboardMessage(failedCode)})`
-            : `Đã tải lên ${done}/${files.length} tệp. Mở mục Tệp ở trang Tổ chức để xem.`,
-        );
+        setUploadNote(uploadNoteFor(failedCode, done, files.length));
       }
       setForm({ ...emptyOrgForm(), kind: form.kind });
       contact.reset();
@@ -145,28 +164,23 @@ export function OrgCreateCard(): ReactElement {
         Dành cho cá nhân, doanh nghiệp, câu lạc bộ hay hội nhóm tự quản.
       </p>
       <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Chọn loại hình">
-        {ORG_KINDS.map((kind) => (
+        {kindOptions.map((opt) => (
           <Button
-            key={kind}
+            key={opt.code}
             type="button"
-            variant={form.kind === kind ? "primary" : "secondary"}
-            onClick={() => selectKind(kind)}
-            aria-pressed={form.kind === kind}
+            variant={form.kind === opt.code ? "primary" : "secondary"}
+            onClick={() => selectKind(opt.code)}
+            aria-pressed={form.kind === opt.code}
             icon={<FiTag className="h-4 w-4" aria-hidden="true" />}
           >
-            {ORG_KIND_LABELS[kind]}
+            {opt.label}
           </Button>
         ))}
       </div>
-      <div className="mt-3">
-        <OrgPolicyChips value={form.join_policy ?? "invite"} onChange={selectPolicy} />
-      </div>
+      <div className="mt-3"><OrgPolicyChips value={form.join_policy ?? "invite"} onChange={selectPolicy} /></div>
       {serverCode && (
         <div className="mt-3">
-          <ErrorState
-            title="Không thể tạo tổ chức"
-            message={toVietnameseDashboardMessage(serverCode)}
-          />
+          <ErrorState title="Không thể tạo tổ chức" message={toVietnameseDashboardMessage(serverCode)} />
         </div>
       )}
       <OrgCreateNotes created={created} uploading={uploading} uploadNote={uploadNote} />
@@ -211,25 +225,12 @@ export function OrgCreateCard(): ReactElement {
           onBlur={contact.blur}
         />
         <MediaPicker
-          items={pendingFiles} disabled={create.isPending || uploading}
-          onAdd={(picked) =>
-            setPendingFiles((prev) => [
-              ...prev,
-              ...picked.map(({ file, decodable }) => ({
-                file,
-                role: "gallery" as const,
-                cropped: false,
-                decodable,
-              })),
-            ])
-          }
-          onRemove={(index) => setPendingFiles((prev) => prev.filter((_, i) => i !== index))}
-          onRole={(index, role) => setPendingFiles((prev) => assignMediaRole(prev, index, role))}
-          onCropApply={(index, file) =>
-            setPendingFiles((prev) =>
-              prev.map((item, i) => (i === index ? { ...item, file, cropped: true } : item)),
-            )
-          }
+          items={media.pendingFiles}
+          disabled={create.isPending || uploading}
+          onAdd={media.add}
+          onRemove={media.remove}
+          onRole={media.setRole}
+          onCropApply={media.applyCrop}
         />
         <Button
           type="submit"

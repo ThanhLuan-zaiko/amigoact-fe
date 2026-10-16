@@ -6,11 +6,14 @@ import {
   useActivityCertificates,
   useIssueCertificate,
   useRevokeCertificate,
+  useTemplates,
 } from "../../certificates/hooks.ts";
 import { CERTIFICATE_STATUS_LABELS } from "../../certificates/messages.tsx";
+import { SelectField } from "../../core/components/SelectField.tsx";
 
 interface RosterCertActionsProps {
   activityId: string;
+  orgId: string;
   studentId: string;
   act: (fn: () => Promise<unknown>, success?: string) => Promise<void>;
 }
@@ -21,16 +24,22 @@ interface RosterCertActionsProps {
 // so every row reads the same fetch from the cache.
 export function RosterCertActions({
   activityId,
+  orgId,
   studentId,
   act,
 }: RosterCertActionsProps): ReactElement | null {
   const certs = useActivityCertificates(activityId);
+  const templates = useTemplates(orgId);
   const issue = useIssueCertificate(activityId);
   const revoke = useRevokeCertificate(activityId);
   const [confirming, setConfirming] = useState(false);
+  const [templateId, setTemplateId] = useState("");
   if (certs.isPending) return null;
   const cert = (certs.data ?? []).find((c) => c.student_id === studentId);
   const busy = issue.isPending || revoke.isPending;
+  const activeTemplates = (templates.data ?? []).filter(
+    (t) => t.is_active === true,
+  );
 
   const badge =
     cert !== undefined ? (
@@ -63,16 +72,40 @@ export function RosterCertActions({
           Thu hồi
         </Button>
       ) : (
-        <Button
-          variant="secondary"
-          disabled={busy}
-          onClick={() =>
-            void act(() => issue.mutateAsync({ studentId }))
-          }
-          icon={<FiAward className="h-4 w-4" aria-hidden="true" />}
-        >
-          Cấp chứng nhận
-        </Button>
+        <>
+          {activeTemplates.length > 0 && (
+            <span className="inline-block w-36">
+              <SelectField
+                label="Mẫu chứng nhận"
+                name={`tpl-${studentId}`}
+                value={templateId}
+                onChange={setTemplateId}
+                options={[
+                  { value: "", label: "Mặc định" },
+                  ...activeTemplates.map((t) => ({
+                    value: t.template_id,
+                    label: t.name ?? "Mẫu",
+                  })),
+                ]}
+              />
+            </span>
+          )}
+          <Button
+            variant="secondary"
+            disabled={busy}
+            onClick={() =>
+              void act(() =>
+                issue.mutateAsync({
+                  studentId,
+                  templateId: templateId || undefined,
+                }),
+              )
+            }
+            icon={<FiAward className="h-4 w-4" aria-hidden="true" />}
+          >
+            Cấp chứng nhận
+          </Button>
+        </>
       )}
       <ConfirmDialog
         open={confirming}

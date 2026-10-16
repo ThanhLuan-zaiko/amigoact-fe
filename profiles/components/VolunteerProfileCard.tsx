@@ -16,6 +16,11 @@ import {
 } from "../messages.tsx";
 import { profileFieldErrors, profilePayload } from "../validate.ts";
 import type { VolunteerProfile } from "../api.ts";
+import { useMyOrgs } from "../../dashboard/hooks.ts";
+import {
+  useCampuses,
+  useDepartments,
+} from "../../dashboard/structure-hooks.ts";
 
 const STATUS_OPTIONS = [
   { value: "", label: "Chưa cập nhật" },
@@ -32,6 +37,12 @@ export function VolunteerProfileCard({
 }): ReactElement {
   const update = useUpdateProfile(PROFILE_TOAST.saved);
   const [studentCode, setStudentCode] = useState(profile.student_code ?? "");
+  const [orgId, setOrgId] = useState("");
+  const [campusId, setCampusId] = useState(profile.campus_id ?? "");
+  const [deptId, setDeptId] = useState(profile.department_id ?? "");
+  const myOrgs = useMyOrgs();
+  const campuses = useCampuses(orgId || null);
+  const departments = useDepartments(orgId || null);
   const [className, setClassName] = useState(profile.class_name ?? "");
   const [year, setYear] = useState(profile.enrollment_year?.toString() ?? "");
   const [school, setSchool] = useState(profile.school_name ?? "");
@@ -46,7 +57,10 @@ export function VolunteerProfileCard({
   const onSubmit = (event: FormEvent): void => {
     event.preventDefault();
     setError(null);
-    const draft = { status, studentCode, className, year, school, bio, interests };
+    const draft = {
+      status, studentCode, campusId, departmentId: deptId,
+      className, year, school, bio, interests,
+    };
     const errors = profileFieldErrors(draft);
     const formCode = errors.form;
     const fields = { ...errors };
@@ -93,6 +107,64 @@ export function VolunteerProfileCard({
           onChange={(e) => setStudentCode(e.target.value)}
           error={fieldText(fieldErrors, "student_code")}
           placeholder="VD: SV2022001"
+        />
+        <SelectField
+          label="Tổ chức (để tra cứu mã SV)"
+          name="structure_org"
+          value={orgId}
+          onChange={(v) => {
+            setOrgId(v);
+            setCampusId("");
+            setDeptId("");
+          }}
+          options={[
+            { value: "", label: "Chọn tổ chức" },
+            ...(myOrgs.data?.items ?? []).map((o) => ({
+              value: o.id,
+              label: o.name,
+            })),
+          ]}
+        />
+        <SelectField
+          label="Cơ sở"
+          name="campus_id"
+          value={campusId}
+          onChange={setCampusId}
+          disabled={!orgId}
+          options={[
+            { value: "", label: "Chọn cơ sở" },
+            ...(campuses.data ?? [])
+              .filter((c) => c.status === "active")
+              .map((c) => ({ value: c.id, label: c.name })),
+            ...(campusId &&
+            !(campuses.data ?? []).some((c) => c.id === campusId)
+              ? [{ value: campusId, label: "Cơ sở đã lưu" }]
+              : []),
+          ]}
+        />
+        <SelectField
+          label="Khoa/phòng ban"
+          name="department_id"
+          value={deptId}
+          onChange={setDeptId}
+          disabled={!orgId}
+          options={[
+            { value: "", label: "Chọn khoa/phòng" },
+            ...(departments.data ?? [])
+              .filter(
+                (d) =>
+                  d.status === "active" &&
+                  (!campusId || d.campus_id === campusId),
+              )
+              .map((d) => ({
+                value: d.id,
+                label: d.code ? `${d.name} (${d.code})` : d.name,
+              })),
+            ...(deptId &&
+            !(departments.data ?? []).some((d) => d.id === deptId)
+              ? [{ value: deptId, label: "Khoa đã lưu" }]
+              : []),
+          ]}
         />
         <TextField
           label="Lớp"

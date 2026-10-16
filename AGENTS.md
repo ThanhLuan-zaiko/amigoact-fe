@@ -241,6 +241,7 @@ Minimize anything that looks like an unstyled browser:
   4. Data flows through TanStack Query hooks with loading/empty/error states in each feed section.
   5. New/changed sections reviewed side-by-side with an existing page for drift (spacing, surfaces, type, colors).
   6. Mobile-first + motion + icons + theme verified: no overflow at `360px`; only `animejs` via `core/motion.ts` with `prefers-reduced-motion` guard (no second animation lib); every button/nav affordance renders a `react-icons` glyph with Vietnamese accessible label; first-visit theme follows OS (`prefers-color-scheme`) with no FOUC and persisted toggle; shell rails/header/tab bar/drawer order, routes and labels match §7.5, and page content uses only container-query breakpoints (§5.6).
+- Search tooling: use ripgrep (`rg`) for ad-hoc code searches when it is installed on the machine (verify with `rg --version`, `command -v rg`, or `where rg` on Windows); fall back to `grep` when it is not installed. The `bun -e` pre-commit checks in §2 and §5 are machine-independent and unchanged.
 
 ## 10. Documentation, Code, and UI Language
 

@@ -11,4 +11,14 @@ export const registrationKeys = {
     [...registrationKeys.all, "attendance", activityId] as const,
   myAttendance: () =>
     [...registrationKeys.all, "attendance-mine"] as const,
+  sessions: (activityId: string) =>
+    [...registrationKeys.all, "sessions", activityId] as const,
+  scans: (sessionId: string) =>
+    [...registrationKeys.all, "scans", sessionId] as const,
+  appeals: (activityId: string) =>
+    [...registrationKeys.all, "appeals", activityId] as const,
+  myAppeals: (activityId: string) =>
+    [...registrationKeys.all, "appeals-mine", activityId] as const,
+  summary: (activityId: string, registrationId: string) =>
+    [...registrationKeys.all, "summary", activityId, registrationId] as const,
 };

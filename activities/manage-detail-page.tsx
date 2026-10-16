@@ -1,13 +1,6 @@
 import { useState, type ReactElement } from "react";
 import { useParams } from "react-router-dom";
-import {
-  FiCheckCircle,
-  FiExternalLink,
-  FiPlayCircle,
-  FiXCircle,
-} from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
-import { Button } from "../core/components/Button.tsx";
 import {
   ErrorState,
   LoadingState,
@@ -26,37 +19,24 @@ import {
   useTransitionActivity,
   useUpdateActivity,
 } from "./hooks.ts";
-import { StatusChip } from "./components/ActivityCard.tsx";
-import { formatDateTime } from "./dates.tsx";
+import { ManageHeader } from "./components/ManageHeader.tsx";
 import { ActivityForm } from "./components/ActivityForm.tsx";
 import { AnnouncementPanel } from "./components/AnnouncementPanel.tsx";
 import { SchedulePanel } from "./components/DetailPanels.tsx";
 import { StaffPanel } from "./components/StaffPanel.tsx";
 import { CategoryCreator } from "./components/CategoryCreator.tsx";
+import { FormBuilder } from "./components/FormBuilder.tsx";
 import { PartnersPanel } from "./components/PartnersPanel.tsx";
 import { SkillsPanel } from "./components/SkillsPanel.tsx";
+import { AppealPanel } from "../registrations/components/AppealPanel.tsx";
 import { AttendancePanel } from "../registrations/components/AttendancePanel.tsx";
+import { SessionPanel } from "../registrations/components/SessionPanel.tsx";
 import { RosterPanel } from "../registrations/components/RosterPanel.tsx";
 import { HoursPanel } from "../hours/components/HoursPanel.tsx";
-
-const NEXT_ACTIONS: Record<
-  string,
-  { target: string; label: string; Icon: typeof FiPlayCircle }[]
-> = {
-  draft: [
-    { target: "published", label: "Công bố", Icon: FiPlayCircle },
-    { target: "cancelled", label: "Hủy", Icon: FiXCircle },
-  ],
-  published: [
-    { target: "ongoing", label: "Bắt đầu", Icon: FiPlayCircle },
-    { target: "completed", label: "Kết thúc", Icon: FiCheckCircle },
-    { target: "cancelled", label: "Hủy", Icon: FiXCircle },
-  ],
-  ongoing: [
-    { target: "completed", label: "Kết thúc", Icon: FiCheckCircle },
-    { target: "cancelled", label: "Hủy", Icon: FiXCircle },
-  ],
-};
+import { RulePanel } from "../hours/components/RulePanel.tsx";
+import { TemplatePanel } from "../certificates/components/TemplatePanel.tsx";
+import { MediaPanel } from "./components/MediaPanel.tsx";
+import { DailyStatsCard } from "../stats/components/DailyStatsCard.tsx";
 
 export function ManageEventDetailPage(): ReactElement {
   const { orgId, activityId } = useParams<{
@@ -98,7 +78,6 @@ export function ManageEventDetailPage(): ReactElement {
 
   const view = detail.data;
   const a = view.activity;
-  const actions = NEXT_ACTIONS[a.status] ?? [];
   const editable = a.status === "draft" || a.status === "published";
 
   const runTransition = async (target: string): Promise<void> => {
@@ -109,61 +88,14 @@ export function ManageEventDetailPage(): ReactElement {
   return (
     <>
       <Section>
-        <div data-rise className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-              {a.title}
-            </h1>
-            <StatusChip status={a.status} />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="secondary"
-              to={`/events/${a.org_id}/${a.slug}`}
-              icon={<FiExternalLink className="h-4 w-4" aria-hidden="true" />}
-            >
-              Trang công khai
-            </Button>
-            {editable && (
-              <Button
-                variant={editing ? "secondary" : "primary"}
-                onClick={() => setEditing((v) => !v)}
-              >
-                {editing ? "Đóng chỉnh sửa" : "Chỉnh sửa"}
-              </Button>
-            )}
-            {actions.map(({ target, label, Icon }) => (
-              <Button
-                key={target}
-                variant={target === "cancelled" ? "ghost" : "primary"}
-                disabled={transition.isPending}
-                onClick={() => void runTransition(target)}
-                icon={<Icon className="h-4 w-4" aria-hidden="true" />}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-        </div>
-        {notice && (
-          <p role="status" className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">
-            {notice}
-          </p>
-        )}
-        <dl className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="text-xs text-zinc-500">Bắt đầu</dt>
-            <dd className="font-medium text-zinc-900 dark:text-zinc-100">
-              {formatDateTime(a.start_at)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-xs text-zinc-500">Kết thúc</dt>
-            <dd className="font-medium text-zinc-900 dark:text-zinc-100">
-              {formatDateTime(a.end_at)}
-            </dd>
-          </div>
-        </dl>
+        <ManageHeader
+          activity={a}
+          editing={editing}
+          pending={transition.isPending}
+          notice={notice}
+          onToggleEdit={() => setEditing((v) => !v)}
+          onTransition={(target) => void runTransition(target)}
+        />
       </Section>
 
       {editing && (
@@ -195,6 +127,8 @@ export function ManageEventDetailPage(): ReactElement {
 
       <Section>
         <SchedulePanel
+          orgId={orgId ?? ""}
+          activityId={activityId ?? ""}
           schedules={view.schedules}
           canManage={editable}
           onAdd={(input) => addSchedule.mutateAsync(input)}
@@ -223,13 +157,34 @@ export function ManageEventDetailPage(): ReactElement {
         />
       </Section>
       <Section>
-        <RosterPanel activityId={a.id} />
+        <FormBuilder orgId={a.org_id} activityId={a.id} />
+      </Section>
+      <Section>
+        <RosterPanel activityId={a.id} orgId={a.org_id} />
       </Section>
       <Section>
         <AttendancePanel activityId={a.id} />
       </Section>
       <Section>
+        <SessionPanel activityId={a.id} schedules={view.schedules} />
+      </Section>
+      <Section>
+        <AppealPanel activityId={a.id} />
+      </Section>
+      <Section>
         <HoursPanel orgId={a.org_id} activityId={a.id} />
+      </Section>
+      <Section>
+        <RulePanel orgId={a.org_id} />
+      </Section>
+      <Section>
+        <TemplatePanel orgId={a.org_id} />
+      </Section>
+      <Section>
+        <MediaPanel activityId={a.id} />
+      </Section>
+      <Section>
+        <DailyStatsCard activityId={a.id} />
       </Section>
       <Section>
         <AnnouncementPanel

@@ -3,6 +3,8 @@ import type { ProfilePayload } from "./api.ts";
 export interface ProfileDraft {
   status: string;
   studentCode: string;
+  campusId: string;
+  departmentId: string;
   className: string;
   year: string;
   school: string;
@@ -57,6 +59,8 @@ export function profileFieldErrors(draft: ProfileDraft): Record<string, string> 
 export function profilePayload(draft: ProfileDraft): ProfilePayload {
   return {
     student_code: draft.studentCode.trim() || null,
+    campus_id: draft.campusId || null,
+    department_id: draft.departmentId || null,
     class_name: draft.className.trim() || null,
     enrollment_year: parsedYear(draft.year),
     school_name: draft.school.trim() || null,

@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { NavLink } from "react-router-dom";
 import type { IconType } from "react-icons";
-import { FiCheckSquare, FiShield, FiUsers } from "react-icons/fi";
+import { FiCheckSquare, FiImage, FiShield, FiUsers } from "react-icons/fi";
 import { Section } from "../../core/components/Section.tsx";
 
 interface AdminEntry {
@@ -12,6 +12,7 @@ interface AdminEntry {
 
 const ENTRIES: AdminEntry[] = [
   { to: "/admin/orgs", label: "Xác minh tổ chức", Icon: FiCheckSquare },
+  { to: "/admin/moderation", label: "Kiểm duyệt media", Icon: FiImage },
   { to: "/admin/admins", label: "Quản trị viên", Icon: FiUsers },
 ];
 

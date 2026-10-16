@@ -71,3 +71,34 @@ export async function grantAdmin(email: string): Promise<void> {
 export async function revokeAdmin(userId: string): Promise<void> {
   return apiFetch<void>(`/admin/admins/${userId}`, { method: "DELETE" });
 }
+
+export interface ModerationItem {
+  moderation_id: string;
+  asset_id: string;
+  status: string;
+  created_at: string;
+  note: string | null;
+  file_url: string | null;
+}
+
+export function listModeration(
+  status = "pending",
+): Promise<ModerationItem[]> {
+  return apiFetch<ModerationItem[]>(`/admin/moderation?status=${status}`);
+}
+
+export async function reviewModeration(
+  item: ModerationItem,
+  approve: boolean,
+  note?: string,
+): Promise<void> {
+  await apiFetch<unknown>(`/admin/moderation/${item.moderation_id}/review`, {
+    method: "POST",
+    body: JSON.stringify({
+      from_status: item.status,
+      created_at: item.created_at,
+      approve,
+      note,
+    }),
+  });
+}

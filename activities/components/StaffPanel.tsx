@@ -10,6 +10,7 @@ import { EmptyState, ErrorState } from "../../core/components/Feedback.tsx";
 import { SelectField } from "../../core/components/SelectField.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import type { ActivityDetailView } from "../api.ts";
+import { StudentLookup } from "../../dashboard/components/StudentLookup.tsx";
 import { SkillMatcher } from "./SkillMatcher.tsx";
 
 const STAFF_ROLE_OPTIONS = [
@@ -103,6 +104,12 @@ export function StaffPanel({
           skills={view.skills}
           staffed={new Set(view.staff.map((s) => s.user_id))}
           onPick={pick}
+        />
+      )}
+      {canManage && (
+        <StudentLookup
+          orgId={view.activity.org_id}
+          onPick={(id) => setUserId(id)}
         />
       )}
       {canManage && (

@@ -12,19 +12,22 @@ import {
   clearSessionToken,
   fetchSession,
   forgotPasswordAccount,
+  listAuthSessions,
   loginAccount,
   logoutAccount,
   logoutAllSessions,
   registerAccount,
   resendVerificationCode,
   resetPasswordAccount,
+  revokeAuthSession,
   updateProfile,
   verifyEmailAccount,
+  type AuthSession,
   type RegisterInput,
   type SessionProfile,
   type UpdateProfileInput,
 } from "./api.ts";
-import { authKeys } from "./keys.ts";
+import { authKeys, sessionKeys } from "./keys.ts";
 import type { RegisterForm } from "./schemas.ts";
 
 export function useSession(): UseQueryResult<SessionProfile | null> {
@@ -208,6 +211,29 @@ export function useRegisterFlow(
         }
       }
       return { dest: "home" };
+    },
+  });
+}
+
+export function useAuthSessions(): UseQueryResult<AuthSession[]> {
+  return useQuery({
+    queryKey: sessionKeys.list(),
+    queryFn: listAuthSessions,
+    staleTime: 30_000,
+  });
+}
+
+export function useRevokeAuthSession(): UseMutationResult<
+  void,
+  ApiError,
+  string
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: { successToast: "auth.sessionRevoked" },
+    mutationFn: revokeAuthSession,
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: sessionKeys.all });
     },
   });
 }

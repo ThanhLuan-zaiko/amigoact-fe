@@ -20,6 +20,7 @@ import {
 } from "./hooks.ts";
 import { StatusChip } from "./components/ActivityCard.tsx";
 import { formatDateTime } from "./dates.tsx";
+import { ActivityGallery } from "./components/ActivityGallery.tsx";
 import { AnnouncementPanel } from "./components/AnnouncementPanel.tsx";
 import { SchedulePanel } from "./components/DetailPanels.tsx";
 import { ApplyCard } from "../registrations/components/ApplyCard.tsx";
@@ -196,12 +197,14 @@ export function EventDetailPage(): ReactElement {
           Tham gia
         </h3>
         <div className="mt-3">
-          <ApplyCard activityId={a.id} activityStatus={a.status} />
+          <ApplyCard orgId={a.org_id} activityId={a.id} activityStatus={a.status} />
         </div>
       </Section>
       {view && view.schedules.length > 0 && (
         <Section>
           <SchedulePanel
+            orgId={a.org_id}
+            activityId={a.id}
             schedules={view.schedules}
             canManage={false}
             onAdd={async () => undefined}
@@ -218,6 +221,9 @@ export function EventDetailPage(): ReactElement {
           />
         </Section>
       )}
+      <Section>
+        <ActivityGallery activityId={a.id} />
+      </Section>
       <Section>
         <ReviewsPanel activityId={a.id} />
       </Section>

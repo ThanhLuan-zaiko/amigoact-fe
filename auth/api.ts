@@ -148,3 +148,25 @@ export async function changePasswordAccount(input: {
 export function clearSessionToken(): void {
   setAccessToken(null);
 }
+
+export interface AuthSession {
+  session_id: string;
+  device_label: string | null;
+  user_agent: string | null;
+  ip: string | null;
+  created_at: string | null;
+  last_seen_at: string | null;
+  expires_at: string | null;
+  revoked_at: string | null;
+  current: boolean;
+}
+
+export async function listAuthSessions(): Promise<AuthSession[]> {
+  return apiFetch<AuthSession[]>("/auth/sessions");
+}
+
+export async function revokeAuthSession(sessionId: string): Promise<void> {
+  await apiFetch<unknown>(`/auth/sessions/${sessionId}/revoke`, {
+    method: "POST",
+  });
+}

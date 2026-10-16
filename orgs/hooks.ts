@@ -15,10 +15,13 @@ import {
   fetchPublicOrg,
   joinOrg,
   listAnnouncementFeed,
+  listPublicOrgMedia,
   listPublicOrgPosts,
   listPublicOrgs,
+  listPublicPostMedia,
   type OrgMembership,
   type PublicOrgDetail,
+  type PublicOrgMediaPage,
   type PublicOrgPage,
   type PublicOrgParams,
   type PublicPostPage,
@@ -64,6 +67,38 @@ export function usePublicOrgPosts(
     enabled: slug !== undefined && slug !== "",
     retry: false,
     staleTime: 60_000,
+  });
+}
+
+// Complete cover-first media list of one org; the lightbox mounts this
+// lazily (only while a viewer is open) so rows never pay for it upfront.
+export function usePublicOrgMedia(
+  slug: string | undefined,
+): UseQueryResult<PublicOrgMediaPage, ApiError> {
+  return useQuery({
+    queryKey: orgKeys.media(slug ?? ""),
+    queryFn: () => listPublicOrgMedia(slug ?? ""),
+    enabled: slug !== undefined && slug !== "",
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+// Complete media list of one public post, same lazy-mount pattern.
+export function usePublicPostMedia(
+  slug: string | undefined,
+  postId: string | undefined,
+): UseQueryResult<PublicOrgMediaPage, ApiError> {
+  return useQuery({
+    queryKey: orgKeys.postMedia(slug ?? "", postId ?? ""),
+    queryFn: () => listPublicPostMedia(slug ?? "", postId ?? ""),
+    enabled:
+      slug !== undefined &&
+      slug !== "" &&
+      postId !== undefined &&
+      postId !== "",
+    retry: false,
+    staleTime: 30_000,
   });
 }
 
@@ -121,6 +156,9 @@ export function useAnnouncementsRealtime(): void {
         void queryClient.invalidateQueries({ queryKey: orgKeys.feed() });
         void queryClient.invalidateQueries({ queryKey: orgKeys.orgDetails() });
         void queryClient.invalidateQueries({ queryKey: orgKeys.orgPosts() });
+        void queryClient.invalidateQueries({
+          queryKey: orgKeys.postMediaAll(),
+        });
       }),
     [queryClient],
   );

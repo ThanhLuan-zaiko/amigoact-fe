@@ -25,7 +25,9 @@ trên `?tab=` (`published` mặc định, `draft`, `trash`) nên deep-link đư�
 
 - **Đã đăng**: `FeedShelf` render rail ghim (`ArticleCard featured` full
   width) rồi lưới `ArticleCard` 3 cột (`lg:col-span-4`): cover, badge
-  `Thông báo`, title, excerpt, tác giả + giờ + `x phút đọc` + số bình luận.
+  `Thông báo` (kind) và/hoặc `Chỉ thành viên` (bài published mà
+  `visibility=members`), title, excerpt, tác giả + giờ + `x phút đọc` +
+  số bình luận.
   Lọc kind qua `?kind=` (discussion/announcement). Phân trang số trang qua
   `?page=` + `PostPage.total` — `Pagination` giống `/manage/orgs`; `pinned[]`
   chỉ kèm ở trang 1, đổi tab/kind reset về trang 1.
@@ -45,7 +47,7 @@ trên `?tab=` (`published` mặc định, `draft`, `trash`) nên deep-link đư�
 | Shelf | Nút |
 |---|---|
 | Đã đăng | `Đọc`, `Sửa` (tác giả — mở/tạo revision nháp riêng, bài live vẫn hiển thị), `Ghim`/`Bỏ ghim` (manager), `Gỡ xuống` (tác giả — rút bài về nháp, hấp thụ revision đang mở), `Bỏ vào thùng rác` (tác giả/manager — xóa mềm, khôi phục được) |
-| Nháp | `Viết tiếp`, `Đăng bài`/`Đăng lại` cho revision (khóa nếu announcement mà thiếu `post:announce`), `Bỏ vào thùng rác` |
+| Nháp | `Viết tiếp`, `Đăng bài`/`Đăng lại` cho revision (khóa nếu announcement hoặc `visibility=public` mà thiếu `post:announce`), `Bỏ vào thùng rác` |
 | Thùng rác | `Khôi phục`, `Xóa vĩnh viễn` (2 bước) |
 
 Mọi mutation invalidate `[workspace,"posts"]` + `[workspace,"comments"]`;
@@ -63,9 +65,18 @@ Layout 2 cột: cột trái (`lg:col-span-8`) tiêu đề + danh sách block, c�
 phải (`lg:col-span-4`) `PublishPanel`.
 
 - `BlockInserter`: nút `+` ở đường nối giữa hai block (đầu bài và sau mỗi
-  block) mở menu loại khối. Chọn `Ảnh`/`Video` mở file input ẩn — file hợp
-  lệ (`isSupportedMedia` + đúng family) tạo block rỗng rồi upload nối tiếp
-  vào đúng vị trí; file lỗi báo `UNSUPPORTED_MEDIA`.
+  block, `data-insert-index`) mở menu loại khối. Chọn `Ảnh`/`Video` mở file
+  input ẩn — file hợp lệ (`isSupportedMedia` + đúng family) tạo block rỗng
+  rồi upload nối tiếp vào đúng vị trí; file lỗi báo `UNSUPPORTED_MEDIA`.
+- Kéo-thả: cả cột soạn bài (`ArticleEditor`) là drop zone — overlay "Thả
+  ảnh hoặc video" hiện khi kéo file vào. Thả lên đường `+` chèn đúng index
+  đó; thả lên một block (`data-block-index`) chèn trước/sau theo nửa chiều
+  cao con trỏ; chỗ trống khác nối cuối bài. Thả một file duy nhất cùng
+  family lên media block (`data-media-key`/`data-media-type` trong
+  `MediaBlockEditor`) thì thay asset của block đó thay vì chèn. Ảnh và video
+  trộn nhau trong một lần thả chia thành hai nhóm giữ đúng thứ tự tương
+  đối; drop ngoài zone được chặn mặc định mở-file của trình duyệt nên không
+  làm mất nháp.
 - `BlockEditor`: header nhỏ (nhãn loại + lên/xuống/xóa) bọc field theo
   loại — `TextArea` đoạn văn, `TextField` + toggle H2/H3 cho heading,
   textarea + `Nguồn` cho quote, `ListBlockFields` (item thêm/bớt, toggle
@@ -79,17 +90,25 @@ phải (`lg:col-span-4`) `PublishPanel`.
   x phút đọc`, nhãn `Chưa lưu`/`Đã lưu lúc`. Nút primary: `Đăng bài`
   (nháp mới), `Đăng lại` (revision/bài đã gỡ), `Lưu thay đổi` (bài live —
   patch trực tiếp); secondary `Lưu nháp`/`Lưu nháp riêng` (trên bài live
-  tự tạo revision trước khi lưu).
+  tự tạo revision trước khi lưu). Nhóm `Phạm vi hiển thị` (`Công khai` /
+  `Chỉ thành viên`) gắn `visibility` — độc lập với `kind`, ẩn trên
+  revision (kế thừa bài gốc); `Công khai` khóa khi thiếu `post:announce`
+  và flip trên bài live áp dụng ngay sau `PATCH`.
 
 `useArticleEditor` (`editor-hooks.ts`) giữ `dirty`, `savedAt`, `uploads`
-(per block key + `cover`), `errorCode`. Validate client trước khi gọi API:
+(per block key + `cover`), `errorCode`. `ArticleEditor` mount
+`UnsavedGuard` (`core/components/UnsavedGuard.tsx`) khi `dirty` hoặc đang
+upload — chặn reload/đóng tab (beforeunload), click link nội bộ và nút
+Back bằng dialog "Chưa lưu thay đổi"; `save()` reset `dirty` sau khi lưu
+nên đường điều hướng sau publish không bị hỏi. Validate client trước khi gọi API:
 publish cần nội dung (`POST_CONTENT_REQUIRED`), announcement cần tiêu đề
 (`POST_TITLE_REQUIRED`), đang upload phải chờ (`UPLOAD_IN_PROGRESS`),
 nháp chỉ cần không rỗng. Media block rỗng asset bị `cleanBlocks` loại.
 Save pipeline: chưa có `post_id` → `POST` (status draft/published); đã có
 → `PATCH` rồi `POST .../publish` nếu mục tiêu là đăng; `cover_media_id`
 luôn gửi (kể cả `null`) để đồng bộ `touches_cover`; `kind` chỉ gửi cho
-nháp độc lập. `Lưu nháp` trên bài đã đăng gọi `POST .../revisions` trước
+nháp độc lập; `visibility` gửi khi không phải revision (bài đã đăng flip
+được, revision bỏ field vì kế thừa bài gốc). `Lưu nháp` trên bài đã đăng gọi `POST .../revisions` trước
 (get-or-create) rồi PATCH vào revision — bài live không đổi cho tới khi
 revision được đăng lại (server gộp nội dung vào bài gốc, trả về snapshot
 bài gốc). Publish xong gọi `onPublished` → điều hướng sang trang đọc.
@@ -111,8 +130,9 @@ theo kênh.
 
 ## 5. Cổng public (`/orgs/:slug`)
 
-Chỉ bài `announcement` đã đăng ra ngoài board; discussion/nháp/revision/
-thùng rác vẫn nội bộ.
+Chỉ bài `visibility='public'` đã đăng ra ngoài board — `kind` không còn
+quyết định phạm vi (announcement `members` và discussion `public` đều
+hợp lệ); nháp/revision/thùng rác vẫn nội bộ.
 
 - `orgs/api.ts`: `PublicOrgDetail.announcements` + `announcement_count` —
   teaser `title/excerpt/cover_url/author_name/published_at/comment_count`

@@ -23,6 +23,7 @@ import { useBoardRealtime } from "./realtime-hooks.ts";
 import {
   formatTime,
   POST_KIND_LABELS,
+  POST_VISIBILITY_LABELS,
   postStatusLabel,
   readingTimeLabel,
   toVietnameseWorkspaceMessage,
@@ -119,6 +120,12 @@ export function WorkspaceReadPage(): ReactElement {
                     {POST_KIND_LABELS[article.kind]}
                   </span>
                 )}
+                {article.status === "published" &&
+                  article.visibility === "members" && (
+                    <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                      {POST_VISIBILITY_LABELS.members}
+                    </span>
+                  )}
                 {article.status === "draft" && (
                   <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
                     {postStatusLabel(article)}

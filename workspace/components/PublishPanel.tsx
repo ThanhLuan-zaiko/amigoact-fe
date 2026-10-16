@@ -10,6 +10,7 @@ import {
   formatTime,
   POST_KIND_LABELS,
   POST_STATUS_LABELS,
+  POST_VISIBILITY_LABELS,
   readingTimeLabel,
   toVietnameseWorkspaceMessage,
 } from "../messages.tsx";
@@ -22,8 +23,9 @@ interface PublishPanelProps {
 }
 
 // Right rail of the write page: status chip, kind toggle (standalone
-// drafts only - revisions follow the live post's kind), cover picker,
-// live stats, and the save-draft / publish pipeline.
+// drafts only - revisions follow the live post's kind), audience toggle
+// (revisions inherit the parent's audience), cover picker, live stats,
+// and the save-draft / publish pipeline.
 export function PublishPanel({
   editor,
   orgId,
@@ -42,11 +44,15 @@ export function PublishPanel({
         : editor.status === "draft" && editor.wasPublished
           ? "Đã gỡ xuống"
           : POST_STATUS_LABELS[editor.status];
-  const announceBlocked = editor.kind === "announcement" && !canAnnounce;
+  // Announcement kind and public audience both need post:announce, so a
+  // plain member can only ever publish member-scoped discussions.
+  const announceBlocked =
+    (editor.kind === "announcement" || editor.visibility === "public") &&
+    !canAnnounce;
   const saveLabel = published
     ? "Lưu thay đổi"
     : announceBlocked
-      ? "Cần quyền đăng thông báo"
+      ? "Cần quyền đăng công khai"
       : isRevision || editor.wasPublished
         ? "Đăng lại"
         : "Đăng bài";
@@ -83,6 +89,38 @@ export function PublishPanel({
                 }
               >
                 {POST_KIND_LABELS[kind]}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+      {!isRevision && (
+        <div className="mt-3">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            Phạm vi hiển thị
+          </p>
+          <div
+            role="group"
+            aria-label="Phạm vi hiển thị"
+            className="mt-2 flex gap-2"
+          >
+            {(["public", "members"] as const).map((scope) => (
+              <Button
+                key={scope}
+                type="button"
+                variant={editor.visibility === scope ? "primary" : "secondary"}
+                onClick={() => editor.setVisibility(scope)}
+                aria-pressed={editor.visibility === scope}
+                disabled={scope === "public" && !canAnnounce}
+                title={
+                  scope === "public" && !canAnnounce
+                    ? "Chỉ quản lý mới đăng được bài công khai"
+                    : scope === "public"
+                      ? "Hiển thị cho cả khách trên trang tổ chức"
+                      : "Chỉ thành viên tổ chức đọc được"
+                }
+              >
+                {POST_VISIBILITY_LABELS[scope]}
               </Button>
             ))}
           </div>

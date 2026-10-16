@@ -12,6 +12,7 @@ import type { OrgPost } from "../board-api.ts";
 import {
   formatTime,
   POST_KIND_LABELS,
+  POST_VISIBILITY_LABELS,
   readingTimeLabel,
 } from "../messages.tsx";
 import { ArticleActions } from "./ArticleActions.tsx";
@@ -61,6 +62,11 @@ export function ArticleCard({
             {post.kind === "announcement" && (
               <span className="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400">
                 {POST_KIND_LABELS[post.kind]}
+              </span>
+            )}
+            {post.status === "published" && post.visibility === "members" && (
+              <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                {POST_VISIBILITY_LABELS.members}
               </span>
             )}
             {pinned && (

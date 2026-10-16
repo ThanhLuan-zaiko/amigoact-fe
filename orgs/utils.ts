@@ -1,7 +1,24 @@
-import type { PublicOrg, PublicOrgDetail } from "./api.ts";
+import type { PublicOrg, PublicOrgDetail, PublicOrgMedia } from "./api.ts";
 
 export function orgLocation(org: PublicOrg): string | null {
   return org.city ?? org.country;
+}
+
+// Tile order shared by the feed mosaic and the lightbox fallback list:
+// the org/post cover leads, then the backend's cover-first media strip.
+// Callers pass mosaicItems() output as the viewer's fallback so tile
+// index N in the grid always means item N in the viewer.
+export function mosaicItems(
+  source: Pick<PublicOrg, "cover_url" | "media">,
+): PublicOrgMedia[] {
+  const items = [...source.media];
+  if (
+    source.cover_url !== null &&
+    !items.some((item) => item.url === source.cover_url)
+  ) {
+    items.unshift({ url: source.cover_url, kind: "image", mime: "image/*" });
+  }
+  return items;
 }
 
 export type TrustState = "pass" | "fail" | "warn" | "info";

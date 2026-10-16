@@ -41,6 +41,11 @@ export const POST_STATUS_LABELS: Record<string, string> = {
   draft: "Nháp",
 };
 
+export const POST_VISIBILITY_LABELS: Record<string, string> = {
+  public: "Công khai",
+  members: "Chỉ thành viên",
+};
+
 // Row badge for shelves/detail: a draft that stages edits for a live post
 // (pending revision) and a post pulled back off the board (unpublished)
 // both read differently from a fresh draft.

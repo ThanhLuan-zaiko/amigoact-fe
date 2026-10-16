@@ -1,9 +1,8 @@
 import { useCallback, useEffect } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiCheckCircle, FiMapPin, FiUsers, FiX } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { Avatar } from "../../core/components/Avatar.tsx";
 import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import {
@@ -13,83 +12,11 @@ import {
 } from "../../core/components/Feedback.tsx";
 import { Pagination } from "../../core/components/Pagination.tsx";
 import { useRiseOn } from "../../core/motion.ts";
-import type { PublicOrg } from "../api.ts";
-import { orgMediaUrl } from "../api.ts";
 import { useOrgsRealtime, usePublicOrgs } from "../hooks.ts";
-import { JOIN_POLICY_LABELS, toVietnameseOrgsMessage } from "../messages.tsx";
-import { orgLocation } from "../utils.ts";
-import { KindPill } from "./KindPill.tsx";
-import { OrgFeedRow } from "./OrgFeedRow.tsx";
-import { OrgLogo } from "./OrgLogo.tsx";
+import { toVietnameseOrgsMessage } from "../messages.tsx";
+import { DirectoryRow } from "./DirectoryRow.tsx";
 
 const PAGE_SIZE = 24;
-
-function DirectoryRow({ org }: { org: PublicOrg }): ReactElement {
-  const location = orgLocation(org);
-  const hasOwner = org.owner_name !== null;
-  const avatar = !hasOwner ? (
-    <OrgLogo org={org} className="h-10 w-10 shrink-0" />
-  ) : org.owner_avatar_url !== null ? (
-    <img
-      src={orgMediaUrl(org.owner_avatar_url)}
-      alt=""
-      loading="lazy"
-      className="h-10 w-10 shrink-0 rounded-full border border-zinc-200 bg-white object-cover dark:border-zinc-800 dark:bg-zinc-900"
-    />
-  ) : (
-    <Avatar name={org.owner_name ?? org.name} />
-  );
-  const isVerified = org.verified_at !== null;
-  const verified = (
-    <FiCheckCircle
-      className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400"
-      role="img"
-      aria-label="Đã xác minh"
-    />
-  );
-  return (
-    <OrgFeedRow
-      avatar={avatar}
-      title={hasOwner ? org.owner_name : org.name}
-      badge={hasOwner ? undefined : isVerified ? verified : undefined}
-      meta={
-        hasOwner ? (
-          <>
-            {`sở hữu ${org.name}`}
-            {isVerified && <>{" "}{verified}</>}
-          </>
-        ) : (
-          `@${org.slug}`
-        )
-      }
-      href={`/orgs/${org.slug}`}
-      footer={
-        <>
-          <KindPill kind={org.kind} />
-          <span className="flex items-center gap-1">
-            <FiUsers className="h-3.5 w-3.5" aria-hidden="true" />
-            {`${org.member_count} thành viên`}
-          </span>
-          {location !== null && (
-            <span className="flex items-center gap-1">
-              <FiMapPin className="h-3.5 w-3.5" aria-hidden="true" />
-              {location}
-            </span>
-          )}
-          <span className="rounded-full border border-zinc-200 px-2 py-0.5 text-xs dark:border-zinc-800">
-            {JOIN_POLICY_LABELS[org.join_policy] ?? org.join_policy}
-          </span>
-        </>
-      }
-    >
-      {org.description !== "" && (
-        <p className="mt-0.5 line-clamp-2 text-[15px] text-zinc-600 dark:text-zinc-400">
-          {org.description}
-        </p>
-      )}
-    </OrgFeedRow>
-  );
-}
 
 // The full public directory on the home column's "To chuc" tab: one uniform
 // X-style row per org, no in-feed filter chrome. The right-rail search pill

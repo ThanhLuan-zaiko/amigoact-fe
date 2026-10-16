@@ -23,7 +23,6 @@ export function UnsavedGuard({
   const [pending, setPending] = useState<PendingLeave | null>(null);
   const leavingRef = useRef(false);
   const mountedRef = useRef(true);
-  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -83,23 +82,6 @@ export function UnsavedGuard({
     return () => window.removeEventListener("popstate", onPop);
   }, [active]);
 
-  // Dialog chrome: Esc dismisses (stays), focus moves into the panel and
-  // back to the trigger on close - same contract as the drawer/popovers.
-  useEffect(() => {
-    if (pending === null) return undefined;
-    const previous = document.activeElement as HTMLElement | null;
-    panelRef.current?.focus({ preventScroll: true });
-    function onKey(event: KeyboardEvent): void {
-      if (event.key === "Escape") stay();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      previous?.focus({ preventScroll: true });
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pending !== null]);
-
   function stay(): void {
     if (pending?.kind === "back") {
       window.history.pushState(null, "", window.location.href);
@@ -126,12 +108,45 @@ export function UnsavedGuard({
   }
 
   if (pending === null) return null;
+  return <UnsavedChangesDialog onStay={stay} onLeave={leave} />;
+}
+
+// The shared unsaved-changes prompt. UnsavedGuard renders it for
+// navigation attempts; non-navigation exits (e.g. modal close controls)
+// mount it directly for the same confirm contract.
+export function UnsavedChangesDialog({
+  onStay,
+  onLeave,
+}: {
+  onStay: () => void;
+  onLeave: () => void;
+}): ReactElement {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const stayRef = useRef(onStay);
+  useEffect(() => {
+    stayRef.current = onStay;
+  }, [onStay]);
+
+  // Esc dismisses (stays); focus moves into the panel and back to the
+  // trigger on close - same contract as the drawer/popovers.
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus({ preventScroll: true });
+    function onKey(event: KeyboardEvent): void {
+      if (event.key === "Escape") stayRef.current();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      previous?.focus({ preventScroll: true });
+    };
+  }, []);
 
   // Portaled to <body> per AGENTS.md section 5.6: the center column is a size container.
   return createPortal(
     <div
       role="presentation"
-      onClick={stay}
+      onClick={onStay}
       className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 p-4 dark:bg-zinc-950/70"
     >
       <div
@@ -160,7 +175,7 @@ export function UnsavedGuard({
           <Button
             type="button"
             variant="secondary"
-            onClick={stay}
+            onClick={onStay}
             icon={<FiX className="h-4 w-4" aria-hidden="true" />}
           >
             Ở lại
@@ -168,7 +183,7 @@ export function UnsavedGuard({
           <Button
             type="button"
             variant="primary"
-            onClick={leave}
+            onClick={onLeave}
             icon={<FiLogOut className="h-4 w-4" aria-hidden="true" />}
           >
             Rời trang

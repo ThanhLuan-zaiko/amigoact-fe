@@ -56,7 +56,10 @@ export function BlockInserter({
   }
 
   return (
-    <div className="relative flex flex-col items-center gap-2">
+    <div
+      data-insert-index={index}
+      className="relative flex flex-col items-center gap-2"
+    >
       <button
         type="button"
         onClick={() => setOpen((cur) => !cur)}

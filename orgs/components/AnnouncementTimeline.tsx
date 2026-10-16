@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactElement } from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 import { FiMessageSquare } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Avatar } from "../../core/components/Avatar.tsx";
@@ -16,8 +16,12 @@ import {
 } from "../hooks.ts";
 import { toVietnameseOrgsMessage } from "../messages.tsx";
 import { OrgFeedRow } from "./OrgFeedRow.tsx";
+import { PostMediaViewer } from "./MediaViewers.tsx";
+import { OrgMediaMosaic } from "./OrgMediaMosaic.tsx";
+import { mosaicItems } from "../utils.ts";
 
 function TimelineRow({ item }: { item: PublicTimelineItem }): ReactElement {
+  const [viewer, setViewer] = useState<number | null>(null);
   const published =
     item.published_at === null
       ? undefined
@@ -34,39 +38,56 @@ function TimelineRow({ item }: { item: PublicTimelineItem }): ReactElement {
       />
     );
   return (
-    <OrgFeedRow
-      avatar={avatar}
-      title={item.author_name}
-      meta={
-        published === undefined
-          ? `đăng trong ${item.org.name}`
-          : `đăng trong ${item.org.name} · ${published}`
-      }
-      href={`/orgs/${item.org.slug}/posts/${item.id}`}
-      footer={
-        <span className="flex items-center gap-1">
-          <FiMessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
-          {`${item.comment_count} bình luận`}
-        </span>
-      }
-    >
-      <p className="mt-0.5 text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
-        {item.title}
-      </p>
-      {item.excerpt !== "" && (
-        <p className="line-clamp-2 text-[15px] text-zinc-600 dark:text-zinc-400">
-          {item.excerpt}
+    <>
+      <OrgFeedRow
+        avatar={avatar}
+        title={item.author_name}
+        meta={
+          published === undefined
+            ? `đăng trong ${item.org.name}`
+            : `đăng trong ${item.org.name} · ${published}`
+        }
+        href={`/orgs/${item.org.slug}/posts/${item.id}`}
+        footer={
+          <span className="flex items-center gap-1">
+            <FiMessageSquare className="h-3.5 w-3.5" aria-hidden="true" />
+            {`${item.comment_count} bình luận`}
+          </span>
+        }
+      >
+        <p className="mt-0.5 text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+          {item.title}
         </p>
-      )}
-      {item.cover_url !== null && (
-        <img
-          src={orgMediaUrl(item.cover_url)}
-          alt=""
-          loading="lazy"
-          className="mt-2 aspect-video w-full rounded-xl border border-zinc-200 object-cover dark:border-zinc-800"
+        {item.excerpt !== "" && (
+          <p className="line-clamp-2 text-[15px] text-zinc-600 dark:text-zinc-400">
+            {item.excerpt}
+          </p>
+        )}
+        <OrgMediaMosaic
+          org={{
+            name: item.title,
+            cover_url: item.cover_url,
+            media: item.media,
+            media_count: item.media_count,
+          }}
+          onOpen={setViewer}
+        />
+      </OrgFeedRow>
+      {viewer !== null && (
+        <PostMediaViewer
+          slug={item.org.slug}
+          postId={item.id}
+          fallback={mosaicItems({
+            cover_url: item.cover_url,
+            media: item.media,
+          })}
+          index={viewer}
+          title={item.title}
+          onClose={() => setViewer(null)}
+          onIndex={setViewer}
         />
       )}
-    </OrgFeedRow>
+    </>
   );
 }
 

@@ -5,7 +5,7 @@ import { useDiscovery } from "../../activities/hooks.ts";
 import { useMyCertificates } from "../../certificates/hooks.ts";
 import { useMyMemberships } from "../../dashboard/members-hooks.ts";
 import { useMyHours } from "../../hours/hooks.ts";
-import { usePublicOrgs } from "../../orgs/hooks.ts";
+import { useOrgsRealtime, usePublicOrgs } from "../../orgs/hooks.ts";
 import { Avatar } from "./Avatar.tsx";
 import { Button } from "./Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "./Feedback.tsx";
@@ -147,8 +147,11 @@ export function UpcomingCard(): ReactElement {
   );
 }
 
-// X "Who to follow": the largest public organizations.
+// X "Who to follow": the largest public organizations. The card owns its
+// own orgs:directory subscription so logo/media edits revalidate it on any
+// route that renders the rail, not only the directory tab.
 export function SuggestedOrgsCard(): ReactElement {
+  useOrgsRealtime();
   const orgs = usePublicOrgs({ sort: "members", limit: 3 });
   const items = orgs.data?.items ?? [];
 
@@ -169,7 +172,7 @@ export function SuggestedOrgsCard(): ReactElement {
           {items.map((org) => (
             <li key={org.id}>
               <Link to={`/orgs/${org.slug}`} className={`${RAIL_ROW} flex items-center gap-3`}>
-                <Avatar name={org.name} />
+                <Avatar name={org.name} src={org.logo_url} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] font-bold text-zinc-900 dark:text-zinc-100">
                     {org.name}

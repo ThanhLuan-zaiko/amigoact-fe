@@ -42,7 +42,11 @@ export function MediaBlockEditor({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      data-media-key={block.key}
+      data-media-type={block.type}
+      className="flex flex-col gap-2"
+    >
       {upload === "uploading" && (
         <div
           role="status"

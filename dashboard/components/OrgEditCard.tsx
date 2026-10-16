@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent, ReactElement } from "react";
 import { FiSave, FiType, FiX } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
@@ -6,12 +6,13 @@ import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextArea } from "../../core/components/TextArea.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
-import { useContactForm } from "../contact-form.ts";
+import { UnsavedGuard } from "../../core/components/UnsavedGuard.tsx";
+import { CONTACT_KEYS, useContactForm } from "../contact-form.ts";
 import { useUpdateOrg } from "../hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
 import { emptyOrgForm, validateOrgField, validateUpdateForm } from "../schemas.ts";
 import type { OrgFieldErrors, UpdateFieldErrors } from "../schemas.ts";
-import type { DashboardOrg, JoinPolicy } from "../api.ts";
+import type { DashboardOrg } from "../api.ts";
 import { BusinessOrgFields } from "./BusinessOrgFields.tsx";
 import type { BusinessKey } from "./BusinessOrgFields.tsx";
 import { OrgContactFields } from "./OrgContactFields.tsx";
@@ -27,39 +28,67 @@ const LEGAL_ERROR_KEYS: Record<BusinessKey, keyof OrgFieldErrors> = {
 
 interface OrgEditCardProps {
   org: DashboardOrg;
+  /** Called after a successful save - no confirm, nothing left to lose. */
   onDone: () => void;
+  /** Called by "Cancel" - the host decides whether to confirm discard. */
+  onCancel: () => void;
+  /** Reports dirty so the host (modal) can gate its own close controls. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 // Single scrollable form (was a 2-step wizard that hid the contact block).
 // Business legal identity is editable; the backend audits every change.
-export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
+export function OrgEditCard({ org, onDone, onCancel, onDirtyChange }: OrgEditCardProps): ReactElement {
   const update = useUpdateOrg("Đã lưu thay đổi.");
-  const [form, setForm] = useState({
+  // Persisted snapshot the form diffs against; re-seeded after each save so
+  // "dirty" always means "differs from what's actually on the server".
+  const [baseline, setBaseline] = useState(() => ({
     name: org.name,
     description: org.description ?? "",
+    policy: org.join_policy,
+    legal: {
+      tax_code: org.tax_code ?? "",
+      legal_rep_name: org.legal_rep_name ?? "",
+      legal_rep_id: org.legal_rep_id ?? "",
+      legal_rep_position: org.legal_rep_position ?? "",
+    },
+    contact: {
+      email: org.email ?? "",
+      phone: org.phone ?? "",
+      website: org.website ?? "",
+      address: org.address ?? "",
+      city: org.city ?? "",
+      country: org.country ?? "",
+      legal_name: org.legal_name ?? "",
+      license_number: org.license_number ?? "",
+    },
+  }));
+  const [form, setForm] = useState({
+    name: baseline.name,
+    description: baseline.description,
   });
   const [legal, setLegal] = useState<Record<BusinessKey, string>>({
-    tax_code: org.tax_code ?? "",
-    legal_rep_name: org.legal_rep_name ?? "",
-    legal_rep_id: org.legal_rep_id ?? "",
-    legal_rep_position: org.legal_rep_position ?? "",
+    ...baseline.legal,
   });
   const [legalErrors, setLegalErrors] = useState<OrgFieldErrors>({});
-  const contact = useContactForm({
-    email: org.email ?? "",
-    phone: org.phone ?? "",
-    website: org.website ?? "",
-    address: org.address ?? "",
-    city: org.city ?? "",
-    country: org.country ?? "",
-    legal_name: org.legal_name ?? "",
-    license_number: org.license_number ?? "",
-  });
-  const [policy, setPolicy] = useState<JoinPolicy>(org.join_policy);
+  const contact = useContactForm({ ...baseline.contact });
+  const [policy, setPolicy] = useState(baseline.policy);
   const [errors, setErrors] = useState<UpdateFieldErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
   const isBusiness = org.kind === "business";
+  const dirty =
+    form.name !== baseline.name ||
+    form.description !== baseline.description ||
+    policy !== baseline.policy ||
+    (Object.keys(LEGAL_ERROR_KEYS) as BusinessKey[]).some(
+      (key) => legal[key] !== baseline.legal[key],
+    ) ||
+    CONTACT_KEYS.some((key) => contact.form[key] !== baseline.contact[key]);
+
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   function blurField(key: "name" | "description"): void {
     setTouched((prev) => ({ ...prev, [key]: true }));
@@ -138,6 +167,13 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
             : {}),
         },
       });
+      setBaseline({
+        name: form.name,
+        description: form.description,
+        policy,
+        legal: { ...legal },
+        contact: { ...contact.form },
+      });
       onDone();
     } catch (error) {
       setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
@@ -146,6 +182,7 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
 
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-3">
+      <UnsavedGuard active={dirty} />
       {serverCode && (
         <ErrorState title="Không lưu được" message={toVietnameseDashboardMessage(serverCode)} />
       )}
@@ -201,7 +238,7 @@ export function OrgEditCard({ org, onDone }: OrgEditCardProps): ReactElement {
         <Button
           type="button"
           variant="secondary"
-          onClick={onDone}
+          onClick={onCancel}
           icon={<FiX className="h-4 w-4" aria-hidden="true" />}
         >
           Hủy

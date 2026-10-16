@@ -16,8 +16,12 @@ Cột trang chủ `/` chia hai tab kiểu X qua `home/components/HomeTabs.tsx`
   `GET /announcements?limit&cursor` (guest, cursor = `post_id` cuối trang)
   render từng teaser dạng dòng feed — avatar + tên tác giả (`author_name`,
   `author_avatar_url`), meta `đăng trong {tên org} · ngày`, tiêu đề,
-  excerpt, cover 16:9, số bình luận — mỗi dòng mở
-  `/orgs/:slug/posts/:postId`. Sentinel `IntersectionObserver`
+  excerpt, mosaic media của bài (cùng `OrgMediaMosaic` như tab Tổ chức:
+  `media[]`/`media_count` cover-dẫn-đầu của bài viết, tối đa 4 ô + `+N`),
+  số bình luận — mỗi dòng mở
+  `/orgs/:slug/posts/:postId`; ô media (kể cả `+N`) mở lightbox ngay tại
+  feed qua `PostMediaViewer` → `GET /orgs/{slug}/announcements/{id}/media`.
+  Sentinel `IntersectionObserver`
   (`rootMargin` 600px) tự gọi `fetchNextPage` của `useAnnouncementFeed`
   (infinite query, trang 12 item) khi user lướt gần cuối — cuộn vô tận
   không nút, kèm spinner nhỏ khi đang tải và dòng kết feed khi hết dữ liệu.
@@ -26,7 +30,14 @@ Cột trang chủ `/` chia hai tab kiểu X qua `home/components/HomeTabs.tsx`
   `OrgFeedRow` định danh theo chủ sở hữu (`owner_name`/`owner_avatar_url`:
   avatar chủ sở hữu, tên đậm, meta `sở hữu {tên org} ✓`, mô tả, meta
   loại/thành viên/địa điểm/chính sách tham gia; org thiếu owner brief vẫn
-  hiện logo + tên + `@slug` như cũ), kèm section phân trang.
+  hiện logo + tên + `@slug` như cũ), kèm section phân trang. Dưới mô tả,
+  `OrgMediaMosaic.tsx` render dải media kiểu X từ `media[]`/`media_count`
+  của card (cover dẫn đầu, ảnh lẫn video, tối đa 4 ô: 1 → 16:9, 2 → hai ô
+  vuông, 3 → trái `row-span-2`, 4 → lưới 2x2), video hiện khung đầu kèm
+  badge play, ô cuối phủ `+N` khi thư viện còn nữa — cả dòng vẫn là một
+  link tới trang org, nhưng tile là `<button>` `preventDefault` +
+  `stopPropagation` mở lightbox tại chỗ (`OrgMediaViewer` →
+  `GET /orgs/{slug}/gallery`).
   Ô `Tìm tổ chức` ở rail phải submit `/?tab=orgs&q=`; khi có `q` tab hiện
   một dòng `Kết quả cho "…"` kèm nút xóa. Phân trang nằm trên URL
   (`/?tab=orgs&q&page`) nên deep-link được. Route `/orgs` cũ redirect về
@@ -39,6 +50,16 @@ Cột trang chủ `/` chia hai tab kiểu X qua `home/components/HomeTabs.tsx`
   `title` đậm + `badge` + meta muted, body tùy biến (bài đăng: tiêu đề +
   excerpt + cover 16:9; tổ chức: mô tả + pill meta), footer muted — đổi một
   chỗ là cả hai tab đổi theo, bảo đảm bố cục đồng nhất.
+- `orgs/components/MediaLightbox.tsx` là viewer fullscreen dùng chung
+  (portal, khóa scroll, Esc/mũi tên trái-phải, nút đóng + đếm `i/n`,
+  click ngoài đóng — theo convention `Modal`): ảnh `object-contain`,
+  video `controls autoPlay`. `MediaViewers.tsx` chứa hai wrapper
+  mount-khi-mở `OrgMediaViewer`/`PostMediaViewer`: fetch danh sách đầy
+  đủ lười qua `usePublicOrgMedia`/`usePublicPostMedia`, trong lúc chờ
+  hiển thị ngay `mosaicItems()` preview của card (preview là prefix của
+  ordering endpoint nên index mở không lệch). Trên `/orgs/:slug` card
+  `Hình ảnh hoạt động` (`OrgGalleryCard`) cũng đọc endpoint gallery —
+  lưới 6 ô giờ có cả video và `+N` mở được viewer.
 - `/orgs/:slug` render 6 section: hero (cover + logo + nút `Tham gia`),
   `Đánh giá tin cậy`, giới thiệu, liên hệ & pháp lý, hoạt động đã tổ
   chức, thư viện ảnh. `OrgTrustCard` dựng checklist 6 tiêu chí từ tín
@@ -94,11 +115,13 @@ backend để đối chiếu API và mã lỗi):
 
 - Sửa (`OrgEditCard.tsx` bên trong `OrgEditModal.tsx`, `Modal wide` —
   `core/components/Modal.tsx` có prop `wide` nới panel lên `max-w-3xl`):
-  chia 2 bước kiểu đăng ký (`core/components/StepProgress.tsx`) — bước 1
-  tên + mô tả + chip `join_policy` (slug, loại đóng băng), bước 2 block
-  liên hệ & pháp lý (`OrgContactFields` + hook `useContactForm` ở
-  `contact-form.ts`); `Tiếp tục` chỉ qua khi bước 1 hợp lệ, submit lỗi
-  tên/mô tả tự nhảy về bước 1, nút `Quay lại`/`Lưu`/`Hủy`.
+  một form cuộn gồm tên + mô tả + chip `join_policy` + block liên hệ &
+  pháp lý (`OrgContactFields` + hook `useContactForm` ở
+  `contact-form.ts`), nút `Lưu`/`Hủy`. Form tự diff với baseline đã lưu
+  (re-seed sau mỗi lần lưu): bẩn thì `UnsavedGuard` chặn thoát trang,
+  còn `OrgEditModal` gate cả X/overlay/Esc/`Hủy` bằng dialog
+  `UnsavedChangesDialog` (cùng file `core/components/UnsavedGuard.tsx`);
+  đường đóng sau khi lưu thành công (`onDone`) bỏ qua confirm.
 - Mọi mutation invalidate `dashboardKeys.all` nên cả danh sách sống và
   thùng rác đều tươi lại. Lỗi backend (`SLUG_TAKEN`, `FORBIDDEN`,
   `ORG_DELETED`...) dịch sang tiếng Việt ở `dashboard/messages.tsx`.

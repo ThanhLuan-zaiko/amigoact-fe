@@ -15,7 +15,13 @@ import {
   type EditorBlock,
   type MediaLookup,
 } from "./article.ts";
-import type { BlockType, OrgPost, PostKind, PostStatus } from "./board-api.ts";
+import type {
+  BlockType,
+  OrgPost,
+  PostKind,
+  PostStatus,
+  PostVisibility,
+} from "./board-api.ts";
 import {
   useCreatePost,
   useCreateRevision,
@@ -62,6 +68,15 @@ export function useArticleEditor(
   // plain members get "discussion" since announce is blocked for them.
   const [kind, setKindState] = useState<PostKind>(
     initial?.kind ?? (canAnnounce ? "announcement" : "discussion"),
+  );
+  // Audience axis: defaults mirror the kind default (announcement ->
+  // public, discussion -> members); an existing post keeps its own.
+  const [visibility, setVisibilityState] = useState<PostVisibility>(
+    initial?.visibility ??
+      ((initial?.kind ?? (canAnnounce ? "announcement" : "discussion")) ===
+      "announcement"
+        ? "public"
+        : "members"),
   );
   const [title, setTitleState] = useState(initial?.title ?? "");
   const [coverId, setCoverId] = useState<string | null>(initial?.cover_media_id ?? null);
@@ -228,6 +243,7 @@ export function useArticleEditor(
         saved = await create.mutateAsync({
           ...payload,
           kind,
+          visibility,
           status: mode === "publish" ? "published" : "draft",
         });
       } else {
@@ -244,6 +260,9 @@ export function useArticleEditor(
           input: {
             ...payload,
             kind: status === "draft" && parent === null ? kind : undefined,
+            // Revisions inherit the live post's audience server-side, so
+            // the field stays out of their payload entirely.
+            visibility: parent === null ? visibility : undefined,
           },
         });
         if (mode === "publish" && saved.status === "draft") {
@@ -269,6 +288,7 @@ export function useArticleEditor(
     revisionOf,
     wasPublished,
     kind,
+    visibility,
     title,
     coverId,
     blocks,
@@ -285,6 +305,10 @@ export function useArticleEditor(
       revise.isPending,
     setKind: (next: PostKind) => {
       setKindState(next);
+      touch();
+    },
+    setVisibility: (next: PostVisibility) => {
+      setVisibilityState(next);
       touch();
     },
     setTitle: (next: string) => {

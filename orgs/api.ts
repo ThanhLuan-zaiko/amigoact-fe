@@ -4,6 +4,12 @@ export type OrgKind = "organization" | "club" | "group" | "business";
 export type JoinPolicy = "invite" | "open";
 export type PublicOrgSort = "newest" | "name" | "members";
 
+export interface PublicOrgMedia {
+  url: string;
+  kind: "image" | "video";
+  mime: string;
+}
+
 export interface PublicOrg {
   id: string;
   name: string;
@@ -19,6 +25,8 @@ export interface PublicOrg {
   cover_url: string | null;
   owner_name: string | null;
   owner_avatar_url: string | null;
+  media: PublicOrgMedia[];
+  media_count: number;
   created_at: string;
 }
 
@@ -134,6 +142,30 @@ export async function listPublicOrgPosts(
   );
 }
 
+export interface PublicOrgMediaPage {
+  items: PublicOrgMedia[];
+}
+
+// Full cover-first media list of one org for the in-feed lightbox.
+export async function listPublicOrgMedia(
+  slug: string,
+): Promise<PublicOrgMediaPage> {
+  return apiFetch<PublicOrgMediaPage>(
+    `/orgs/${encodeURIComponent(slug)}/gallery`,
+  );
+}
+
+// Full media list of one public post for the in-feed lightbox.
+export async function listPublicPostMedia(
+  slug: string,
+  postId: string,
+): Promise<PublicOrgMediaPage> {
+  return apiFetch<PublicOrgMediaPage>(
+    `/orgs/${encodeURIComponent(slug)}/announcements/` +
+      `${encodeURIComponent(postId)}/media`,
+  );
+}
+
 export interface PublicTimelineOrg {
   id: string;
   name: string;
@@ -151,6 +183,8 @@ export interface PublicTimelineItem {
   published_at: string | null;
   comment_count: number;
   org: PublicTimelineOrg;
+  media: PublicOrgMedia[];
+  media_count: number;
 }
 
 export interface PublicTimelinePage {

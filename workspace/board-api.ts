@@ -2,6 +2,9 @@ import { apiFetch } from "../core/api.ts";
 
 export type PostKind = "announcement" | "discussion";
 export type PostStatus = "published" | "draft";
+// Audience axis, orthogonal to kind: public posts also render on the
+// guest surfaces (org profile, announcements timeline, public read).
+export type PostVisibility = "public" | "members";
 
 // Typed article blocks; mirrors posts/blocks.py. Media blocks only carry
 // an org asset id, resolved to a URL through OrgPost.media at read time.
@@ -29,6 +32,7 @@ export interface OrgPost {
   author_name: string;
   kind: PostKind;
   status: PostStatus;
+  visibility: PostVisibility;
   title: string;
   body: string;
   blocks: ArticleBlock[];
@@ -61,6 +65,7 @@ export interface PostListParams {
 export interface CreatePostInput {
   kind: PostKind;
   status?: PostStatus;
+  visibility?: PostVisibility;
   title: string;
   body?: string;
   blocks?: ArticleBlock[];
@@ -74,6 +79,7 @@ export interface UpdatePostInput {
   blocks?: ArticleBlock[];
   cover_media_id?: string | null;
   kind?: PostKind;
+  visibility?: PostVisibility;
 }
 
 export interface OrgComment {

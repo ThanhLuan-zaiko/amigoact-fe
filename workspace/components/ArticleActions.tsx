@@ -73,9 +73,11 @@ export function ArticleActions({
 
   const mine = post.author_id === selfId;
   const pinned = post.pinned_at !== null;
-  const announceBlocked = post.kind === "announcement" && !canAnnounce;
+  const announceBlocked =
+    (post.kind === "announcement" || post.visibility === "public") &&
+    !canAnnounce;
   const publishTitle = announceBlocked
-    ? "Chỉ quản lý mới đăng được thông báo"
+    ? "Chỉ quản lý mới đăng được bài công khai"
     : undefined;
   const writeHref = `/manage/board/write?org=${orgId}&post=${post.post_id}`;
   const readHref = `/manage/board/post?org=${orgId}&post=${post.post_id}`;

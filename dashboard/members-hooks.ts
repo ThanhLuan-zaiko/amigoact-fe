@@ -25,6 +25,7 @@ import {
   listOrgMembers,
   listOrgRoles,
   removeMember,
+  revokeInvitation,
   updateMember,
   updateOrgRole,
   type CreateOrgRoleInput,
@@ -39,7 +40,7 @@ import {
 } from "./members-api.ts";
 import type { OrgListPage } from "./api.ts";
 import { dashboardKeys } from "./keys.ts";
-import { memberEventToast, membershipEventToast } from "./messages.tsx";
+import { memberEventToast, membershipEventToast } from "./messages-members.tsx";
 
 export function useOrgMembers(
   orgId: string | null,
@@ -121,6 +122,16 @@ export function useRemoveMember(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (userId: string) => removeMember(orgId, userId),
+    onSuccess: () => invalidateMembers(queryClient),
+  });
+}
+
+export function useRevokeInvitation(
+  orgId: string,
+): UseMutationResult<void, ApiError, string> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => revokeInvitation(orgId, userId),
     onSuccess: () => invalidateMembers(queryClient),
   });
 }
@@ -228,7 +239,7 @@ export function useMemberParamSync(input: {
 }
 
 // Member events the viewer should read as losses: rendered as error toasts.
-const NEGATIVE_EVENTS = new Set(["suspended", "removed"]);
+const NEGATIVE_EVENTS = new Set(["suspended", "removed", "revoked"]);
 const SELF_POSITIVE_EVENTS = new Set(["promoted", "reactivated"]);
 
 function cachedMemberName(

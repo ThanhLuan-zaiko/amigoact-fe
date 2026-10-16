@@ -50,6 +50,7 @@ const MESSAGES: Record<string, string> = {
   ORG_DELETED: "Tổ chức này không còn hoạt động.",
   SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
+  VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
 };
 
 export function toVietnameseOrgsMessage(code: string): string {

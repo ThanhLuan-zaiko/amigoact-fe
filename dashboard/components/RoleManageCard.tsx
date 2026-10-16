@@ -7,10 +7,8 @@ import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feed
 import { pushToast } from "../../core/toast.ts";
 import { useDeleteOrgRole, useOrgRoles } from "../members-hooks.ts";
 import { canGrantRole } from "../members-utils.ts";
-import {
-  PERMISSION_LABELS,
-  toVietnameseDashboardMessage,
-} from "../messages.tsx";
+import { toVietnameseDashboardMessage } from "../messages.tsx";
+import { PERMISSION_LABELS } from "../messages-members.tsx";
 import type { OrgRole } from "../members-api.ts";
 import { RoleEditModal } from "./RoleEditModal.tsx";
 

@@ -6,12 +6,14 @@ import {
   FiUserCheck,
   FiUserMinus,
   FiUsers,
+  FiUserX,
 } from "react-icons/fi";
 import { Section } from "../../core/components/Section.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { StatTile } from "../../core/components/StatTile.tsx";
 import type { BucketCount } from "../api.ts";
-import { MEMBER_STATUS_LABELS, toVietnameseDashboardMessage } from "../messages.tsx";
+import { toVietnameseDashboardMessage } from "../messages.tsx";
+import { MEMBER_STATUS_LABELS } from "../messages-members.tsx";
 
 interface MemberStatsCardProps {
   // True while the first member page loads; tiles render placeholders.
@@ -63,6 +65,12 @@ const TILES: StatSpec[] = [
     Icon: FiUserMinus,
     tone: "text-zinc-400 dark:text-zinc-500",
   },
+  {
+    key: "revoked",
+    label: MEMBER_STATUS_LABELS["revoked"],
+    Icon: FiUserX,
+    tone: "text-zinc-400 dark:text-zinc-500",
+  },
 ];
 
 export function MemberStatsCard({
@@ -89,7 +97,7 @@ export function MemberStatsCard({
       <div
         role="group"
         aria-label="Lọc theo trạng thái thành viên"
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3 @4xl:grid-cols-5"
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 @4xl:grid-cols-6"
       >
         {TILES.map(({ key, label, Icon, tone }) => (
           <StatTile

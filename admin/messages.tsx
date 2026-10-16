@@ -6,6 +6,7 @@ export const ADMIN_MESSAGES: Record<string, string> = {
   INVALID_ORG_STATE: "Tổ chức không ở trạng thái chờ xác minh.",
   SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Yêu cầu thất bại, vui lòng thử lại.",
+  VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
 };
 
 export function adminMessage(code: string): string {

@@ -5,6 +5,7 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Chỉ tình nguyện viên đã điểm danh mới được đánh giá.",
   NOT_FOUND: "Không tìm thấy hoạt động.",
   SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
+  VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
 };
 
 export function toVietnameseReviewError(

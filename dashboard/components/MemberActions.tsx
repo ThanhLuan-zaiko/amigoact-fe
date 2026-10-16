@@ -10,8 +10,9 @@ import {
 } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { pushToast } from "../../core/toast.ts";
-import { useRemoveMember, useUpdateMember } from "../members-hooks.ts";
-import { memberMutationToast, toVietnameseDashboardMessage } from "../messages.tsx";
+import { useRemoveMember, useRevokeInvitation, useUpdateMember } from "../members-hooks.ts";
+import { toVietnameseDashboardMessage } from "../messages.tsx";
+import { memberMutationToast } from "../messages-members.tsx";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
 import { MemberMenu } from "./MemberMenu.tsx";
 import type { MenuAction } from "./MemberMenu.tsx";
@@ -36,10 +37,11 @@ export function MemberActions({
 }: MemberActionsProps): ReactElement | null {
   const update = useUpdateMember(orgId);
   const remove = useRemoveMember(orgId);
+  const revoke = useRevokeInvitation(orgId);
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
   const [editingRoles, setEditingRoles] = useState(false);
-  const busy = update.isPending || remove.isPending;
+  const busy = update.isPending || remove.isPending || revoke.isPending;
 
   // Every close path disarms the destructive confirm, so a reopened menu
   // never shows a stale "press again" entry that deletes in one click.
@@ -62,10 +64,20 @@ export function MemberActions({
     canActOnTarget && member.status === "active" && can("member:suspend");
   const canReactivate =
     canActOnTarget && member.status === "suspended" && can("member:suspend");
+  // Invites are withdrawn through the dedicated invitation endpoint, so
+  // revocation rides on member:invite; member:remove stays for real members.
+  const canRevoke =
+    canActOnTarget && member.status === "invited" && can("member:invite");
   const canRemove =
-    canActOnTarget && member.status !== "left" && can("member:remove");
+    canActOnTarget &&
+    (member.status === "active" || member.status === "suspended") &&
+    can("member:remove");
   const canLeave =
-    isSelf && !targetOwner && member.status !== "left" && member.status !== "invited";
+    isSelf &&
+    !targetOwner &&
+    member.status !== "left" &&
+    member.status !== "invited" &&
+    member.status !== "revoked";
 
   async function run(task: Promise<unknown>, action: string): Promise<void> {
     try {
@@ -85,7 +97,14 @@ export function MemberActions({
     }
   }
 
-  if (!canAssign && !canSuspend && !canReactivate && !canRemove && !canLeave) {
+  if (
+    !canAssign &&
+    !canSuspend &&
+    !canReactivate &&
+    !canRevoke &&
+    !canRemove &&
+    !canLeave
+  ) {
     return null;
   }
 
@@ -105,6 +124,7 @@ export function MemberActions({
     armedLabel: string,
     Icon: IconType,
     action: string,
+    act: () => Promise<unknown>,
   ): MenuAction {
     const armed = confirming === key;
     return {
@@ -119,7 +139,7 @@ export function MemberActions({
           return;
         }
         setMenuOpen(false);
-        void run(remove.mutateAsync(member.user_id), action);
+        void run(act(), action);
       },
     };
   }
@@ -152,20 +172,35 @@ export function MemberActions({
       onSelect: () => updateStatus("active", "reactivated"),
     });
   }
-  if (canRemove) {
+  if (canRevoke) {
     items.push(
       destructive(
-        "remove",
-        member.status === "invited" ? "Thu hồi" : "Xóa",
+        "revoke",
+        "Thu hồi lời mời",
         "Bấm lại để xác nhận",
         FiUserX,
-        member.status === "invited" ? "revoked" : "removed",
+        "revoked",
+        () => revoke.mutateAsync(member.user_id),
+      ),
+    );
+  }
+  if (canRemove) {
+    items.push(
+      destructive("remove", "Xóa", "Bấm lại để xác nhận", FiUserX, "removed", () =>
+        remove.mutateAsync(member.user_id),
       ),
     );
   }
   if (canLeave) {
     items.push(
-      destructive("leave", "Rời tổ chức", "Bấm lại để rời", FiUserMinus, "left"),
+      destructive(
+        "leave",
+        "Rời tổ chức",
+        "Bấm lại để rời",
+        FiUserMinus,
+        "left",
+        () => remove.mutateAsync(member.user_id),
+      ),
     );
   }
 

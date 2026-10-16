@@ -16,6 +16,7 @@ export const NOTIFICATION_MESSAGES: Record<string, string> = {
   UNAUTHORIZED: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
   SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Yêu cầu thất bại, vui lòng thử lại.",
+  VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
 };
 
 export function notificationMessage(code: string): string {

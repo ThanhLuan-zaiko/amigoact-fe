@@ -1,7 +1,12 @@
 import { apiFetch } from "../core/api.ts";
 import type { BucketCount } from "./api.ts";
 
-export type MemberStatus = "active" | "invited" | "suspended" | "left";
+export type MemberStatus =
+  | "active"
+  | "invited"
+  | "suspended"
+  | "left"
+  | "revoked";
 export type MemberSortParam = "newest" | "name" | "role";
 
 export interface DashboardMember {
@@ -98,6 +103,16 @@ export async function updateMember(
 
 export async function removeMember(orgId: string, userId: string): Promise<void> {
   await apiFetch<unknown>(`/orgs/${orgId}/members/${userId}`, {
+    method: "DELETE",
+  });
+}
+
+// Withdraws a pending invite only; lands on "revoked", not "left".
+export async function revokeInvitation(
+  orgId: string,
+  userId: string,
+): Promise<void> {
+  await apiFetch<unknown>(`/orgs/${orgId}/members/${userId}/invitation`, {
     method: "DELETE",
   });
 }

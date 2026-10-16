@@ -34,6 +34,7 @@ const MESSAGES: Record<string, string> = {
   UNSUPPORTED_MEDIA: "Ảnh đại diện chỉ nhận tệp hình ảnh.",
   MEDIA_TOO_LARGE: "Tệp vượt quá dung lượng cho phép.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
+  VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
 };
 
 export const GENDER_LABELS: Record<string, string> = {

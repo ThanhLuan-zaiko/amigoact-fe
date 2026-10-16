@@ -17,6 +17,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   NOT_FOUND: "Không tìm thấy dữ liệu.",
   FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
   SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
+  VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
 };
 
 export function toVietnameseHourError(

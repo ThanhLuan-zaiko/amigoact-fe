@@ -7,6 +7,7 @@ const MESSAGES: Record<string, string> = {
   TOO_MANY_REQUESTS: "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.",
   SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
+  VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
   REQUIRED: "Trường này là bắt buộc.",
   MEMBER_NOT_FOUND: "Thành viên không còn trong tổ chức.",
   INVALID_MEMBER_STATE: "Không thể thực hiện với trạng thái thành viên hiện tại.",

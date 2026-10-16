@@ -8,11 +8,11 @@ import { Modal } from "../../core/components/Modal.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { pushToast } from "../../core/toast.ts";
 import { useCreateOrgRole, useUpdateOrgRole } from "../members-hooks.ts";
+import { toVietnameseDashboardMessage } from "../messages.tsx";
 import {
   PERMISSION_GROUPS,
   PERMISSION_LABELS,
-  toVietnameseDashboardMessage,
-} from "../messages.tsx";
+} from "../messages-members.tsx";
 import type { OrgRole } from "../members-api.ts";
 
 interface RoleEditModalProps {

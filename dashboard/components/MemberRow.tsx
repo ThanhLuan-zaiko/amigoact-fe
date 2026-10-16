@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiUser } from "react-icons/fi";
-import { MEMBER_ROLE_LABELS, MEMBER_STATUS_LABELS } from "../messages.tsx";
+import { MEMBER_ROLE_LABELS, MEMBER_STATUS_LABELS } from "../messages-members.tsx";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
 import { MemberActions } from "./MemberActions.tsx";
 
@@ -35,6 +35,9 @@ const STATUS_BADGES: Record<string, string> = {
   left:
     "border-zinc-300 bg-zinc-50 text-zinc-500 " +
     "dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400",
+  revoked:
+    "border-zinc-300 bg-zinc-50 text-zinc-500 " +
+    "dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400",
 };
 
 // Avatar corner dot mirrors the status badge palette.
@@ -43,6 +46,7 @@ const STATUS_DOTS: Record<string, string> = {
   invited: "bg-amber-500",
   suspended: "bg-red-500",
   left: "bg-zinc-400",
+  revoked: "bg-zinc-400",
 };
 
 function joinedLabel(iso: string): string {

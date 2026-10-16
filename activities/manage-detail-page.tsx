@@ -17,7 +17,11 @@ import {
   useAddAnnouncement,
   useAddSchedule,
   useCategories,
+  useCreateCategory,
   useDeleteSchedule,
+  useLiveActivities,
+  useSetPartners,
+  useSetSkills,
   useSetStaff,
   useTransitionActivity,
   useUpdateActivity,
@@ -26,7 +30,11 @@ import { StatusChip } from "./components/ActivityCard.tsx";
 import { formatDateTime } from "./dates.tsx";
 import { ActivityForm } from "./components/ActivityForm.tsx";
 import { AnnouncementPanel } from "./components/AnnouncementPanel.tsx";
-import { SchedulePanel, StaffPanel } from "./components/DetailPanels.tsx";
+import { SchedulePanel } from "./components/DetailPanels.tsx";
+import { StaffPanel } from "./components/StaffPanel.tsx";
+import { CategoryCreator } from "./components/CategoryCreator.tsx";
+import { PartnersPanel } from "./components/PartnersPanel.tsx";
+import { SkillsPanel } from "./components/SkillsPanel.tsx";
 import { AttendancePanel } from "../registrations/components/AttendancePanel.tsx";
 import { RosterPanel } from "../registrations/components/RosterPanel.tsx";
 import { HoursPanel } from "../hours/components/HoursPanel.tsx";
@@ -55,6 +63,7 @@ export function ManageEventDetailPage(): ReactElement {
     orgId: string;
     activityId: string;
   }>();
+  useLiveActivities(orgId);
   const detail = useActivityDetail(orgId, activityId);
   const categories = useCategories(orgId);
   const update = useUpdateActivity(orgId ?? "");
@@ -62,6 +71,9 @@ export function ManageEventDetailPage(): ReactElement {
   const addSchedule = useAddSchedule(orgId ?? "", activityId ?? "");
   const deleteSchedule = useDeleteSchedule(orgId ?? "", activityId ?? "");
   const setStaff = useSetStaff(orgId ?? "", activityId ?? "");
+  const setPartners = useSetPartners(orgId ?? "", activityId ?? "");
+  const setSkills = useSetSkills(orgId ?? "", activityId ?? "");
+  const createCategory = useCreateCategory(orgId ?? "");
   const addAnnouncement = useAddAnnouncement(orgId ?? "", activityId ?? "");
   const [editing, setEditing] = useState(false);
   const [notice, setNotice] = useState("");
@@ -172,6 +184,11 @@ export function ManageEventDetailPage(): ReactElement {
                 setNotice("Đã lưu thay đổi.");
               }}
             />
+            <div className="mt-3">
+              <CategoryCreator
+                onCreate={(input) => createCategory.mutateAsync(input)}
+              />
+            </div>
           </div>
         </Section>
       )}
@@ -189,6 +206,20 @@ export function ManageEventDetailPage(): ReactElement {
           view={view}
           canManage={editable}
           onSave={(staff) => setStaff.mutateAsync(staff)}
+        />
+      </Section>
+      <Section>
+        <PartnersPanel
+          partners={view.partners}
+          canManage={editable}
+          onSave={(partners) => setPartners.mutateAsync(partners)}
+        />
+      </Section>
+      <Section>
+        <SkillsPanel
+          skills={view.skills}
+          canManage={editable}
+          onSave={(skills) => setSkills.mutateAsync(skills)}
         />
       </Section>
       <Section>

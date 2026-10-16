@@ -2,6 +2,7 @@ import { useState, type ReactElement } from "react";
 import { FiCopy, FiCheck } from "react-icons/fi";
 import { LoadingState } from "../../core/components/Feedback.tsx";
 import { useTicket } from "../hooks.ts";
+import { StatusTimeline } from "./StatusTimeline.tsx";
 
 interface TicketCardProps {
   activityId: string;
@@ -56,6 +57,12 @@ export function TicketCard({
         )}
         {copied ? "Đã sao chép" : "Sao chép mã"}
       </button>
+      <div className="mt-3 border-t border-zinc-300 pt-3 dark:border-zinc-700">
+        <StatusTimeline
+          activityId={activityId}
+          registrationId={registrationId}
+        />
+      </div>
     </div>
   );
 }

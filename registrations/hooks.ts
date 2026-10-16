@@ -20,16 +20,18 @@ import {
   listActivityRoster,
   listMyAttendance,
   listMyRegistrations,
+  listRegistrationHistory,
   reviewRegistration,
   type AttendanceRecord,
+  type HistoryEntry,
   type Registration,
   type RosterItem,
   type Ticket,
 } from "./api.ts";
 import { registrationKeys } from "./keys.ts";
 
-type Mutation<TVariables> = UseMutationResult<
-  unknown,
+type Mutation<TVariables, TData = unknown> = UseMutationResult<
+  TData,
   ApiError,
   TVariables
 >;
@@ -78,6 +80,21 @@ export function useTicket(
   });
 }
 
+export function useRegistrationHistory(
+  activityId: string | undefined,
+  registrationId: string | undefined,
+): UseQueryResult<HistoryEntry[], ApiError> {
+  return useQuery({
+    queryKey: registrationKeys.history(
+      activityId ?? "",
+      registrationId ?? "",
+    ),
+    queryFn: () =>
+      listRegistrationHistory(activityId ?? "", registrationId ?? ""),
+    enabled: Boolean(activityId && registrationId),
+  });
+}
+
 export function useActivityAttendance(
   activityId: string | undefined,
 ): UseQueryResult<AttendanceRecord[], ApiError> {
@@ -101,7 +118,7 @@ function useInvalidateRegistrations() {
 
 export function useApply(
   activityId: string,
-): Mutation<{ note?: string }> {
+): Mutation<{ note?: string }, Registration> {
   return useMutation({
         meta: { successToast: "registration.apply" },
 mutationFn: ({ note }) => applyToActivity(activityId, note),

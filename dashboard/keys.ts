@@ -8,6 +8,8 @@ export const dashboardKeys = {
   orgMedia: (orgId: string) => [...dashboardKeys.all, "media", orgId] as const,
   members: (orgId: string | null, params: MemberListParams = {}) =>
     [...dashboardKeys.all, "members", orgId, params] as const,
+  skillMatches: (orgId: string | null, skillId: string | null) =>
+    [...dashboardKeys.all, "skill-matches", orgId, skillId] as const,
   roles: (orgId: string | null) =>
     [...dashboardKeys.all, "roles", orgId] as const,
   presence: (orgId: string | null) =>

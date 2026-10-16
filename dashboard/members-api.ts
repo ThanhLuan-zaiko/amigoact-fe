@@ -125,6 +125,25 @@ export async function listMyMemberships(status?: string): Promise<MembershipPage
   return apiFetch<MembershipPage>(`/orgs/memberships/mine${query}`);
 }
 
+export interface SkillMatch {
+  user_id: string;
+  full_name: string;
+  level: number;
+}
+
+// Coordinator matching: org members holding one skill, best first.
+export async function listSkillMatches(
+  orgId: string,
+  skillId: string,
+  minLevel?: number,
+): Promise<SkillMatch[]> {
+  const search = new URLSearchParams({ skill_id: skillId });
+  if (minLevel !== undefined) search.set("min_level", String(minLevel));
+  return apiFetch<SkillMatch[]>(
+    `/orgs/${orgId}/members/by-skill?${search.toString()}`,
+  );
+}
+
 // ---- Org custom roles (RBAC) ----
 
 export interface OrgRole {

@@ -5,7 +5,9 @@ import {
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { ApiError } from "../core/api.ts";
+import { activitiesChannel, subscribeChannel } from "../core/realtime.ts";
 import {
   addAnnouncement,
   addSchedule,
@@ -18,6 +20,7 @@ import {
   listActivities,
   listCategories,
   listOrgActivities,
+  setActivityPartners,
   setActivitySkills,
   setActivityStaff,
   transitionActivity,
@@ -164,6 +167,19 @@ mutationFn: (skills) => setActivitySkills(orgId, activityId, skills),
   });
 }
 
+export function useSetPartners(
+  orgId: string,
+  activityId: string,
+): OrgActivityMutation<
+  { org_id: string; role: string; note?: string | null }[]
+> {
+  return useMutation({
+        meta: { successToast: "activity.save" },
+mutationFn: (partners) => setActivityPartners(orgId, activityId, partners),
+    ...useInvalidateActivities(),
+  });
+}
+
 export function useSetStaff(
   orgId: string,
   activityId: string,
@@ -196,6 +212,19 @@ mutationFn: (scheduleId) =>
       deleteSchedule(orgId, activityId, scheduleId),
     ...useInvalidateActivities(),
   });
+}
+
+// Live org activity feed (AGENTS.md 12.1): committed lifecycle events on
+// activities:{orgId} (create/update/status change) refresh every activity
+// query. The payload is never trusted as truth; queries are invalidated.
+export function useLiveActivities(orgId: string | undefined): void {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    if (orgId === undefined) return undefined;
+    return subscribeChannel(activitiesChannel(orgId), () => {
+      void queryClient.invalidateQueries({ queryKey: activityKeys.all });
+    });
+  }, [orgId, queryClient]);
 }
 
 export function useAddAnnouncement(

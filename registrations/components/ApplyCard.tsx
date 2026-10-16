@@ -175,7 +175,9 @@ export function ApplyCard({
           className="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400"
         >
           <FiCheckCircle className="h-4 w-4" aria-hidden="true" />
-          Đã gửi đăng ký — chờ ban tổ chức duyệt.
+          {apply.data?.status === "waitlisted"
+            ? "Hoạt động đã đầy — bạn được xếp vào danh sách chờ."
+            : "Đã gửi đăng ký — chờ ban tổ chức duyệt."}
         </p>
       )}
     </div>

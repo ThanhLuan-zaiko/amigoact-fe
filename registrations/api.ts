@@ -23,6 +23,14 @@ export interface RosterItem {
   registered_at: string | null;
 }
 
+export interface HistoryEntry {
+  from_status: string | null;
+  to_status: string;
+  changed_at: string | null;
+  changed_by: string | null;
+  note: string | null;
+}
+
 export interface Ticket {
   registration_id: string;
   checkin_token: string;
@@ -84,6 +92,15 @@ export function cancelRegistration(
   return apiFetch<Registration>(
     `/activities/${activityId}/registrations/${registrationId}/cancel`,
     { method: "POST" },
+  );
+}
+
+export function listRegistrationHistory(
+  activityId: string,
+  registrationId: string,
+): Promise<HistoryEntry[]> {
+  return apiFetch<HistoryEntry[]>(
+    `/activities/${activityId}/registrations/${registrationId}/history`,
   );
 }
 

@@ -48,8 +48,20 @@ API xuất ra:
 |---|---|
 | `subscribeChannel(channel, handler)` | Đăng ký kênh, trả về hàm unsubscribe |
 | `onRealtimeStatus(handler)` | Nghe `idle`/`connecting`/`open`/`reconnecting`/`offline` cho banner kết nối (copy tiếng Việt, §12.5) |
+| `retryRealtime()` | Reconnect ngay, bỏ qua backoff — dùng cho nút "Thử lại" của banner |
 | `notificationsChannel` / `attendanceChannel` / `activitiesChannel` / `membersChannel` | Helper tên kênh chuẩn backend |
 | `realtime` | Singleton client (dùng nội bộ hai hàm trên) |
+
+Socket machinery nằm trong `core/realtime-client.ts` (class
+`RealtimeClient`, bookkeeping `RealtimeIssue`: `session` / `denied` /
+`error`); `core/realtime.ts` chỉ là facade export API. Banner kết nối là
+`core/components/RealtimeBanner.tsx`, mount một lần trong `PageShell`
+dưới `CenterHeader`: reconnecting đọc amber (transient), `session`
+(4401) và `denied` (4403) đọc red kèm hành động Đăng nhập / Thử lại,
+`error` (frame `error.v1` không phải FORBIDDEN) đọc amber kèm Thử lại.
+Banner tự giữ một status listener nên socket không teardown khi hết
+channel subscriber — chỉ mở socket khi có kênh subscribe, listener đơn
+thuần không tự kết nối.
 
 Socket tự teardown về `idle` khi không còn subscriber/status listener nào.
 Hai kênh public hoạt động trên socket ẩn danh: `orgs:directory` (qua

@@ -47,6 +47,14 @@ export function revokeCertificate(
   );
 }
 
+export function listActivityCertificates(
+  activityId: string,
+): Promise<Certificate[]> {
+  return apiFetch<Certificate[]>(
+    `/activities/${activityId}/certificates`,
+  );
+}
+
 export function listMyCertificates(): Promise<MyCertificate[]> {
   return apiFetch<MyCertificate[]>("/certificates/mine");
 }

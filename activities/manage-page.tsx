@@ -12,7 +12,12 @@ import { useMyOrgs } from "../dashboard/hooks.ts";
 import { MemberOrgPicker } from "../dashboard/components/MemberOrgPicker.tsx";
 import { ActivityCard } from "./components/ActivityCard.tsx";
 import { ActivityForm } from "./components/ActivityForm.tsx";
-import { useCategories, useCreateActivity, useOrgActivities } from "./hooks.ts";
+import {
+  useCategories,
+  useCreateActivity,
+  useLiveActivities,
+  useOrgActivities,
+} from "./hooks.ts";
 
 export function ManageEventsPage(): ReactElement {
   const orgs = useMyOrgs();
@@ -32,6 +37,7 @@ export function ManageEventsPage(): ReactElement {
     );
   };
   const selected = orgId ?? orgs.data?.items[0]?.id ?? null;
+  useLiveActivities(selected ?? undefined);
   const activities = useOrgActivities(selected);
   const categories = useCategories(selected ?? undefined);
   const create = useCreateActivity(selected ?? "");

@@ -7,6 +7,7 @@ import { CenterHeader } from "./CenterHeader.tsx";
 import { LeftRail } from "./LeftRail.tsx";
 import { MobileTabBar } from "./MobileTabBar.tsx";
 import { NavDrawer } from "./NavDrawer.tsx";
+import { RealtimeBanner } from "./RealtimeBanner.tsx";
 import { RightRail } from "./RightRail.tsx";
 import { ToastViewport } from "./ToastViewport.tsx";
 import { RAIL_SCROLL } from "../rail-styles.ts";
@@ -43,6 +44,7 @@ export function PageShell(): ReactElement {
             drawerOpen={drawerOpen}
             onOpenDrawer={() => setDrawer({ path: pathname, open: true })}
           />
+          <RealtimeBanner />
           <div className="flex flex-col">
             <Outlet />
           </div>

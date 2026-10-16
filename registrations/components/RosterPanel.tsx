@@ -1,6 +1,5 @@
 import { useState, type ReactElement } from "react";
 import {
-  FiAward,
   FiCheck,
   FiClock,
   FiUserCheck,
@@ -14,9 +13,9 @@ import {
   LoadingState,
 } from "../../core/components/Feedback.tsx";
 import { formatDateTime } from "../../activities/dates.tsx";
-import { useIssueCertificate } from "../../certificates/hooks.ts";
 import { toVietnameseCertificateError } from "../../certificates/messages.tsx";
 import { useManualCheckIn, useReview, useRoster } from "../hooks.ts";
+import { RosterCertActions } from "./RosterCertActions.tsx";
 import {
   REGISTRATION_STATUS_LABELS,
   toVietnameseRegistrationError,
@@ -47,7 +46,6 @@ export function RosterPanel({
   const roster = useRoster(activityId);
   const review = useReview(activityId);
   const checkIn = useManualCheckIn(activityId);
-  const issueCert = useIssueCertificate(activityId);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -177,22 +175,11 @@ export function RosterPanel({
                   </Button>
                 )}
                 {row.status === "attended" && (
-                  <Button
-                    variant="secondary"
-                    disabled={issueCert.isPending}
-                    onClick={() =>
-                      void act(
-                        () =>
-                          issueCert.mutateAsync({
-                            studentId: row.student_id,
-                          }),
-                        "Đã cấp chứng nhận.",
-                      )
-                    }
-                    icon={<FiAward className="h-4 w-4" aria-hidden="true" />}
-                  >
-                    Cấp chứng nhận
-                  </Button>
+                  <RosterCertActions
+                    activityId={activityId}
+                    studentId={row.student_id}
+                    act={act}
+                  />
                 )}
                 {(row.status === "pending" ||
                   row.status === "waitlisted") && (

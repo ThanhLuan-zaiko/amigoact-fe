@@ -8,8 +8,10 @@ import {
 import { ApiError } from "../core/api.ts";
 import {
   issueCertificate,
+  listActivityCertificates,
   listMyCertificates,
   revokeCertificate,
+  type Certificate,
   type MyCertificate,
 } from "./api.ts";
 import { certificateKeys } from "./keys.ts";
@@ -30,6 +32,16 @@ export function useMyCertificates(
   });
 }
 
+/** Manager feed: every certificate of one activity (issue/revoke UI). */
+export function useActivityCertificates(
+  activityId: string,
+): UseQueryResult<Certificate[], ApiError> {
+  return useQuery({
+    queryKey: certificateKeys.activity(activityId),
+    queryFn: () => listActivityCertificates(activityId),
+  });
+}
+
 function useInvalidateCertificates() {
   const queryClient = useQueryClient();
   return {
@@ -45,8 +57,8 @@ export function useIssueCertificate(
   activityId: string,
 ): Mutation<{ studentId: string }> {
   return useMutation({
-        meta: { successToast: "certificate.issue" },
-mutationFn: ({ studentId }) =>
+    meta: { successToast: "certificate.issue" },
+    mutationFn: ({ studentId }) =>
       issueCertificate(activityId, studentId),
     ...useInvalidateCertificates(),
   });
@@ -56,8 +68,8 @@ export function useRevokeCertificate(
   activityId: string,
 ): Mutation<{ studentId: string; reason?: string }> {
   return useMutation({
-        meta: { successToast: "certificate.revoke" },
-mutationFn: ({ studentId, reason }) =>
+    meta: { successToast: "certificate.revoke" },
+    mutationFn: ({ studentId, reason }) =>
       revokeCertificate(activityId, studentId, reason),
     ...useInvalidateCertificates(),
   });

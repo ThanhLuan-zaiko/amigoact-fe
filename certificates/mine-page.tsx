@@ -1,17 +1,47 @@
 import type { ReactElement } from "react";
-import { FiAward } from "react-icons/fi";
+import { FiAward, FiDownload } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from "../core/components/Feedback.tsx";
+import { pushToast } from "../core/toast.ts";
+import { ApiError } from "../core/api.ts";
 import { formatDateTime } from "../activities/dates.tsx";
-import { useMyCertificates } from "./hooks.ts";
-import { CERTIFICATE_STATUS_LABELS } from "./messages.tsx";
+import { useDownloadCertificate, useMyCertificates } from "./hooks.ts";
+import {
+  CERTIFICATE_STATUS_LABELS,
+  toVietnameseCertificateError,
+} from "./messages.tsx";
+
+function saveBlob(filename: string, blob: Blob): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
 
 export function MyCertificatesPage(): ReactElement {
   const mine = useMyCertificates();
+  const download = useDownloadCertificate();
+
+  function downloadCertificate(certificateId: string, serial: string): void {
+    download.mutate(certificateId, {
+      onSuccess: (file) =>
+        saveBlob(file.filename ?? `certificate-${serial}.pdf`, file.blob),
+      onError: (error) =>
+        pushToast({
+          tone: "error",
+          title:
+            error instanceof ApiError
+              ? toVietnameseCertificateError(error.code, error.message)
+              : "Không tải được chứng nhận.",
+        }),
+    });
+  }
 
   return (
     <Section>
@@ -55,6 +85,19 @@ export function MyCertificatesPage(): ReactElement {
                   ? `Cấp ngày ${formatDateTime(row.issued_at)}`
                   : ""}
               </p>
+              {row.status === "issued" && (
+                <button
+                  type="button"
+                  disabled={download.isPending}
+                  onClick={() =>
+                    downloadCertificate(row.certificate_id, row.serial_no)
+                  }
+                  className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900"
+                >
+                  <FiDownload className="h-4 w-4" aria-hidden="true" />
+                  Tải PDF
+                </button>
+              )}
             </li>
           ))}
         </ul>

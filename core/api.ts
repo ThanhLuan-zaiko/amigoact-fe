@@ -142,6 +142,56 @@ export async function apiTextFetch(path: string): Promise<string> {
   }
 }
 
+export interface BlobResult {
+  blob: Blob;
+  filename: string | null;
+}
+
+function dispositionFilename(header: string | null): string | null {
+  if (!header) return null;
+  const match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(header);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1].replace(/"$/, ""));
+  } catch {
+    return match[1].replace(/"$/, "");
+  }
+}
+
+async function blobRequest(path: string): Promise<BlobResult> {
+  const headers: Record<string, string> = {};
+  if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
+  const response = await fetch(`${resolveBaseUrl()}${path}`, {
+    cache: "no-store",
+    credentials: "include",
+    headers,
+  });
+  if (!response.ok) throw toApiError(response.status, await readBody(response));
+  return {
+    blob: await response.blob(),
+    filename: dispositionFilename(
+      response.headers.get("Content-Disposition"),
+    ),
+  };
+}
+
+export async function apiBlobFetch(path: string): Promise<BlobResult> {
+  try {
+    return await blobRequest(path);
+  } catch (error) {
+    const needsRetry =
+      error instanceof ApiError && error.status === 401;
+    if (!needsRetry) throw error;
+    try {
+      await refreshAccessToken();
+    } catch {
+      accessToken = null;
+      throw error;
+    }
+    return blobRequest(path);
+  }
+}
+
 async function uploadRequest<T>(path: string, form: FormData, method = "POST"): Promise<T> {
   const headers: Record<string, string> = {};
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;

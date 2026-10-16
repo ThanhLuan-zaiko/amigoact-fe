@@ -1,9 +1,10 @@
 import { useState, type ReactElement } from "react";
-import { FiAward, FiSlash } from "react-icons/fi";
+import { FiAward, FiDownload, FiSlash } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { ConfirmDialog } from "../../core/components/ConfirmDialog.tsx";
 import {
   useActivityCertificates,
+  useDownloadCertificate,
   useIssueCertificate,
   useRevokeCertificate,
   useTemplates,
@@ -16,6 +17,15 @@ interface RosterCertActionsProps {
   orgId: string;
   studentId: string;
   act: (fn: () => Promise<unknown>, success?: string) => Promise<void>;
+}
+
+function saveBlob(filename: string, blob: Blob): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
 
 // Certificate cell of one attended roster row: an issued/revoked badge
@@ -32,6 +42,7 @@ export function RosterCertActions({
   const templates = useTemplates(orgId);
   const issue = useIssueCertificate(activityId);
   const revoke = useRevokeCertificate(activityId);
+  const download = useDownloadCertificate();
   const [confirming, setConfirming] = useState(false);
   const [templateId, setTemplateId] = useState("");
   if (certs.isPending) return null;
@@ -63,14 +74,34 @@ export function RosterCertActions({
     <>
       {badge}
       {cert?.status === "issued" ? (
-        <Button
-          variant="ghost"
-          disabled={busy}
-          onClick={() => setConfirming(true)}
-          icon={<FiSlash className="h-4 w-4" aria-hidden="true" />}
-        >
-          Thu hồi
-        </Button>
+        <>
+          <Button
+            variant="ghost"
+            disabled={busy || download.isPending}
+            onClick={() =>
+              void act(async () => {
+                const file = await download.mutateAsync(
+                  cert.certificate_id,
+                );
+                saveBlob(
+                  file.filename ?? `certificate-${cert.serial_no}.pdf`,
+                  file.blob,
+                );
+              })
+            }
+            icon={<FiDownload className="h-4 w-4" aria-hidden="true" />}
+          >
+            PDF
+          </Button>
+          <Button
+            variant="ghost"
+            disabled={busy}
+            onClick={() => setConfirming(true)}
+            icon={<FiSlash className="h-4 w-4" aria-hidden="true" />}
+          >
+            Thu hồi
+          </Button>
+        </>
       ) : (
         <>
           {activeTemplates.length > 0 && (

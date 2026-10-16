@@ -5,9 +5,10 @@ import {
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
-import { ApiError } from "../core/api.ts";
+import { ApiError, type BlobResult } from "../core/api.ts";
 import {
   createTemplate,
+  downloadCertificateFile,
   issueCertificate,
   listActivityCertificates,
   listMyCertificates,
@@ -78,6 +79,17 @@ export function useRevokeCertificate(
     mutationFn: ({ studentId, reason }) =>
       revokeCertificate(activityId, studentId, reason),
     ...useInvalidateCertificates(),
+  });
+}
+
+/** Silent on success: the browser download is its own confirmation. */
+export function useDownloadCertificate(): UseMutationResult<
+  BlobResult,
+  ApiError,
+  string
+> {
+  return useMutation({
+    mutationFn: (certificateId) => downloadCertificateFile(certificateId),
   });
 }
 

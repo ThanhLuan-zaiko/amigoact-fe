@@ -1,4 +1,4 @@
-import { apiFetch } from "../core/api.ts";
+import { apiBlobFetch, apiFetch, type BlobResult } from "../core/api.ts";
 
 export interface Certificate {
   certificate_id: string;
@@ -67,6 +67,12 @@ export function verifyCertificate(serial: string): Promise<VerifyResult> {
   return apiFetch<VerifyResult>(
     `/certificates/verify/${encodeURIComponent(serial)}`,
   );
+}
+
+export function downloadCertificateFile(
+  certificateId: string,
+): Promise<BlobResult> {
+  return apiBlobFetch(`/certificates/${certificateId}/file`);
 }
 
 export interface CertificateTemplate {

@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useSession } from "../../auth/hooks.ts";
 import { useUnreadCount } from "../../notifications/hooks.ts";
+import { useChatUnreadTotal } from "../../workspace/hooks.ts";
 import { activeEntry } from "../nav-meta.ts";
 import { PRIMARY_LINKS, TAB_PATHS_GUEST, TAB_PATHS_MEMBER } from "../nav.tsx";
 import { RailBadge } from "./RailNavItem.tsx";
@@ -12,6 +13,7 @@ export function MobileTabBar(): ReactElement {
   const session = useSession();
   const signedIn = session.data != null;
   const unread = useUnreadCount(signedIn).data?.unread ?? 0;
+  const chatUnread = useChatUnreadTotal(signedIn);
   const paths = signedIn ? TAB_PATHS_MEMBER : TAB_PATHS_GUEST;
   const tabs = PRIMARY_LINKS.filter((entry) => paths.includes(entry.to));
   const active = activeEntry(pathname, tabs);
@@ -24,7 +26,12 @@ export function MobileTabBar(): ReactElement {
       {tabs.map((entry) => {
         const { to, label, Icon } = entry;
         const isActive = entry === active;
-        const count = entry.badge === "notifications" ? unread : 0;
+        const count =
+          entry.badge === "notifications"
+            ? unread
+            : entry.badge === "chat"
+              ? chatUnread
+              : 0;
         return (
           <Link
             key={to}

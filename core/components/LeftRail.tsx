@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { FiActivity, FiLogIn, FiPlus } from "react-icons/fi";
 import { useSession } from "../../auth/hooks.ts";
 import { useUnreadCount } from "../../notifications/hooks.ts";
+import { useChatUnreadTotal } from "../../workspace/hooks.ts";
 import { activeEntry } from "../nav-meta.ts";
 import { PRIMARY_LINKS } from "../nav.tsx";
 import { RAIL_SCROLL } from "../rail-styles.ts";
@@ -26,6 +27,7 @@ export function LeftRail(): ReactElement {
   const signedIn = session.data != null;
   const active = activeEntry(pathname, PRIMARY_LINKS);
   const unread = useUnreadCount(signedIn).data?.unread ?? 0;
+  const chatUnread = useChatUnreadTotal(signedIn);
   const links = PRIMARY_LINKS.filter((entry) => signedIn || !entry.auth);
 
   return (
@@ -48,7 +50,13 @@ export function LeftRail(): ReactElement {
               <RailNavItem
                 entry={entry}
                 active={entry === active}
-                count={entry.badge === "notifications" ? unread : 0}
+                count={
+                  entry.badge === "notifications"
+                    ? unread
+                    : entry.badge === "chat"
+                      ? chatUnread
+                      : 0
+                }
               />
             </li>
           ))}

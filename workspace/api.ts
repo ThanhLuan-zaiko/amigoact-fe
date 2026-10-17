@@ -1,9 +1,28 @@
-import { apiFetch } from "../core/api.ts";
+import { apiFetch, apiUpload } from "../core/api.ts";
 import { qs } from "./board-api.ts";
 
 // Board (posts/comments) contracts live in board-api.ts; re-exported so
 // existing imports from ./api.ts keep working.
 export * from "./board-api.ts";
+
+export interface ChatAttachment {
+  media_id: string;
+  url: string;
+  mime: string;
+  name: string;
+  size_bytes: number;
+}
+
+export interface ChatReaction {
+  emoji: string;
+  count: number;
+  mine: boolean;
+}
+
+export interface ChatMention {
+  user_id: string;
+  name: string;
+}
 
 export interface ChatMessage {
   message_id: string;
@@ -12,6 +31,13 @@ export interface ChatMessage {
   author_name: string;
   body: string;
   created_at: string | null;
+  reply_to_id: string | null;
+  reply_to_author: string | null;
+  reply_to_body: string | null;
+  edited_at: string | null;
+  attachments: ChatAttachment[];
+  reactions: ChatReaction[];
+  mentions: ChatMention[];
 }
 
 export interface ChatPage {
@@ -19,6 +45,11 @@ export interface ChatPage {
   next_cursor: string | null;
   unread: number;
   last_read_message_id: string | null;
+  // dm-only peer read pointer: drives the sender's double-check receipt.
+  peer_last_read_message_id: string | null;
+  // Phase 3: the room's pinned bar + the caller's mute flag.
+  pinned: ChatMessage | null;
+  muted: boolean;
 }
 
 export interface ReadState {
@@ -38,6 +69,36 @@ export interface DmRoomPage {
   items: DmRoom[];
 }
 
+export type InboxRoomKind = "general" | "activity" | "dm";
+
+// One Telegram-style inbox row: room identity plus last-message preview.
+export interface InboxRoom {
+  room_id: string;
+  kind: InboxRoomKind;
+  org_id: string;
+  org_name: string;
+  title: string;
+  peer_id: string | null;
+  avatar_url: string | null;
+  last_message_id: string | null;
+  last_body: string | null;
+  last_author_name: string | null;
+  last_at: string | null;
+  unread: number;
+  sort_at: string | null;
+  peer_last_seen_at: string | null;
+  // Muted rooms keep their unread count but the badge total skips them.
+  muted: boolean;
+}
+
+export interface ChatInbox {
+  items: InboxRoom[];
+}
+
+export function listChatInbox(): Promise<ChatInbox> {
+  return apiFetch<ChatInbox>("/chat/inbox");
+}
+
 export function listChatMessages(
   roomId: string,
   params: { limit?: number; cursor?: string } = {},
@@ -50,16 +111,81 @@ export function listChatMessages(
   );
 }
 
-export function sendChatMessage(roomId: string, body: string): Promise<ChatMessage> {
+export interface SendChatInput {
+  body: string;
+  reply_to_id?: string | null;
+  attachment_ids?: string[];
+}
+
+export function sendChatMessage(
+  roomId: string,
+  input: SendChatInput,
+): Promise<ChatMessage> {
   return apiFetch<ChatMessage>(`/chat/rooms/${roomId}/messages`, {
     method: "POST",
-    body: JSON.stringify({ body }),
+    body: JSON.stringify(input),
   });
+}
+
+export function editChatMessage(
+  roomId: string,
+  messageId: string,
+  body: string,
+): Promise<ChatMessage> {
+  return apiFetch<ChatMessage>(
+    `/chat/rooms/${roomId}/messages/${messageId}`,
+    { method: "PATCH", body: JSON.stringify({ body }) },
+  );
+}
+
+export function uploadChatAttachment(
+  roomId: string,
+  file: File,
+): Promise<ChatAttachment> {
+  const form = new FormData();
+  form.append("file", file);
+  return apiUpload<ChatAttachment>(
+    `/chat/rooms/${roomId}/attachments`,
+    form,
+  );
 }
 
 export function deleteChatMessage(roomId: string, messageId: string): Promise<void> {
   return apiFetch<unknown>(`/chat/rooms/${roomId}/messages/${messageId}`, {
     method: "DELETE",
+  }).then(() => undefined);
+}
+
+export function toggleChatReaction(
+  roomId: string,
+  messageId: string,
+  emoji: string,
+): Promise<ChatMessage> {
+  return apiFetch<ChatMessage>(
+    `/chat/rooms/${roomId}/messages/${messageId}/reactions`,
+    { method: "PUT", body: JSON.stringify({ emoji }) },
+  );
+}
+
+export function pinChatMessage(
+  roomId: string,
+  messageId: string,
+): Promise<void> {
+  return apiFetch<unknown>(`/chat/rooms/${roomId}/pin`, {
+    method: "PUT",
+    body: JSON.stringify({ message_id: messageId }),
+  }).then(() => undefined);
+}
+
+export function unpinChatMessage(roomId: string): Promise<void> {
+  return apiFetch<unknown>(`/chat/rooms/${roomId}/pin`, {
+    method: "DELETE",
+  }).then(() => undefined);
+}
+
+export function setChatMute(roomId: string, muted: boolean): Promise<void> {
+  return apiFetch<unknown>(`/chat/rooms/${roomId}/mute`, {
+    method: muted ? "PUT" : "DELETE",
   }).then(() => undefined);
 }
 

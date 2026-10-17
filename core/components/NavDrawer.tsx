@@ -5,6 +5,7 @@ import { FiLogIn, FiLogOut, FiUserPlus } from "react-icons/fi";
 import { useAdminStatus } from "../../admin/hooks.ts";
 import { useLogout, useSession } from "../../auth/hooks.ts";
 import { useUnreadCount } from "../../notifications/hooks.ts";
+import { useChatUnreadTotal } from "../../workspace/hooks.ts";
 import { expandPanel } from "../motion.ts";
 import { activeEntry } from "../nav-meta.ts";
 import {
@@ -37,6 +38,7 @@ export function NavDrawer({
   const admin = useAdminStatus(signedIn);
   const active = activeEntry(pathname, PRIMARY_LINKS);
   const unread = useUnreadCount(signedIn).data?.unread ?? 0;
+  const chatUnread = useChatUnreadTotal(signedIn);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -126,7 +128,13 @@ export function NavDrawer({
                   entry={entry}
                   expanded
                   active={entry === active}
-                  count={entry.badge === "notifications" ? unread : 0}
+                  count={
+                    entry.badge === "notifications"
+                      ? unread
+                      : entry.badge === "chat"
+                        ? chatUnread
+                        : 0
+                  }
                   onNavigate={onClose}
                 />
               </li>

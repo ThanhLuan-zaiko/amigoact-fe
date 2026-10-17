@@ -51,6 +51,17 @@ export function expandPanel(panel: HTMLElement): void {
   });
 }
 
+// Slide-in from the right edge for drawer panels (room info, sheets).
+export function slideInX(panel: HTMLElement): void {
+  if (prefersReducedMotion()) return;
+  animate(panel, {
+    opacity: [0.4, 1],
+    x: [48, 0],
+    duration: 220,
+    ease: "outQuad",
+  });
+}
+
 // Subtle cross-fade for the theme toggle glyph.
 export function swapGlyph(glyph: HTMLElement): void {
   if (prefersReducedMotion()) return;

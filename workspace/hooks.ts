@@ -13,17 +13,27 @@ import { useSearchParams } from "react-router-dom";
 import { ApiError } from "../core/api.ts";
 import {
   deleteChatMessage,
+  editChatMessage,
   getChatUnread,
+  listChatInbox,
   listChatMessages,
   listDmRooms,
   markChatRead,
   openDmRoom,
+  pinChatMessage,
   sendChatMessage,
+  setChatMute,
+  toggleChatReaction,
+  unpinChatMessage,
+  uploadChatAttachment,
+  type ChatAttachment,
   type ChatPage,
+  type ChatInbox,
   type DmRoom,
   type DmRoomPage,
   type ReadState,
   type ChatMessage,
+  type SendChatInput,
 } from "./api.ts";
 import { workspaceKeys } from "./keys.ts";
 
@@ -96,6 +106,29 @@ export function useChatUnread(
   });
 }
 
+export function useChatInbox(
+  enabled = true,
+): UseQueryResult<ChatInbox, ApiError> {
+  return useQuery({
+    queryKey: workspaceKeys.chatInbox(),
+    queryFn: listChatInbox,
+    staleTime: 30_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    enabled,
+  });
+}
+
+// Total unread across every room: the nav badge on "Tro chuyen". Muted
+// rooms keep their row counter but stay out of the global badge.
+export function useChatUnreadTotal(enabled = true): number {
+  const inbox = useChatInbox(enabled);
+  return (inbox.data?.items ?? []).reduce(
+    (total, room) => total + (room.muted ? 0 : room.unread),
+    0,
+  );
+}
+
 async function invalidateChat(
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<void> {
@@ -105,15 +138,37 @@ async function invalidateChat(
   await queryClient.invalidateQueries({
     queryKey: [...workspaceKeys.all, "chat-unread"],
   });
+  await queryClient.invalidateQueries({
+    queryKey: workspaceKeys.chatInbox(),
+  });
 }
 
 export function useSendChatMessage(
   roomId: string,
-): UseMutationResult<ChatMessage, ApiError, string> {
+): UseMutationResult<ChatMessage, ApiError, SendChatInput> {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (body: string) => sendChatMessage(roomId, body),
+    mutationFn: (input: SendChatInput) => sendChatMessage(roomId, input),
     onSuccess: () => invalidateChat(queryClient),
+  });
+}
+
+export function useEditChatMessage(
+  roomId: string,
+): UseMutationResult<ChatMessage, ApiError, { messageId: string; body: string }> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ messageId, body }) =>
+      editChatMessage(roomId, messageId, body),
+    onSuccess: () => invalidateChat(queryClient),
+  });
+}
+
+export function useUploadChatAttachment(
+  roomId: string,
+): UseMutationResult<ChatAttachment, ApiError, File> {
+  return useMutation({
+    mutationFn: (file: File) => uploadChatAttachment(roomId, file),
   });
 }
 
@@ -123,6 +178,51 @@ export function useDeleteChatMessage(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (messageId: string) => deleteChatMessage(roomId, messageId),
+    onSuccess: () => invalidateChat(queryClient),
+  });
+}
+
+export function useToggleReaction(
+  roomId: string,
+): UseMutationResult<
+  ChatMessage,
+  ApiError,
+  { messageId: string; emoji: string }
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ messageId, emoji }) =>
+      toggleChatReaction(roomId, messageId, emoji),
+    onSuccess: () => invalidateChat(queryClient),
+  });
+}
+
+export function usePinMessage(
+  roomId: string,
+): UseMutationResult<void, ApiError, string> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (messageId: string) => pinChatMessage(roomId, messageId),
+    onSuccess: () => invalidateChat(queryClient),
+  });
+}
+
+export function useUnpinMessage(
+  roomId: string,
+): UseMutationResult<void, ApiError, void> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => unpinChatMessage(roomId),
+    onSuccess: () => invalidateChat(queryClient),
+  });
+}
+
+export function useMuteRoom(
+  roomId: string,
+): UseMutationResult<void, ApiError, boolean> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (muted: boolean) => setChatMute(roomId, muted),
     onSuccess: () => invalidateChat(queryClient),
   });
 }

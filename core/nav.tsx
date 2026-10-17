@@ -29,7 +29,7 @@ export interface NavEntry {
   Icon: IconType;
   /** Only an exact path match counts as active (the home route). */
   end?: boolean;
-  badge?: "invites" | "notifications";
+  badge?: "invites" | "notifications" | "chat";
   /** Hidden from guests. */
   auth?: boolean;
 }
@@ -51,7 +51,13 @@ export const PRIMARY_LINKS: NavEntry[] = [
     badge: "notifications",
     auth: true,
   },
-  { to: "/manage/chat", label: "Trò chuyện", Icon: FiMessageCircle, auth: true },
+  {
+    to: "/manage/chat",
+    label: "Trò chuyện",
+    Icon: FiMessageCircle,
+    badge: "chat",
+    auth: true,
+  },
   { to: "/leaderboard", label: "Bảng xếp hạng", Icon: FiAward },
   { to: "/manage", label: "Bảng điều khiển", Icon: FiGrid, auth: true },
   { to: "/profile", label: "Hồ sơ", Icon: FiUser, auth: true },

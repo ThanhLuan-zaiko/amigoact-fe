@@ -1,6 +1,11 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import { FiSearch } from "react-icons/fi";
 import { useSession } from "../../auth/hooks.ts";
 import {
@@ -10,6 +15,7 @@ import {
   UpcomingCard,
 } from "./RailCards.tsx";
 import { TextField } from "./TextField.tsx";
+import { ChatInboxRail } from "../../workspace/components/ChatInboxRail.tsx";
 
 const YEAR = new Date().getFullYear();
 
@@ -62,9 +68,15 @@ function SearchBox(): ReactElement {
 }
 
 // X right rail: sticky search, personal widget, discovery widgets, footer.
+// One route swaps it wholesale: /manage/chat renders the merged
+// Telegram-style inbox (the conversation lives in the center column).
 export function RightRail(): ReactElement {
   const session = useSession();
   const signedIn = session.data != null;
+  const { pathname } = useLocation();
+  if (pathname === "/manage/chat" && signedIn) {
+    return <ChatInboxRail />;
+  }
   return (
     <div className="flex flex-col gap-4 pb-8">
       <div className="sticky top-0 z-10 bg-white py-2 dark:bg-zinc-950">

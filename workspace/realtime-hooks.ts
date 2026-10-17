@@ -2,6 +2,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import {
   chatChannel,
+  membersChannel,
+  notificationsChannel,
   postsChannel,
   sendTypingPing,
   subscribeChannel,
@@ -56,7 +58,17 @@ export function useChatRealtime(
         }
         return;
       }
-      if (action !== "message.created" && action !== "message.deleted") {
+      if (
+        action !== "message.created" &&
+        action !== "message.deleted" &&
+        action !== "message.edited" &&
+        action !== "message.reacted" &&
+        // dm read receipt: the peer's pointer moved, repaint the checks.
+        action !== "message.read" &&
+        // Pinned bar: the slot changed, repaint the header strip.
+        action !== "message.pinned" &&
+        action !== "message.unpinned"
+      ) {
         return;
       }
       void queryClient.invalidateQueries({
@@ -67,6 +79,46 @@ export function useChatRealtime(
       });
     });
   }, [roomId, selfId, onTyping, queryClient]);
+}
+
+// Subscribe budget: the server caps subscribe.v1 frames at 20/min, and
+// every members:{org} join also ships a presence snapshot. Beyond this
+// many orgs the extra rooms simply wait for the next inbox refetch.
+const INBOX_CHANNEL_CAP = 12;
+
+function isInboxEvent(payload: Record<string, unknown>): boolean {
+  return payload["scope"] === "chat-inbox";
+}
+
+// Live inbox: scope:"chat-inbox" hints land on notifications:{user} for
+// dm rooms (both participants) and on members:{org} for group rooms, so
+// the merged list refreshes without polling. The payload carries no
+// "action" key, leaving roster/presence/notification handlers untouched.
+export function useChatInboxRealtime(
+  userId: string | undefined,
+  orgIds: string[],
+): void {
+  const queryClient = useQueryClient();
+  const joined = orgIds.slice(0, INBOX_CHANNEL_CAP).join(",");
+  useEffect(() => {
+    if (userId === undefined) return undefined;
+    const invalidate = (payload: Record<string, unknown>): void => {
+      if (!isInboxEvent(payload)) return;
+      void queryClient.invalidateQueries({
+        queryKey: workspaceKeys.chatInbox(),
+      });
+    };
+    const orgChannels = joined === "" ? [] : joined.split(",");
+    const unsubscribers = [
+      subscribeChannel(notificationsChannel(userId), invalidate),
+      ...orgChannels.map((orgId) =>
+        subscribeChannel(membersChannel(orgId), invalidate),
+      ),
+    ];
+    return () => {
+      for (const unsubscribe of unsubscribers) unsubscribe();
+    };
+  }, [userId, joined, queryClient]);
 }
 
 // Throttled typing.v1 emitter: at most one frame per couple of seconds

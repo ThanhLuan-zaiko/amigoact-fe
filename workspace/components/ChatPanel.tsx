@@ -1,50 +1,73 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactElement } from "react";
-import { FiSend, FiTrash2, FiUsers } from "react-icons/fi";
+import { FiArrowDown, FiArrowLeft, FiInfo } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { Section } from "../../core/components/Section.tsx";
+import { Avatar } from "../../core/components/Avatar.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import {
   ErrorState,
   LoadingState,
 } from "../../core/components/Feedback.tsx";
-import { TextField } from "../../core/components/TextField.tsx";
 import {
   useChatMessages,
   useDeleteChatMessage,
   useMarkChatRead,
-  useSendChatMessage,
+  usePinMessage,
+  useToggleReaction,
+  useUnpinMessage,
 } from "../hooks.ts";
-import { sendChatTyping } from "../realtime-hooks.ts";
 import type { ChatMessage } from "../api.ts";
-import { formatTime, toVietnameseWorkspaceMessage } from "../messages.tsx";
+import { toVietnameseWorkspaceMessage } from "../messages.tsx";
+import { useChatAutoScroll } from "../chat-scroll.ts";
+import { ChatComposerBar } from "./ChatComposerBar.tsx";
+import { ChatMessageList } from "./ChatMessageList.tsx";
+import { ChatPinnedBar } from "./ChatPinnedBar.tsx";
+import { ChatRoomInfo } from "./ChatRoomInfo.tsx";
 
 interface ChatPanelProps {
   roomId: string;
-  roomLabel: string;
+  // Info modal roster needs the room's org (null while inbox loads).
+  orgId: string | null;
+  title: string;
+  avatarUrl?: string | null;
+  subtitle: string | null;
+  // Group rooms name each sender above the bubble; dm rows stay bare.
+  showAuthor: boolean;
+  // dm rooms show the ✓✓ receipt + peer last-seen in the subtitle.
+  isDm: boolean;
   selfId?: string;
   canManage: boolean;
-  onlineCount?: number;
+  unread: number;
   typingNames: string[];
+  // Two-screen flow (<lg): back returns to the inbox list.
+  onBack?: () => void;
 }
 
-// One chat room: oldest history on top ("load older" button), newest at
-// the bottom with a typing strip above the composer.
+// Telegram conversation surface: pinned header + scrollable bubble flow
+// + pinned composer, filling the column (phone tab bar accounted for).
 export function ChatPanel({
   roomId,
-  roomLabel,
+  orgId,
+  title,
+  avatarUrl,
+  subtitle,
+  showAuthor,
+  isDm,
   selfId,
   canManage,
-  onlineCount,
+  unread,
   typingNames,
+  onBack,
 }: ChatPanelProps): ReactElement {
-  const [draft, setDraft] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+  const [editing, setEditing] = useState<ChatMessage | null>(null);
+  const [infoOpen, setInfoOpen] = useState(false);
   const chat = useChatMessages(roomId);
-  const send = useSendChatMessage(roomId);
   const remove = useDeleteChatMessage(roomId);
   const markRead = useMarkChatRead(roomId);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const react = useToggleReaction(roomId);
+  const pin = usePinMessage(roomId);
+  const unpin = useUnpinMessage(roomId);
 
   // Pages arrive newest-chunk first; the room renders oldest at the top.
   const items = useMemo<ChatMessage[]>(() => {
@@ -52,7 +75,21 @@ export function ChatPanel({
     return [...pages].reverse().flatMap((page) => page.items);
   }, [chat.data]);
   const lastRead = chat.data?.pages[0]?.last_read_message_id ?? null;
+  const peerLastRead =
+    chat.data?.pages[0]?.peer_last_read_message_id ?? null;
+  const pinned = chat.data?.pages[0]?.pinned ?? null;
+  const muted = chat.data?.pages[0]?.muted ?? false;
+  const sharedMedia = useMemo(
+    () =>
+      items
+        .flatMap((message) => message.attachments)
+        .filter((item) => item.mime.startsWith("image/"))
+        .slice(0, 9),
+    [items],
+  );
   const latest = items.at(-1);
+  const { scrollRef, atBottom, pendingNew, onScroll, scrollToLatest } =
+    useChatAutoScroll(items);
 
   // Viewing the newest message moves the read pointer forward.
   useEffect(() => {
@@ -62,58 +99,58 @@ export function ChatPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latest?.message_id, lastRead]);
 
-  // Keep the tail in view while the user is already near the bottom or
-  // a fresh page just landed.
-  useEffect(() => {
-    const node = scrollRef.current;
-    if (node === null) return;
-    const nearBottom =
-      node.scrollHeight - node.scrollTop - node.clientHeight < 160;
-    if (nearBottom) node.scrollTop = node.scrollHeight;
-  }, [items.length]);
-
-  function submit(): void {
-    const body = draft.trim();
-    if (!body) return;
-    setError(null);
-    send.mutate(body, {
-      onSuccess: () => {
-        setDraft("");
-        const node = scrollRef.current;
-        if (node) node.scrollTop = node.scrollHeight;
-      },
-      onError: (err) =>
-        setError(
-          err instanceof ApiError
-            ? toVietnameseWorkspaceMessage(err.code)
-            : toVietnameseWorkspaceMessage("REQUEST_FAILED"),
-        ),
-    });
+  function clearContext(): void {
+    setReplyTo(null);
+    setEditing(null);
   }
 
   return (
-    <Section>
-      <div
-        data-rise
-        className="flex items-center justify-between gap-2"
-      >
-        <h2 className="min-w-0 truncate text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-          {roomLabel}
-        </h2>
-        {onlineCount !== undefined && (
-          <p className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-            <FiUsers className="h-4 w-4" aria-hidden="true" />
-            {`${onlineCount} đang online`}
-          </p>
+    <div className="flex h-[calc(100dvh-109px)] min-h-0 flex-col sm:h-[calc(100dvh-53px)]">
+      <header className="flex shrink-0 items-center gap-2 border-b border-zinc-200 bg-white px-2 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+        {onBack !== undefined && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            aria-label="Quay lại danh sách trò chuyện"
+            icon={<FiArrowLeft className="h-5 w-5" aria-hidden="true" />}
+          />
         )}
-      </div>
+        <Avatar name={title} src={avatarUrl ?? null} size="md" />
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+            {title}
+          </h2>
+          {subtitle !== null && (
+            <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+              {subtitle}
+            </p>
+          )}
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => setInfoOpen(true)}
+          aria-label="Thông tin phòng"
+          icon={<FiInfo className="h-5 w-5" aria-hidden="true" />}
+        />
+      </header>
+      {pinned !== null && (
+        <ChatPinnedBar
+          pinned={pinned}
+          canManage={canManage}
+          onUnpin={() => unpin.mutate()}
+        />
+      )}
       {chat.isPending && (
-        <div className="mt-3">
+        <div className="flex flex-1 items-center justify-center">
           <LoadingState label="Đang tải tin nhắn…" />
         </div>
       )}
       {chat.isError && (
-        <div className="mt-3">
+        <div className="flex flex-1 items-center justify-center px-4">
           <ErrorState
             title="Không tải được trò chuyện"
             message={toVietnameseWorkspaceMessage(
@@ -125,111 +162,73 @@ export function ChatPanel({
         </div>
       )}
       {chat.data !== undefined && (
-        <div
-          ref={scrollRef}
-          className="mt-3 flex max-h-[420px] min-h-40 flex-col gap-2 overflow-y-auto rounded-xl border border-zinc-200 p-3 dark:border-zinc-800"
-          aria-live="polite"
-        >
-          {chat.hasNextPage && (
-            <div className="flex justify-center">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => void chat.fetchNextPage()}
-                disabled={chat.isFetchingNextPage}
-              >
-                {chat.isFetchingNextPage ? "Đang tải…" : "Tải tin cũ hơn"}
-              </Button>
-            </div>
-          )}
-          {items.length === 0 && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              Chưa có tin nhắn nào. Hãy là người đầu tiên nhắn tin!
-            </p>
-          )}
-          {items.map((message) => {
-            const mine = message.author_id === selfId;
-            return (
-              <div
-                key={message.message_id}
-                className={`group flex ${mine ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl border px-3 py-2 ${
-                    mine
-                      ? "border-zinc-300 bg-zinc-100 dark:border-zinc-700"
-                      : "border-zinc-200 dark:border-zinc-800"
-                  }`}
-                >
-                  <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                    {mine ? "Bạn" : message.author_name}
-                    <span className="ml-2 font-normal text-zinc-500 dark:text-zinc-400">
-                      {formatTime(message.created_at)}
-                    </span>
-                  </p>
-                  <p className="mt-0.5 text-sm break-words whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
-                    {message.body}
-                  </p>
-                </div>
-                {(mine || canManage) && (
-                  <span className="ml-1 self-start opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => remove.mutate(message.message_id)}
-                      aria-label="Xóa tin nhắn"
-                      icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
-                    />
-                  </span>
-                )}
-              </div>
-            );
-          })}
-          {typingNames.length > 0 && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400" aria-live="polite">
-              {`${typingNames.join(", ")} đang nhập`}
-              <span className="animate-pulse">…</span>
-            </p>
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <div
+            ref={scrollRef}
+            onScroll={onScroll}
+            className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-3"
+            aria-live="polite"
+          >
+            <ChatMessageList
+              items={items}
+              selfId={selfId}
+              canManage={canManage}
+              showAuthor={showAuthor}
+              isDm={isDm}
+              lastRead={lastRead}
+              peerLastRead={peerLastRead}
+              unread={unread}
+              hasNextPage={chat.hasNextPage}
+              isFetchingNextPage={chat.isFetchingNextPage}
+              onLoadOlder={() => void chat.fetchNextPage()}
+              onReply={(message) => {
+                setEditing(null);
+                setReplyTo(message);
+              }}
+              onEdit={(message) => {
+                setReplyTo(null);
+                setEditing(message);
+              }}
+              onDelete={(id) => remove.mutate(id)}
+              onReact={(messageId, emoji) =>
+                react.mutate({ messageId, emoji })
+              }
+              onPin={
+                canManage ? (id) => pin.mutate(id) : undefined
+              }
+              typingNames={typingNames}
+            />
+          </div>
+          {!atBottom && (
+            <button
+              type="button"
+              onClick={scrollToLatest}
+              aria-label="Xuống tin nhắn mới nhất"
+              className="absolute bottom-3 right-3 flex h-10 items-center gap-1 rounded-full border border-zinc-300 bg-white px-3 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            >
+              <FiArrowDown className="h-4 w-4" aria-hidden="true" />
+              {pendingNew > 0 && <span>{pendingNew}</span>}
+            </button>
           )}
         </div>
       )}
-      <div className="mt-3 flex items-end gap-2">
-        <TextField
-          label="Nhắn tin"
-          name="chat-draft"
-          value={draft}
-          onChange={(event) => {
-            setDraft(event.target.value);
-            if (event.target.value.trim()) sendChatTyping(roomId);
-          }}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
-              submit();
-            }
-          }}
-          placeholder="Nhắn tin cho phòng này…"
-          maxLength={2000}
-          autoComplete="off"
-          className="min-w-0 flex-1"
-        />
-        <Button
-          type="button"
-          variant="primary"
-          onClick={submit}
-          disabled={send.isPending || !draft.trim()}
-          aria-label="Gửi tin nhắn"
-          icon={<FiSend className="h-4 w-4" aria-hidden="true" />}
-        >
-          Gửi
-        </Button>
-      </div>
-      {error && (
-        <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">
-          {error}
-        </p>
-      )}
-    </Section>
+      <ChatComposerBar
+        roomId={roomId}
+        replyTo={replyTo}
+        editing={editing}
+        onClearContext={clearContext}
+        onSent={scrollToLatest}
+      />
+      <ChatRoomInfo
+        open={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        roomId={roomId}
+        orgId={orgId}
+        title={title}
+        isDm={isDm}
+        muted={muted}
+        media={sharedMedia}
+      />
+    </div>
   );
 }

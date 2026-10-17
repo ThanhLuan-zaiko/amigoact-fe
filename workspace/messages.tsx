@@ -26,6 +26,7 @@ const MESSAGES: Record<string, string> = {
   COMMENT_POSTED: "Đã bình luận.",
   COMMENT_DELETED: "Đã xóa bình luận.",
   MESSAGE_DELETED: "Đã xóa tin nhắn.",
+  CHAT_CONTENT_REQUIRED: "Tin nhắn cần có nội dung hoặc tệp đính kèm.",
 };
 
 export function toVietnameseWorkspaceMessage(code: string): string {
@@ -112,6 +113,65 @@ export function formatTime(iso: string | null): string {
   });
 }
 
+function dayStamp(date: Date): number {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getTime();
+}
+
+// Telegram-style timestamp: clock time today, weekday inside the last
+// week, short date older than that.
+export function formatInboxTime(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const now = new Date();
+  const today = dayStamp(now);
+  const that = dayStamp(date);
+  if (that === today) {
+    return date.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+  const dayMs = 86_400_000;
+  if (that > today - 6 * dayMs) {
+    return date.toLocaleDateString("vi-VN", { weekday: "short" });
+  }
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+  });
+}
+
+// HH:MM stamp inside a bubble - the day is carried by separators.
+export function formatClock(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// Day separator label: "Hom nay"/"Hom qua" inside the chat flow.
+export function formatDayLabel(iso: string | null): string {
+  if (!iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const diff = dayStamp(new Date()) - dayStamp(date);
+  if (diff === 0) return "Hôm nay";
+  if (diff === 86_400_000) return "Hôm qua";
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export function readingTimeLabel(minutes: number): string {
   return `${minutes} phút đọc`;
 }
@@ -125,4 +185,19 @@ export function formatDay(iso: string | null): string {
     month: "2-digit",
     year: "numeric",
   });
+}
+
+// dm subtitle fallback when the peer holds no live socket.
+export function formatLastSeen(iso: string | null): string | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return null;
+  const minutes = Math.floor((Date.now() - date.getTime()) / 60_000);
+  if (minutes < 1) return "Hoạt động vừa xong";
+  if (minutes < 60) return `Hoạt động ${minutes} phút trước`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Hoạt động ${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `Hoạt động ${days} ngày trước`;
+  return `Hoạt động ${formatDay(iso)}`;
 }

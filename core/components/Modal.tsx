@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
-import { riseIn } from "../motion.ts";
+import { riseIn, slideInX } from "../motion.ts";
 import { Button } from "./Button.tsx";
 
 interface ModalProps {
@@ -12,9 +12,11 @@ interface ModalProps {
   children: ReactNode;
   /** Widen the panel from max-w-md to max-w-3xl for denser content. */
   wide?: boolean;
+  /** Right-edge drawer (Telegram room info): full height, slides in. */
+  side?: boolean;
 }
 
-export function Modal({ open, title, onClose, children, wide = false }: ModalProps): ReactElement | null {
+export function Modal({ open, title, onClose, children, wide = false, side = false }: ModalProps): ReactElement | null {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
@@ -27,7 +29,8 @@ export function Modal({ open, title, onClose, children, wide = false }: ModalPro
     document.body.style.overflow = "hidden";
     const panel = panelRef.current;
     if (panel) {
-      riseIn(panel, { y: 12, duration: 220 });
+      if (side) slideInX(panel);
+      else riseIn(panel, { y: 12, duration: 220 });
       panel.focus({ preventScroll: true });
     }
     function onKey(event: KeyboardEvent): void {
@@ -39,7 +42,7 @@ export function Modal({ open, title, onClose, children, wide = false }: ModalPro
       document.body.style.overflow = prevOverflow;
       prev?.focus({ preventScroll: true });
     };
-  }, [open, onClose]);
+  }, [open, onClose, side]);
 
   if (!open) return null;
 
@@ -47,7 +50,11 @@ export function Modal({ open, title, onClose, children, wide = false }: ModalPro
   // otherwise become the containing block of this fixed overlay.
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className={
+        side
+          ? "fixed inset-0 z-50 flex items-stretch justify-end"
+          : "fixed inset-0 z-50 flex items-center justify-center p-4"
+      }
       role="presentation"
       // Close on click, not mousedown: unmounting mid-gesture lets the release
       // hit a page element under the cursor. Both press and release must land
@@ -72,7 +79,11 @@ export function Modal({ open, title, onClose, children, wide = false }: ModalPro
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`relative max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950 ${wide ? "max-w-3xl" : "max-w-md"}`}
+        className={
+          side
+            ? "relative h-full w-full max-w-[420px] overflow-y-auto border-l border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950"
+            : `relative max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950 ${wide ? "max-w-3xl" : "max-w-md"}`
+        }
       >
         <div className="flex items-center justify-between gap-2">
           <h3

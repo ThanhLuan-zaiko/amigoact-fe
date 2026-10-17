@@ -29,4 +29,6 @@ export const workspaceKeys = {
     [...workspaceKeys.all, "chat-unread", roomId] as const,
   dmRooms: (orgId: string | null) =>
     [...workspaceKeys.all, "dm-rooms", orgId] as const,
+  // Cross-org Telegram inbox: one merged list, never org-scoped.
+  chatInbox: () => [...workspaceKeys.all, "chat-inbox"] as const,
 };

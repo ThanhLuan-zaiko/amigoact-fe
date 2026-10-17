@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useSession } from "../auth/hooks.ts";
+import { EmptyState } from "../core/components/Feedback.tsx";
+import { useMediaQuery } from "../core/media-query.ts";
 import {
   useMyMemberships,
   useOrgMembers,
@@ -10,70 +12,50 @@ import {
   useOrgPresence,
   usePresenceIds,
 } from "../dashboard/presence-hooks.ts";
-import { useOrgActivities } from "../activities/hooks.ts";
+import { useChatInbox, useChatUnread } from "./hooks.ts";
+import { formatLastSeen } from "./messages.tsx";
 import {
-  useChatUnread,
-  useDmRooms,
-  useWorkspaceOrg,
-} from "./hooks.ts";
-import { useChatRealtime, useTypingUsers } from "./realtime-hooks.ts";
-import { WorkspaceOrgBar } from "./components/WorkspaceOrgBar.tsx";
+  useChatInboxRealtime,
+  useChatRealtime,
+  useTypingUsers,
+} from "./realtime-hooks.ts";
+import { ChatInboxRail } from "./components/ChatInboxRail.tsx";
 import { ChatPanel } from "./components/ChatPanel.tsx";
-import { ChatRoomRail } from "./components/ChatRoomRail.tsx";
 
-const UNREAD_BADGE =
-  "rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs " +
-  "font-semibold text-amber-700 dark:border-amber-800 dark:bg-amber-950 " +
-  "dark:text-amber-400";
-
-// Org chat (/manage/chat?org=<id>&room=<id>): a room rail (general, per
-// activity, direct messages) beside the live ChatPanel on chat:{room}.
+// Telegram flow on /manage/chat: the merged cross-org inbox lives in the
+// right rail on lg+ and IS the first screen below that (?room= picks the
+// conversation, no param shows the list). All realtime subscriptions for
+// the inbox live here so the rail and this page never double-subscribe.
 export function WorkspaceChatPage(): ReactElement {
   const session = useSession();
   const selfId = session.data?.id;
-  const memberships = useMyMemberships("active", session.data != null);
-  const orgs = useMemo(
-    () =>
-      (memberships.data?.items ?? []).map((item) => ({
-        id: item.org_id,
-        name: item.org_name,
-      })),
+  const signedIn = selfId !== undefined;
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const memberships = useMyMemberships("active", signedIn);
+  const orgIds = useMemo(
+    () => (memberships.data?.items ?? []).map((item) => item.org_id),
     [memberships.data],
   );
-  const { orgId } = useWorkspaceOrg(orgs);
   const [searchParams, setSearchParams] = useSearchParams();
+  const roomId = searchParams.get("room");
 
-  // ?room= persists the selection; an absent param means the general
-  // room, whose id is the org id itself.
-  const roomId =
-    orgId === null ? null : (searchParams.get("room") ?? orgId);
+  const inbox = useChatInbox(signedIn);
+  useChatInboxRealtime(selfId, orgIds);
 
-  function selectRoom(id: string): void {
-    if (id === roomId) return;
-    const next = new URLSearchParams(searchParams);
-    if (id === orgId) {
-      next.delete("room");
-    } else {
-      next.set("room", id);
-    }
-    setSearchParams(next, { replace: true });
-  }
+  const room =
+    (inbox.data?.items ?? []).find((item) => item.room_id === roomId) ??
+    null;
+  const roomOrgId = room?.org_id ?? null;
 
-  // Org switch discards the room - a room id only means something inside
-  // its own org, so the new org always starts on the general room.
-  function pickOrg(id: string): void {
-    const next = new URLSearchParams(searchParams);
-    next.set("org", id);
-    next.delete("room");
-    setSearchParams(next, { replace: true });
-  }
-
-  // Presence + roster power the online count and typing display names.
-  useOrgPresence(orgId);
-  const onlineIds = usePresenceIds(orgId);
-  const members = useOrgMembers(orgId, { limit: 100, status: "active" });
-  const activities = useOrgActivities(orgId);
-  const dmRooms = useDmRooms(orgId);
+  // Presence + roster power the dm online subtitle and typing names.
+  useOrgPresence(roomOrgId);
+  const onlineIds = usePresenceIds(roomOrgId);
+  // The members endpoint caps limit at 50; a larger value is a 422 and
+  // silently empties memberNames/viewer_permissions/subtitle.
+  const members = useOrgMembers(roomOrgId, {
+    limit: 50,
+    status: "active",
+  });
   const unread = useChatUnread(roomId);
   const { typingIds, noteTyping } = useTypingUsers();
   useChatRealtime(roomId, selfId, noteTyping);
@@ -86,66 +68,66 @@ export function WorkspaceChatPage(): ReactElement {
     return map;
   }, [members.data]);
 
-  const roomLabel = useMemo(() => {
-    if (roomId === null) return "Trò chuyện";
-    if (roomId === orgId) return "Phòng chung";
-    const activity = (activities.data ?? []).find(
-      (item) => item.id === roomId,
-    );
-    if (activity) return activity.title;
-    const dm = (dmRooms.data?.items ?? []).find(
-      (item) => item.room_id === roomId,
-    );
-    if (dm) return dm.peer_name;
-    return "Phòng trò chuyện";
-  }, [roomId, orgId, activities.data, dmRooms.data]);
-
-  const memberList = members.data?.items ?? [];
   const typingNames = typingIds.map(
     (id) => memberNames.get(id) ?? "Một thành viên",
   );
   const canManage = (members.data?.viewer_permissions ?? []).includes(
     "chat:manage",
   );
-  const unreadCount = unread.data?.unread ?? 0;
+
+  const subtitle = useMemo(() => {
+    if (room === null) return null;
+    if (room.kind === "dm") {
+      const online =
+        room.peer_id !== null && onlineIds.has(room.peer_id);
+      if (online) return "Đang online";
+      return formatLastSeen(room.peer_last_seen_at) ?? room.org_name;
+    }
+    const total = members.data?.total;
+    const count = total === undefined ? null : `${total} thành viên`;
+    const online =
+      onlineIds.size > 0 ? `${onlineIds.size} đang online` : null;
+    const parts = [
+      room.kind === "activity" ? room.org_name : null,
+      count,
+      online,
+    ].filter((part) => part !== null);
+    return parts.length === 0 ? null : parts.join(" · ");
+  }, [room, members.data, onlineIds]);
+
+  function backToInbox(): void {
+    const next = new URLSearchParams(searchParams);
+    next.delete("room");
+    setSearchParams(next, { replace: true });
+  }
+
+  if (roomId === null) {
+    if (!isDesktop) return <ChatInboxRail />;
+    return (
+      <div className="flex h-[calc(100dvh-53px)] items-center justify-center px-6">
+        <EmptyState
+          title="Chọn một cuộc trò chuyện"
+          message="Chọn một phòng ở danh sách bên phải để bắt đầu nhắn tin."
+        />
+      </div>
+    );
+  }
 
   return (
-    <>
-      <WorkspaceOrgBar
-        orgs={memberships.data === undefined ? undefined : orgs}
-        orgId={orgId}
-        title="Trò chuyện tổ chức"
-        onSelect={pickOrg}
-        trailing={
-          unreadCount > 0 ? (
-            <span
-              className={UNREAD_BADGE}
-              aria-label={`${unreadCount} tin nhắn chưa đọc`}
-            >
-              {`${unreadCount} chưa đọc`}
-            </span>
-          ) : undefined
-        }
-      />
-      {orgId !== null && roomId !== null && (
-        <>
-          <ChatRoomRail
-            orgId={orgId}
-            roomId={roomId}
-            selfId={selfId}
-            members={memberList}
-            onSelect={selectRoom}
-          />
-          <ChatPanel
-            roomId={roomId}
-            roomLabel={roomLabel}
-            selfId={selfId}
-            canManage={canManage}
-            onlineCount={onlineIds.size}
-            typingNames={typingNames}
-          />
-        </>
-      )}
-    </>
+    <ChatPanel
+      key={roomId}
+      roomId={roomId}
+      orgId={roomOrgId}
+      title={room?.title ?? "Trò chuyện"}
+      avatarUrl={room?.avatar_url ?? null}
+      subtitle={subtitle}
+      showAuthor={room?.kind !== "dm"}
+      isDm={room?.kind === "dm"}
+      selfId={selfId}
+      canManage={canManage}
+      unread={unread.data?.unread ?? 0}
+      typingNames={typingNames}
+      onBack={isDesktop ? undefined : backToInbox}
+    />
   );
 }

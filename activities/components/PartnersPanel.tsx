@@ -22,7 +22,7 @@ interface PartnersPanelProps {
 
 // Partner orgs of the activity (sponsors, co-organizers): read rows for
 // everyone, add/remove rows for managers. Same replace-list protocol as
-// StaffPanel — every save ships the full partner list.
+// StaffPanel - every save ships the full partner list.
 export function PartnersPanel({
   partners,
   canManage,

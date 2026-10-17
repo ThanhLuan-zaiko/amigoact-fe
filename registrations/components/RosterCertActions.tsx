@@ -29,7 +29,7 @@ function saveBlob(filename: string, blob: Blob): void {
 }
 
 // Certificate cell of one attended roster row: an issued/revoked badge
-// plus the matching action — issue, or a danger revoke behind
+// plus the matching action - issue, or a danger revoke behind
 // ConfirmDialog. The per-activity certificate list is one shared query,
 // so every row reads the same fetch from the cache.
 export function RosterCertActions({

@@ -18,6 +18,8 @@ import {
   listChatInbox,
   listChatMessages,
   listDmRooms,
+  listSharedMedia,
+  listSharedMediaAuthors,
   markChatRead,
   openDmRoom,
   pinChatMessage,
@@ -34,6 +36,9 @@ import {
   type ReadState,
   type ChatMessage,
   type SendChatInput,
+  type SharedMediaAuthorsPage,
+  type SharedMediaKind,
+  type SharedMediaPage,
 } from "./api.ts";
 import { workspaceKeys } from "./keys.ts";
 
@@ -42,6 +47,7 @@ import { workspaceKeys } from "./keys.ts";
 export * from "./board-hooks.ts";
 
 const CHAT_PAGE_SIZE = 30;
+const MEDIA_PAGE_SIZE = 30;
 
 // Org selection shared by every workspace view: ?org= deep link, falling
 // back to the first org once the picker data arrives.
@@ -139,7 +145,50 @@ async function invalidateChat(
     queryKey: [...workspaceKeys.all, "chat-unread"],
   });
   await queryClient.invalidateQueries({
+    queryKey: [...workspaceKeys.all, "chat-media"],
+  });
+  await queryClient.invalidateQueries({
     queryKey: workspaceKeys.chatInbox(),
+  });
+}
+
+// Room info panel tabs: one infinite list per (kind, sender filter).
+export function useSharedMedia(
+  roomId: string | null,
+  kind: SharedMediaKind,
+  authorId: string | null,
+  enabled = true,
+): UseInfiniteQueryResult<InfiniteData<SharedMediaPage>, ApiError> {
+  return useInfiniteQuery({
+    queryKey: workspaceKeys.chatMedia(roomId, kind, authorId ?? undefined),
+    queryFn: ({ pageParam }) =>
+      listSharedMedia(roomId as string, kind, {
+        limit: MEDIA_PAGE_SIZE,
+        cursor: pageParam,
+        authorId: authorId ?? undefined,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    staleTime: 30_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    enabled: enabled && roomId !== null,
+  });
+}
+
+// Option list for the sender filter: everyone who still has indexed
+// items in the room (empty while nothing was ever shared).
+export function useSharedMediaAuthors(
+  roomId: string | null,
+  enabled = true,
+): UseQueryResult<SharedMediaAuthorsPage, ApiError> {
+  return useQuery({
+    queryKey: workspaceKeys.chatMediaAuthors(roomId),
+    queryFn: () => listSharedMediaAuthors(roomId as string),
+    staleTime: 30_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    enabled: enabled && roomId !== null,
   });
 }
 

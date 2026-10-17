@@ -118,6 +118,8 @@ export function WorkspaceChatPage(): ReactElement {
       key={roomId}
       roomId={roomId}
       orgId={roomOrgId}
+      orgSlug={room?.org_slug ?? ""}
+      orgName={room?.org_name ?? ""}
       title={room?.title ?? "Trò chuyện"}
       avatarUrl={room?.avatar_url ?? null}
       subtitle={subtitle}

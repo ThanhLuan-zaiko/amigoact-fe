@@ -28,6 +28,9 @@ interface ChatPanelProps {
   roomId: string;
   // Info modal roster needs the room's org (null while inbox loads).
   orgId: string | null;
+  // Public slug + name of the room's org: community share card.
+  orgSlug?: string;
+  orgName?: string;
   title: string;
   avatarUrl?: string | null;
   subtitle: string | null;
@@ -51,6 +54,8 @@ interface ChatPanelProps {
 export function ChatPanel({
   roomId,
   orgId,
+  orgSlug = "",
+  orgName = "",
   title,
   avatarUrl,
   subtitle,
@@ -84,14 +89,6 @@ export function ChatPanel({
     chat.data?.pages[0]?.peer_last_read_message_id ?? null;
   const pinned = chat.data?.pages[0]?.pinned ?? null;
   const muted = chat.data?.pages[0]?.muted ?? false;
-  const sharedMedia = useMemo(
-    () =>
-      items
-        .flatMap((message) => message.attachments)
-        .filter((item) => item.mime.startsWith("image/"))
-        .slice(0, 9),
-    [items],
-  );
   const latest = items.at(-1);
   const { scrollRef, atBottom, pendingNew, onScroll, scrollToLatest } =
     useChatAutoScroll(items);
@@ -236,11 +233,13 @@ export function ChatPanel({
         onClose={() => setInfoOpen(false)}
         roomId={roomId}
         orgId={orgId}
+        orgSlug={orgSlug}
+        orgName={orgName}
         title={title}
         isDm={isDm}
         isChannel={isChannel}
         muted={muted}
-        media={sharedMedia}
+        canManage={canManage}
       />
     </div>
   );

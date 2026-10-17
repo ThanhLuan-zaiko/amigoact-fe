@@ -77,6 +77,17 @@ export function useChatRealtime(
       void queryClient.invalidateQueries({
         queryKey: workspaceKeys.chatUnread(roomId),
       });
+      // Sends/edits/deletes change the shared-item index; reaction, read
+      // and pin frames never touch it.
+      if (
+        action === "message.created" ||
+        action === "message.deleted" ||
+        action === "message.edited"
+      ) {
+        void queryClient.invalidateQueries({
+          queryKey: [...workspaceKeys.all, "chat-media", roomId],
+        });
+      }
     });
   }, [roomId, selfId, onTyping, queryClient]);
 }

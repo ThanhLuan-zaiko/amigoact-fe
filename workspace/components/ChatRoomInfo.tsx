@@ -1,24 +1,19 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import {
   FiBell,
   FiBellOff,
+  FiFolder,
   FiHash,
-  FiImage,
-  FiSettings,
-  FiUsers,
+  FiShare2,
 } from "react-icons/fi";
 import { useSession } from "../../auth/hooks.ts";
-import { Avatar } from "../../core/components/Avatar.tsx";
-import { LoadingState } from "../../core/components/Feedback.tsx";
 import { Modal } from "../../core/components/Modal.tsx";
-import { useOrgMembers } from "../../dashboard/members-hooks.ts";
 import { useChannels } from "../channel-hooks.ts";
-import { useMuteRoom, useOpenDm } from "../hooks.ts";
+import { useMuteRoom } from "../hooks.ts";
 import { channelMetaLabel } from "../messages.tsx";
-import { ChatMemberMenu } from "./ChatMemberMenu.tsx";
-import type { ChatAttachment } from "../api.ts";
+import { ChatShareCard } from "./ChatShareCard.tsx";
+import { ChatSharedPanel } from "./ChatSharedPanel.tsx";
 
 const SECTION_TITLE =
   "flex items-center gap-2 text-xs font-semibold uppercase " +
@@ -34,54 +29,39 @@ interface ChatRoomInfoProps {
   onClose: () => void;
   roomId: string;
   orgId: string | null;
+  // Public slug of the room's org: powers the community share card.
+  orgSlug: string;
+  orgName: string;
   title: string;
   // Group rooms list the roster; dm rooms skip it (peer is the title).
   isDm: boolean;
   isChannel?: boolean; // channel rooms add a metadata card
   muted: boolean;
-  // Shared media: attachments collected from the loaded history.
-  media: ChatAttachment[];
+  // chat:manage viewers may delete shared items they did not post.
+  canManage: boolean;
 }
 
-// Telegram room profile modal: mute switch, member roster and the media
-// shared in the room so far.
+// Telegram room profile modal: mute switch, community share card and the
+// indexed tabs (image/video/file/link) plus the members roster tab.
 export function ChatRoomInfo({
   open,
   onClose,
   roomId,
   orgId,
+  orgSlug,
+  orgName,
   title,
   isDm,
   isChannel = false,
   muted,
-  media,
+  canManage,
 }: ChatRoomInfoProps): ReactElement {
   const [pendingMuted, setPendingMuted] = useState<boolean | null>(null);
   const mute = useMuteRoom(roomId);
   const channels = useChannels(orgId, open && isChannel);
   const channel = (channels.data?.items ?? []).find((i) => i.channel_id === roomId);
-  // Preview roster only: the endpoint caps at 50 rows and the full list
-  // of a large community lives on /manage/members (search/sort/pages).
-  const members = useOrgMembers(orgId, {
-    limit: 50,
-    status: "active",
-  });
   const selfId = useSession().data?.id;
-  const openDm = useOpenDm(orgId ?? "");
-  const navigate = useNavigate();
   const shownMuted = pendingMuted ?? muted;
-  const viewerRole = members.data?.viewer_role ?? "member";
-  const viewerPermissions = members.data?.viewer_permissions ?? [];
-  const canAdmin =
-    viewerRole === "owner" ||
-    viewerPermissions.some((code) => code.startsWith("member:"));
-
-  async function messagePeer(userId: string): Promise<void> {
-    const room = await openDm.mutateAsync(userId).catch(() => null);
-    if (room === null) return;
-    onClose();
-    navigate(`/manage/chat?room=${room.room_id}`);
-  }
 
   function toggleMute(): void {
     const next = !shownMuted;
@@ -148,99 +128,35 @@ export function ChatRoomInfo({
             </div>
           </section>
         )}
-        {!isDm && (
+
+        {!isDm && orgSlug !== "" && (
           <section>
             <h3 className={SECTION_TITLE}>
-              <FiUsers className="h-4 w-4" aria-hidden="true" />
-              Thành viên
-              {members.data !== undefined && ` (${members.data.total})`}
+              <FiShare2 className="h-4 w-4" aria-hidden="true" />
+              Chia sẻ cộng đồng
             </h3>
-            {/* No inner scroll: the row dropdown must never clip, so the
-                Modal panel (90vh) owns overflow instead. */}
-            <div className="mt-2 rounded-xl border border-zinc-200 dark:border-zinc-800">
-              {members.isPending && <LoadingState label="Đang tải…" />}
-              {members.isError && (
-                <p className="px-3 py-3 text-sm text-zinc-500 dark:text-zinc-400">
-                  Không tải được danh sách thành viên.
-                </p>
-              )}
-              {(members.data?.items ?? []).map((item, index) => {
-                const isSelf = item.user_id === selfId;
-                const rowCount = members.data?.items.length ?? 0;
-                return (
-                  <div
-                    key={item.user_id}
-                    className="flex items-center gap-2.5 border-b border-zinc-100 px-3 py-2 last:border-0 dark:border-zinc-800"
-                  >
-                    <Avatar
-                      name={item.full_name}
-                      src={item.avatar_url}
-                      size="sm"
-                    />
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                      {item.full_name}
-                    </span>
-                    {item.roles.includes("owner") && (
-                      <span className="shrink-0 text-xs text-zinc-500 dark:text-zinc-400">
-                        Chủ tổ chức
-                      </span>
-                    )}
-                    {orgId !== null && (
-                      <ChatMemberMenu
-                        orgId={orgId}
-                        member={item}
-                        viewerRole={viewerRole}
-                        viewerPermissions={viewerPermissions}
-                        isSelf={isSelf}
-                        openUp={index >= rowCount - 2}
-                        onMessage={(id) => void messagePeer(id)}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            {/* Escape hatch for large rosters: the real members page has
-                search, sort and pagination; the modal stays a preview. */}
-            {(members.data?.total ?? 0) > 0 && (
-              <Link
-                to={`/manage/members?org=${orgId ?? ""}`}
-                className="mt-2 flex items-center gap-2 rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-900"
-              >
-                <FiSettings className="h-4 w-4" aria-hidden="true" />
-                {canAdmin
-                  ? `Quản lý ${members.data?.total} thành viên`
-                  : `Xem tất cả ${members.data?.total} thành viên`}
-              </Link>
-            )}
-          </section>
-        )}
-        {media.length > 0 && (
-          <section>
-            <h3 className={SECTION_TITLE}>
-              <FiImage className="h-4 w-4" aria-hidden="true" />
-              Ảnh đã chia sẻ ({media.length})
-            </h3>
-            <div className="mt-2 grid grid-cols-4 gap-1.5">
-              {media.map((item) => (
-                <a
-                  key={item.media_id}
-                  href={item.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="overflow-hidden rounded-lg border border-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-800"
-                >
-                  <img
-                    src={item.url}
-                    alt={item.name}
-                    loading="lazy"
-                    className="aspect-square w-full object-cover"
-                  />
-                </a>
-              ))}
+            <div className="mt-2">
+              <ChatShareCard orgSlug={orgSlug} orgName={orgName} />
             </div>
           </section>
         )}
+        <section>
+          <h3 className={SECTION_TITLE}>
+            <FiFolder className="h-4 w-4" aria-hidden="true" />
+            Nội dung phòng
+          </h3>
+          <div className="mt-2">
+            <ChatSharedPanel
+              roomId={roomId}
+              open={open}
+              selfId={selfId}
+              canManage={canManage}
+              orgId={orgId}
+              isDm={isDm}
+              onClose={onClose}
+            />
+          </div>
+        </section>
       </div>
     </Modal>
   );

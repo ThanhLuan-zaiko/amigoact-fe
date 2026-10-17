@@ -12,7 +12,9 @@ tách file (`api.ts` + `hooks.ts` giữ chat và re-export board).
 |---|---|
 | `board-api.ts` | Hợp đồng bài viết (`OrgPost`, `ArticleBlock`, `PostPage`) + hàm API (feed, drafts, trash, detail, CRUD, lifecycle, comments) |
 | `board-hooks.ts` | TanStack Query: `useOrgPosts` (paged), `usePostShelf` (drafts/trash), `useOrgPost`, mutation lifecycle + `useCreateRevision`, comments (infinite) |
-| `api.ts` / `hooks.ts` | Chat giữ nguyên; `export *` từ board module để import cũ không vỡ |
+| `api.ts` / `hooks.ts` | Chat giữ nguyên; `export *` từ `board-api.ts`, `channel-api.ts`, `media-api.ts` để import cũ không vỡ |
+| `channel-api.ts` | Hợp đồng kênh chat có tên (`ChatChannel`, CRUD, roster) tách khỏi `api.ts` |
+| `media-api.ts` | Hợp đồng index nội dung đã chia sẻ (`SharedMediaItem`, `listSharedMedia` — `GET /chat/rooms/{id}/media?kind=&author_id=`; `SharedMediaAuthor` + `listSharedMediaAuthors` — `GET .../media/authors` cho dropdown lọc người gửi); `useSharedMedia`/`useSharedMediaAuthors` ở `hooks.ts`, invalidate qua prefix `chat-media` cả khi mutation lẫn realtime `message.created/edited/deleted`. Tab Ảnh/Video render `ChatMediaGrid` (thumbnail wall, author chỉ ở tooltip + filter), Tệp/Liên kết giữ `ChatSharedRow` |
 | `keys.ts` | Mọi key bảng tin nằm dưới `["workspace","posts",orgId]` nên một prefix invalidate phủ feed + detail + drafts + trash |
 | `article.ts` | Pure helpers: `EditorBlock` (kèm React key), convert bài legacy `body`+media thành blocks, `coverUrl`, `excerpt`, `wordCount`, `cleanBlocks` |
 | `editor-hooks.ts` | `useArticleEditor` — toàn bộ state editor: blocks, cover, upload inline (role `attachment`), `revisionOf`/`wasPublished`, pipeline Lưu nháp/Đăng bài/Đăng lại |

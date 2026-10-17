@@ -27,6 +27,19 @@ export const workspaceKeys = {
     [...workspaceKeys.all, "chat", roomId] as const,
   chatUnread: (roomId: string | null) =>
     [...workspaceKeys.all, "chat-unread", roomId] as const,
+  // Room info panel: one tab of the shared-item index per (kind,
+  // sender) — the "all" sentinel keeps the unfiltered query distinct.
+  chatMedia: (roomId: string | null, kind: string, authorId?: string) =>
+    [
+      ...workspaceKeys.all,
+      "chat-media",
+      roomId,
+      kind,
+      authorId ?? "all",
+    ] as const,
+  // Sender-filter option list of a room's shared-item index.
+  chatMediaAuthors: (roomId: string | null) =>
+    [...workspaceKeys.all, "chat-media", roomId, "authors"] as const,
   dmRooms: (orgId: string | null) =>
     [...workspaceKeys.all, "dm-rooms", orgId] as const,
   channels: (orgId: string | null) =>

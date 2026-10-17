@@ -1,9 +1,13 @@
 import { apiFetch, apiUpload } from "../core/api.ts";
 import { qs } from "./board-api.ts";
+import type { ChannelKind, ChannelPostPolicy } from "./channel-api.ts";
 
-// Board (posts/comments) contracts live in board-api.ts; re-exported so
-// existing imports from ./api.ts keep working.
+// Board (posts/comments) contracts live in board-api.ts; channels in
+// channel-api.ts and the shared-media index in media-api.ts - all
+// re-exported so existing imports from ./api.ts keep working.
 export * from "./board-api.ts";
+export * from "./channel-api.ts";
+export * from "./media-api.ts";
 
 export interface ChatAttachment {
   media_id: string;
@@ -78,6 +82,8 @@ export interface InboxRoom {
   kind: InboxRoomKind;
   org_id: string;
   org_name: string;
+  // Public org slug: the info panel builds /orgs/{slug} share links.
+  org_slug: string;
   title: string;
   peer_id: string | null;
   avatar_url: string | null;
@@ -215,111 +221,4 @@ export function openDmRoom(orgId: string, peerId: string): Promise<DmRoom> {
   });
 }
 
-// --- Named channels --------------------------------------------------------
-
-export type ChannelKind = "text" | "report" | "task";
-export type ChannelPostPolicy = "everyone" | "managers";
-export type ChannelVisibility = "org" | "restricted";
-
-// One named channel; channel_id doubles as the chat room id.
-export interface ChatChannel {
-  channel_id: string;
-  org_id: string;
-  name: string;
-  topic: string;
-  kind: ChannelKind;
-  post_policy: ChannelPostPolicy;
-  visibility: ChannelVisibility;
-  created_by: string;
-  created_at: string | null;
-  archived_at: string | null;
-}
-
-export interface ChannelList {
-  items: ChatChannel[];
-}
-
-export interface ChannelMember {
-  user_id: string;
-  full_name: string;
-  avatar_url: string | null;
-  added_at: string | null;
-}
-
-export interface ChannelMemberList {
-  items: ChannelMember[];
-}
-
-export interface ChannelCreateInput {
-  name: string;
-  topic?: string;
-  kind?: ChannelKind;
-  post_policy?: ChannelPostPolicy;
-  visibility?: ChannelVisibility;
-  member_ids?: string[];
-}
-
-export interface ChannelUpdateInput {
-  name?: string;
-  topic?: string;
-  kind?: ChannelKind;
-  post_policy?: ChannelPostPolicy;
-  visibility?: ChannelVisibility;
-  archived?: boolean;
-}
-
-export function listChannels(orgId: string): Promise<ChannelList> {
-  return apiFetch<ChannelList>(`/orgs/${orgId}/chat/channels`);
-}
-
-export function createChannel(
-  orgId: string,
-  input: ChannelCreateInput,
-): Promise<ChatChannel> {
-  return apiFetch<ChatChannel>(`/orgs/${orgId}/chat/channels`, {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
-export function updateChannel(
-  orgId: string,
-  channelId: string,
-  input: ChannelUpdateInput,
-): Promise<ChatChannel> {
-  return apiFetch<ChatChannel>(
-    `/orgs/${orgId}/chat/channels/${channelId}`,
-    { method: "PATCH", body: JSON.stringify(input) },
-  );
-}
-
-export function listChannelMembers(
-  orgId: string,
-  channelId: string,
-): Promise<ChannelMemberList> {
-  return apiFetch<ChannelMemberList>(
-    `/orgs/${orgId}/chat/channels/${channelId}/members`,
-  );
-}
-
-export function addChannelMember(
-  orgId: string,
-  channelId: string,
-  userId: string,
-): Promise<ChannelMember> {
-  return apiFetch<ChannelMember>(
-    `/orgs/${orgId}/chat/channels/${channelId}/members`,
-    { method: "POST", body: JSON.stringify({ user_id: userId }) },
-  );
-}
-
-export function removeChannelMember(
-  orgId: string,
-  channelId: string,
-  userId: string,
-): Promise<void> {
-  return apiFetch<unknown>(
-    `/orgs/${orgId}/chat/channels/${channelId}/members/${userId}`,
-    { method: "DELETE" },
-  ).then(() => undefined);
-}
+// Named channels live in channel-api.ts (re-exported above).

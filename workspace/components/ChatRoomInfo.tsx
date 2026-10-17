@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   FiBell,
   FiBellOff,
+  FiHash,
   FiImage,
   FiSettings,
   FiUsers,
@@ -13,7 +14,9 @@ import { Avatar } from "../../core/components/Avatar.tsx";
 import { LoadingState } from "../../core/components/Feedback.tsx";
 import { Modal } from "../../core/components/Modal.tsx";
 import { useOrgMembers } from "../../dashboard/members-hooks.ts";
+import { useChannels } from "../channel-hooks.ts";
 import { useMuteRoom, useOpenDm } from "../hooks.ts";
+import { channelMetaLabel } from "../messages.tsx";
 import { ChatMemberMenu } from "./ChatMemberMenu.tsx";
 import type { ChatAttachment } from "../api.ts";
 
@@ -34,6 +37,7 @@ interface ChatRoomInfoProps {
   title: string;
   // Group rooms list the roster; dm rooms skip it (peer is the title).
   isDm: boolean;
+  isChannel?: boolean; // channel rooms add a metadata card
   muted: boolean;
   // Shared media: attachments collected from the loaded history.
   media: ChatAttachment[];
@@ -48,11 +52,14 @@ export function ChatRoomInfo({
   orgId,
   title,
   isDm,
+  isChannel = false,
   muted,
   media,
 }: ChatRoomInfoProps): ReactElement {
   const [pendingMuted, setPendingMuted] = useState<boolean | null>(null);
   const mute = useMuteRoom(roomId);
+  const channels = useChannels(orgId, open && isChannel);
+  const channel = (channels.data?.items ?? []).find((i) => i.channel_id === roomId);
   // Preview roster only: the endpoint caps at 50 rows and the full list
   // of a large community lives on /manage/members (search/sort/pages).
   const members = useOrgMembers(orgId, {
@@ -127,6 +134,20 @@ export function ChatRoomInfo({
             />
           </span>
         </button>
+        {isChannel && channel !== undefined && (
+          <section>
+            <h3 className={SECTION_TITLE}>
+              <FiHash className="h-4 w-4" aria-hidden="true" />
+              Kênh
+            </h3>
+            <div className="mt-2 rounded-xl border border-zinc-200 px-4 py-3 dark:border-zinc-800">
+              {channel.topic !== "" && (
+                <p className="text-sm text-zinc-800 dark:text-zinc-200">{channel.topic}</p>
+              )}
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">{channelMetaLabel(channel)}</p>
+            </div>
+          </section>
+        )}
         {!isDm && (
           <section>
             <h3 className={SECTION_TITLE}>
@@ -151,7 +172,11 @@ export function ChatRoomInfo({
                     key={item.user_id}
                     className="flex items-center gap-2.5 border-b border-zinc-100 px-3 py-2 last:border-0 dark:border-zinc-800"
                   >
-                    <Avatar name={item.full_name} size="sm" />
+                    <Avatar
+                      name={item.full_name}
+                      src={item.avatar_url}
+                      size="sm"
+                    />
                     <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-800 dark:text-zinc-200">
                       {item.full_name}
                     </span>

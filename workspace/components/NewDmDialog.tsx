@@ -29,7 +29,7 @@ interface NewDmDialogProps {
   onOpened: (roomId: string, orgId: string) => void;
 }
 
-// "Soạn tin nhắn mới": pick an org folder, then one of its members.
+// New-message composer: pick an org folder, then one of its members.
 // Members with an existing dm room in that org are hidden, matching the
 // old room rail's candidate rule.
 export function NewDmDialog({
@@ -43,7 +43,8 @@ export function NewDmDialog({
   const [term, setTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const activeOrg = orgId ?? orgs[0]?.id ?? null;
-  const members = useOrgMembers(activeOrg, { limit: 100, status: "active" });
+  // The members endpoint caps limit at 50; a larger value is a 422.
+  const members = useOrgMembers(activeOrg, { limit: 50, status: "active" });
   const inbox = useChatInbox(selfId !== undefined);
   const openDm = useOpenDm(activeOrg ?? "");
 
@@ -168,7 +169,11 @@ export function NewDmDialog({
                     disabled={openDm.isPending}
                     onClick={() => startDm(member.user_id)}
                   >
-                    <Avatar name={member.full_name} size="sm" />
+                    <Avatar
+                      name={member.full_name}
+                      src={member.avatar_url}
+                      size="sm"
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                         {member.full_name}

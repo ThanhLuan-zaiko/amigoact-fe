@@ -11,7 +11,7 @@ import { ChatReactionPills } from "./ChatReactionPills.tsx";
 
 const BUBBLE =
   "min-w-0 max-w-[78%] rounded-2xl px-3 pb-1.5 pt-2 text-[15px] " +
-  "leading-snug shadow-sm";
+  "leading-snug border border-zinc-200/60 dark:border-zinc-700/60";
 const MINE =
   "rounded-br-md bg-zinc-900 text-white dark:bg-zinc-100 " +
   "dark:text-zinc-950";
@@ -135,7 +135,11 @@ export function ChatMessageList({
             >
               {!mine && showAuthor && (
                 <span className="shrink-0 self-end">
-                  <Avatar name={message.author_name} size="sm" />
+                  <Avatar
+                    name={message.author_name}
+                    src={message.author_avatar_url}
+                    size="sm"
+                  />
                 </span>
               )}
               <ChatMessageMenu

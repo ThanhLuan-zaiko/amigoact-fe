@@ -34,9 +34,7 @@ const WATCHDOG_GRACE_MS = 15_000;
 const MIN_WATCHDOG_MS = 5_000;
 const MAX_WATCHDOG_MS = 120_000;
 
-interface ReadyData {
-  heartbeat_seconds?: number;
-}
+interface ReadyData { heartbeat_seconds?: number }
 
 export class RealtimeClient {
   private socket: WebSocket | null = null;
@@ -51,6 +49,8 @@ export class RealtimeClient {
   private watchdogMs = DEFAULT_WATCHDOG_MS;
   private manualClose = false;
   private connecting = false;
+  // teardown() bumps this so an in-flight connect() abandons its result.
+  private generation = 0;
 
   getStatus(): RealtimeStatus {
     return this.status;
@@ -151,7 +151,9 @@ export class RealtimeClient {
     this.connecting = true;
     try {
       this.setStatus(this.retryAttempt > 0 ? "reconnecting" : "connecting");
+      const generation = this.generation;
       const outcome = await fetchTicket();
+      if (generation !== this.generation) return;
       if (outcome === "retry") {
         this.scheduleRetry();
         return;
@@ -259,8 +261,7 @@ export class RealtimeClient {
       this.setIssue("denied");
       this.setStatus("offline");
       this.logDev("[realtime] socket closed after forbidden response");
-      const keys = [...this.handlers.keys()];
-      const retryable = keys.some((c) => !this.denied.has(c));
+      const retryable = [...this.handlers.keys()].some((c) => !this.denied.has(c));
       if (retryable && this.retryTimer === null && this.handlers.size > 0) {
         this.scheduleRetry(MAX_RETRY_MS);
       }
@@ -325,6 +326,7 @@ export class RealtimeClient {
   }
 
   private teardown(): void {
+    this.generation += 1;
     this.clearRetryTimer();
     this.clearWatchdog();
     this.denied.clear();

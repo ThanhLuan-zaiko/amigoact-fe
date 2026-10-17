@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiEdit3, FiSearch } from "react-icons/fi";
+import { FiEdit3, FiHash, FiSearch } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import {
@@ -16,6 +16,7 @@ import type { InboxRoom } from "../api.ts";
 import { useChatInbox } from "../hooks.ts";
 import { toVietnameseWorkspaceMessage } from "../messages.tsx";
 import { ChatInboxList } from "./ChatInboxList.tsx";
+import { ChannelBrowserDialog } from "./ChannelBrowserDialog.tsx";
 import { NewDmDialog } from "./NewDmDialog.tsx";
 
 // The merged inbox surface: search + compose over the cross-org
@@ -32,6 +33,7 @@ export function ChatInboxRail(): ReactElement {
   const roomId = searchParams.get("room");
   const [term, setTerm] = useState("");
   const [composing, setComposing] = useState(false);
+  const [browsing, setBrowsing] = useState(false);
 
   const orgs = useMemo(
     () =>
@@ -75,6 +77,15 @@ export function ChatInboxRail(): ReactElement {
             onChange={(event) => setTerm(event.target.value)}
             icon={<FiSearch className="h-4 w-4" />}
             className="min-w-0 flex-1"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setBrowsing(true)}
+            aria-label="Danh sách kênh"
+            title="Danh sách kênh"
+            icon={<FiHash className="h-5 w-5" aria-hidden="true" />}
           />
           <Button
             type="button"
@@ -138,6 +149,11 @@ export function ChatInboxRail(): ReactElement {
           next.set("room", room);
           setSearchParams(next, { replace: true });
         }}
+      />
+      <ChannelBrowserDialog
+        open={browsing}
+        onClose={() => setBrowsing(false)}
+        orgs={orgs}
       />
     </div>
   );

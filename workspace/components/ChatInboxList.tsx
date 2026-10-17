@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
-import { FiVolumeX } from "react-icons/fi";
+import { FiHash, FiVolumeX } from "react-icons/fi";
 import { Avatar } from "../../core/components/Avatar.tsx";
 import type { InboxRoom } from "../api.ts";
 import { formatInboxTime } from "../messages.tsx";
@@ -57,7 +57,20 @@ export function ChatInboxList({
                 active ? "bg-zinc-100 dark:bg-zinc-900" : ""
               }`}
             >
-              <Avatar name={room.title} src={room.avatar_url} size="md" />
+              {room.kind === "channel" ? (
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                  aria-hidden="true"
+                >
+                  <FiHash className="h-5 w-5" />
+                </span>
+              ) : (
+                <Avatar
+                  name={room.title}
+                  src={room.avatar_url}
+                  size="md"
+                />
+              )}
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline justify-between gap-2">
                   <span className="min-w-0 truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">

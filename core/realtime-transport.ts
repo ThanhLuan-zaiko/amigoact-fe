@@ -1,4 +1,10 @@
-import { ApiError, apiBaseUrl, apiFetch } from "./api.ts";
+import {
+  ApiError,
+  apiBaseUrl,
+  apiFetch,
+  isGuestSession,
+  probeSession,
+} from "./api.ts";
 
 /** Wire glue for realtime-client.ts: URL build + handshake ticket fetch. */
 
@@ -52,6 +58,10 @@ export type TicketOutcome = "guest" | "retry" | { ticket: string };
  * itself failed and the caller should back off instead.
  */
 export async function fetchTicket(): Promise<TicketOutcome> {
+  // A proven guest mints no ticket: skip the doomed POST and open the
+  // anonymous socket directly.
+  await probeSession();
+  if (isGuestSession()) return "guest";
   try {
     const body = await apiFetch<WsTicket>(TICKETS_PATH, { method: "POST" });
     return { ticket: body.ticket };

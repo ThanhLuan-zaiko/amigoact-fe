@@ -17,9 +17,60 @@ export class ApiError extends Error {
 
 let accessToken: string | null = null;
 let refreshPromise: Promise<string> | null = null;
+// True once the boot probe (or a failed refresh retry) proved there is no
+// usable refresh cookie: protected calls then fail fast instead of paying
+// a doomed refresh round-trip per request.
+let guestOnly = false;
+let probePromise: Promise<void> | null = null;
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function setAccessToken(token: string | null): void {
+export function setAccessToken(
+  token: string | null,
+  expiresIn?: number,
+): void {
   accessToken = token;
+  if (refreshTimer !== null) {
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+  }
+  if (token !== null) {
+    guestOnly = false;
+    if (expiresIn !== undefined) scheduleTokenRefresh(expiresIn);
+  }
+}
+
+// Renew near 80% of the token lifetime so requests never meet a stale
+// token; failures defer to the reactive 401-retry path on next request.
+function scheduleTokenRefresh(expiresIn: number): void {
+  refreshTimer = setTimeout(() => {
+    refreshTimer = null;
+    refreshAccessToken().catch(() => undefined);
+  }, Math.max(1_000, expiresIn * 800));
+}
+
+/**
+ * One-shot session probe. The refresh cookie is HttpOnly, so a fresh page
+ * load cannot tell guest from signed-in without asking /auth/refresh once.
+ * Every early request shares this promise; once it settles, calls either
+ * carry the minted token or run anonymously (guestOnly). The backend
+ * returns 401 before touching the rate limiter when no cookie is sent.
+ */
+export function probeSession(): Promise<void> {
+  if (!probePromise) {
+    probePromise = refreshAccessToken()
+      .then(() => undefined)
+      .catch((error: unknown) => {
+        if (error instanceof ApiError && error.status === 401) {
+          guestOnly = true;
+        }
+      });
+  }
+  return probePromise;
+}
+
+/** True once the probe proved there is no usable refresh cookie. */
+export function isGuestSession(): boolean {
+  return guestOnly && accessToken === null;
 }
 
 function resolveBaseUrl(): string {
@@ -51,7 +102,16 @@ async function readBody(response: Response): Promise<unknown> {
   }
 }
 
+// Auth endpoints skip both the boot probe and the 401 refresh retry.
+const NO_RETRY_PATHS = ["/auth/login", "/auth/refresh"];
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  // Without a token, wait on the boot probe first: signed-in reloads then
+  // send Bearer credentials on the very first attempt instead of eating a
+  // 401 per query. Auth endpoints never trigger the probe themselves.
+  if (!accessToken && !NO_RETRY_PATHS.some((p) => path.startsWith(p))) {
+    await probeSession();
+  }
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...((init.headers ?? {}) as Record<string, string>),
@@ -73,11 +133,11 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 async function refreshAccessToken(): Promise<string> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
-      const body = await request<{ access_token: string }>(
-        "/auth/refresh",
-        { method: "POST" },
-      );
-      accessToken = body.access_token;
+      const body = await request<{
+        access_token: string;
+        expires_in: number;
+      }>("/auth/refresh", { method: "POST" });
+      setAccessToken(body.access_token, body.expires_in);
       return body.access_token;
     })();
     try {
@@ -89,7 +149,19 @@ async function refreshAccessToken(): Promise<string> {
   return refreshPromise;
 }
 
-const NO_RETRY_PATHS = ["/auth/login", "/auth/refresh"];
+// Shared refresh-or-fail step for every public wrapper: a dead refresh
+// cookie (401) marks the page guest so later calls stop retrying.
+async function refreshForRetry(original: ApiError): Promise<void> {
+  try {
+    await refreshAccessToken();
+  } catch (refreshError) {
+    setAccessToken(null);
+    if (refreshError instanceof ApiError && refreshError.status === 401) {
+      guestOnly = true;
+    }
+    throw original;
+  }
+}
 
 export async function apiFetch<T>(
   path: string,
@@ -101,19 +173,16 @@ export async function apiFetch<T>(
     const needsRetry =
       error instanceof ApiError &&
       error.status === 401 &&
+      !guestOnly &&
       !NO_RETRY_PATHS.some((prefix) => path.startsWith(prefix));
     if (!needsRetry) throw error;
-    try {
-      await refreshAccessToken();
-    } catch {
-      accessToken = null;
-      throw error;
-    }
+    await refreshForRetry(error);
     return request<T>(path, init);
   }
 }
 
 async function textRequest(path: string): Promise<string> {
+  if (!accessToken) await probeSession();
   const headers: Record<string, string> = {};
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
@@ -130,14 +199,9 @@ export async function apiTextFetch(path: string): Promise<string> {
     return await textRequest(path);
   } catch (error) {
     const needsRetry =
-      error instanceof ApiError && error.status === 401;
+      error instanceof ApiError && error.status === 401 && !guestOnly;
     if (!needsRetry) throw error;
-    try {
-      await refreshAccessToken();
-    } catch {
-      accessToken = null;
-      throw error;
-    }
+    await refreshForRetry(error);
     return textRequest(path);
   }
 }
@@ -159,6 +223,7 @@ function dispositionFilename(header: string | null): string | null {
 }
 
 async function blobRequest(path: string): Promise<BlobResult> {
+  if (!accessToken) await probeSession();
   const headers: Record<string, string> = {};
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
@@ -180,19 +245,15 @@ export async function apiBlobFetch(path: string): Promise<BlobResult> {
     return await blobRequest(path);
   } catch (error) {
     const needsRetry =
-      error instanceof ApiError && error.status === 401;
+      error instanceof ApiError && error.status === 401 && !guestOnly;
     if (!needsRetry) throw error;
-    try {
-      await refreshAccessToken();
-    } catch {
-      accessToken = null;
-      throw error;
-    }
+    await refreshForRetry(error);
     return blobRequest(path);
   }
 }
 
 async function uploadRequest<T>(path: string, form: FormData, method = "POST"): Promise<T> {
+  if (!accessToken) await probeSession();
   const headers: Record<string, string> = {};
   if (accessToken) headers["Authorization"] = `Bearer ${accessToken}`;
   const response = await fetch(`${resolveBaseUrl()}${path}`, {
@@ -212,13 +273,10 @@ export async function apiUpload<T>(path: string, form: FormData, method = "POST"
   try {
     return await uploadRequest<T>(path, form, method);
   } catch (error) {
-    if (!(error instanceof ApiError) || error.status !== 401) throw error;
-    try {
-      await refreshAccessToken();
-    } catch {
-      accessToken = null;
+    if (!(error instanceof ApiError) || error.status !== 401 || guestOnly) {
       throw error;
     }
+    await refreshForRetry(error);
     return uploadRequest<T>(path, form, method);
   }
 }

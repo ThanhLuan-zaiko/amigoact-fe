@@ -123,6 +123,8 @@ export function WorkspaceChatPage(): ReactElement {
       subtitle={subtitle}
       showAuthor={room?.kind !== "dm"}
       isDm={room?.kind === "dm"}
+      isChannel={room?.kind === "channel"}
+      postPolicy={room?.post_policy ?? null}
       selfId={selfId}
       canManage={canManage}
       unread={unread.data?.unread ?? 0}

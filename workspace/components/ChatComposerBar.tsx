@@ -28,6 +28,9 @@ interface ChatComposerBarProps {
   onClearContext: () => void;
   // Called after a successful send so the panel can scroll to the tail.
   onSent: () => void;
+  // Channel gates (managers-only/archived): replaces the input with a
+  // notice so blocked members never type a message that would 403/409.
+  disabledReason?: string | null;
 }
 
 // Telegram composer: per-room draft, reply/edit context bars above the
@@ -38,6 +41,7 @@ export function ChatComposerBar({
   editing,
   onClearContext,
   onSent,
+  disabledReason = null,
 }: ChatComposerBarProps): ReactElement {
   const [draft, setDraft] = useState(
     () => localStorage.getItem(draftKey(roomId)) ?? "",
@@ -175,6 +179,11 @@ export function ChatComposerBar({
           ))}
         </div>
       )}
+      {disabledReason !== null ? (
+        <p className="rounded-xl bg-zinc-100 px-3 py-2.5 text-center text-sm text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+          {disabledReason}
+        </p>
+      ) : (
       <div className="flex items-end gap-1.5">
         <input
           ref={fileRef}
@@ -224,6 +233,7 @@ export function ChatComposerBar({
           icon={<FiSend className="h-5 w-5" aria-hidden="true" />}
         />
       </div>
+      )}
       {error !== null && (
         <p
           role="alert"

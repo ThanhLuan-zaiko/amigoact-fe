@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { FiUser } from "react-icons/fi";
+import { apiBaseUrl } from "../../core/api.ts";
 import { MEMBER_ROLE_LABELS, MEMBER_STATUS_LABELS } from "../messages-members.tsx";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
 import { MemberActions } from "./MemberActions.tsx";
@@ -91,8 +92,15 @@ export function MemberRow({
       className="relative flex items-start gap-3 py-4 has-[[aria-expanded=true]]:z-20"
     >
       <span className="relative shrink-0">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-sm font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-          {member.full_name ? (
+        <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50 text-sm font-semibold text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+          {member.avatar_url !== null ? (
+            <img
+              src={`${apiBaseUrl()}${member.avatar_url}`}
+              alt=""
+              aria-hidden="true"
+              className="h-full w-full object-cover"
+            />
+          ) : member.full_name ? (
             initialOf(member.full_name)
           ) : (
             <FiUser className="h-5 w-5" aria-hidden="true" />

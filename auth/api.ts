@@ -1,4 +1,10 @@
-import { ApiError, apiFetch, setAccessToken } from "../core/api.ts";
+import {
+  ApiError,
+  apiFetch,
+  isGuestSession,
+  probeSession,
+  setAccessToken,
+} from "../core/api.ts";
 
 export interface SessionProfile {
   id: string;
@@ -80,7 +86,7 @@ export async function loginAccount(input: {
     method: "POST",
     body: JSON.stringify(input),
   });
-  setAccessToken(body.access_token);
+  setAccessToken(body.access_token, body.expires_in);
   return body;
 }
 
@@ -92,6 +98,10 @@ export async function updateProfile(input: UpdateProfileInput): Promise<SessionP
 }
 
 export async function fetchSession(): Promise<SessionProfile | null> {
+  // Guests skip /auth/me entirely: the boot probe already proved there is
+  // no refresh cookie, so the call could only produce a doomed 401.
+  await probeSession();
+  if (isGuestSession()) return null;
   try {
     return await apiFetch<SessionProfile>("/auth/me");
   } catch (error) {

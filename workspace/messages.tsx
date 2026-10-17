@@ -27,6 +27,16 @@ const MESSAGES: Record<string, string> = {
   COMMENT_DELETED: "Đã xóa bình luận.",
   MESSAGE_DELETED: "Đã xóa tin nhắn.",
   CHAT_CONTENT_REQUIRED: "Tin nhắn cần có nội dung hoặc tệp đính kèm.",
+  CHANNEL_NOT_FOUND: "Không tìm thấy kênh.",
+  CHANNEL_NAME_TAKEN: "Tên kênh này đã được sử dụng.",
+  CHANNEL_ARCHIVED:
+    "Kênh đã được lưu trữ - chỉ xem được lịch sử trò chuyện.",
+  INVALID_CHANNEL_STATE:
+    "Không thể thực hiện với trạng thái kênh hiện tại.",
+  CHANNEL_CREATED: "Đã tạo kênh.",
+  CHANNEL_UPDATED: "Đã cập nhật kênh.",
+  CHANNEL_MEMBER_ADDED: "Đã thêm thành viên vào kênh.",
+  CHANNEL_MEMBER_REMOVED: "Đã gỡ thành viên khỏi kênh.",
 };
 
 export function toVietnameseWorkspaceMessage(code: string): string {
@@ -47,6 +57,36 @@ export const POST_VISIBILITY_LABELS: Record<string, string> = {
   public: "Công khai",
   members: "Chỉ thành viên",
 };
+
+export const CHANNEL_KIND_LABELS: Record<string, string> = {
+  text: "Trò chuyện",
+  report: "Báo cáo",
+  task: "Công việc",
+};
+
+export const CHANNEL_POST_POLICY_LABELS: Record<string, string> = {
+  everyone: "Mọi thành viên đều đăng",
+  managers: "Chỉ quản lý đăng",
+};
+
+export const CHANNEL_VISIBILITY_LABELS: Record<string, string> = {
+  org: "Cả tổ chức",
+  restricted: "Hạn chế - chỉ thành viên được mời",
+};
+
+// "Kind - who posts - who sees" one-liner for channel info/directory rows.
+export function channelMetaLabel(channel: {
+  kind: string;
+  post_policy: string;
+  visibility: string;
+}): string {
+  return [
+    CHANNEL_KIND_LABELS[channel.kind] ?? channel.kind,
+    CHANNEL_POST_POLICY_LABELS[channel.post_policy] ??
+      channel.post_policy,
+    CHANNEL_VISIBILITY_LABELS[channel.visibility] ?? channel.visibility,
+  ].join(" · ");
+}
 
 // Row badge for shelves/detail: a draft that stages edits for a live post
 // (pending revision) and a post pulled back off the board (unpublished)

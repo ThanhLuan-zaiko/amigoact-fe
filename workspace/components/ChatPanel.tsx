@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactElement } from "react";
-import { FiArrowDown, FiArrowLeft, FiInfo } from "react-icons/fi";
+import { FiArrowDown, FiArrowLeft, FiHash, FiInfo } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Avatar } from "../../core/components/Avatar.tsx";
 import { Button } from "../../core/components/Button.tsx";
@@ -33,8 +33,11 @@ interface ChatPanelProps {
   subtitle: string | null;
   // Group rooms name each sender above the bubble; dm rows stay bare.
   showAuthor: boolean;
-  // dm rooms show the ✓✓ receipt + peer last-seen in the subtitle.
+  // dm rooms show the double-check receipt + peer last-seen in the subtitle.
   isDm: boolean;
+  // Channel rooms: # icon + post_policy gate for the composer.
+  isChannel?: boolean;
+  postPolicy?: "everyone" | "managers" | null;
   selfId?: string;
   canManage: boolean;
   unread: number;
@@ -53,6 +56,8 @@ export function ChatPanel({
   subtitle,
   showAuthor,
   isDm,
+  isChannel = false,
+  postPolicy = null,
   selfId,
   canManage,
   unread,
@@ -117,15 +122,19 @@ export function ChatPanel({
             icon={<FiArrowLeft className="h-5 w-5" aria-hidden="true" />}
           />
         )}
-        <Avatar name={title} src={avatarUrl ?? null} size="md" />
+        {isChannel ? (
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300" aria-hidden="true">
+            <FiHash className="h-5 w-5" />
+          </span>
+        ) : (
+          <Avatar name={title} src={avatarUrl ?? null} size="md" />
+        )}
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
-            {title}
+            {isChannel ? `# ${title}` : title}
           </h2>
           {subtitle !== null && (
-            <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
-              {subtitle}
-            </p>
+            <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>
           )}
         </div>
         <Button
@@ -218,6 +227,9 @@ export function ChatPanel({
         editing={editing}
         onClearContext={clearContext}
         onSent={scrollToLatest}
+        disabledReason={
+          postPolicy === "managers" && !canManage ? "Chỉ quản lý mới được đăng trong kênh này." : null
+        }
       />
       <ChatRoomInfo
         open={infoOpen}
@@ -226,6 +238,7 @@ export function ChatPanel({
         orgId={orgId}
         title={title}
         isDm={isDm}
+        isChannel={isChannel}
         muted={muted}
         media={sharedMedia}
       />

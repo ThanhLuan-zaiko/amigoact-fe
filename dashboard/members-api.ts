@@ -13,6 +13,7 @@ export interface DashboardMember {
   user_id: string;
   org_id: string;
   full_name: string;
+  avatar_url: string | null;
   email: string | null;
   // "owner" pseudo-role, the system "admin", then sorted custom role names.
   roles: string[];

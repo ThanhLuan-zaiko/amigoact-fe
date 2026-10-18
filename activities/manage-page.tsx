@@ -1,6 +1,6 @@
 import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiCalendar, FiPlus } from "react-icons/fi";
+import { FiCalendar, FiPlus, FiTrash2 } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
@@ -10,6 +10,7 @@ import {
 } from "../core/components/Feedback.tsx";
 import { useMyOrgs } from "../dashboard/hooks.ts";
 import { MemberOrgPicker } from "../dashboard/components/MemberOrgPicker.tsx";
+import { ActivityActions } from "./components/ActivityActions.tsx";
 import { ActivityCard } from "./components/ActivityCard.tsx";
 import { ActivityForm } from "./components/ActivityForm.tsx";
 import {
@@ -26,6 +27,7 @@ export function ManageEventsPage(): ReactElement {
   // action lands straight on it.
   const [searchParams, setSearchParams] = useSearchParams();
   const creating = searchParams.get("create") === "1";
+  const trash = searchParams.get("trash") === "1";
   const setCreating = (next: boolean): void => {
     setSearchParams(
       (params) => {
@@ -36,9 +38,19 @@ export function ManageEventsPage(): ReactElement {
       { replace: true },
     );
   };
+  const setTrash = (next: boolean): void => {
+    setSearchParams(
+      (params) => {
+        if (next) params.set("trash", "1");
+        else params.delete("trash");
+        return params;
+      },
+      { replace: true },
+    );
+  };
   const selected = orgId ?? orgs.data?.items[0]?.id ?? null;
   useLiveActivities(selected ?? undefined);
-  const activities = useOrgActivities(selected);
+  const activities = useOrgActivities(selected, trash);
   const categories = useCategories(selected ?? undefined);
   const create = useCreateActivity(selected ?? "");
 
@@ -56,13 +68,23 @@ export function ManageEventsPage(): ReactElement {
             </h1>
           </div>
           {selected && (
-            <Button
-              variant={creating ? "secondary" : "primary"}
-              onClick={() => setCreating(!creating)}
-              icon={<FiPlus className="h-4 w-4" aria-hidden="true" />}
-            >
-              {creating ? "Đóng" : "Tạo hoạt động"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={trash ? "secondary" : "ghost"}
+                onClick={() => setTrash(!trash)}
+                icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
+                aria-pressed={trash}
+              >
+                Thùng rác
+              </Button>
+              <Button
+                variant={creating ? "secondary" : "primary"}
+                onClick={() => setCreating(!creating)}
+                icon={<FiPlus className="h-4 w-4" aria-hidden="true" />}
+              >
+                {creating ? "Đóng" : "Tạo hoạt động"}
+              </Button>
+            </div>
           )}
         </div>
         {orgs.isPending && <LoadingState label="Đang tải tổ chức…" />}
@@ -110,17 +132,22 @@ export function ManageEventsPage(): ReactElement {
           )}
           {activities.isSuccess && activities.data.length === 0 && (
             <EmptyState
-              title="Chưa có hoạt động"
-              message="Tạo bản nháp đầu tiên cho tổ chức này."
+              title={trash ? "Thùng rác trống" : "Chưa có hoạt động"}
+              message={
+                trash
+                  ? "Các hoạt động đã xóa mềm sẽ hiện ở đây."
+                  : "Tạo bản nháp đầu tiên cho tổ chức này."
+              }
             />
           )}
           <ul className="flex flex-col gap-2">
             {(activities.data ?? []).map((a) => (
-              <li key={a.id}>
+              <li key={a.id} className="flex flex-col gap-2">
                 <ActivityCard
                   activity={a}
                   href={`/manage/events/${a.org_id}/${a.id}`}
                 />
+                <ActivityActions orgId={a.org_id} activity={a} />
               </li>
             ))}
           </ul>

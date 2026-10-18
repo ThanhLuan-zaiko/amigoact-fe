@@ -51,6 +51,20 @@ export function ActivityCard({
           <FiCalendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           {formatDateTime(activity.start_at)}
         </p>
+        {activity.tags.length > 0 && (
+          <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+            {activity.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag.slug}
+                className="rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-800"
+              >
+                #{tag.name}
+              </span>
+            ))}
+            {activity.tags.length > 3 &&
+              `+${activity.tags.length - 3}`}
+          </p>
+        )}
       </div>
       {trailing ?? (
         <FiClock

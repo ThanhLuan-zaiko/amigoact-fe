@@ -9,22 +9,20 @@ import { useEffect } from "react";
 import { ApiError } from "../core/api.ts";
 import { activitiesChannel, subscribeChannel } from "../core/realtime.ts";
 import {
-  addAnnouncement,
-  addSchedule,
   createActivity,
   createCategory,
-  deleteSchedule,
   fetchDiscovery,
   getActivityBySlug,
   getActivityDetail,
   getRegistrationForm,
+  hardDeleteActivity,
   listActivities,
   listCategories,
   listOrgActivities,
-  setActivityPartners,
+  restoreActivity,
+  searchTags,
   setRegistrationForm,
-  setActivitySkills,
-  setActivityStaff,
+  softDeleteActivity,
   transitionActivity,
   updateActivity,
   type ActivityDetail,
@@ -35,7 +33,16 @@ import {
   type DiscoveryResponse,
   type FormQuestion,
   type FormQuestionInput,
+  type TagItem,
 } from "./api.ts";
+import {
+  addAnnouncement,
+  addSchedule,
+  deleteSchedule,
+  setActivityPartners,
+  setActivitySkills,
+  setActivityStaff,
+} from "./ops.ts";
 import { activityKeys } from "./keys.ts";
 
 export function useDiscovery(): UseQueryResult<
@@ -52,10 +59,23 @@ export function useDiscovery(): UseQueryResult<
 export function useActivityFeed(
   status: string,
   categoryId?: string,
+  tag?: string,
 ): UseQueryResult<ActivitySummary[], ApiError> {
   return useQuery({
-    queryKey: activityKeys.feed(status, categoryId),
-    queryFn: () => listActivities(status, categoryId),
+    queryKey: activityKeys.feed(status, categoryId, tag),
+    queryFn: () => listActivities(status, categoryId, tag),
+    staleTime: 30_000,
+  });
+}
+
+export function useTagSearch(
+  query: string,
+): UseQueryResult<TagItem[], ApiError> {
+  return useQuery({
+    queryKey: activityKeys.tags(query.trim()),
+    queryFn: () => searchTags(query),
+    enabled: query.trim().length > 0,
+    placeholderData: (previous) => previous,
     staleTime: 30_000,
   });
 }
@@ -84,10 +104,11 @@ export function useActivityBySlug(
 
 export function useOrgActivities(
   orgId: string | null,
+  trash = false,
 ): UseQueryResult<ActivitySummary[], ApiError> {
   return useQuery({
-    queryKey: activityKeys.orgList(orgId ?? ""),
-    queryFn: () => listOrgActivities(orgId ?? ""),
+    queryKey: activityKeys.orgList(orgId ?? "", trash),
+    queryFn: () => listOrgActivities(orgId ?? "", trash),
     enabled: Boolean(orgId),
   });
 }
@@ -238,6 +259,39 @@ export function useAddAnnouncement(
   return useMutation({
         meta: { successToast: "activity.announce" },
 mutationFn: (input) => addAnnouncement(orgId, activityId, input),
+    ...useInvalidateActivities(),
+  });
+}
+
+export function useSoftDeleteActivity(
+  orgId: string,
+  successTitle: string,
+): OrgActivityMutation<string> {
+  return useMutation({
+        meta: { successToast: successTitle },
+mutationFn: (activityId) => softDeleteActivity(orgId, activityId),
+    ...useInvalidateActivities(),
+  });
+}
+
+export function useHardDeleteActivity(
+  orgId: string,
+  successTitle: string,
+): OrgActivityMutation<string> {
+  return useMutation({
+        meta: { successToast: successTitle },
+mutationFn: (activityId) => hardDeleteActivity(orgId, activityId),
+    ...useInvalidateActivities(),
+  });
+}
+
+export function useRestoreActivity(
+  orgId: string,
+  successTitle: string,
+): OrgActivityMutation<string> {
+  return useMutation({
+        meta: { successToast: successTitle },
+mutationFn: (activityId) => restoreActivity(orgId, activityId),
     ...useInvalidateActivities(),
   });
 }

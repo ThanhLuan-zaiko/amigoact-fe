@@ -1,4 +1,5 @@
 import { useState, type ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FiCompass, FiFilter } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
@@ -10,11 +11,29 @@ import {
 import { useActivityFeed, useCategories } from "./hooks.ts";
 import { ActivityCard } from "./components/ActivityCard.tsx";
 import { DiscoverySections } from "./components/DiscoverySections.tsx";
+import { TagFilter } from "./components/TagFilter.tsx";
 
 export function EventsPage(): ReactElement {
   const [categoryId, setCategoryId] = useState<string | undefined>();
-  const feed = useActivityFeed("published", categoryId);
+  // The hashtag filter is deep-linkable (?tag=slug) so tag chips on
+  // cards and detail pages route here directly.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tagSlug = searchParams.get("tag") ?? undefined;
+  const [tagName, setTagName] = useState<string | undefined>();
+  const feed = useActivityFeed("published", categoryId, tagSlug);
   const categories = useCategories();
+
+  const setTag = (slug: string | undefined, name?: string): void => {
+    setTagName(name);
+    setSearchParams(
+      (params) => {
+        if (slug) params.set("tag", slug);
+        else params.delete("tag");
+        return params;
+      },
+      { replace: true },
+    );
+  };
 
   return (
     <>
@@ -34,7 +53,7 @@ export function EventsPage(): ReactElement {
         <div
           role="group"
           aria-label="Lọc theo danh mục"
-          className="mt-3 flex flex-wrap gap-2"
+          className="mt-3 flex flex-wrap items-center gap-2"
         >
           <Button
             variant={categoryId === undefined ? "primary" : "secondary"}
@@ -53,8 +72,16 @@ export function EventsPage(): ReactElement {
             </Button>
           ))}
         </div>
+        <div className="mt-2 flex items-center gap-2">
+          <TagFilter slug={tagSlug} name={tagName} onChange={setTag} />
+          {tagSlug !== undefined && (
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              Đang lọc theo thẻ
+            </span>
+          )}
+        </div>
       </Section>
-      {categoryId === undefined && (
+      {categoryId === undefined && tagSlug === undefined && (
         <Section>
           <DiscoverySections />
         </Section>
@@ -70,7 +97,7 @@ export function EventsPage(): ReactElement {
         {feed.isSuccess && feed.data.length === 0 && (
           <EmptyState
             title="Chưa có hoạt động"
-            message="Chưa có hoạt động nào được công bố trong danh mục này."
+            message="Chưa có hoạt động nào được công bố phù hợp bộ lọc này."
           />
         )}
         <ul className="flex flex-col gap-2">

@@ -1,4 +1,9 @@
-import type { InputHTMLAttributes, ReactElement, ReactNode } from "react";
+import type {
+  InputHTMLAttributes,
+  ReactElement,
+  ReactNode,
+  Ref,
+} from "react";
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -6,6 +11,7 @@ interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
   icon?: ReactNode;
   trailing?: ReactNode;
+  ref?: Ref<HTMLInputElement>;
   /** Keep the label for assistive tech only (e.g. the rail search pill). */
   hideLabel?: boolean;
   /** Rounded-full filled search pill (X right rail). */
@@ -23,6 +29,7 @@ export function TextField({
   className = "",
   hideLabel = false,
   pill = false,
+  ref,
   ...rest
 }: TextFieldProps): ReactElement {
   const fieldId = id ?? `field-${label.length}-${rest.name ?? "input"}`;
@@ -65,6 +72,7 @@ export function TextField({
           </span>
         )}
         <input
+          ref={ref}
           id={fieldId}
           required={required}
           aria-invalid={error ? true : undefined}

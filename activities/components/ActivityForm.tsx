@@ -11,6 +11,7 @@ import type {
   CategoryItem,
 } from "../api.ts";
 import { fromLocalInput, toLocalInput } from "../dates.tsx";
+import { TagInput } from "./TagInput.tsx";
 
 interface ActivityFormProps {
   categories: CategoryItem[];
@@ -46,6 +47,9 @@ export function ActivityForm({
   const [hours, setHours] = useState(
     initial?.hours_awarded?.toString() ?? "0",
   );
+  const [tags, setTags] = useState<string[]>(
+    initial?.tags?.map((t) => t.name) ?? [],
+  );
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -71,6 +75,7 @@ export function ActivityForm({
         end_at: fromLocalInput(endAt),
         hours_awarded: Number(hours) || 0,
         registration_deadline: fromLocalInput(deadline),
+        tags,
       });
       onDone?.();
     } catch (cause) {
@@ -191,6 +196,7 @@ export function ActivityForm({
           Hoạt động trực tuyến
         </label>
       </div>
+      <TagInput value={tags} onChange={setTags} disabled={busy} />
       <TextField
         label="Mô tả"
         name="description"

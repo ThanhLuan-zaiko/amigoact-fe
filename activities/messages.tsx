@@ -22,6 +22,11 @@ export const STAFF_ROLE_LABELS: Record<string, string> = {
 const MESSAGES: Record<string, string> = {
   ACTIVITY_PUBLISHED: "Đã công bố hoạt động.",
   STATUS_UPDATED: "Đã cập nhật trạng thái.",
+  ACTIVITY_DELETED:
+    "Hoạt động đã bị xóa. Khôi phục từ thùng rác để chỉnh sửa.",
+  FORBIDDEN: "Bạn không có quyền quản lý hoạt động này.",
+  NOT_FOUND: "Không tìm thấy hoạt động.",
+  REQUEST_FAILED: "Thao tác thất bại. Thử lại sau.",
 };
 
 export function toVietnameseActivityMessage(code: string): string {

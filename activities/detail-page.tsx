@@ -1,9 +1,10 @@
 import type { ReactElement } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   FiAward,
   FiClock,
   FiGlobe,
+  FiHash,
   FiMapPin,
   FiUsers,
 } from "react-icons/fi";
@@ -90,6 +91,16 @@ export function EventDetailPage(): ReactElement {
               {category.name}
             </span>
           )}
+          {a.tags.map((tag) => (
+            <Link
+              key={tag.slug}
+              to={`/events?tag=${tag.slug}`}
+              className="inline-flex items-center gap-0.5 rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-600 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
+            >
+              <FiHash className="h-3 w-3" aria-hidden="true" />
+              {tag.name}
+            </Link>
+          ))}
         </div>
         <ul className="mt-3 flex flex-col gap-2">
           <MetaRow

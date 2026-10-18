@@ -1,5 +1,16 @@
 import { apiFetch } from "../core/api.ts";
 
+export interface TagRef {
+  name: string;
+  slug: string;
+}
+
+export interface TagItem {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 export interface ActivitySummary {
   id: string;
   org_id: string;
@@ -8,6 +19,8 @@ export interface ActivitySummary {
   status: string;
   start_at: string | null;
   category_id: string | null;
+  tags: TagRef[];
+  deleted_at: string | null;
 }
 
 export interface ActivityDetail {
@@ -33,6 +46,8 @@ export interface ActivityDetail {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  tags: TagRef[];
+  deleted_at: string | null;
 }
 
 export interface CategoryItem {
@@ -106,6 +121,7 @@ export interface ActivityInput {
   hours_awarded: number;
   registration_deadline?: string | null;
   person_in_charge_id?: string | null;
+  tags?: string[];
 }
 
 export interface DiscoveryBucket {
@@ -127,10 +143,21 @@ export function fetchDiscovery(limit = 6): Promise<DiscoveryResponse> {
 export function listActivities(
   status = "published",
   categoryId?: string,
+  tag?: string,
 ): Promise<ActivitySummary[]> {
   const params = new URLSearchParams({ status });
   if (categoryId) params.set("category_id", categoryId);
+  if (tag) params.set("tag", tag);
   return apiFetch<ActivitySummary[]>(`/activities?${params}`);
+}
+
+export function searchTags(
+  query: string,
+  limit = 8,
+): Promise<TagItem[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (query.trim()) params.set("q", query.trim());
+  return apiFetch<TagItem[]>(`/tags?${params}`);
 }
 
 export function listCategories(orgId?: string): Promise<CategoryItem[]> {
@@ -162,8 +189,11 @@ export function getActivityDetail(
 
 export function listOrgActivities(
   orgId: string,
+  trash = false,
 ): Promise<ActivitySummary[]> {
-  return apiFetch<ActivitySummary[]>(`/orgs/${orgId}/activities`);
+  return apiFetch<ActivitySummary[]>(
+    `/orgs/${orgId}/activities${trash ? "?trash=1" : ""}`,
+  );
 }
 
 export function createActivity(
@@ -213,74 +243,33 @@ export function createCategory(
   });
 }
 
-export function setActivitySkills(
+export function softDeleteActivity(
   orgId: string,
   activityId: string,
-  skills: { skill_id: string; is_required: boolean }[],
-): Promise<ActivityDetailView> {
-  return apiFetch<ActivityDetailView>(
-    `/orgs/${orgId}/activities/${activityId}/skills`,
-    { method: "PUT", body: JSON.stringify({ skills }) },
-  );
-}
-
-export function setActivityPartners(
-  orgId: string,
-  activityId: string,
-  partners: { org_id: string; role: string; note?: string | null }[],
-): Promise<ActivityDetailView> {
-  return apiFetch<ActivityDetailView>(
-    `/orgs/${orgId}/activities/${activityId}/partners`,
-    { method: "PUT", body: JSON.stringify({ partners }) },
-  );
-}
-
-export function setActivityStaff(
-  orgId: string,
-  activityId: string,
-  staff: { user_id: string; staff_role: string }[],
-): Promise<ActivityDetailView> {
-  return apiFetch<ActivityDetailView>(
-    `/orgs/${orgId}/activities/${activityId}/staff`,
-    { method: "PUT", body: JSON.stringify({ staff }) },
-  );
-}
-
-export function addSchedule(
-  orgId: string,
-  activityId: string,
-  input: {
-    title: string;
-    location?: string | null;
-    start_at?: string | null;
-    end_at?: string | null;
-  },
-): Promise<ActivityDetailView> {
-  return apiFetch<ActivityDetailView>(
-    `/orgs/${orgId}/activities/${activityId}/schedules`,
-    { method: "POST", body: JSON.stringify(input) },
-  );
-}
-
-export function deleteSchedule(
-  orgId: string,
-  activityId: string,
-  scheduleId: string,
-): Promise<ActivityDetailView> {
-  return apiFetch<ActivityDetailView>(
-    `/orgs/${orgId}/activities/${activityId}/schedules/${scheduleId}`,
+): Promise<ActivityDetail> {
+  return apiFetch<ActivityDetail>(
+    `/orgs/${orgId}/activities/${activityId}`,
     { method: "DELETE" },
   );
 }
 
-export function addAnnouncement(
+export function hardDeleteActivity(
   orgId: string,
   activityId: string,
-  input: { title: string; body?: string },
-): Promise<ActivityDetailView> {
-  return apiFetch<ActivityDetailView>(
-    `/orgs/${orgId}/activities/${activityId}/announcements`,
-    { method: "POST", body: JSON.stringify(input) },
+): Promise<void> {
+  return apiFetch<void>(
+    `/orgs/${orgId}/activities/${activityId}?hard=1`,
+    { method: "DELETE" },
+  );
+}
+
+export function restoreActivity(
+  orgId: string,
+  activityId: string,
+): Promise<ActivityDetail> {
+  return apiFetch<ActivityDetail>(
+    `/orgs/${orgId}/activities/${activityId}/restore`,
+    { method: "POST" },
   );
 }
 

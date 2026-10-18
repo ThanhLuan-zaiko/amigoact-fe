@@ -52,8 +52,8 @@ export interface ChatPage {
   last_read_message_id: string | null;
   // dm-only peer read pointer: drives the sender's double-check receipt.
   peer_last_read_message_id: string | null;
-  // Phase 3: the room's pinned bar + the caller's mute flag.
-  pinned: ChatMessage | null;
+  // The room's pinned messages, oldest pin first + the caller's mute.
+  pinned: ChatMessage[];
   muted: boolean;
 }
 
@@ -116,6 +116,9 @@ export interface InboxRoom {
   // Channel rows only: composer gate + display label.
   post_policy: ChannelPostPolicy | null;
   channel_kind: ChannelKind | null;
+  // Sub-thread rows only: the room it hangs under + linked activity.
+  parent_room_id: string | null;
+  activity_id: string | null;
 }
 
 export interface ChatInbox {
@@ -198,16 +201,20 @@ export function pinChatMessage(
   roomId: string,
   messageId: string,
 ): Promise<void> {
-  return apiFetch<unknown>(`/chat/rooms/${roomId}/pin`, {
-    method: "PUT",
-    body: JSON.stringify({ message_id: messageId }),
-  }).then(() => undefined);
+  return apiFetch<unknown>(
+    `/chat/rooms/${roomId}/pins/${messageId}`,
+    { method: "PUT" },
+  ).then(() => undefined);
 }
 
-export function unpinChatMessage(roomId: string): Promise<void> {
-  return apiFetch<unknown>(`/chat/rooms/${roomId}/pin`, {
-    method: "DELETE",
-  }).then(() => undefined);
+export function unpinChatMessage(
+  roomId: string,
+  messageId: string,
+): Promise<void> {
+  return apiFetch<unknown>(
+    `/chat/rooms/${roomId}/pins/${messageId}`,
+    { method: "DELETE" },
+  ).then(() => undefined);
 }
 
 export function setChatMute(roomId: string, muted: boolean): Promise<void> {

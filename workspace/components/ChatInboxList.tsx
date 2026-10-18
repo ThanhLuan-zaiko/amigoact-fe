@@ -1,6 +1,10 @@
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
-import { FiHash, FiVolumeX } from "react-icons/fi";
+import {
+  FiCornerDownRight,
+  FiHash,
+  FiVolumeX,
+} from "react-icons/fi";
 import { Avatar } from "../../core/components/Avatar.tsx";
 import type { InboxRoom } from "../api.ts";
 import { formatInboxTime } from "../messages.tsx";
@@ -19,7 +23,10 @@ const UNREAD_DISC =
 // Preview line: org context prefixes non-general rooms (a merged inbox
 // mixes communities, so dm/activity rows name their org like Telegram
 // folder labels); group rooms lead with the author, dm rows just text.
-function previewOf(room: InboxRoom): string {
+function previewOf(
+  room: InboxRoom,
+  parent: InboxRoom | undefined,
+): string {
   const body = (room.last_body ?? "").replace(/\s+/g, " ").trim();
   const base =
     body === ""
@@ -27,6 +34,11 @@ function previewOf(room: InboxRoom): string {
       : room.kind === "dm"
         ? body
         : `${room.last_author_name ?? "?"}: ${body}`;
+  // Sub-thread rows name their parent room (more useful context than
+  // the org alone); top rooms keep the org prefix.
+  if (room.parent_room_id !== null) {
+    return `${parent?.title ?? room.org_name} · ${base}`;
+  }
   return room.kind === "general" ? base : `${room.org_name} · ${base}`;
 }
 
@@ -44,10 +56,18 @@ export function ChatInboxList({
   activeRoomId,
   makeTo,
 }: ChatInboxListProps): ReactElement {
+  const byId = new Map(items.map((room) => [room.room_id, room]));
   return (
     <ul aria-label="Danh sách cuộc trò chuyện">
       {items.map((room) => {
         const active = room.room_id === activeRoomId;
+        // Sub-thread rooms get the nested marker instead of the
+        // channel hash so rows read as "child of {parent}".
+        const isThread = room.parent_room_id !== null;
+        const parent =
+          room.parent_room_id !== null
+            ? byId.get(room.parent_room_id)
+            : undefined;
         return (
           <li key={room.room_id}>
             <Link
@@ -62,7 +82,11 @@ export function ChatInboxList({
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                   aria-hidden="true"
                 >
-                  <FiHash className="h-5 w-5" />
+                  {isThread ? (
+                    <FiCornerDownRight className="h-5 w-5" />
+                  ) : (
+                    <FiHash className="h-5 w-5" />
+                  )}
                 </span>
               ) : (
                 <Avatar
@@ -82,7 +106,7 @@ export function ChatInboxList({
                 </span>
                 <span className="mt-0.5 flex items-center justify-between gap-2">
                   <span className="min-w-0 truncate text-sm text-zinc-500 dark:text-zinc-400">
-                    {previewOf(room)}
+                    {previewOf(room, parent)}
                   </span>
                   <span className="flex shrink-0 items-center gap-1.5">
                     {room.muted && (

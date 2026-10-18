@@ -33,6 +33,7 @@ const MESSAGES: Record<string, string> = {
     "Kênh đã được lưu trữ - chỉ xem được lịch sử trò chuyện.",
   INVALID_CHANNEL_STATE:
     "Không thể thực hiện với trạng thái kênh hiện tại.",
+  PIN_LIMIT_REACHED: "Phòng này đã đạt tối đa 20 tin ghim.",
   CHANNEL_CREATED: "Đã tạo kênh.",
   CHANNEL_UPDATED: "Đã cập nhật kênh.",
   CHANNEL_MEMBER_ADDED: "Đã thêm thành viên vào kênh.",

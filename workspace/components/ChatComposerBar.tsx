@@ -26,6 +26,8 @@ interface ChatComposerBarProps {
   replyTo: ChatMessage | null;
   editing: ChatMessage | null;
   onClearContext: () => void;
+  // Reply preview taps scroll back to the quoted message.
+  onJumpTo?: (messageId: string) => void;
   // Called after a successful send so the panel can scroll to the tail.
   onSent: () => void;
   // Channel gates (managers-only/archived): replaces the input with a
@@ -40,6 +42,7 @@ export function ChatComposerBar({
   replyTo,
   editing,
   onClearContext,
+  onJumpTo,
   onSent,
   disabledReason = null,
 }: ChatComposerBarProps): ReactElement {
@@ -66,11 +69,9 @@ export function ChatComposerBar({
   }
 
   const busy = send.isPending || edit.isPending || upload.isPending;
+  const hasText = draft.trim() !== "";
   const canSubmit =
-    !busy &&
-    (editing !== null
-      ? draft.trim() !== ""
-      : draft.trim() !== "" || pending.length > 0);
+    !busy && (hasText || (editing === null && pending.length > 0));
 
   function showError(err: unknown): void {
     setError(
@@ -147,6 +148,7 @@ export function ChatComposerBar({
           label={`Trả lời ${replyTo.author_name}`}
           preview={replyTo.body}
           onClose={onClearContext}
+          onJump={onJumpTo && (() => onJumpTo(replyTo.message_id))}
         />
       )}
       {editing !== null && (

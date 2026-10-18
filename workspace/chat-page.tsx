@@ -31,11 +31,23 @@ export function WorkspaceChatPage(): ReactElement {
   const roomId = searchParams.get("room");
 
   const inbox = useChatInbox(signedIn);
+  const inboxItems = inbox.data?.items ?? [];
 
   const room =
-    (inbox.data?.items ?? []).find((item) => item.room_id === roomId) ??
-    null;
+    inboxItems.find((item) => item.room_id === roomId) ?? null;
   const roomOrgId = room?.org_id ?? null;
+  // Sub-thread rooms link back to the room they hang under.
+  const parentRoom =
+    room?.parent_room_id != null
+      ? (inboxItems.find(
+          (item) => item.room_id === room.parent_room_id,
+        ) ?? null)
+      : null;
+  // Only general rooms and top channels can open sub-threads.
+  const showThreads =
+    room !== null &&
+    (room.kind === "general" ||
+      (room.kind === "channel" && room.parent_room_id === null));
 
   // Presence + roster power the dm online subtitle and typing names.
   useOrgPresence(roomOrgId);
@@ -127,6 +139,12 @@ export function WorkspaceChatPage(): ReactElement {
       isDm={room?.kind === "dm"}
       isChannel={room?.kind === "channel"}
       postPolicy={room?.post_policy ?? null}
+      parentRoom={
+        parentRoom !== null
+          ? { room_id: parentRoom.room_id, title: parentRoom.title }
+          : null
+      }
+      showThreads={showThreads}
       selfId={selfId}
       canManage={canManage}
       unread={unread.data?.unread ?? 0}

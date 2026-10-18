@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactElement } from "react";
-import { FiArrowDown, FiArrowLeft, FiHash, FiInfo } from "react-icons/fi";
+import { FiArrowDown } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { Avatar } from "../../core/components/Avatar.tsx";
-import { Button } from "../../core/components/Button.tsx";
 import {
   ErrorState,
   LoadingState,
@@ -22,6 +20,7 @@ import { toVietnameseWorkspaceMessage } from "../messages.tsx";
 import { useChatAutoScroll } from "../chat-scroll.ts";
 import { ChatComposerBar } from "./ChatComposerBar.tsx";
 import { ChatMessageList } from "./ChatMessageList.tsx";
+import { ChatPanelHeader } from "./ChatPanelHeader.tsx";
 import { ChatPinnedBar } from "./ChatPinnedBar.tsx";
 import { ChatRoomInfo } from "./ChatRoomInfo.tsx";
 
@@ -42,6 +41,11 @@ interface ChatPanelProps {
   // Channel rooms: # icon + post_policy gate for the composer.
   isChannel?: boolean;
   postPolicy?: "everyone" | "managers" | null;
+  // Sub-thread rooms: parent context link in the header. The room
+  // info panel also hides the thread list (threads never nest).
+  parentRoom?: { room_id: string; title: string } | null;
+  // General rooms and top channels can open focused sub-threads.
+  showThreads?: boolean;
   selfId?: string;
   canManage: boolean;
   unread: number;
@@ -64,6 +68,8 @@ export function ChatPanel({
   isDm,
   isChannel = false,
   postPolicy = null,
+  parentRoom = null,
+  showThreads = false,
   selfId,
   canManage,
   unread,
@@ -89,11 +95,20 @@ export function ChatPanel({
   const page = chat.data?.pages[0];
   const lastRead = page?.last_read_message_id ?? null;
   const peerLastRead = page?.peer_last_read_message_id ?? null;
-  const pinned = page?.pinned ?? null;
+  const pinned = page?.pinned ?? [];
   const muted = page?.muted ?? false;
   const latest = items.at(-1);
-  const { scrollRef, atBottom, pendingNew, onScroll, scrollToLatest } =
-    useChatAutoScroll(items);
+  const {
+    scrollRef,
+    atBottom,
+    pendingNew,
+    onScroll,
+    scrollToLatest,
+    jumpTo,
+  } = useChatAutoScroll(items, {
+    canLoadMore: () => chat.hasNextPage,
+    loadOlder: () => chat.fetchNextPage(),
+  });
 
   // Viewing the newest message moves the read pointer forward.
   useEffect(() => {
@@ -110,46 +125,21 @@ export function ChatPanel({
 
   return (
     <div className="flex h-[calc(100dvh-109px)] min-h-0 flex-col sm:h-[calc(100dvh-53px)]">
-      <header className="flex shrink-0 items-center gap-2 border-b border-zinc-200 bg-white px-2 py-2 dark:border-zinc-800 dark:bg-zinc-950">
-        {onBack !== undefined && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onBack}
-            aria-label="Quay lại danh sách trò chuyện"
-            icon={<FiArrowLeft className="h-5 w-5" aria-hidden="true" />}
-          />
-        )}
-        {isChannel ? (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300" aria-hidden="true">
-            <FiHash className="h-5 w-5" />
-          </span>
-        ) : (
-          <Avatar name={title} src={avatarUrl ?? null} size="md" />
-        )}
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
-            {isChannel ? `# ${title}` : title}
-          </h2>
-          {subtitle !== null && (
-            <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">{subtitle}</p>
-          )}
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => setInfoOpen(true)}
-          aria-label="Thông tin phòng"
-          icon={<FiInfo className="h-5 w-5" aria-hidden="true" />}
-        />
-      </header>
-      {pinned !== null && (
+      <ChatPanelHeader
+        title={title}
+        avatarUrl={avatarUrl}
+        subtitle={subtitle}
+        isChannel={isChannel}
+        parentRoom={parentRoom}
+        onBack={onBack}
+        onInfo={() => setInfoOpen(true)}
+      />
+      {pinned.length > 0 && (
         <ChatPinnedBar
           pinned={pinned}
           canManage={canManage}
-          onUnpin={() => unpin.mutate()}
+          onUnpin={(id) => unpin.mutate(id)}
+          onJump={(id) => void jumpTo(id)}
         />
       )}
       {chat.isPending && (
@@ -205,6 +195,7 @@ export function ChatPanel({
               onPin={
                 canManage ? (id) => pin.mutate(id) : undefined
               }
+              onJumpTo={(id) => void jumpTo(id)}
               typingUsers={typingUsers}
             />
           </div>
@@ -226,6 +217,7 @@ export function ChatPanel({
         replyTo={replyTo}
         editing={editing}
         onClearContext={clearContext}
+        onJumpTo={(id) => void jumpTo(id)}
         onSent={scrollToLatest}
         disabledReason={
           postPolicy === "managers" && !canManage ? "Chỉ quản lý mới được đăng trong kênh này." : null
@@ -241,6 +233,7 @@ export function ChatPanel({
         title={title}
         isDm={isDm}
         isChannel={isChannel}
+        showThreads={showThreads}
         muted={muted}
         canManage={canManage}
       />

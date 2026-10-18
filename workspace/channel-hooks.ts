@@ -9,8 +9,10 @@ import { ApiError } from "../core/api.ts";
 import {
   addChannelMember,
   createChannel,
+  createRoomThread,
   listChannelMembers,
   listChannels,
+  listRoomThreads,
   removeChannelMember,
   updateChannel,
   type ChannelCreateInput,
@@ -19,6 +21,7 @@ import {
   type ChannelMemberList,
   type ChannelUpdateInput,
   type ChatChannel,
+  type ThreadCreateInput,
 } from "./api.ts";
 import { workspaceKeys } from "./keys.ts";
 
@@ -119,6 +122,42 @@ export function useRemoveChannelMember(
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: workspaceKeys.channelMembers(orgId, channelId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.chatInbox(),
+      });
+    },
+  });
+}
+
+// Sub-threads of one room: the listing lives next to the channel
+// cache; creates invalidate it plus the merged inbox (the new thread
+// room appears there immediately).
+export function useRoomThreads(
+  orgId: string | null,
+  roomId: string | null,
+): UseQueryResult<ChannelList, ApiError> {
+  return useQuery({
+    queryKey: workspaceKeys.roomThreads(orgId, roomId),
+    queryFn: () => listRoomThreads(orgId as string, roomId as string),
+    staleTime: 30_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    enabled: orgId !== null && roomId !== null,
+  });
+}
+
+export function useCreateRoomThread(
+  orgId: string,
+  roomId: string,
+): UseMutationResult<ChatChannel, ApiError, ThreadCreateInput> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ThreadCreateInput) =>
+      createRoomThread(orgId, roomId, input),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: workspaceKeys.roomThreads(orgId, roomId),
       });
       await queryClient.invalidateQueries({
         queryKey: workspaceKeys.chatInbox(),

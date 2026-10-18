@@ -73,6 +73,23 @@ export function swapGlyph(glyph: HTMLElement): void {
   });
 }
 
+// Jump-to-message feedback (pinned bar, reply preview): a quick
+// brightness pulse marks the row scrolled to. Filter-based so it reads
+// on any bubble color, light or dark.
+export function flashMessage(el: HTMLElement): void {
+  if (prefersReducedMotion()) return;
+  animate(el, {
+    filter: [
+      "brightness(1)",
+      "brightness(1.35)",
+      "brightness(1)",
+    ],
+    scale: [1, 1.015, 1],
+    duration: 800,
+    ease: "inOutQuad",
+  });
+}
+
 // Entrance scope for pages and cards. Mark animated children with the
 // data-rise attribute; they stagger in on mount (and again whenever deps
 // change, e.g. route switches) and stay visible without motion

@@ -52,6 +52,8 @@ interface ChatMessageListProps {
   onDelete: (messageId: string) => void;
   onReact: (messageId: string, emoji: string) => void;
   onPin?: (messageId: string) => void;
+  // Reply preview taps scroll back to the quoted message.
+  onJumpTo: (messageId: string) => void;
   // Who is typing right now: avatars stack, names live in aria-label.
   typingUsers: { name: string; avatar_url: string | null }[];
 }
@@ -76,6 +78,7 @@ export function ChatMessageList({
   onDelete,
   onReact,
   onPin,
+  onJumpTo,
   typingUsers,
 }: ChatMessageListProps): ReactElement {
   // UUIDv7 ids order lexicographically; the seam sits above the first
@@ -145,7 +148,8 @@ export function ChatMessageList({
               </div>
             )}
             <div
-              className={`group flex items-end gap-1.5 ${
+              data-message-id={message.message_id}
+              className={`group flex items-end gap-1.5 rounded-lg ${
                 mine ? "justify-end" : "justify-start"
               }`}
             >
@@ -176,20 +180,27 @@ export function ChatMessageList({
                   </p>
                 )}
                 {message.reply_to_id !== null && (
-                  <blockquote
-                    className={`mb-1 border-l-2 pl-2 text-[13px] ${
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (message.reply_to_id !== null) {
+                        onJumpTo(message.reply_to_id);
+                      }
+                    }}
+                    aria-label="Đến tin nhắn gốc"
+                    className={`mb-1 block w-full border-l-2 pl-2 text-left text-[13px] ${
                       mine
-                        ? "border-zinc-400 text-zinc-300 dark:border-zinc-500 dark:text-zinc-600"
-                        : "border-zinc-400 text-zinc-500 dark:border-zinc-500 dark:text-zinc-400"
+                        ? "border-zinc-400 text-zinc-300 hover:border-zinc-200 dark:border-zinc-500 dark:text-zinc-600"
+                        : "border-zinc-400 text-zinc-500 hover:border-zinc-600 dark:border-zinc-500 dark:text-zinc-400 dark:hover:border-zinc-300"
                     }`}
                   >
-                    <p className="font-semibold">
+                    <span className="block font-semibold">
                       {message.reply_to_author ?? "Tin nhắn"}
-                    </p>
-                    <p className="line-clamp-2 break-words">
+                    </span>
+                    <span className="line-clamp-2 block break-words">
                       {message.reply_to_body ?? "Tin nhắn đã bị xóa"}
-                    </p>
-                  </blockquote>
+                    </span>
+                  </button>
                 )}
                 {message.attachments.map((item) => (
                   <ChatAttachmentBlock

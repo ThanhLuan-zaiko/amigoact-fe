@@ -3,26 +3,45 @@ import { FiX } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 
 // Reply/edit context strip above the composer input: left accent bar,
-// label + one-line preview, close button on the right.
+// label + one-line preview, close button on the right. When onJump is
+// given the preview acts as a link back to the source message.
 export function ChatContextBar({
   label,
   preview,
   onClose,
+  onJump,
 }: {
   label: string;
   preview: string;
   onClose: () => void;
+  onJump?: () => void;
 }): ReactElement {
   return (
     <div className="mb-1.5 flex items-center gap-2 border-l-2 border-zinc-400 pl-2 dark:border-zinc-600">
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-          {label}
-        </p>
-        <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
-          {preview || "Tệp đính kèm"}
-        </p>
-      </div>
+      {onJump === undefined ? (
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            {label}
+          </p>
+          <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+            {preview || "Tệp đính kèm"}
+          </p>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onJump}
+          aria-label="Đến tin nhắn gốc"
+          className="min-w-0 flex-1 text-left"
+        >
+          <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            {label}
+          </p>
+          <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+            {preview || "Tệp đính kèm"}
+          </p>
+        </button>
+      )}
       <Button
         type="button"
         variant="ghost"

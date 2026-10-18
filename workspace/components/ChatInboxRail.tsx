@@ -19,10 +19,22 @@ import { ChatInboxList } from "./ChatInboxList.tsx";
 import { ChannelBrowserDialog } from "./ChannelBrowserDialog.tsx";
 import { NewDmDialog } from "./NewDmDialog.tsx";
 
-// The merged inbox surface: search + compose over the cross-org
-// ChatInboxList (each row already names its org in the preview line, so
-// no folder chips). Rendered inside the right rail on lg+ and as the
-// center-column list screen on smaller viewports.
+type InboxTab = "all" | "unread" | "threads";
+
+const INBOX_TABS: { value: InboxTab; label: string }[] = [
+  { value: "all", label: "Tất cả" },
+  { value: "unread", label: "Chưa đọc" },
+  { value: "threads", label: "Luồng" },
+];
+
+// The merged inbox surface: search + folder tabs + compose over the
+// cross-org ChatInboxList (each row already names its org in the
+// preview line). The "all" tab keeps main conversations (general,
+// activity, dm) so channels never crowd it; the "threads" tab is the
+// only one listing channel rooms (top channels + sub-threads); the
+// "unread" tab keeps every room with unseen messages regardless of
+// kind. Rendered inside the right rail on lg+ and as the center-column
+// list screen on smaller viewports.
 export function ChatInboxRail(): ReactElement {
   const session = useSession();
   const selfId = session.data?.id;
@@ -32,6 +44,7 @@ export function ChatInboxRail(): ReactElement {
   const [searchParams, setSearchParams] = useSearchParams();
   const roomId = searchParams.get("room");
   const [term, setTerm] = useState("");
+  const [tab, setTab] = useState<InboxTab>("all");
   const [composing, setComposing] = useState(false);
   const [browsing, setBrowsing] = useState(false);
 
@@ -45,14 +58,26 @@ export function ChatInboxRail(): ReactElement {
   );
 
   const items = useMemo(() => {
+    let list = inbox.data?.items ?? [];
+    if (tab === "unread") {
+      list = list.filter((room) => room.unread > 0);
+    } else if (tab === "threads") {
+      list = list.filter((room) => room.kind === "channel");
+    } else {
+      list = list.filter((room) => room.kind !== "channel");
+    }
     const needle = term.trim().toLowerCase();
-    if (needle === "") return inbox.data?.items ?? [];
-    return (inbox.data?.items ?? []).filter((room) =>
+    if (needle === "") return list;
+    return list.filter((room) =>
       `${room.title} ${room.org_name} ${room.last_body ?? ""}`
         .toLowerCase()
         .includes(needle),
     );
-  }, [inbox.data, term]);
+  }, [inbox.data, term, tab]);
+
+  const unreadCount = (inbox.data?.items ?? []).filter(
+    (room) => room.unread > 0,
+  ).length;
 
   function makeTo(room: InboxRoom): string {
     return `?room=${encodeURIComponent(room.room_id)}`;
@@ -97,6 +122,33 @@ export function ChatInboxRail(): ReactElement {
             icon={<FiEdit3 className="h-5 w-5" aria-hidden="true" />}
           />
         </div>
+        <div
+          role="tablist"
+          aria-label="Lọc cuộc trò chuyện"
+          className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900"
+        >
+          {INBOX_TABS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={tab === value}
+              onClick={() => setTab(value)}
+              className={`flex min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400 ${
+                tab === value
+                  ? "bg-white text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                  : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              }`}
+            >
+              <span className="truncate">{label}</span>
+              {value === "unread" && unreadCount > 0 && (
+                <span className="flex h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-zinc-900 px-1 text-[10px] font-bold text-white dark:bg-zinc-100 dark:text-zinc-950">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {inbox.isPending && (
@@ -120,12 +172,22 @@ export function ChatInboxRail(): ReactElement {
         <div className="px-4 py-6">
           <EmptyState
             title={
-              term !== "" ? "Không có kết quả" : "Chưa có cuộc trò chuyện"
+              term !== ""
+                ? "Không có kết quả"
+                : tab === "unread"
+                  ? "Đã đọc hết"
+                  : tab === "threads"
+                    ? "Chưa có kênh hay luồng nào"
+                    : "Chưa có cuộc trò chuyện"
             }
             message={
               term !== ""
                 ? "Thử từ khóa khác hoặc xóa bộ lọc."
-                : "Các phòng chung, phòng hoạt động và tin nhắn riêng sẽ hiện ở đây."
+                : tab === "unread"
+                  ? "Các phòng có tin mới sẽ hiện ở đây."
+                  : tab === "threads"
+                    ? "Tạo kênh từ danh sách kênh, hoặc mở thông tin một phòng để tạo luồng."
+                    : "Các phòng chung, phòng hoạt động và tin nhắn riêng sẽ hiện ở đây."
             }
           />
         </div>

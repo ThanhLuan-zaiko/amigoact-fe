@@ -275,10 +275,11 @@ export function usePinMessage(
 
 export function useUnpinMessage(
   roomId: string,
-): UseMutationResult<void, ApiError, void> {
+): UseMutationResult<void, ApiError, string> {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => unpinChatMessage(roomId),
+    mutationFn: (messageId: string) =>
+      unpinChatMessage(roomId, messageId),
     onSuccess: () => invalidateChat(queryClient),
   });
 }

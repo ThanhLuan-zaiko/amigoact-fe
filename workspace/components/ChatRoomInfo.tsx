@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   FiBell,
   FiBellOff,
@@ -16,6 +17,8 @@ import type { SharedMediaKind } from "../api.ts";
 import { ChatSenderPicker } from "./ChatSenderPicker.tsx";
 import { ChatShareCard } from "./ChatShareCard.tsx";
 import { ChatSharedPanel } from "./ChatSharedPanel.tsx";
+import { ChatThreadsSection } from "./ChatThreadsSection.tsx";
+import { ThreadFormDialog } from "./ThreadFormDialog.tsx";
 
 const SECTION_TITLE =
   "flex items-center gap-2 text-xs font-semibold uppercase " +
@@ -38,6 +41,8 @@ interface ChatRoomInfoProps {
   // Group rooms list the roster; dm rooms skip it (peer is the title).
   isDm: boolean;
   isChannel?: boolean; // channel rooms add a metadata card
+  // General rooms + top channels list their focused sub-threads.
+  showThreads?: boolean;
   muted: boolean;
   // chat:manage viewers may delete shared items they did not post.
   canManage: boolean;
@@ -55,10 +60,15 @@ export function ChatRoomInfo({
   title,
   isDm,
   isChannel = false,
+  showThreads = false,
   muted,
   canManage,
 }: ChatRoomInfoProps): ReactElement {
   const [pendingMuted, setPendingMuted] = useState<boolean | null>(null);
+  // Thread compose must be a sibling of this Modal: a portal child of
+  // the panel counts as an outside press and self-closes the drawer.
+  const [threadFormOpen, setThreadFormOpen] = useState(false);
+  const [, setSearchParams] = useSearchParams();
   // Sender filter drill-in: picking swaps the whole drawer for the
   // account list; the filter itself lives here so the picker can set it.
   const [pickingSender, setPickingSender] = useState(false);
@@ -90,6 +100,7 @@ export function ChatRoomInfo({
   }
 
   return (
+    <>
     <Modal
       open={open}
       onClose={close}
@@ -137,6 +148,15 @@ export function ChatRoomInfo({
             />
           </span>
         </button>
+        {showThreads && orgId !== null && (
+          <ChatThreadsSection
+            open={open}
+            orgId={orgId}
+            roomId={roomId}
+            onClose={close}
+            onCompose={() => setThreadFormOpen(true)}
+          />
+        )}
         {isChannel && channel !== undefined && (
           <section>
             <h3 className={SECTION_TITLE}>
@@ -198,5 +218,20 @@ export function ChatRoomInfo({
         />
       )}
     </Modal>
+    {showThreads && orgId !== null && (
+      <ThreadFormDialog
+        open={threadFormOpen}
+        onClose={() => setThreadFormOpen(false)}
+        orgId={orgId}
+        roomId={roomId}
+        parentTitle={title}
+        onCreated={(threadId) => {
+          setThreadFormOpen(false);
+          close();
+          setSearchParams({ room: threadId });
+        }}
+      />
+    )}
+    </>
   );
 }

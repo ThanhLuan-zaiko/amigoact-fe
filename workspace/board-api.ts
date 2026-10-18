@@ -1,4 +1,4 @@
-import { apiFetch } from "../core/api.ts";
+import { apiFetch, apiUpload } from "../core/api.ts";
 
 export type PostKind = "announcement" | "discussion";
 export type PostStatus = "published" | "draft";
@@ -18,6 +18,17 @@ export type ArticleBlock =
   | { type: "divider" };
 
 export type BlockType = ArticleBlock["type"];
+
+// Board editor upload: a post-owned file, never an org gallery item.
+export interface PostUpload {
+  id: string;
+  org_id: string;
+  kind: "image" | "video";
+  mime: string;
+  size_bytes: number;
+  file_url: string;
+  original_name: string | null;
+}
 
 export interface OrgPostMedia {
   asset_id: string;
@@ -156,6 +167,12 @@ export function createPost(orgId: string, input: CreatePostInput): Promise<OrgPo
     method: "POST",
     body: JSON.stringify({ ...input, media_ids: input.media_ids ?? [] }),
   });
+}
+
+export function uploadPostMedia(orgId: string, file: File): Promise<PostUpload> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  return apiUpload<PostUpload>(`/orgs/${orgId}/posts/media`, form);
 }
 
 export function updatePost(

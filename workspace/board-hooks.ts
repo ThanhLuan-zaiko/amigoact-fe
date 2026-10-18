@@ -27,6 +27,7 @@ import {
   setPostPinned,
   unpublishPost,
   updatePost,
+  uploadPostMedia,
   type CommentPage,
   type CreatePostInput,
   type OrgComment,
@@ -34,6 +35,7 @@ import {
   type PostKind,
   type PostListParams,
   type PostPage,
+  type PostUpload,
   type UpdatePostInput,
 } from "./board-api.ts";
 import { workspaceKeys } from "./keys.ts";
@@ -140,6 +142,16 @@ export function useCreatePost(
   orgId: string,
 ): UseMutationResult<OrgPost, ApiError, CreatePostInput> {
   return useBoardMutation((input: CreatePostInput) => createPost(orgId, input), "post.save");
+}
+
+// Silent by design: the editor already shows per-block upload state, and
+// board files never touch the org gallery, so nothing is invalidated.
+export function useUploadPostMedia(
+  orgId: string,
+): UseMutationResult<PostUpload, ApiError, File> {
+  return useMutation({
+    mutationFn: (file: File) => uploadPostMedia(orgId, file),
+  });
 }
 
 export function useUpdatePost(

@@ -65,7 +65,6 @@ export const MEDIA_ROLE_LABELS: Record<string, string> = {
   gallery: "Thường",
   cover: "Ảnh bìa",
   logo: "Logo",
-  attachment: "Đính kèm",
 };
 
 export const ORG_STATUS_LABELS: Record<string, string> = {

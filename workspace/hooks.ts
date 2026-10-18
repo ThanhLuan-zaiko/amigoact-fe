@@ -28,6 +28,7 @@ import {
   setChatMute,
   toggleChatReaction,
   unpinChatMessage,
+  deleteChatAttachment,
   uploadChatAttachment,
   type ChatAttachment,
   type ChatPage,
@@ -235,6 +236,14 @@ export function useUploadChatAttachment(
 ): UseMutationResult<ChatAttachment, ApiError, File> {
   return useMutation({
     mutationFn: (file: File) => uploadChatAttachment(roomId, file),
+  });
+}
+
+export function useDiscardChatAttachment(
+  roomId: string,
+): UseMutationResult<void, ApiError, string> {
+  return useMutation({
+    mutationFn: (mediaId: string) => deleteChatAttachment(roomId, mediaId),
   });
 }
 

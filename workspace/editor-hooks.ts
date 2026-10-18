@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from "react";
 import { ApiError } from "../core/api.ts";
-import { useUploadOrgMedia } from "../dashboard/hooks.ts";
 import { isSupportedMedia } from "../dashboard/schemas.ts";
 import { orgMediaUrl } from "../dashboard/api.ts";
 import {
@@ -27,6 +26,7 @@ import {
   useCreateRevision,
   usePublishPost,
   useUpdatePost,
+  useUploadPostMedia,
 } from "./board-hooks.ts";
 
 export type EditorStatus = PostStatus | "new";
@@ -48,8 +48,8 @@ function startingBlocks(initial: OrgPost | null): EditorBlock[] {
   return blocks.length > 0 ? blocks : [emptyBlock("paragraph")];
 }
 
-// Whole article editing state: blocks, cover, inline uploads (as
-// role "attachment" so they stay out of the org gallery) and the
+// Whole article editing state: blocks, cover, inline uploads (board post
+// media, never the org gallery) and the
 // create/update/publish save pipeline. onPublished fires once a save
 // lands the article on the board (write page navigates to the reader).
 export function useArticleEditor(
@@ -88,7 +88,7 @@ export function useArticleEditor(
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const editTick = useRef(0);
-  const upload = useUploadOrgMedia(orgId);
+  const upload = useUploadPostMedia(orgId);
   const create = useCreatePost(orgId);
   const update = useUpdatePost(orgId);
   const publish = usePublishPost(orgId);
@@ -119,7 +119,7 @@ export function useArticleEditor(
   async function uploadFile(key: string, file: File): Promise<string | null> {
     setUpload(key, "uploading");
     try {
-      const media = await upload.mutateAsync({ file, role: "attachment" });
+      const media = await upload.mutateAsync(file);
       setLookup((prev) => ({
         ...prev,
         [media.id]: { url: orgMediaUrl(media.file_url), mime: media.mime },

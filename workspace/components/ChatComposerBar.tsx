@@ -6,6 +6,7 @@ import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import type { ChatAttachment, ChatMessage } from "../api.ts";
 import {
+  useDiscardChatAttachment,
   useEditChatMessage,
   useSendChatMessage,
   useUploadChatAttachment,
@@ -56,22 +57,21 @@ export function ChatComposerBar({
   const send = useSendChatMessage(roomId);
   const edit = useEditChatMessage(roomId);
   const upload = useUploadChatAttachment(roomId);
+  const discard = useDiscardChatAttachment(roomId);
 
   // Entering edit mode prefills the composer with the original text.
   if (editing !== null && editingFor !== editing.message_id) {
     setEditingFor(editing.message_id);
     setDraft(editing.body);
+    for (const item of pending) discard.mutate(item.media_id);
     setPending([]);
     setError(null);
   }
-  if (editing === null && editingFor !== null) {
-    setEditingFor(null);
-  }
+  if (editing === null && editingFor !== null) setEditingFor(null);
 
   const busy = send.isPending || edit.isPending || upload.isPending;
   const hasText = draft.trim() !== "";
-  const canSubmit =
-    !busy && (hasText || (editing === null && pending.length > 0));
+  const canSubmit = !busy && (hasText || (editing === null && pending.length > 0));
 
   function showError(err: unknown): void {
     setError(
@@ -169,11 +169,12 @@ export function ChatComposerBar({
               <button
                 type="button"
                 aria-label={`Bỏ ${item.name}`}
-                onClick={() =>
+                onClick={() => {
+                  discard.mutate(item.media_id);
                   setPending((prev) =>
                     prev.filter((p) => p.media_id !== item.media_id),
-                  )
-                }
+                  );
+                }}
               >
                 <FiX className="h-3.5 w-3.5" aria-hidden="true" />
               </button>

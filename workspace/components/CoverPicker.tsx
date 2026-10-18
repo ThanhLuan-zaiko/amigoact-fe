@@ -16,7 +16,7 @@ interface CoverPickerProps {
 }
 
 // Cover image slot on the publish panel: pick / preview / swap / remove.
-// Uploads run through the same org-media attachment pipeline as blocks.
+// Uploads run through the board post-media pipeline, as block images do.
 export function CoverPicker({
   coverId,
   lookup,

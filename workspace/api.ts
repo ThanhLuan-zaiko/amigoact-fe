@@ -180,6 +180,16 @@ export function uploadChatAttachment(
   );
 }
 
+export function deleteChatAttachment(
+  roomId: string,
+  mediaId: string,
+): Promise<void> {
+  return apiFetch<unknown>(
+    `/chat/rooms/${roomId}/attachments/${mediaId}`,
+    { method: "DELETE" },
+  ).then(() => undefined);
+}
+
 export function deleteChatMessage(roomId: string, messageId: string): Promise<void> {
   return apiFetch<unknown>(`/chat/rooms/${roomId}/messages/${messageId}`, {
     method: "DELETE",

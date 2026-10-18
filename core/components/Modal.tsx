@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { FiX } from "react-icons/fi";
+import { FiArrowLeft, FiX } from "react-icons/fi";
 import { riseIn, slideInX } from "../motion.ts";
 import { Button } from "./Button.tsx";
 
@@ -14,9 +14,11 @@ interface ModalProps {
   wide?: boolean;
   /** Right-edge drawer (Telegram room info): full height, slides in. */
   side?: boolean;
+  /** Drill-in sub-views show a back arrow left of the title. */
+  onBack?: () => void;
 }
 
-export function Modal({ open, title, onClose, children, wide = false, side = false }: ModalProps): ReactElement | null {
+export function Modal({ open, title, onClose, children, wide = false, side = false, onBack }: ModalProps): ReactElement | null {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
@@ -81,14 +83,30 @@ export function Modal({ open, title, onClose, children, wide = false, side = fal
         aria-labelledby={titleId}
         className={
           side
-            ? "relative h-full w-full max-w-[420px] overflow-y-auto border-l border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950"
+            ? "relative flex h-full w-full max-w-[420px] flex-col border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
             : `relative max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950 ${wide ? "max-w-3xl" : "max-w-md"}`
         }
       >
-        <div className="flex items-center justify-between gap-2">
+        <div
+          className={
+            side
+              ? "flex shrink-0 items-center justify-between gap-2 px-4 pt-4 sm:px-6 sm:pt-6"
+              : "flex items-center justify-between gap-2"
+          }
+        >
+          {onBack !== undefined && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onBack}
+              aria-label="Quay lại"
+              icon={<FiArrowLeft className="h-5 w-5" aria-hidden="true" />}
+            />
+          )}
           <h3
             id={titleId}
-            className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100"
+            className="min-w-0 flex-1 text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100"
           >
             {title}
           </h3>
@@ -105,7 +123,19 @@ export function Modal({ open, title, onClose, children, wide = false, side = fal
             icon={<FiX className="h-5 w-5" aria-hidden="true" />}
           />
         </div>
-        <div className="mt-3">{children}</div>
+        {/*
+         * Side drawers pin the header and let only the body scroll, so
+         * long drill-in lists keep the title/back/close row reachable.
+         */}
+        <div
+          className={
+            side
+              ? "mt-3 min-h-0 flex-1 overflow-y-auto px-4 pb-4 sm:px-6 sm:pb-6"
+              : "mt-3"
+          }
+        >
+          {children}
+        </div>
       </div>
     </div>,
     document.body,

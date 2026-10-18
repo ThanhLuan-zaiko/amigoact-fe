@@ -27,8 +27,11 @@ export const workspaceKeys = {
     [...workspaceKeys.all, "chat", roomId] as const,
   chatUnread: (roomId: string | null) =>
     [...workspaceKeys.all, "chat-unread", roomId] as const,
+  // Per-member read pointers backing the group "seen by" receipts.
+  chatReads: (roomId: string | null) =>
+    [...workspaceKeys.all, "chat-reads", roomId] as const,
   // Room info panel: one tab of the shared-item index per (kind,
-  // sender) — the "all" sentinel keeps the unfiltered query distinct.
+  // sender) - the "all" sentinel keeps the unfiltered query distinct.
   chatMedia: (roomId: string | null, kind: string, authorId?: string) =>
     [
       ...workspaceKeys.all,

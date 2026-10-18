@@ -40,11 +40,14 @@ export function useBoardRealtime(orgId: string | null, selfId?: string): void {
 
 // Live room: message fan-out on chat:{roomId} refreshes history and the
 // badge; "typing" payloads never touch the cache - they bubble up to the
-// caller as ephemeral UI state.
+// caller as ephemeral UI state. isDm selects where a message.read lands:
+// dm peer pointers live inside the history page while group rooms read
+// them from the lighter chat-reads list.
 export function useChatRealtime(
   roomId: string | null,
   selfId: string | undefined,
   onTyping?: (userId: string) => void,
+  isDm = false,
 ): void {
   const queryClient = useQueryClient();
   useEffect(() => {
@@ -58,13 +61,28 @@ export function useChatRealtime(
         }
         return;
       }
+      if (action === "message.read") {
+        // Someone's pointer moved: repaint receipts. A group mark only
+        // needs the pointer list; a dm one repaints the page's peer
+        // field plus the marker's own unread badge.
+        void queryClient.invalidateQueries({
+          queryKey: workspaceKeys.chatReads(roomId),
+        });
+        if (isDm) {
+          void queryClient.invalidateQueries({
+            queryKey: workspaceKeys.chat(roomId),
+          });
+          void queryClient.invalidateQueries({
+            queryKey: workspaceKeys.chatUnread(roomId),
+          });
+        }
+        return;
+      }
       if (
         action !== "message.created" &&
         action !== "message.deleted" &&
         action !== "message.edited" &&
         action !== "message.reacted" &&
-        // dm read receipt: the peer's pointer moved, repaint the checks.
-        action !== "message.read" &&
         // Pinned bar: the slot changed, repaint the header strip.
         action !== "message.pinned" &&
         action !== "message.unpinned"
@@ -89,7 +107,7 @@ export function useChatRealtime(
         });
       }
     });
-  }, [roomId, selfId, onTyping, queryClient]);
+  }, [roomId, selfId, onTyping, isDm, queryClient]);
 }
 
 // Subscribe budget: the server caps subscribe.v1 frames at 20/min, and

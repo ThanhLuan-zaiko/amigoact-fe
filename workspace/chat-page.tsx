@@ -4,10 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import { useSession } from "../auth/hooks.ts";
 import { EmptyState } from "../core/components/Feedback.tsx";
 import { useMediaQuery } from "../core/media-query.ts";
-import {
-  useMyMemberships,
-  useOrgMembers,
-} from "../dashboard/members-hooks.ts";
+import { useOrgMembers } from "../dashboard/members-hooks.ts";
 import {
   useOrgPresence,
   usePresenceIds,
@@ -15,7 +12,6 @@ import {
 import { useChatInbox, useChatUnread } from "./hooks.ts";
 import { formatLastSeen } from "./messages.tsx";
 import {
-  useChatInboxRealtime,
   useChatRealtime,
   useTypingUsers,
 } from "./realtime-hooks.ts";
@@ -24,23 +20,17 @@ import { ChatPanel } from "./components/ChatPanel.tsx";
 
 // Telegram flow on /manage/chat: the merged cross-org inbox lives in the
 // right rail on lg+ and IS the first screen below that (?room= picks the
-// conversation, no param shows the list). All realtime subscriptions for
-// the inbox live here so the rail and this page never double-subscribe.
+// conversation, no param shows the list). Inbox realtime is app-wide via
+// ChatInboxRealtime in App.tsx, so the rail badge lights up everywhere.
 export function WorkspaceChatPage(): ReactElement {
   const session = useSession();
   const selfId = session.data?.id;
   const signedIn = selfId !== undefined;
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  const memberships = useMyMemberships("active", signedIn);
-  const orgIds = useMemo(
-    () => (memberships.data?.items ?? []).map((item) => item.org_id),
-    [memberships.data],
-  );
   const [searchParams, setSearchParams] = useSearchParams();
   const roomId = searchParams.get("room");
 
   const inbox = useChatInbox(signedIn);
-  useChatInboxRealtime(selfId, orgIds);
 
   const room =
     (inbox.data?.items ?? []).find((item) => item.room_id === roomId) ??
@@ -58,18 +48,28 @@ export function WorkspaceChatPage(): ReactElement {
   });
   const unread = useChatUnread(roomId);
   const { typingIds, noteTyping } = useTypingUsers();
-  useChatRealtime(roomId, selfId, noteTyping);
+  useChatRealtime(roomId, selfId, noteTyping, room?.kind === "dm");
 
-  const memberNames = useMemo(() => {
-    const map = new Map<string, string>();
+  const memberBriefs = useMemo(() => {
+    const map = new Map<
+      string,
+      { name: string; avatar_url: string | null }
+    >();
     for (const item of members.data?.items ?? []) {
-      map.set(item.user_id, item.full_name);
+      map.set(item.user_id, {
+        name: item.full_name,
+        avatar_url: item.avatar_url,
+      });
     }
     return map;
   }, [members.data]);
 
-  const typingNames = typingIds.map(
-    (id) => memberNames.get(id) ?? "Một thành viên",
+  const typingUsers = typingIds.map(
+    (id) =>
+      memberBriefs.get(id) ?? {
+        name: "Một thành viên",
+        avatar_url: null,
+      },
   );
   const canManage = (members.data?.viewer_permissions ?? []).includes(
     "chat:manage",
@@ -130,7 +130,7 @@ export function WorkspaceChatPage(): ReactElement {
       selfId={selfId}
       canManage={canManage}
       unread={unread.data?.unread ?? 0}
-      typingNames={typingNames}
+      typingUsers={typingUsers}
       onBack={isDesktop ? undefined : backToInbox}
     />
   );

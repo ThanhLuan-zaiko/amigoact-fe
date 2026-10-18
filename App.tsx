@@ -33,6 +33,7 @@ import { DashboardOverviewPage } from "./dashboard/overview-page.tsx";
 import { DashboardSettingsPage } from "./dashboard/settings-page.tsx";
 import { DashboardPage } from "./dashboard/page.tsx";
 import { MembershipRealtime } from "./dashboard/components/MembershipRealtime.tsx";
+import { ChatInboxRealtime } from "./workspace/components/ChatInboxRealtime.tsx";
 import { NotificationsPage } from "./notifications/page.tsx";
 import { OrgDetailPage } from "./orgs/detail-page.tsx";
 import { PublicVolunteerPage } from "./profiles/public-page.tsx";
@@ -86,6 +87,7 @@ export default function App(): ReactElement {
   return (
     <>
       <MembershipRealtime />
+      <ChatInboxRealtime />
       <Routes>
       <Route element={<PageShell />}>
         <Route index element={<HomePage />} />

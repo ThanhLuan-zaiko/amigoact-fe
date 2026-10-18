@@ -7,25 +7,14 @@ import {
   wsUrl,
 } from "./realtime-transport.ts";
 import type { ServerEnvelope } from "./realtime-transport.ts";
+import type {
+  ChannelHandler,
+  RealtimeIssue,
+  RealtimeStatus,
+  StatusHandler,
+} from "./realtime-types.ts";
 
-/**
- * Socket machinery behind the `core/realtime.ts` facade (AGENTS.md 12.1).
- * Split out so the client, its issue bookkeeping and the public API each
- * stay under the file-size budget. Nothing outside core/ imports this.
- */
-
-export type RealtimeStatus =
-  | "idle"
-  | "connecting"
-  | "open"
-  | "reconnecting"
-  | "offline";
-
-/** Last surfaced problem, consumed by the Feedback banner (12.5). */
-export type RealtimeIssue = "session" | "denied" | "error" | null;
-
-export type ChannelHandler = (data: ServerEnvelope["data"]) => void;
-export type StatusHandler = (status: RealtimeStatus) => void;
+/** Socket machinery behind `core/realtime.ts` (AGENTS.md 12.1); core-internal. */
 
 const BASE_RETRY_MS = 500;
 const MAX_RETRY_MS = 15_000;
@@ -33,24 +22,27 @@ const DEFAULT_WATCHDOG_MS = 40_000;
 const WATCHDOG_GRACE_MS = 15_000;
 const MIN_WATCHDOG_MS = 5_000;
 const MAX_WATCHDOG_MS = 120_000;
+// Server budgets subscribe.v1 at 20/min: a StrictMode remount would
+// burn a leave+join pair, so leaves linger and cancel on resubscribe.
+const UNSUB_LINGER_MS = 750;
 
-interface ReadyData { heartbeat_seconds?: number }
+type Timer = ReturnType<typeof setTimeout>;
 
 export class RealtimeClient {
   private socket: WebSocket | null = null;
   private readonly handlers = new Map<string, Set<ChannelHandler>>();
   private readonly denied = new Set<string>();
+  private readonly pendingUnsub = new Map<string, Timer>();
   private readonly statusHandlers = new Set<StatusHandler>();
   private status: RealtimeStatus = "idle";
   private issue: RealtimeIssue = null;
   private retryAttempt = 0;
-  private retryTimer: ReturnType<typeof setTimeout> | null = null;
-  private watchdogTimer: ReturnType<typeof setTimeout> | null = null;
+  private retryTimer: Timer | null = null;
+  private watchdogTimer: Timer | null = null;
   private watchdogMs = DEFAULT_WATCHDOG_MS;
   private manualClose = false;
   private connecting = false;
-  // teardown() bumps this so an in-flight connect() abandons its result.
-  private generation = 0;
+  private generation = 0; // teardown() bumps this to drop in-flight connect()
 
   getStatus(): RealtimeStatus {
     return this.status;
@@ -70,7 +62,14 @@ export class RealtimeClient {
   }
 
   subscribe(channel: string, handler: ChannelHandler): () => void {
+    // A pending leave still counts as joined; cancel instead of re-joining.
+    const pending = this.pendingUnsub.get(channel);
+    if (pending !== undefined) {
+      clearTimeout(pending);
+      this.pendingUnsub.delete(channel);
+    }
     let set = this.handlers.get(channel);
+    const alreadyJoined = set !== undefined || pending !== undefined;
     if (!set) {
       set = new Set();
       this.handlers.set(channel, set);
@@ -78,7 +77,8 @@ export class RealtimeClient {
     set.add(handler);
     if (!this.denied.has(channel)) {
       this.ensureConnected();
-      if (this.isOpen()) this.sendSubscribe(channel);
+      // One subscribe.v1 per channel; extra handlers stay local.
+      if (!alreadyJoined && this.isOpen()) this.sendSubscribe(channel);
     }
     return () => this.unsubscribe(channel, handler);
   }
@@ -90,15 +90,20 @@ export class RealtimeClient {
     if (set.size === 0) {
       this.handlers.delete(channel);
       this.denied.delete(channel);
-      if (this.isOpen()) this.send("unsubscribe.v1", { channel });
+      if (this.isOpen()) {
+        const timer = setTimeout(() => {
+          this.pendingUnsub.delete(channel);
+          if (this.handlers.has(channel)) return;
+          this.send("unsubscribe.v1", { channel });
+        }, UNSUB_LINGER_MS);
+        this.pendingUnsub.set(channel, timer);
+      }
     }
     this.maybeTeardown();
   }
 
   private maybeTeardown(): void {
-    if (this.handlers.size === 0 && this.statusHandlers.size === 0) {
-      this.teardown();
-    }
+    if (this.handlers.size === 0 && this.statusHandlers.size === 0) this.teardown();
   }
 
   private isOpen(): boolean {
@@ -158,8 +163,7 @@ export class RealtimeClient {
         this.scheduleRetry();
         return;
       }
-      // "guest" means no session: an anonymous socket still updates the
-      // public channels (e.g. orgs:directory) live.
+      // "guest" = no session: anonymous sockets still get public channels.
       const ticket = outcome === "guest" ? "" : outcome.ticket;
       const socket = new WebSocket(wsUrl(ticket));
       this.socket = socket;
@@ -184,11 +188,9 @@ export class RealtimeClient {
     const frame = parseEnvelope(raw);
     if (frame === null) return;
     switch (frame.type) {
-      case "ping.v1":
-        this.send("pong.v1");
-        break;
+      case "ping.v1": this.send("pong.v1"); break;
       case "ready.v1": {
-        const ready = frame.data as ReadyData;
+        const ready = frame.data as { heartbeat_seconds?: number };
         const hb = ready.heartbeat_seconds;
         if (
           typeof hb === "number" &&
@@ -297,9 +299,7 @@ export class RealtimeClient {
   }
 
   private send(type: string, data: Record<string, unknown> = {}): void {
-    if (this.isOpen()) {
-      this.socket?.send(JSON.stringify({ type, data }));
-    }
+    if (this.isOpen()) this.socket?.send(JSON.stringify({ type, data }));
   }
 
   /** Ephemeral typing hint onto a chat:{org} channel; safe when closed. */
@@ -329,6 +329,8 @@ export class RealtimeClient {
     this.generation += 1;
     this.clearRetryTimer();
     this.clearWatchdog();
+    for (const timer of this.pendingUnsub.values()) clearTimeout(timer);
+    this.pendingUnsub.clear();
     this.denied.clear();
     this.retryAttempt = 0;
     this.connecting = false;

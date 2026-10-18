@@ -10,6 +10,7 @@ import {
 } from "../../core/components/Feedback.tsx";
 import {
   useChatMessages,
+  useChatReads,
   useDeleteChatMessage,
   useMarkChatRead,
   usePinMessage,
@@ -44,7 +45,7 @@ interface ChatPanelProps {
   selfId?: string;
   canManage: boolean;
   unread: number;
-  typingNames: string[];
+  typingUsers: { name: string; avatar_url: string | null }[];
   // Two-screen flow (<lg): back returns to the inbox list.
   onBack?: () => void;
 }
@@ -66,13 +67,14 @@ export function ChatPanel({
   selfId,
   canManage,
   unread,
-  typingNames,
+  typingUsers,
   onBack,
 }: ChatPanelProps): ReactElement {
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<ChatMessage | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
   const chat = useChatMessages(roomId);
+  const reads = useChatReads(isDm ? null : roomId);
   const remove = useDeleteChatMessage(roomId);
   const markRead = useMarkChatRead(roomId);
   const react = useToggleReaction(roomId);
@@ -84,11 +86,11 @@ export function ChatPanel({
     const pages = chat.data?.pages ?? [];
     return [...pages].reverse().flatMap((page) => page.items);
   }, [chat.data]);
-  const lastRead = chat.data?.pages[0]?.last_read_message_id ?? null;
-  const peerLastRead =
-    chat.data?.pages[0]?.peer_last_read_message_id ?? null;
-  const pinned = chat.data?.pages[0]?.pinned ?? null;
-  const muted = chat.data?.pages[0]?.muted ?? false;
+  const page = chat.data?.pages[0];
+  const lastRead = page?.last_read_message_id ?? null;
+  const peerLastRead = page?.peer_last_read_message_id ?? null;
+  const pinned = page?.pinned ?? null;
+  const muted = page?.muted ?? false;
   const latest = items.at(-1);
   const { scrollRef, atBottom, pendingNew, onScroll, scrollToLatest } =
     useChatAutoScroll(items);
@@ -183,6 +185,7 @@ export function ChatPanel({
               isDm={isDm}
               lastRead={lastRead}
               peerLastRead={peerLastRead}
+              readers={reads.data?.items ?? []}
               unread={unread}
               hasNextPage={chat.hasNextPage}
               isFetchingNextPage={chat.isFetchingNextPage}
@@ -202,7 +205,7 @@ export function ChatPanel({
               onPin={
                 canManage ? (id) => pin.mutate(id) : undefined
               }
-              typingNames={typingNames}
+              typingUsers={typingUsers}
             />
           </div>
           {!atBottom && (

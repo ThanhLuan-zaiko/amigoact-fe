@@ -22,11 +22,11 @@ export type {
   RealtimeIssue,
   RealtimeStatus,
   StatusHandler,
-} from "./realtime-client.ts";
+} from "./realtime-types.ts";
 export type { ServerEnvelope } from "./realtime-transport.ts";
 
 import { realtime } from "./realtime-client.ts";
-import type { ChannelHandler, StatusHandler } from "./realtime-client.ts";
+import type { ChannelHandler, StatusHandler } from "./realtime-types.ts";
 
 export function subscribeChannel(
   channel: string,

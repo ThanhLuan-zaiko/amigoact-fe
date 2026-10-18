@@ -12,6 +12,8 @@ import { Modal } from "../../core/components/Modal.tsx";
 import { useChannels } from "../channel-hooks.ts";
 import { useMuteRoom } from "../hooks.ts";
 import { channelMetaLabel } from "../messages.tsx";
+import type { SharedMediaKind } from "../api.ts";
+import { ChatSenderPicker } from "./ChatSenderPicker.tsx";
 import { ChatShareCard } from "./ChatShareCard.tsx";
 import { ChatSharedPanel } from "./ChatSharedPanel.tsx";
 
@@ -57,11 +59,26 @@ export function ChatRoomInfo({
   canManage,
 }: ChatRoomInfoProps): ReactElement {
   const [pendingMuted, setPendingMuted] = useState<boolean | null>(null);
+  // Sender filter drill-in: picking swaps the whole drawer for the
+  // account list; the filter itself lives here so the picker can set it.
+  const [pickingSender, setPickingSender] = useState(false);
+  const [authorId, setAuthorId] = useState("");
+  // Media kind the picker scopes its sender list to (tab at open time).
+  const [pickerKind, setPickerKind] = useState<SharedMediaKind>("image");
   const mute = useMuteRoom(roomId);
   const channels = useChannels(orgId, open && isChannel);
   const channel = (channels.data?.items ?? []).find((i) => i.channel_id === roomId);
   const selfId = useSession().data?.id;
   const shownMuted = pendingMuted ?? muted;
+
+  // Every close path lands back on the info view with the sender filter
+  // cleared; room switches reset for free via ChatPanel's key={roomId}.
+  function close(): void {
+    setPickingSender(false);
+    setAuthorId("");
+    setPickerKind("image");
+    onClose();
+  }
 
   function toggleMute(): void {
     const next = !shownMuted;
@@ -73,8 +90,14 @@ export function ChatRoomInfo({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={title} side>
-      <div className="flex flex-col gap-5">
+    <Modal
+      open={open}
+      onClose={close}
+      title={pickingSender ? "Người gửi" : title}
+      side
+      onBack={pickingSender ? () => setPickingSender(false) : undefined}
+    >
+      <div className={pickingSender ? "hidden" : "flex flex-col gap-5"}>
         <button
           type="button"
           onClick={toggleMute}
@@ -153,11 +176,27 @@ export function ChatRoomInfo({
               canManage={canManage}
               orgId={orgId}
               isDm={isDm}
-              onClose={onClose}
+              authorId={authorId}
+              onPickSender={(kind) => {
+                setPickerKind(kind);
+                setPickingSender(true);
+              }}
+              onClose={close}
             />
           </div>
         </section>
       </div>
+      {pickingSender && (
+        <ChatSenderPicker
+          roomId={roomId}
+          kind={pickerKind}
+          selected={authorId}
+          onSelect={(id) => {
+            setAuthorId(id);
+            setPickingSender(false);
+          }}
+        />
+      )}
     </Modal>
   );
 }

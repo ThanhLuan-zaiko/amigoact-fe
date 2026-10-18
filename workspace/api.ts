@@ -62,6 +62,23 @@ export interface ReadState {
   last_read_at: string | null;
 }
 
+// One member's read pointer: the group "seen by" receipt entries.
+export interface ChatReadEntry {
+  user_id: string;
+  user_name: string;
+  avatar_url: string | null;
+  last_read_message_id: string;
+  last_read_at: string | null;
+}
+
+export interface ChatReadsPage {
+  items: ChatReadEntry[];
+}
+
+export function listChatReads(roomId: string): Promise<ChatReadsPage> {
+  return apiFetch<ChatReadsPage>(`/chat/rooms/${roomId}/reads`);
+}
+
 export interface DmRoom {
   room_id: string;
   org_id: string;

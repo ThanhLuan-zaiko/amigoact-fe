@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { apiBaseUrl } from "../api.ts";
 
 const SIZES = {
+  xs: "h-5 w-5 text-[10px]",
   sm: "h-8 w-8 text-sm",
   md: "h-10 w-10 text-base",
   lg: "h-12 w-12 text-lg",

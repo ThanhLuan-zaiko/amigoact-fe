@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import {
+  FiChevronRight,
   FiFile,
   FiImage,
   FiLink,
@@ -8,7 +9,6 @@ import {
   FiVideo,
 } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import { SelectField } from "../../core/components/SelectField.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -37,6 +37,12 @@ interface ChatSharedPanelProps {
   // Members tab needs org context; hidden for direct messages.
   orgId: string | null;
   isDm: boolean;
+  // Sender filter lives in the parent so the full-drawer picker can set
+  // it; "" means everyone.
+  authorId: string;
+  // Opens the sender picker sub-view covering the whole drawer; the
+  // picker lists only senders of the media kind active at open time.
+  onPickSender: (kind: SharedMediaKind) => void;
   onClose: () => void;
 }
 
@@ -64,11 +70,11 @@ export function ChatSharedPanel({
   canManage,
   orgId,
   isDm,
+  authorId,
+  onPickSender,
   onClose,
 }: ChatSharedPanelProps): ReactElement {
   const [tab, setTab] = useState<PanelTab>("image");
-  // Sender filter applies across every media tab; "" = everyone.
-  const [authorId, setAuthorId] = useState("");
   const mediaTab = tab === "members" ? null : tab;
   const mediaKind = mediaTab ?? "image";
   const authors = useSharedMediaAuthors(roomId, open);
@@ -83,16 +89,15 @@ export function ChatSharedPanel({
     () => (query.data?.pages ?? []).flatMap((page) => page.items),
     [query.data],
   );
-  const senderOptions = useMemo(
-    () => [
-      { value: "", label: "Tất cả mọi người" },
-      ...(authors.data?.items ?? []).map((a) => ({
-        value: a.author_id,
-        label: a.author_name,
-      })),
-    ],
-    [authors.data],
-  );
+  const senderName =
+    authorId === ""
+      ? "Tất cả mọi người"
+      : ((authors.data?.items ?? []).find((a) => a.author_id === authorId)
+          ?.author_name ?? "Tất cả mọi người");
+  // The filter row only makes sense on tabs somebody actually posted to.
+  const kindSenderCount = (authors.data?.items ?? []).filter((a) =>
+    a.kinds.includes(mediaKind),
+  ).length;
 
   const tabs = isDm
     ? MEDIA_TABS
@@ -119,7 +124,7 @@ export function ChatSharedPanel({
             onClick={() => setTab(kind)}
             className={`flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-2 text-[11px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400 ${
               tab === kind
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100"
+                ? "bg-white text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
                 : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
             }`}
           >
@@ -128,15 +133,26 @@ export function ChatSharedPanel({
           </button>
         ))}
       </div>
-      {mediaTab !== null && senderOptions.length > 1 && (
+      {mediaTab !== null && kindSenderCount > 0 && (
         <div className="mt-2">
-          <SelectField
-            label="Người gửi"
-            value={authorId}
-            onChange={setAuthorId}
-            options={senderOptions}
-            id="shared-media-sender"
-          />
+          <span
+            id="shared-media-sender-label"
+            className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
+          >
+            Người gửi
+          </span>
+          <button
+            type="button"
+            aria-labelledby="shared-media-sender-label"
+            onClick={() => onPickSender(mediaKind)}
+            className="mt-1 flex min-h-[44px] w-full items-center justify-between gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-left text-sm text-zinc-900 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
+          >
+            <span className="min-w-0 flex-1 truncate">{senderName}</span>
+            <FiChevronRight
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-zinc-400"
+            />
+          </button>
         </div>
       )}
       <div role="tabpanel" className="mt-2">

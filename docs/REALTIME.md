@@ -63,6 +63,12 @@ Banner tự giữ một status listener nên socket không teardown khi hết
 channel subscriber — chỉ mở socket khi có kênh subscribe, listener đơn
 thuần không tự kết nối.
 
+`subscribe.v1` chỉ gửi một frame cho mỗi channel dù có nhiều handler cùng
+đăng ký, và `unsubscribe.v1` bị trì hoãn ~750ms (`UNSUB_LINGER_MS`) — hủy
+nếu kênh được subscribe lại trong cửa sổ đó (StrictMode mount hai lần,
+điều hướng nhanh). Server giới hạn 20 subscribe/phút và 20 frame/giây nên
+hai lớp giảm frame này tránh `error.v1` `TOO_MANY_REQUESTS`.
+
 Socket tự teardown về `idle` khi không còn subscriber/status listener nào.
 Hai kênh public hoạt động trên socket ẩn danh: `orgs:directory` (qua
 `useOrgsRealtime`) và `announcements:feed` (qua `useAnnouncementsRealtime`,

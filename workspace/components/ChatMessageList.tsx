@@ -2,12 +2,15 @@ import { Fragment } from "react";
 import type { ReactElement } from "react";
 import { Avatar } from "../../core/components/Avatar.tsx";
 import { Button } from "../../core/components/Button.tsx";
-import type { ChatMessage } from "../api.ts";
+import type { ChatMessage, ChatReadEntry } from "../api.ts";
 import { formatClock, formatDayLabel } from "../messages.tsx";
+import { seenReaders } from "../chat-seen.ts";
 import { ChatAttachmentBlock } from "./ChatAttachmentBlock.tsx";
 import { ChatMentionBody } from "./ChatMentionBody.tsx";
 import { ChatMessageMenu } from "./ChatMessageMenu.tsx";
 import { ChatReactionPills } from "./ChatReactionPills.tsx";
+import { ChatSeenBy } from "./ChatSeenBy.tsx";
+import { ChatTypingRow } from "./ChatTypingRow.tsx";
 
 const BUBBLE =
   "min-w-0 max-w-[78%] rounded-2xl px-3 pb-1.5 pt-2 text-[15px] " +
@@ -38,6 +41,8 @@ interface ChatMessageListProps {
   isDm: boolean;
   lastRead: string | null;
   peerLastRead: string | null;
+  // Group rooms: every member's pointer for the "seen by" receipts.
+  readers: ChatReadEntry[];
   unread: number;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
@@ -47,7 +52,8 @@ interface ChatMessageListProps {
   onDelete: (messageId: string) => void;
   onReact: (messageId: string, emoji: string) => void;
   onPin?: (messageId: string) => void;
-  typingNames: string[];
+  // Who is typing right now: avatars stack, names live in aria-label.
+  typingUsers: { name: string; avatar_url: string | null }[];
 }
 
 // Telegram-style flow: day pills, an "unread" seam above the first
@@ -60,6 +66,7 @@ export function ChatMessageList({
   isDm,
   lastRead,
   peerLastRead,
+  readers,
   unread,
   hasNextPage,
   isFetchingNextPage,
@@ -69,7 +76,7 @@ export function ChatMessageList({
   onDelete,
   onReact,
   onPin,
-  typingNames,
+  typingUsers,
 }: ChatMessageListProps): ReactElement {
   // UUIDv7 ids order lexicographically; the seam sits above the first
   // message beyond the server read pointer (or atop all of them when
@@ -80,6 +87,15 @@ export function ChatMessageList({
           (m) => lastRead === null || m.message_id > lastRead,
         )
       : -1;
+  // The seen-by line only hangs under the sender's newest bubble;
+  // older receipts stay plain check marks like Telegram.
+  const lastMineIndex = items
+    .map((m) => m.author_id === selfId)
+    .lastIndexOf(true);
+  const isSeen = (m: ChatMessage): boolean =>
+    isDm
+      ? peerLastRead !== null && m.message_id <= peerLastRead
+      : seenReaders(readers, m.author_id, m.message_id).length > 0;
 
   return (
     <>
@@ -200,26 +216,23 @@ export function ChatMessageList({
                   {message.edited_at !== null && "Đã chỉnh sửa · "}
                   {formatClock(message.created_at)}
                   {mine &&
-                    isDm &&
-                    (peerLastRead !== null &&
-                    message.message_id <= peerLastRead
-                      ? " · ✓✓ Đã xem"
+                    (isSeen(message)
+                      ? ` · ✓✓${isDm ? " Đã xem" : ""}`
                       : " · ✓")}
                 </p>
               </div>
             </div>
+            {!isDm && index === lastMineIndex && (
+              <ChatSeenBy
+                readers={readers}
+                authorId={message.author_id}
+                messageId={message.message_id}
+              />
+            )}
           </Fragment>
         );
       })}
-      {typingNames.length > 0 && (
-        <p
-          className="px-1 pt-1 text-xs text-zinc-500 dark:text-zinc-400"
-          aria-live="polite"
-        >
-          {`${typingNames.join(", ")} đang nhập`}
-          <span className="animate-pulse">…</span>
-        </p>
-      )}
+      <ChatTypingRow users={typingUsers} />
     </>
   );
 }

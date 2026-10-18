@@ -12,7 +12,7 @@ interface ChatMembersCardProps {
   orgId: string | null;
   // Jumping into a dm closes the info drawer first.
   onClose: () => void;
-  // Inside the shared-panel tab bar, the tab itself is the heading —
+  // Inside the shared-panel tab bar, the tab itself is the heading -
   // bare skips the section title to save space.
   bare?: boolean;
 }

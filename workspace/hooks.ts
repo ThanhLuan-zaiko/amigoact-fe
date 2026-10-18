@@ -17,6 +17,7 @@ import {
   getChatUnread,
   listChatInbox,
   listChatMessages,
+  listChatReads,
   listDmRooms,
   listSharedMedia,
   listSharedMediaAuthors,
@@ -31,6 +32,7 @@ import {
   type ChatAttachment,
   type ChatPage,
   type ChatInbox,
+  type ChatReadsPage,
   type DmRoom,
   type DmRoomPage,
   type ReadState,
@@ -105,6 +107,21 @@ export function useChatUnread(
   return useQuery({
     queryKey: workspaceKeys.chatUnread(roomId),
     queryFn: () => getChatUnread(roomId as string),
+    staleTime: 30_000,
+    retry: 1,
+    refetchOnWindowFocus: false,
+    enabled: roomId !== null,
+  });
+}
+
+// Read pointers of every member: powers the group "seen by" receipt.
+// dm rooms pass null - the peer pointer already rides the history page.
+export function useChatReads(
+  roomId: string | null,
+): UseQueryResult<ChatReadsPage, ApiError> {
+  return useQuery({
+    queryKey: workspaceKeys.chatReads(roomId),
+    queryFn: () => listChatReads(roomId as string),
     staleTime: 30_000,
     retry: 1,
     refetchOnWindowFocus: false,
@@ -282,11 +299,9 @@ export function useMarkChatRead(
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (messageId: string) => markChatRead(roomId, messageId),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: [...workspaceKeys.all, "chat-unread"],
-      });
-    },
+    // The rail badge and inbox row read room.unread from the inbox
+    // query, so a read must invalidate it too, not just chat-unread.
+    onSuccess: () => invalidateChat(queryClient),
   });
 }
 

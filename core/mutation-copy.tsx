@@ -41,6 +41,12 @@ export const MUTATION_TOAST_TITLES: Record<string, string> = {
   "role.save": "Đã lưu vai trò.",
   "role.delete": "Đã xóa vai trò.",
   // activities / registrations / hours / certificates / reviews
+  "tag.create": "Đã thêm thẻ.",
+  "tag.rename": "Đã đổi tên thẻ.",
+  "tag.merge": "Đã gộp thẻ.",
+  "tag.trash": "Đã chuyển thẻ vào thùng rác.",
+  "tag.restore": "Đã khôi phục thẻ.",
+  "tag.erase": "Đã xóa vĩnh viễn thẻ.",
   "activity.save": "Đã lưu hoạt động.",
   "activity.delete": "Đã xóa hoạt động.",
   "activity.category": "Đã tạo danh mục.",

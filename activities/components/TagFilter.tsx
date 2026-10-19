@@ -5,7 +5,7 @@ import { useDismiss } from "../../core/dismiss.ts";
 import { expandPanel } from "../../core/motion.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
-import { useTagSearch } from "../hooks.ts";
+import { usePublicTagSearch } from "../tags-hooks.ts";
 
 interface TagFilterProps {
   slug: string | undefined;
@@ -27,7 +27,7 @@ export function TagFilter({
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const listboxId = "tag-filter-listbox";
-  const search = useTagSearch(query);
+  const search = usePublicTagSearch(query);
   const options = search.data ?? [];
 
   useDismiss(open, rootRef, () => setOpen(false), inputRef);

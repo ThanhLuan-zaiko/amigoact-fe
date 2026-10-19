@@ -7,9 +7,11 @@ import type {
 import { FiHash, FiPlus, FiX } from "react-icons/fi";
 import { useDismiss } from "../../core/dismiss.ts";
 import { expandPanel } from "../../core/motion.ts";
-import { useTagSearch } from "../hooks.ts";
+import { useOrgTags } from "../tags-hooks.ts";
+import { foldTag } from "../tag-utils.ts";
 
 interface TagInputProps {
+  orgId: string;
   label?: string;
   value: string[];
   onChange: (next: string[]) => void;
@@ -24,25 +26,17 @@ interface Option {
   create: boolean;
 }
 
-// Diacritic-insensitive match for duplicate checks ("moi" ~ "Môi").
-function fold(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .trim();
-}
-
-// Free-form hashtag picker: chips + inline combobox fed by GET /tags.
-// Unknown names become a trailing "create" option because the catalog
-// claims tags lazily when they are attached to an activity.
+// Free-form hashtag picker: chips + inline combobox fed by the org's
+// tag catalog. Unknown names become a trailing "create" option because
+// the catalog claims tags lazily when an activity is saved.
 export function TagInput({
+  orgId,
   label = "Thẻ",
   value,
   onChange,
   max = 10,
   disabled = false,
-  hint = "Enter để thêm; tối đa 10 thẻ giúp cộng đồng tìm thấy hoạt động.",
+  hint = "Enter để thêm, tối đa 10 thẻ. Thẻ mới sẽ được thêm vào danh mục thẻ của tổ chức.",
 }: TagInputProps): ReactElement {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -52,15 +46,24 @@ export function TagInput({
   const listRef = useRef<HTMLUListElement>(null);
   const fieldId = `tag-input-${label.length}`;
   const listboxId = `${fieldId}-listbox`;
-  const search = useTagSearch(query);
-  const taken = new Set(value.map(fold));
+  const search = useOrgTags(orgId);
+  const taken = new Set(value.map(foldTag));
   const full = value.length >= max;
 
   const trimmed = query.trim();
-  const suggestions = (search.data ?? []).filter(
-    (t) => !taken.has(fold(t.name)),
-  );
-  const exact = suggestions.some((t) => fold(t.name) === fold(trimmed));
+  const needle = foldTag(trimmed);
+  const matches = (search.data?.items ?? [])
+    .filter(
+      (t) =>
+        !needle ||
+        foldTag(t.name).includes(needle) ||
+        t.slug.includes(needle),
+    )
+    .filter((t) => !taken.has(foldTag(t.name)));
+  // An existing tag must block the create option even past the
+  // suggestion cap, so `exact` sees the full filtered list.
+  const exact = matches.some((t) => foldTag(t.name) === needle);
+  const suggestions = matches.slice(0, 8);
   const options: Option[] = [
     ...suggestions.map((t) => ({
       key: t.slug,
@@ -85,7 +88,7 @@ export function TagInput({
 
   function add(name: string): void {
     const next = name.trim();
-    if (!next || taken.has(fold(next)) || full) return;
+    if (!next || taken.has(foldTag(next)) || full) return;
     onChange([...value, next]);
     setQuery("");
     setActive(-1);

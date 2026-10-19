@@ -20,7 +20,6 @@ import {
   listCategories,
   listOrgActivities,
   restoreActivity,
-  searchTags,
   setRegistrationForm,
   softDeleteActivity,
   transitionActivity,
@@ -33,7 +32,6 @@ import {
   type DiscoveryResponse,
   type FormQuestion,
   type FormQuestionInput,
-  type TagItem,
 } from "./api.ts";
 import {
   addAnnouncement,
@@ -64,18 +62,6 @@ export function useActivityFeed(
   return useQuery({
     queryKey: activityKeys.feed(status, categoryId, tag),
     queryFn: () => listActivities(status, categoryId, tag),
-    staleTime: 30_000,
-  });
-}
-
-export function useTagSearch(
-  query: string,
-): UseQueryResult<TagItem[], ApiError> {
-  return useQuery({
-    queryKey: activityKeys.tags(query.trim()),
-    queryFn: () => searchTags(query),
-    enabled: query.trim().length > 0,
-    placeholderData: (previous) => previous,
     staleTime: 30_000,
   });
 }

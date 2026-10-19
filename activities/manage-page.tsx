@@ -1,6 +1,6 @@
-import { useState, type ReactElement } from "react";
+import { type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiCalendar, FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiCalendar, FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
@@ -9,6 +9,7 @@ import {
   LoadingState,
 } from "../core/components/Feedback.tsx";
 import { useMyOrgs } from "../dashboard/hooks.ts";
+import { useWorkspaceOrg } from "../workspace/hooks.ts";
 import { MemberOrgPicker } from "../dashboard/components/MemberOrgPicker.tsx";
 import { ActivityActions } from "./components/ActivityActions.tsx";
 import { ActivityCard } from "./components/ActivityCard.tsx";
@@ -22,7 +23,7 @@ import {
 
 export function ManageEventsPage(): ReactElement {
   const orgs = useMyOrgs();
-  const [orgId, setOrgId] = useState<string | null>(null);
+  const { orgId, selectOrg } = useWorkspaceOrg(orgs.data?.items ?? []);
   // The create form is deep-linkable (?create=1) so the rail's primary
   // action lands straight on it.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -48,9 +49,26 @@ export function ManageEventsPage(): ReactElement {
       { replace: true },
     );
   };
-  const selected = orgId ?? orgs.data?.items[0]?.id ?? null;
+  const selected = orgId;
   useLiveActivities(selected ?? undefined);
   const activities = useOrgActivities(selected, trash);
+  const tag = searchParams.get("tag");
+  const clearTag = (): void => {
+    setSearchParams(
+      (params) => {
+        params.delete("tag");
+        return params;
+      },
+      { replace: true },
+    );
+  };
+  const shown = (activities.data ?? []).filter(
+    (a) => !tag || a.tags.some((t) => t.slug === tag),
+  );
+  const tagName =
+    (activities.data ?? [])
+      .flatMap((a) => a.tags)
+      .find((t) => t.slug === tag)?.name ?? tag;
   const categories = useCategories(selected ?? undefined);
   const create = useCreateActivity(selected ?? "");
 
@@ -98,7 +116,7 @@ export function ManageEventsPage(): ReactElement {
           <MemberOrgPicker
             orgs={orgs.data.items}
             selectedId={selected}
-            onSelect={setOrgId}
+            onSelect={selectOrg}
           />
         )}
       </Section>
@@ -110,6 +128,7 @@ export function ManageEventsPage(): ReactElement {
           </h2>
           <div className="mt-3">
             <ActivityForm
+              orgId={selected}
               categories={categories.data ?? []}
               submitLabel="Tạo bản nháp"
               onSubmit={(input) => create.mutateAsync(input)}
@@ -130,7 +149,28 @@ export function ManageEventsPage(): ReactElement {
               message={activities.error.message}
             />
           )}
-          {activities.isSuccess && activities.data.length === 0 && (
+          {tag && (
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={clearTag}
+                icon={<FiX className="h-4 w-4" aria-hidden="true" />}
+                aria-label={`Bỏ lọc thẻ ${tagName ?? ""}`}
+              >
+                #{tagName}
+              </Button>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                Đang lọc theo thẻ
+              </span>
+            </div>
+          )}
+          {activities.isSuccess && shown.length === 0 && tag && (
+            <EmptyState
+              title="Không có hoạt động"
+              message="Không có hoạt động nào gắn thẻ này."
+            />
+          )}
+          {activities.isSuccess && shown.length === 0 && !tag && (
             <EmptyState
               title={trash ? "Thùng rác trống" : "Chưa có hoạt động"}
               message={
@@ -141,7 +181,7 @@ export function ManageEventsPage(): ReactElement {
             />
           )}
           <ul className="flex flex-col gap-2">
-            {(activities.data ?? []).map((a) => (
+            {shown.map((a) => (
               <li key={a.id} className="flex flex-col gap-2">
                 <ActivityCard
                   activity={a}

@@ -28,6 +28,7 @@ const FIELD_LABELS: Record<string, string> = {
   phone: "Điện thoại",
   website: "Website",
   address: "Địa chỉ",
+  tag: "Thẻ",
   city: "Thành phố",
   country: "Quốc gia",
   legal_name: "Tên pháp lý",

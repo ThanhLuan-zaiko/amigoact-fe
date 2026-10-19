@@ -5,12 +5,6 @@ export interface TagRef {
   slug: string;
 }
 
-export interface TagItem {
-  id: string;
-  name: string;
-  slug: string;
-}
-
 export interface ActivitySummary {
   id: string;
   org_id: string;
@@ -149,15 +143,6 @@ export function listActivities(
   if (categoryId) params.set("category_id", categoryId);
   if (tag) params.set("tag", tag);
   return apiFetch<ActivitySummary[]>(`/activities?${params}`);
-}
-
-export function searchTags(
-  query: string,
-  limit = 8,
-): Promise<TagItem[]> {
-  const params = new URLSearchParams({ limit: String(limit) });
-  if (query.trim()) params.set("q", query.trim());
-  return apiFetch<TagItem[]>(`/tags?${params}`);
 }
 
 export function listCategories(orgId?: string): Promise<CategoryItem[]> {

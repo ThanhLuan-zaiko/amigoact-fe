@@ -23,6 +23,7 @@ import { EventDetailPage } from "./activities/detail-page.tsx";
 import { EventsPage } from "./activities/page.tsx";
 import { ManageEventDetailPage } from "./activities/manage-detail-page.tsx";
 import { ManageEventsPage } from "./activities/manage-page.tsx";
+import { ManageTagsPage } from "./activities/tags-page.tsx";
 import { HomePage } from "./home/page.tsx";
 import { MyHoursPage } from "./hours/mine-page.tsx";
 import { LeaderboardPage } from "./leaderboard/page.tsx";
@@ -108,6 +109,7 @@ export default function App(): ReactElement {
           <Route path="orgs/create" element={<DashboardCreatePage />} />
           <Route path="create" element={<Navigate to="orgs/create" replace />} />
           <Route path="events" element={<ManageEventsPage />} />
+          <Route path="tags" element={<ManageTagsPage />} />
           <Route
             path="events/:orgId/:activityId"
             element={<ManageEventDetailPage />}

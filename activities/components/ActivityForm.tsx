@@ -1,6 +1,7 @@
 import { useState, type ReactElement } from "react";
 import { FiSave } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
+import { toVietnameseTagMessage } from "../messages.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { SelectField } from "../../core/components/SelectField.tsx";
@@ -14,6 +15,7 @@ import { fromLocalInput, toLocalInput } from "../dates.tsx";
 import { TagInput } from "./TagInput.tsx";
 
 interface ActivityFormProps {
+  orgId: string;
   categories: CategoryItem[];
   initial?: ActivityDetail;
   submitLabel: string;
@@ -22,6 +24,7 @@ interface ActivityFormProps {
 }
 
 export function ActivityForm({
+  orgId,
   categories,
   initial,
   submitLabel,
@@ -81,7 +84,9 @@ export function ActivityForm({
     } catch (cause) {
       setError(
         cause instanceof ApiError
-          ? cause.message
+          ? cause.code === "TAG_DELETED"
+            ? toVietnameseTagMessage(cause.code)
+            : cause.message
           : "Có lỗi xảy ra. Vui lòng thử lại.",
       );
     } finally {
@@ -196,7 +201,7 @@ export function ActivityForm({
           Hoạt động trực tuyến
         </label>
       </div>
-      <TagInput value={tags} onChange={setTags} disabled={busy} />
+      <TagInput orgId={orgId} value={tags} onChange={setTags} disabled={busy} />
       <TextField
         label="Mô tả"
         name="description"

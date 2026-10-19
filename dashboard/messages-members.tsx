@@ -21,6 +21,7 @@ export const PERMISSION_LABELS: Record<string, string> = {
   "activity:view": "Xem sự kiện nội bộ",
   "activity:create": "Tạo sự kiện",
   "activity:manage": "Quản lý sự kiện",
+  "tag:manage": "Quản lý thẻ",
 };
 
 // Grouped labels keep the role editor readable; order is display order.
@@ -38,7 +39,12 @@ export const PERMISSION_GROUPS: { label: string; codes: string[] }[] = [
   { label: "Tổ chức", codes: ["org:update", "media:manage"] },
   {
     label: "Sự kiện",
-    codes: ["activity:view", "activity:create", "activity:manage"],
+    codes: [
+      "activity:view",
+      "activity:create",
+      "activity:manage",
+      "tag:manage",
+    ],
   },
 ];
 

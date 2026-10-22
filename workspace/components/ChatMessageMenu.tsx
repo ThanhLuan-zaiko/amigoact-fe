@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactElement } from "react";
 import {
   FiCopy,
@@ -10,7 +10,6 @@ import {
 } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { useDismiss } from "../../core/dismiss.ts";
-import { expandPanel } from "../../core/motion.ts";
 import type { ChatMessage } from "../api.ts";
 
 const ITEM =
@@ -51,13 +50,9 @@ export function ChatMessageMenu({
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   const close = (): void => setOpen(false);
 
   useDismiss(open, rootRef, close, triggerRef);
-  useEffect(() => {
-    if (open && panelRef.current) expandPanel(panelRef.current);
-  }, [open]);
 
   function copy(): void {
     close();
@@ -86,7 +81,6 @@ export function ChatMessageMenu({
       />
       {open && (
         <div
-          ref={panelRef}
           role="menu"
           aria-label="Tùy chọn tin nhắn"
           className={

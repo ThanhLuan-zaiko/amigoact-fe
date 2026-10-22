@@ -79,14 +79,12 @@ export function TextField({
           aria-describedby={describedBy}
           className={`min-h-[44px] w-full border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-100 dark:focus-visible:outline-zinc-400 ${
             pill
-              ? "rounded-full bg-zinc-100 focus:bg-white dark:bg-zinc-900 dark:focus:bg-zinc-950"
+              ? "rounded-full bg-white dark:bg-zinc-950"
               : "rounded-lg bg-white dark:bg-zinc-950"
           } ${icon ? (pill ? "pl-11" : "pl-9") : ""} ${trailing ? "pr-12" : ""} ${
             error
               ? "border-red-600 dark:border-red-400"
-              : pill
-                ? "border-zinc-100 dark:border-zinc-900"
-                : "border-zinc-300 dark:border-zinc-700"
+              : "border-zinc-300 dark:border-zinc-700"
           }`}
           {...rest}
         />

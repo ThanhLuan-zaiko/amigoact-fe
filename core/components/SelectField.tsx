@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { FiCheck, FiChevronDown } from "react-icons/fi";
-import { expandPanel } from "../motion.ts";
 
 export interface SelectOption {
   value: string;
@@ -94,10 +93,6 @@ export function SelectField({
       jumpTo(typeRef.current.buf);
     }
   }
-
-  useEffect(() => {
-    if (open && listRef.current) expandPanel(listRef.current);
-  }, [open]);
 
   useEffect(() => {
     if (!open || active < 0) return;

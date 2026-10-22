@@ -40,7 +40,6 @@ export function BlockEditor({
   const label = BLOCK_TYPE_LABELS[block.type];
   return (
     <div
-      data-rise
       className="rounded-xl border border-zinc-200 p-3 dark:border-zinc-800"
     >
       <div className="mb-2 flex items-center justify-between gap-2">

@@ -16,7 +16,7 @@ export function ShelfRail({ shelf, writeHref }: ShelfRailProps): ReactElement {
   }
   return (
     <Section>
-      <div data-rise className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <FiAlertTriangle
           className="h-5 w-5 text-amber-600 dark:text-amber-400"
           aria-hidden="true"

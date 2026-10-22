@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import type { ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { FiChevronLeft, FiChevronRight, FiPlay, FiX } from "react-icons/fi";
-import { riseIn } from "../../core/motion.ts";
 import { orgMediaUrl, type PublicOrgMedia } from "../api.ts";
 
 interface MediaLightboxProps {
@@ -31,17 +30,14 @@ export function MediaLightbox({
   const safe = total === 0 ? 0 : Math.min(index, total - 1);
   const item = total === 0 ? null : items[safe];
 
-  // Mount-only: entrance, scroll lock and focus restore. Index changes
-  // must not replay riseIn or the whole viewer flickers on each step.
+  // Mount-only: scroll lock and focus restore. Index changes must not
+  // steal focus again on each step.
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const root = rootRef.current;
-    if (root !== null) {
-      riseIn(root, { y: 8, duration: 180 });
-      root.focus({ preventScroll: true });
-    }
+    if (root !== null) root.focus({ preventScroll: true });
     return () => {
       document.body.style.overflow = prevOverflow;
       prev?.focus({ preventScroll: true });

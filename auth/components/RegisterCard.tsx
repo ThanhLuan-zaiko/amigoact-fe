@@ -7,7 +7,6 @@ import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { StepProgress } from "../../core/components/StepProgress.tsx";
-import { useRiseIn } from "../../core/motion.ts";
 import { pushToast } from "../../core/toast.ts";
 import { useRegisterFlow, type RegisterFlowOutcome } from "../hooks.ts";
 import { validateRegisterField, validateRegisterForm, type FieldErrors, type RegisterForm } from "../schemas.ts";
@@ -37,7 +36,6 @@ export function RegisterCard(): ReactElement {
   const [serverCode, setServerCode] = useState<string | null>(null);
   const [showPasswords, setShowPasswords] = useState(false);
   const [step, setStep] = useState(1);
-  const scope = useRiseIn<HTMLDivElement>();
   const total = form.accountType === "business" ? 3 : 2;
   const current = Math.min(step, total);
   const isLast = current === total;
@@ -143,8 +141,8 @@ export function RegisterCard(): ReactElement {
 
   return (
     <Section>
-      <div ref={scope} className="flex flex-col">
-      <div data-rise className="flex items-center gap-2">
+      <div className="flex flex-col">
+      <div className="flex items-center gap-2">
         <FiUserPlus className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           Đăng ký
@@ -160,7 +158,7 @@ export function RegisterCard(): ReactElement {
           <ErrorState title="Không thể đăng ký" message={toVietnameseMessage(serverCode)} />
         </div>
       )}
-      <form data-rise onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-3">
+      <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-3">
         {current === 1 && (
           <AccountTypeStep value={form.accountType} onSelect={(value) => update("accountType", value)} />
         )}
@@ -225,7 +223,7 @@ export function RegisterCard(): ReactElement {
           )}
         </div>
       </form>
-      <p data-rise className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
         Đã có tài khoản?{" "}
         <Link to="/login" className="text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 hover:bg-zinc-100 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900">
           Đăng nhập

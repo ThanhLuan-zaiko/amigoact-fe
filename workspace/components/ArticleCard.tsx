@@ -44,7 +44,7 @@ export function ArticleCard({
     : " ";
   return (
     <Section className={span}>
-      <article data-rise className={featured ? "flex flex-col gap-4 sm:flex-row" : ""}>
+      <article className={featured ? "flex flex-col gap-4 sm:flex-row" : ""}>
         {cover !== null && (
           <img
             src={cover}

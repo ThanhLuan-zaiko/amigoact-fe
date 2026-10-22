@@ -5,11 +5,9 @@ import { ApiError } from "../../core/api.ts";
 import { Section } from "../../core/components/Section.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { Pagination } from "../../core/components/Pagination.tsx";
-import { useRiseOn } from "../../core/motion.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
-import type { MemberListPage, MemberSortParam, OrgRole } from "../members-api.ts";
+import type { MemberListPage, OrgRole } from "../members-api.ts";
 import type { OrgListPage } from "../api.ts";
-import { MemberListToolbar } from "./MemberListToolbar.tsx";
 import { MemberNoOrg } from "./MemberNoOrg.tsx";
 import { MemberRow } from "./MemberRow.tsx";
 
@@ -20,14 +18,10 @@ interface MemberListCardProps {
   orgRoles: OrgRole[];
   selfId: string | undefined;
   onlineIds: ReadonlySet<string>;
-  query: string;
-  sort: MemberSortParam;
   filtering: boolean;
   outOfRange: boolean;
   page: number;
   totalPages: number;
-  onQuery: (value: string) => void;
-  onSort: (sort: MemberSortParam) => void;
   onPage: (page: number) => void;
   onResetFilters: () => void;
 }
@@ -41,14 +35,10 @@ export function MemberListCard({
   orgRoles,
   selfId,
   onlineIds,
-  query,
-  sort,
   filtering,
   outOfRange,
   page,
   totalPages,
-  onQuery,
-  onSort,
   onPage,
   onResetFilters,
 }: MemberListCardProps): ReactElement {
@@ -58,7 +48,6 @@ export function MemberListCard({
   const viewerRole = members.data?.viewer_role ?? "member";
   const viewerPermissions = members.data?.viewer_permissions ?? [];
 
-  const listRef = useRiseOn<HTMLUListElement>(`${page}:${items.length}`);
 
   return (
     <Section
@@ -68,7 +57,7 @@ export function MemberListCard({
           : " "
       }
     >
-      <div data-rise className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <FiUsers className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Thành viên
@@ -79,14 +68,6 @@ export function MemberListCard({
           </span>
         )}
       </div>
-      {hasOrgs && (total > 0 || filtering) && (
-        <MemberListToolbar
-          query={query}
-          onQuery={onQuery}
-          sort={sort}
-          onSort={onSort}
-        />
-      )}
       <div className="mt-3" aria-live="polite" aria-busy={orgs.isPending || members.isPending}>
         {orgs.isPending && <LoadingState label="Đang tải tổ chức…" />}
         {orgs.isError && (
@@ -126,10 +107,7 @@ export function MemberListCard({
         {outOfRange && <LoadingState label="Đang tải danh sách thành viên…" />}
         {!outOfRange && items.length > 0 && orgId !== null && (
           <>
-            <ul
-              ref={listRef}
-              className="mt-2 divide-y divide-zinc-200 dark:divide-zinc-800"
-            >
+            <ul className="mt-2 divide-y divide-zinc-200 dark:divide-zinc-800">
               {items.map((member) => (
                 <MemberRow
                   key={member.user_id}

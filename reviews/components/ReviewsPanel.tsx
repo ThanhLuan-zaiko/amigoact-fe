@@ -64,7 +64,7 @@ export function ReviewsPanel({
   const data = reviews.data;
 
   return (
-    <div data-rise>
+    <div>
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
           Đánh giá

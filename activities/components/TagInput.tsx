@@ -6,7 +6,6 @@ import type {
 } from "react";
 import { FiHash, FiPlus, FiX } from "react-icons/fi";
 import { useDismiss } from "../../core/dismiss.ts";
-import { expandPanel } from "../../core/motion.ts";
 import { useOrgTags } from "../tags-hooks.ts";
 import { foldTag } from "../tag-utils.ts";
 
@@ -76,9 +75,6 @@ export function TagInput({
   ];
 
   useDismiss(open, rootRef, () => setOpen(false), inputRef);
-  useEffect(() => {
-    if (open && listRef.current) expandPanel(listRef.current);
-  }, [open]);
   useEffect(() => {
     if (!open || active < 0) return;
     listRef.current?.children[active]?.scrollIntoView({

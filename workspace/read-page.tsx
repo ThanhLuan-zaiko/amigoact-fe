@@ -63,7 +63,7 @@ export function WorkspaceReadPage(): ReactElement {
   return (
     <>
       <Section>
-        <div data-rise className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Đọc bài viết
           </h1>
@@ -106,7 +106,7 @@ export function WorkspaceReadPage(): ReactElement {
       {orgId !== null && article !== null && (
         <>
           <Section>
-            <article data-rise>
+            <article>
               {cover !== null && (
                 <img
                   src={cover}
@@ -160,7 +160,7 @@ export function WorkspaceReadPage(): ReactElement {
             )}
           </Section>
           <Section>
-            <div data-rise className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
               <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
                 Thông tin bài viết
               </h2>

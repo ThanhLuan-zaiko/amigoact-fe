@@ -12,8 +12,8 @@ import {
 } from "../tags-hooks.ts";
 import { TagMergeDialog } from "./TagMergeDialog.tsx";
 
-// Labeled action bucket for a live catalog row: Sửa opens the inline
-// rename owned by TagRow; Gộp needs at least one other live tag; the
+// Labeled action bucket for a live catalog row: edit opens the inline
+// rename owned by TagRow; merge needs at least one other live tag; the
 // soft delete needs no confirm, the hard delete gets a danger dialog.
 export function TagRowActions({
   orgId,

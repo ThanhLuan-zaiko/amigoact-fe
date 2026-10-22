@@ -15,6 +15,8 @@ import {
   UpcomingCard,
 } from "./RailCards.tsx";
 import { TextField } from "./TextField.tsx";
+import { ManageRail } from "../../dashboard/components/ManageRail.tsx";
+import { MANAGE_ROOT } from "../nav.tsx";
 import { ChatInboxRail } from "../../workspace/components/ChatInboxRail.tsx";
 
 const YEAR = new Date().getFullYear();
@@ -76,6 +78,16 @@ export function RightRail(): ReactElement {
   const { pathname } = useLocation();
   if (pathname === "/manage/chat" && signedIn) {
     return <ChatInboxRail />;
+  }
+  if (pathname.startsWith(MANAGE_ROOT) && signedIn) {
+    return (
+      <div className="flex flex-col gap-4 pb-8">
+        <ManageRail placement="rail" />
+        <footer className="px-4 text-[13px] text-zinc-500 dark:text-zinc-400">
+          <p>{`© ${YEAR} AmigoACT`}</p>
+        </footer>
+      </div>
+    );
   }
   return (
     <div className="flex flex-col gap-4 pb-8">

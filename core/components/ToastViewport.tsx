@@ -1,7 +1,6 @@
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { FiAlertCircle, FiCheckCircle, FiInfo, FiX } from "react-icons/fi";
-import { riseIn } from "../motion.ts";
 import {
   dismissToast,
   getToasts,
@@ -39,18 +38,13 @@ const TONE_BORDER: Record<ToastTone, string> = {
 };
 
 function ToastCard({ toast }: { toast: Toast }): ReactElement {
-  const ref = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
-    const node = ref.current;
-    if (node) riseIn(node, { y: 8, duration: 200 });
     const timer = setTimeout(() => dismissToast(toast.id), toast.durationMs);
     return () => clearTimeout(timer);
   }, [toast.id, toast.durationMs]);
 
   return (
     <div
-      ref={ref}
       role={toast.tone === "error" ? "alert" : "status"}
       className={`pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-xl border bg-white p-3 dark:bg-zinc-950 ${TONE_BORDER[toast.tone]}`}
     >

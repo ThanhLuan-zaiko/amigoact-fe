@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { FiHash, FiX } from "react-icons/fi";
 import { useDismiss } from "../../core/dismiss.ts";
-import { expandPanel } from "../../core/motion.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { usePublicTagSearch } from "../tags-hooks.ts";
@@ -31,9 +30,6 @@ export function TagFilter({
   const options = search.data ?? [];
 
   useDismiss(open, rootRef, () => setOpen(false), inputRef);
-  useEffect(() => {
-    if (open && listRef.current) expandPanel(listRef.current);
-  }, [open]);
   useEffect(() => {
     if (!open || active < 0) return;
     listRef.current?.children[active]?.scrollIntoView({

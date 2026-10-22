@@ -68,7 +68,7 @@ export function TemplatePanel({ orgId }: TemplatePanelProps): ReactElement {
   const rows = templates.data ?? [];
 
   return (
-    <div data-rise>
+    <div>
       <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
         Mẫu chứng nhận
       </h3>

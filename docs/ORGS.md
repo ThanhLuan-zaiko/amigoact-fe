@@ -172,9 +172,8 @@ vùng thư viện bên trong cuộn):
   `dashboardKeys.orgMedia(orgId)`.
 - Nút `Xóa tất cả` (chủ org, xác nhận 2 bước) gọi `DELETE /orgs/{id}/media`
   xóa toàn bộ gallery — cả metadata lẫn bytes.
-- Lưới media và hàng tổ chức stagger fade+rise qua `useRiseOn` trong
-  `core/motion.ts` (data về sau mount vẫn được animate); tôn trọng
-  `prefers-reduced-motion`.
+- Lưới media và hàng tổ chức hiện ngay khi dữ liệu về, không có
+  hiệu ứng vào trang.
 
 ## 5. Upload qua `FormData`
 

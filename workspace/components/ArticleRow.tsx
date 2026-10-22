@@ -33,7 +33,6 @@ export function ArticleRow({
   const stamp = shelf === "trash" ? post.deleted_at : post.updated_at;
   return (
     <li
-      data-rise
       className="flex flex-col gap-3 rounded-xl border border-zinc-200 p-3 sm:flex-row sm:items-start dark:border-zinc-800"
     >
       {cover !== null && (

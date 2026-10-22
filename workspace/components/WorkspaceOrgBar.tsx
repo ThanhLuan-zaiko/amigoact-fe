@@ -29,7 +29,6 @@ export function WorkspaceOrgBar({
   return (
     <Section>
       <div
-        data-rise
         className="flex flex-wrap items-start justify-between gap-2"
       >
         <div>

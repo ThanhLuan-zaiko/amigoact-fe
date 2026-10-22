@@ -77,7 +77,7 @@ export function RulePanel({ orgId }: RulePanelProps): ReactElement {
   const rows = rules.data ?? [];
 
   return (
-    <div data-rise>
+    <div>
       <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
         Hệ số giờ theo danh mục
       </h3>

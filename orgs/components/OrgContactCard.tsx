@@ -33,7 +33,7 @@ export function OrgContactCard({ org }: OrgContactCardProps): ReactElement {
     org.legal_status !== "none";
   return (
     <Section>
-      <div data-rise>
+      <div>
         <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
           <FiMail
             className="h-5 w-5 text-zinc-900 dark:text-zinc-100"

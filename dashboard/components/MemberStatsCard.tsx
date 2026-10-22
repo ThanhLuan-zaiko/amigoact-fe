@@ -23,6 +23,8 @@ interface MemberStatsCardProps {
   counts: BucketCount[];
   bucket: string;
   onBucket: (bucket: string) => void;
+  // Two columns, for the narrow manage rail.
+  compact?: boolean;
 }
 
 interface StatSpec {
@@ -79,6 +81,7 @@ export function MemberStatsCard({
   counts,
   bucket,
   onBucket,
+  compact = false,
 }: MemberStatsCardProps): ReactElement {
   const lookup = new Map(counts.map((entry) => [entry.bucket, entry.count]));
   // The "all" tile is the searched universe: counts ignore the status filter.
@@ -97,12 +100,15 @@ export function MemberStatsCard({
       <div
         role="group"
         aria-label="Lọc theo trạng thái thành viên"
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3 @4xl:grid-cols-6"
+        className={
+          compact
+            ? "grid grid-cols-2 gap-2"
+            : "grid grid-cols-2 gap-3 sm:grid-cols-3 @4xl:grid-cols-6"
+        }
       >
         {TILES.map(({ key, label, Icon, tone }) => (
           <StatTile
             key={key}
-            data-rise
             active={bucket === key}
             onClick={() => onBucket(key)}
             icon={<Icon className={`h-5 w-5 shrink-0 ${tone}`} aria-hidden="true" />}

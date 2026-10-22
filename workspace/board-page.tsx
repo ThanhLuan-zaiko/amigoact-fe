@@ -1,8 +1,6 @@
 import { useEffect, useMemo } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiEdit3 } from "react-icons/fi";
-import { Button } from "../core/components/Button.tsx";
 import { useSession } from "../auth/hooks.ts";
 import { useMyMemberships } from "../dashboard/members-hooks.ts";
 import {
@@ -15,11 +13,8 @@ import {
 import { useBoardRealtime } from "./realtime-hooks.ts";
 import type { PostKind } from "./board-api.ts";
 import type { ArticleShelf } from "./components/ArticleActions.tsx";
-import { WorkspaceOrgBar } from "./components/WorkspaceOrgBar.tsx";
-import { ShelfTabs } from "./components/ShelfTabs.tsx";
 import { FeedShelf } from "./components/FeedShelf.tsx";
 import { ShelfCard } from "./components/ShelfCard.tsx";
-import { ShelfRail } from "./components/ShelfRail.tsx";
 
 function parseTab(raw: string | null): ArticleShelf {
   return raw === "draft" || raw === "trash" ? raw : "published";
@@ -80,8 +75,6 @@ export function WorkspaceBoardPage(): ReactElement {
     [];
   const canAnnounce = permissions.includes("post:announce");
   const canManage = permissions.includes("post:manage");
-  const writeHref =
-    orgId === null ? "/manage/board" : `/manage/board/write?org=${orgId}`;
 
   function patchParams(patch: Record<string, string | null>): void {
     const next = new URLSearchParams(searchParams);
@@ -92,44 +85,10 @@ export function WorkspaceBoardPage(): ReactElement {
     setSearchParams(next, { replace: true });
   }
 
-  function selectOrgAndReset(id: string): void {
-    const next = new URLSearchParams(searchParams);
-    next.set("org", id);
-    next.delete("page");
-    setSearchParams(next, { replace: true });
-  }
-
   return (
     <>
-      <WorkspaceOrgBar
-        orgs={memberships.data === undefined ? undefined : orgs}
-        orgId={orgId}
-        title="Bảng tin tổ chức"
-        onSelect={selectOrgAndReset}
-        trailing={
-          orgId !== null ? (
-            <Button
-              to={writeHref}
-              variant="primary"
-              icon={<FiEdit3 className="h-4 w-4" aria-hidden="true" />}
-            >
-              Viết bài
-            </Button>
-          ) : undefined
-        }
-      />
       {orgId !== null && (
         <>
-          <ShelfTabs
-            tab={tab}
-            onSelect={(shelf) =>
-              patchParams({
-                tab: shelf === "published" ? null : shelf,
-                kind: null,
-                page: null,
-              })
-            }
-          />
           {tab === "published" && (
             <FeedShelf
               orgId={orgId}
@@ -149,7 +108,6 @@ export function WorkspaceBoardPage(): ReactElement {
               onPage={(n) =>
                 patchParams({ page: n > 1 ? String(n) : null })
               }
-              writeHref={writeHref}
             />
           )}
           {tab === "draft" && (
@@ -166,9 +124,7 @@ export function WorkspaceBoardPage(): ReactElement {
                 onPage={(n) =>
                   patchParams({ page: n > 1 ? String(n) : null })
                 }
-                writeHref={writeHref}
               />
-              <ShelfRail shelf="draft" writeHref={writeHref} />
             </>
           )}
           {tab === "trash" && (
@@ -185,9 +141,7 @@ export function WorkspaceBoardPage(): ReactElement {
                 onPage={(n) =>
                   patchParams({ page: n > 1 ? String(n) : null })
                 }
-                writeHref={writeHref}
               />
-              <ShelfRail shelf="trash" writeHref={writeHref} />
             </>
           )}
         </>

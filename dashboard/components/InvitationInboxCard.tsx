@@ -5,7 +5,6 @@ import { ApiError } from "../../core/api.ts";
 import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
-import { useRiseOn } from "../../core/motion.ts";
 import { useSession } from "../../auth/hooks.ts";
 import { useAcceptInvite, useDeclineInvite, useMyMemberships } from "../members-hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
@@ -38,7 +37,6 @@ export function InvitationInboxCard(): ReactElement | null {
     }
   }
 
-  const listRef = useRiseOn<HTMLUListElement>(items.length);
 
   if (
     invites.data !== undefined &&
@@ -52,7 +50,7 @@ export function InvitationInboxCard(): ReactElement | null {
 
   return (
     <Section>
-      <div data-rise className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <FiMail className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Lời mời của tôi
@@ -88,14 +86,10 @@ export function InvitationInboxCard(): ReactElement | null {
           </div>
         )}
         {items.length > 0 && (
-          <ul
-            ref={listRef}
-            className="divide-y divide-zinc-200 dark:divide-zinc-800"
-          >
+          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {items.map((invite: MyMembership) => (
               <li
                 key={invite.org_id}
-                data-rise
                 className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 items-center gap-3">

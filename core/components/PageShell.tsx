@@ -6,6 +6,7 @@ import { useNotificationsRealtime } from "../../notifications/hooks.ts";
 import { CenterHeader } from "./CenterHeader.tsx";
 import { LeftRail } from "./LeftRail.tsx";
 import { MobileTabBar } from "./MobileTabBar.tsx";
+import { Modal } from "./Modal.tsx";
 import { NavDrawer } from "./NavDrawer.tsx";
 import { RealtimeBanner } from "./RealtimeBanner.tsx";
 import { RightRail } from "./RightRail.tsx";
@@ -30,6 +31,11 @@ export function PageShell(): ReactElement {
   );
   const drawerOpen = drawer !== null && drawer.path === pathname && drawer.open;
   const closeDrawer = (): void => setDrawer({ path: pathname, open: false });
+  // Same path tie as the nav drawer: changing route closes the rail sheet.
+  const [rail, setRail] = useState<{ path: string; open: boolean } | null>(
+    null,
+  );
+  const railOpen = rail !== null && rail.path === pathname && rail.open;
 
   return (
     <div className="min-h-dvh bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
@@ -43,6 +49,8 @@ export function PageShell(): ReactElement {
           <CenterHeader
             drawerOpen={drawerOpen}
             onOpenDrawer={() => setDrawer({ path: pathname, open: true })}
+            railOpen={railOpen}
+            onOpenRail={() => setRail({ path: pathname, open: true })}
           />
           <RealtimeBanner />
           <div className="flex flex-col">
@@ -58,6 +66,14 @@ export function PageShell(): ReactElement {
       </div>
       <MobileTabBar />
       <NavDrawer open={drawerOpen} onClose={closeDrawer} />
+      <Modal
+        side
+        open={railOpen}
+        title="Thông tin"
+        onClose={() => setRail({ path: pathname, open: false })}
+      >
+        <RightRail />
+      </Modal>
       <ToastViewport />
     </div>
   );

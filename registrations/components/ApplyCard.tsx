@@ -49,7 +49,7 @@ export function ApplyCard({
 
   if (!session.data) {
     return (
-      <div data-rise>
+      <div>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Đăng nhập để đăng ký tham gia hoạt động này.
         </p>
@@ -105,7 +105,7 @@ export function ApplyCard({
     const label =
       REGISTRATION_STATUS_LABELS[existing.status] ?? existing.status;
     return (
-      <div data-rise className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Trạng thái đăng ký của bạn:{" "}
           <span className="font-semibold text-zinc-900 dark:text-zinc-100">
@@ -156,7 +156,7 @@ export function ApplyCard({
   }
 
   return (
-    <div data-rise className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3">
       {existing?.status === "cancelled" && (
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
           Bạn đã hủy đăng ký trước đó — có thể đăng ký lại.

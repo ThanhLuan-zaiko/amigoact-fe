@@ -7,7 +7,6 @@ import {
   ErrorState,
   LoadingState,
 } from "../core/components/Feedback.tsx";
-import { useRiseOn } from "../core/motion.ts";
 import { useOrgsRealtime, usePublicOrg } from "./hooks.ts";
 import { toVietnameseOrgsMessage } from "./messages.tsx";
 import { OrgAboutCard } from "./components/OrgAboutCard.tsx";
@@ -22,7 +21,6 @@ export function OrgDetailPage(): ReactElement {
   const { slug } = useParams();
   useOrgsRealtime();
   const org = usePublicOrg(slug);
-  const riseRef = useRiseOn<HTMLDivElement>(slug);
 
   if (slug === undefined || (org.isError && org.error instanceof ApiError && org.error.status === 404)) {
     return (
@@ -59,7 +57,7 @@ export function OrgDetailPage(): ReactElement {
   }
   const detail = org.data;
   return (
-    <div ref={riseRef} className="contents">
+    <>
       <OrgDetailHero org={detail} />
       <OrgTrustCard org={detail} />
       <OrgAboutCard org={detail} />
@@ -67,6 +65,6 @@ export function OrgDetailPage(): ReactElement {
       <OrgNewsCard org={detail} />
       <OrgActivityList org={detail} />
       <OrgGalleryCard org={detail} />
-    </div>
+    </>
   );
 }

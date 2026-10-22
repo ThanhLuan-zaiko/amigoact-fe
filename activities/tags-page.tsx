@@ -1,16 +1,13 @@
-import { useState, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiHash, FiLock, FiSearch, FiTrash2 } from "react-icons/fi";
-import { Button } from "../core/components/Button.tsx";
+import { FiHash, FiLock } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
-import { TextField } from "../core/components/TextField.tsx";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from "../core/components/Feedback.tsx";
 import { useMyOrgs } from "../dashboard/hooks.ts";
-import { MemberOrgPicker } from "../dashboard/components/MemberOrgPicker.tsx";
 import { useWorkspaceOrg } from "../workspace/hooks.ts";
 import { useLiveActivities } from "./hooks.ts";
 import { useOrgTags } from "./tags-hooks.ts";
@@ -25,18 +22,16 @@ import { TagTrashRow } from "./components/TagTrashRow.tsx";
 // restore re-attaches exactly those activities. The slug stays
 // reserved while trashed (TAG_DELETED on reuse).
 export function ManageTagsPage(): ReactElement {
-  const orgs = useMyOrgs();
-  const { orgId, selectOrg } = useWorkspaceOrg(orgs.data?.items ?? []);
+  const orgs = useMyOrgs(false, { limit: 100 });
+  const { orgId } = useWorkspaceOrg(orgs.data?.items ?? []);
   useLiveActivities(orgId ?? undefined);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const wantTrash = searchParams.get("trash") === "1";
-  const [query, setQuery] = useState("");
-  const needle = foldTag(query);
+  const needle = foldTag(searchParams.get("q") ?? "");
 
   // The live list always loads: it carries can_manage and trash_count.
   const live = useOrgTags(orgId);
   const canManage = live.data?.can_manage ?? false;
-  const trashCount = live.data?.trash_count ?? 0;
   const trashView = wantTrash && canManage;
   const trash = useOrgTags(orgId, true, canManage && trashView);
 
@@ -49,21 +44,10 @@ export function ManageTagsPage(): ReactElement {
       t.slug.includes(needle),
   );
 
-  function setTrash(next: boolean): void {
-    setSearchParams(
-      (params) => {
-        if (next) params.set("trash", "1");
-        else params.delete("trash");
-        return params;
-      },
-      { replace: true },
-    );
-  }
-
   return (
     <>
       <Section>
-        <div data-rise className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <FiHash
             className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
             aria-hidden="true"
@@ -83,35 +67,6 @@ export function ManageTagsPage(): ReactElement {
             title="Chưa có tổ chức"
             message="Tạo tổ chức trước khi quản lý thẻ."
           />
-        )}
-        {orgs.isSuccess && orgs.data.items.length > 0 && (
-          <MemberOrgPicker
-            orgs={orgs.data.items}
-            selectedId={orgId}
-            onSelect={selectOrg}
-          />
-        )}
-        {orgId && live.isSuccess && canManage && (
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant={trashView ? "secondary" : "primary"}
-              onClick={() => setTrash(false)}
-              aria-pressed={!trashView}
-              icon={<FiHash className="h-4 w-4" aria-hidden="true" />}
-            >
-              {`Đang dùng · ${catalog.length}`}
-            </Button>
-            <Button
-              type="button"
-              variant={trashView ? "primary" : "secondary"}
-              onClick={() => setTrash(true)}
-              aria-pressed={trashView}
-              icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
-            >
-              {`Thùng rác · ${trashCount}`}
-            </Button>
-          </div>
         )}
         {orgId && live.isSuccess && canManage && !trashView && (
           <TagCreateForm orgId={orgId} />
@@ -134,15 +89,7 @@ export function ManageTagsPage(): ReactElement {
               vĩnh viễn.
             </p>
           )}
-          <TextField
-            label="Tìm thẻ"
-            hideLabel
-            placeholder="Tìm thẻ…"
-            icon={<FiSearch className="h-4 w-4" aria-hidden="true" />}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {items.length} thẻ
           </p>
           {active.isPending && (

@@ -48,7 +48,7 @@ export function WorkspaceWritePage(): ReactElement {
   return (
     <>
       <Section>
-        <div data-rise className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <FiEdit3 className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
             <div>

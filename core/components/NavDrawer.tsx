@@ -6,7 +6,6 @@ import { useAdminStatus } from "../../admin/hooks.ts";
 import { useLogout, useSession } from "../../auth/hooks.ts";
 import { useUnreadCount } from "../../notifications/hooks.ts";
 import { useChatUnreadTotal } from "../../workspace/hooks.ts";
-import { expandPanel } from "../motion.ts";
 import { activeEntry } from "../nav-meta.ts";
 import {
   ADMIN_LINK,
@@ -46,10 +45,7 @@ export function NavDrawer({
     const previous = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    if (panelRef.current) {
-      expandPanel(panelRef.current);
-      panelRef.current.focus({ preventScroll: true });
-    }
+    panelRef.current?.focus({ preventScroll: true });
     function onKey(event: KeyboardEvent): void {
       if (event.key === "Escape") onClose();
     }

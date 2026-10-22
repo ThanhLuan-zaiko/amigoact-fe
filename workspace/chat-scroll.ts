@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  flashMessage,
-  prefersReducedMotion,
-} from "../core/motion.ts";
+import { prefersReducedMotion } from "../core/motion.ts";
 
 const NEAR_BOTTOM_PX = 80;
 // Pin/reply jumps scan back at most this many extra pages before giving
@@ -101,7 +98,6 @@ export function useChatAutoScroll(
       behavior: prefersReducedMotion() ? "auto" : "smooth",
       block: "center",
     });
-    flashMessage(el);
   }
 
   return {

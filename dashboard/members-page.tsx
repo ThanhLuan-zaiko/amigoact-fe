@@ -1,8 +1,6 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ApiError } from "../core/api.ts";
-import { Section } from "../core/components/Section.tsx";
 import { useSession } from "../auth/hooks.ts";
 import { useMyOrgs } from "./hooks.ts";
 import {
@@ -15,9 +13,6 @@ import type { MemberSortParam } from "./members-api.ts";
 import { useOrgPresence, usePresenceIds } from "./presence-hooks.ts";
 import { InvitationInboxCard } from "./components/InvitationInboxCard.tsx";
 import { MemberListCard } from "./components/MemberListCard.tsx";
-import { MemberOrgCard } from "./components/MemberOrgCard.tsx";
-import { MemberStatsCard } from "./components/MemberStatsCard.tsx";
-import { RoleManageCard } from "./components/RoleManageCard.tsx";
 
 const PAGE_SIZE = 10;
 const ORG_LIMIT = 100;
@@ -41,7 +36,6 @@ export function DashboardMembersPage(): ReactElement {
   const sort: MemberSortParam = isSort(sortParam) ? sortParam : "newest";
   const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
   const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
-  const inviting = searchParams.get("invite") === "1";
 
   const updateParams = useCallback(
     (patch: Record<string, string | null>, replace = false): void => {
@@ -64,7 +58,6 @@ export function DashboardMembersPage(): ReactElement {
   const orgItems = orgs.data?.items ?? [];
   const orgId = orgParam ?? orgItems[0]?.id ?? null;
   const org = orgItems.find((item) => item.id === orgId) ?? null;
-  const hasOrgs = orgItems.length > 0;
 
   const members = useOrgMembers(orgId, {
     q: query || undefined,
@@ -76,14 +69,6 @@ export function DashboardMembersPage(): ReactElement {
   const orgRoles = useOrgRoles(orgId);
 
   const total = members.data?.total ?? 0;
-  const viewerRole = members.data?.viewer_role ?? "member";
-  const viewerPermissions = useMemo(
-    () => members.data?.viewer_permissions ?? [],
-    [members.data],
-  );
-  // member:invite gates the invite affordance; owner always passes.
-  const canInvite =
-    viewerRole === "owner" || viewerPermissions.includes("member:invite");
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const current = Math.min(page, totalPages);
   const outOfRange = members.data !== undefined && page > totalPages;
@@ -116,43 +101,6 @@ export function DashboardMembersPage(): ReactElement {
   return (
     <>
       <InvitationInboxCard />
-      {hasOrgs && (
-        <MemberStatsCard
-          pending={members.data === undefined}
-          errorCode={
-            members.isError
-              ? members.error instanceof ApiError
-                ? members.error.code
-                : "REQUEST_FAILED"
-              : null
-          }
-          counts={members.data?.counts ?? []}
-          bucket={bucket}
-          onBucket={(key) =>
-            updateParams({ status: key === "all" ? null : key, page: null })
-          }
-        />
-      )}
-      {hasOrgs && (
-        <MemberOrgCard
-          orgs={orgItems}
-          org={org}
-          orgId={orgId}
-          selfId={session.data?.id}
-          canInvite={canInvite}
-          inviting={inviting}
-          viewerRole={viewerRole}
-          viewerPermissions={viewerPermissions}
-          orgRoles={orgRoles.data?.items ?? []}
-          onSelect={(id) =>
-            updateParams(
-              { org: id, q: null, status: null, sort: null, page: null, invite: null },
-            )
-          }
-          onToggleInvite={() => updateParams({ invite: inviting ? null : "1" })}
-          onCloseInvite={() => updateParams({ invite: null })}
-        />
-      )}
       <MemberListCard
         orgs={orgs}
         members={members}
@@ -160,28 +108,13 @@ export function DashboardMembersPage(): ReactElement {
         orgRoles={orgRoles.data?.items ?? []}
         selfId={session.data?.id}
         onlineIds={onlineIds}
-        query={query}
-        sort={sort}
         filtering={filtering}
         outOfRange={outOfRange}
         page={current}
         totalPages={totalPages}
-        onQuery={(value) => updateParams({ q: value || null, page: null }, true)}
-        onSort={(key) =>
-          updateParams({ sort: key === "newest" ? null : key, page: null })
-        }
         onPage={(n) => updateParams({ page: n > 1 ? String(n) : null })}
         onResetFilters={resetFilters}
       />
-      {hasOrgs && orgId !== null && (
-        <Section className=" @4xl:self-start">
-          <RoleManageCard
-            orgId={orgId}
-            viewerRole={viewerRole}
-            viewerPermissions={viewerPermissions}
-          />
-        </Section>
-      )}
     </>
   );
 }

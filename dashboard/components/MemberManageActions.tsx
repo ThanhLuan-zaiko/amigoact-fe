@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { FiLock, FiUnlock, FiUserPlus } from "react-icons/fi";
+import { FiLock, FiUnlock } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
@@ -11,22 +11,16 @@ import type { DashboardOrg } from "../api.ts";
 interface MemberManageActionsProps {
   org: DashboardOrg;
   selfId: string | undefined;
-  canInvite: boolean;
-  inviting: boolean;
-  onToggleInvite: () => void;
 }
 
 export function MemberManageActions({
   org,
   selfId,
-  canInvite,
-  inviting,
-  onToggleInvite,
 }: MemberManageActionsProps): ReactElement | null {
   const updateOrg = useUpdateOrg("Đã cập nhật chính sách tham gia.");
   const [serverCode, setServerCode] = useState<string | null>(null);
   const isOwner = org.owner_id === selfId;
-  if (!isOwner && !canInvite) return null;
+  if (!isOwner) return null;
 
   async function togglePolicy(): Promise<void> {
     if (!isOwner) return;
@@ -63,17 +57,6 @@ export function MemberManageActions({
             }
           >
             {org.join_policy === "open" ? "Đang mở — chuyển chỉ mời" : "Đang chỉ mời — mở gia nhập"}
-          </Button>
-        )}
-        {canInvite && (
-          <Button
-            type="button"
-            variant={inviting ? "primary" : "secondary"}
-            onClick={onToggleInvite}
-            aria-pressed={inviting}
-            icon={<FiUserPlus className="h-4 w-4" aria-hidden="true" />}
-          >
-            Mời
           </Button>
         )}
       </div>

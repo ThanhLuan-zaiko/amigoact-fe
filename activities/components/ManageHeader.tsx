@@ -50,7 +50,7 @@ export function ManageHeader({
   const editable = a.status === "draft" || a.status === "published";
   return (
     <>
-      <div data-rise className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             {a.title}

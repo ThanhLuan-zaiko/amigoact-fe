@@ -1,10 +1,9 @@
 import type { ReactElement } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { FiInfo, FiLogIn } from "react-icons/fi";
+import { FiLogIn } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import { EmptyState } from "../core/components/Feedback.tsx";
-import { useRiseIn } from "../core/motion.ts";
 import { MANAGE_ROOT } from "../core/nav.tsx";
 import { useSession } from "../auth/hooks.ts";
 import { ManageTabs } from "./components/ManageTabs.tsx";
@@ -12,7 +11,6 @@ import { ManageTabs } from "./components/ManageTabs.tsx";
 export function DashboardPage(): ReactElement {
   const session = useSession();
   const { pathname } = useLocation();
-  const scope = useRiseIn<HTMLDivElement>([pathname]);
 
   if (!session.isPending && !session.data) {
     return (
@@ -34,28 +32,16 @@ export function DashboardPage(): ReactElement {
     );
   }
 
-  // /manage/chat keeps the column chrome-free: no tabs strip, no promo
-  // footer - the Telegram panel owns the full height under CenterHeader.
+  // /manage/chat keeps the column chrome-free: no tabs strip. The
+  // Telegram panel owns the full height under CenterHeader.
   const isChat = pathname.startsWith(`${MANAGE_ROOT}/chat`);
+
   return (
     <>
       <h1 className="sr-only">Bảng điều khiển</h1>
       {!isChat && <ManageTabs />}
-      <div ref={scope} className="flex min-w-0 flex-col">
+      <div className="flex min-w-0 flex-col">
         <Outlet />
-        {!isChat && (
-          <Section>
-            <div data-rise className="flex items-center gap-2">
-              <FiInfo className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
-              <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-                Dành cho mọi loại hình
-              </h3>
-            </div>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              Cá nhân, doanh nghiệp, câu lạc bộ hay hội nhóm đều tự tạo không gian riêng, mở sự kiện và theo dõi đóng góp.
-            </p>
-          </Section>
-        )}
       </div>
     </>
   );

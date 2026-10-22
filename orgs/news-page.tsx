@@ -16,7 +16,6 @@ import {
   LoadingState,
 } from "../core/components/Feedback.tsx";
 import { Pagination } from "../core/components/Pagination.tsx";
-import { useRiseOn } from "../core/motion.ts";
 import { orgMediaUrl, type PublicOrgPost } from "./api.ts";
 import {
   ORG_NEWS_PAGE_SIZE,
@@ -31,7 +30,6 @@ import { toVietnameseOrgsMessage } from "./messages.tsx";
 export function OrgNewsPage(): ReactElement {
   const { slug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const riseRef = useRiseOn<HTMLDivElement>(`${slug}:${searchParams.get("page") ?? "1"}`);
   const org = usePublicOrg(slug);
   const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
   const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
@@ -54,7 +52,7 @@ export function OrgNewsPage(): ReactElement {
   return (
     <>
       <Section>
-        <div data-rise className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             {org.data === undefined
               ? "Tin tức từ tổ chức"
@@ -96,13 +94,11 @@ export function OrgNewsPage(): ReactElement {
           />
         </div>
       )}
-      {posts.data !== undefined && posts.data.items.length > 0 && (
-        <div ref={riseRef} className="contents">
-          {posts.data.items.map((post) => (
-            <NewsCard key={post.id} slug={slug ?? ""} post={post} />
-          ))}
-        </div>
-      )}
+      {posts.data !== undefined &&
+        posts.data.items.length > 0 &&
+        posts.data.items.map((post) => (
+          <NewsCard key={post.id} slug={slug ?? ""} post={post} />
+        ))}
       {posts.data !== undefined && totalPages > 1 && (
         <Section>
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -130,7 +126,7 @@ function NewsCard({
 }): ReactElement {
   return (
     <Section className="relative transition-colors hover:border-zinc-400 dark:hover:border-zinc-600 ">
-      <div data-rise className="flex h-full flex-col">
+      <div className="flex h-full flex-col">
         {post.cover_url !== null ? (
           <img
             src={orgMediaUrl(post.cover_url)}

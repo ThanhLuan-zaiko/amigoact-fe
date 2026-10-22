@@ -60,7 +60,7 @@ export function PublishPanel({
 
   return (
     <Section>
-      <div data-rise className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           Xuất bản
         </h2>

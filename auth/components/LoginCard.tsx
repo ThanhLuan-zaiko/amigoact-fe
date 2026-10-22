@@ -7,7 +7,6 @@ import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
-import { useRiseIn } from "../../core/motion.ts";
 import { useLogin } from "../hooks.ts";
 import { validateLoginField, validateLoginForm, type FieldErrors } from "../schemas.ts";
 import { toVietnameseMessage } from "../messages.tsx";
@@ -28,7 +27,6 @@ export function LoginCard(): ReactElement {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverCode, setServerCode] = useState<string | null>(null);
   const [showPasswords, setShowPasswords] = useState(false);
-  const scope = useRiseIn<HTMLDivElement>();
   const canSubmit = Object.keys(validateLoginForm(form)).length === 0;
 
   function update(key: "email" | "password", value: string): void {
@@ -72,8 +70,8 @@ export function LoginCard(): ReactElement {
 
   return (
     <Section>
-      <div ref={scope} className="flex flex-col">
-      <div data-rise className="flex items-center gap-2">
+      <div className="flex flex-col">
+      <div className="flex items-center gap-2">
         <FiLogIn
           className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
@@ -103,7 +101,7 @@ export function LoginCard(): ReactElement {
           />
         </div>
       )}
-      <form data-rise onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-3">
+      <form onSubmit={handleSubmit} noValidate className="mt-4 flex flex-col gap-3">
         <TextField
           label="Email"
           name="email"
@@ -144,7 +142,7 @@ export function LoginCard(): ReactElement {
           {login.isPending ? "Đang đăng nhập…" : "Đăng nhập"}
         </Button>
       </form>
-      <div data-rise className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <Link
           to="/forgot-password"
           className="text-zinc-900 underline decoration-zinc-400 decoration-2 underline-offset-2 hover:bg-zinc-100 dark:text-zinc-100 dark:decoration-zinc-500 dark:hover:bg-zinc-900"

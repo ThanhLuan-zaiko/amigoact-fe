@@ -61,7 +61,7 @@ export function NotificationPrefsCard(): ReactElement {
 
   return (
     <Section>
-      <div data-rise className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <FiBell
           className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"

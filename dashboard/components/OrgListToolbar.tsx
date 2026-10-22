@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
 import type { ReactElement } from "react";
-import { FiClock, FiSearch, FiShield, FiTrash2, FiType, FiUsers } from "react-icons/fi";
+import { FiClock, FiShield, FiTrash2, FiType, FiUsers } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
-import { TextField } from "../../core/components/TextField.tsx";
 import { ORG_STATUS_LABELS } from "../messages.tsx";
 
 export type OrgSort = "newest" | "name" | "members";
@@ -14,8 +12,6 @@ const SORT_OPTIONS: { key: OrgSort; label: string; Icon: typeof FiClock }[] = [
 ];
 
 interface OrgListToolbarProps {
-  query: string;
-  onQuery: (value: string) => void;
   bucket: string;
   onBucket: (bucket: string) => void;
   counts: [string, number][];
@@ -26,8 +22,6 @@ interface OrgListToolbarProps {
 }
 
 export function OrgListToolbar({
-  query,
-  onQuery,
   bucket,
   onBucket,
   counts,
@@ -36,32 +30,8 @@ export function OrgListToolbar({
   onSort,
   total,
 }: OrgListToolbarProps): ReactElement {
-  // Draft locally so each keystroke does not fire a server request.
-  const [draft, setDraft] = useState(query);
-  const [syncedQuery, setSyncedQuery] = useState(query);
-  if (syncedQuery !== query) {
-    setSyncedQuery(query);
-    setDraft(query);
-  }
-  useEffect(() => {
-    if (draft === query) return;
-    const timer = setTimeout(() => onQuery(draft), 300);
-    return () => clearTimeout(timer);
-  }, [draft, query, onQuery]);
-
   return (
-    <div className="mt-4 flex flex-col gap-3">
-      <TextField
-        label="Tìm kiếm"
-        id="org-search"
-        name="org-search"
-        type="search"
-        value={draft}
-        onChange={(event) => setDraft(event.target.value)}
-        placeholder="Tên hoặc @slug…"
-        autoComplete="off"
-        icon={<FiSearch className="h-4 w-4" aria-hidden="true" />}
-      />
+    <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <div role="group" aria-label="Lọc theo trạng thái" className="flex flex-wrap gap-2">
           <Button

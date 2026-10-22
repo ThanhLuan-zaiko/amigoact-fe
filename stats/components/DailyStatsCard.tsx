@@ -18,7 +18,7 @@ export function DailyStatsCard({
   if (rows.length === 0) return null;
 
   return (
-    <div data-rise>
+    <div>
       <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
         Thống kê theo ngày
       </h3>

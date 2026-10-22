@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { useAdminStatus } from "../../admin/hooks.ts";
 import { useSession } from "../../auth/hooks.ts";
 import { useDismiss } from "../dismiss.ts";
-import { expandPanel } from "../motion.ts";
 import { ADMIN_LINK, MORE_LINKS } from "../nav.tsx";
 import { RAIL_PILL, railLabelClass, railRowClass } from "../rail-styles.ts";
 import { MENU_PANEL_CLASS, MenuDivider, MenuLink } from "./RailMenu.tsx";
@@ -18,13 +17,9 @@ export function MoreMenu(): ReactElement {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   const close = (): void => setOpen(false);
 
   useDismiss(open, rootRef, close, triggerRef);
-  useEffect(() => {
-    if (open && panelRef.current) expandPanel(panelRef.current);
-  }, [open]);
 
   const links = MORE_LINKS.filter((entry) => session.data != null || !entry.auth);
 
@@ -45,7 +40,6 @@ export function MoreMenu(): ReactElement {
       </button>
       {open && (
         <div
-          ref={panelRef}
           role="menu"
           aria-label="Thêm"
           className={`${MENU_PANEL_CLASS} bottom-full left-0 mb-2`}

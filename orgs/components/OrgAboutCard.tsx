@@ -11,7 +11,7 @@ interface OrgAboutCardProps {
 export function OrgAboutCard({ org }: OrgAboutCardProps): ReactElement {
   return (
     <Section>
-      <div data-rise>
+      <div>
         <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
           <FiFileText
             className="h-5 w-5 text-zinc-900 dark:text-zinc-100"

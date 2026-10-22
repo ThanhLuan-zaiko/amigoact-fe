@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 import { ApiError } from "../../core/api.ts";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
-import { useRiseOn } from "../../core/motion.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
 import type { DashboardOrg } from "../api.ts";
 import { OrgRow } from "./OrgRow.tsx";
@@ -25,7 +24,6 @@ export function OrgTrashList({
   filtering,
   onResetFilters,
 }: OrgTrashListProps): ReactElement {
-  const listRef = useRiseOn<HTMLUListElement>(items.length);
   return (
     <>
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -56,7 +54,7 @@ export function OrgTrashList({
         />
       )}
       {items.length > 0 && (
-        <ul ref={listRef} className="mt-3 flex flex-col gap-3">
+        <ul className="mt-3 flex flex-col gap-3">
           {items.map((org) => (
             <OrgRow
               key={org.id}

@@ -88,7 +88,6 @@ export function MemberRow({
 
   return (
     <li
-      data-rise
       className="relative flex items-start gap-3 py-4 has-[[aria-expanded=true]]:z-20"
     >
       <span className="relative shrink-0">

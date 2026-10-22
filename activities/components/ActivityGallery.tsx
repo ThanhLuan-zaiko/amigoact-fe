@@ -26,7 +26,7 @@ export function ActivityGallery({
   }));
 
   return (
-    <div data-rise>
+    <div>
       <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
         Thư viện
       </h3>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactElement } from "react";
 import {
   FiMessageCircle,
@@ -9,7 +9,6 @@ import {
 } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { useDismiss } from "../../core/dismiss.ts";
-import { expandPanel } from "../../core/motion.ts";
 import {
   useRemoveMember,
   useUpdateMember,
@@ -49,7 +48,6 @@ export function ChatMemberMenu({
   const [confirming, setConfirming] = useState(false);
   const rootRef = useRef<HTMLSpanElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   const update = useUpdateMember(orgId);
   const remove = useRemoveMember(orgId);
   const busy = update.isPending || remove.isPending;
@@ -59,9 +57,6 @@ export function ChatMemberMenu({
     setConfirming(false);
   }
   useDismiss(open, rootRef, close, triggerRef);
-  useEffect(() => {
-    if (open && panelRef.current) expandPanel(panelRef.current);
-  }, [open]);
 
   const isOwner = viewerRole === "owner";
   const targetOwner = member.roles.includes("owner");
@@ -94,7 +89,6 @@ export function ChatMemberMenu({
       />
       {open && (
         <div
-          ref={panelRef}
           role="menu"
           aria-label={`Hành động cho ${member.full_name}`}
           className={

@@ -15,7 +15,7 @@ interface OrgNewsCardProps {
 export function OrgNewsCard({ org }: OrgNewsCardProps): ReactElement {
   return (
     <Section>
-      <div data-rise>
+      <div>
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 text-base font-semibold text-zinc-900 dark:text-zinc-100">
             <FiFileText

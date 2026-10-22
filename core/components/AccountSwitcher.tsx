@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiKey, FiLogOut, FiMoreHorizontal, FiUser } from "react-icons/fi";
 import { useLogout, useSession } from "../../auth/hooks.ts";
 import { useDismiss } from "../dismiss.ts";
-import { expandPanel } from "../motion.ts";
 import { Avatar } from "./Avatar.tsx";
 import {
   MENU_ITEM_CLASS,
@@ -22,13 +21,9 @@ export function AccountSwitcher(): ReactElement | null {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
   const close = (): void => setOpen(false);
 
   useDismiss(open, rootRef, close, triggerRef);
-  useEffect(() => {
-    if (open && panelRef.current) expandPanel(panelRef.current);
-  }, [open]);
 
   const profile = session.data ?? null;
   if (!profile) return null;
@@ -66,7 +61,6 @@ export function AccountSwitcher(): ReactElement | null {
       </button>
       {open && (
         <div
-          ref={panelRef}
           role="menu"
           aria-label="Menu tài khoản"
           className={`${MENU_PANEL_CLASS} bottom-full left-0 mb-2`}

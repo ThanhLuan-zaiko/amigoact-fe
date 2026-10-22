@@ -58,7 +58,6 @@ export function ShelfTabs({ tab, onSelect }: ShelfTabsProps): ReactElement {
           <button
             key={shelf.value}
             type="button"
-            data-rise
             onClick={() => onSelect(shelf.value)}
             aria-pressed={active}
             className={`${TILE_BASE} ${

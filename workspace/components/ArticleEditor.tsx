@@ -143,7 +143,7 @@ export function ArticleEditor({
           }}
           onDrop={handleDrop}
         >
-          <div data-rise>
+          <div>
             <TextField
               label="Tiêu đề bài viết"
               name="article-title"

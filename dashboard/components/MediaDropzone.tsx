@@ -4,7 +4,6 @@ import { FiPlus, FiUploadCloud, FiX, FiXOctagon } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
-import { useRiseOn } from "../../core/motion.ts";
 import { downloadOrgMedia } from "../api.ts";
 import type { MediaRole, OrgMedia } from "../api.ts";
 import { assignMediaRole, defaultAspectForRole } from "../schemas.ts";
@@ -36,7 +35,6 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
   const remove = useDeleteOrgMedia(orgId, "Đã xóa ảnh.");
   const wipe = useDeleteAllOrgMedia(orgId, "Đã xóa toàn bộ ảnh.");
   const replace = useReplaceOrgMediaFile(orgId, "Đã thay ảnh.");
-  const listRef = useRiseOn<HTMLUListElement>(gallery.data?.length);
   const [pending, setPending] = useState<PendingMedia[]>([]);
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [serverCode, setServerCode] = useState<string | null>(null);
@@ -197,7 +195,7 @@ export function MediaDropzone({ orgId, canManage }: MediaDropzoneProps): ReactEl
         {total > 0 && (
           <>
             {/* Single column on phones so role buttons never squeeze the dialog wider. */}
-            <ul ref={listRef} className="grid grid-cols-1 items-start gap-3 sm:grid-cols-3">
+            <ul className="grid grid-cols-1 items-start gap-3 sm:grid-cols-3">
               {shown.map((item) => (
                 <MediaItemCard
                   key={item.id}

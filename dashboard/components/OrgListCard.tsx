@@ -7,12 +7,11 @@ import { Button } from "../../core/components/Button.tsx";
 import { EmptyState, ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { Pagination } from "../../core/components/Pagination.tsx";
 import { ApiError } from "../../core/api.ts";
-import { useRiseOn } from "../../core/motion.ts";
 import { useSession } from "../../auth/hooks.ts";
 import { useMyOrgs } from "../hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
 import { OrgEditModal } from "./OrgEditModal.tsx";
-import { OrgListToolbar, type OrgSort } from "./OrgListToolbar.tsx";
+import type { OrgSort } from "./OrgListToolbar.tsx";
 import { OrgMediaModal } from "./OrgMediaModal.tsx";
 import { OrgRow } from "./OrgRow.tsx";
 import { OrgTrashList } from "./OrgTrashList.tsx";
@@ -70,9 +69,6 @@ export function OrgListCard(): ReactElement {
 
   const items = orgs.data?.items ?? [];
   const total = orgs.data?.total ?? 0;
-  const counts: [string, number][] = (orgs.data?.counts ?? []).map(
-    (entry): [string, number] => [entry.bucket, entry.count],
-  );
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const current = Math.min(page, totalPages);
   const outOfRange = orgs.data !== undefined && page > totalPages;
@@ -85,7 +81,6 @@ export function OrgListCard(): ReactElement {
   const mediaOrg = mediaOrgId === null ? null : (allOrgs.data?.items.find((org) => org.id === mediaOrgId) ?? null);
   const editingOrg = editingId === null ? null : (items.find((org) => org.id === editingId) ?? null);
 
-  const listRef = useRiseOn<HTMLUListElement>(`${current}:${items.length}`);
   const HeaderIcon = trashView ? FiTrash2 : FiUsers;
 
   // Pull an out-of-range ?page= back once totals arrive.
@@ -115,7 +110,7 @@ export function OrgListCard(): ReactElement {
   return (
     <>
       <Section>
-        <div data-rise className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <HeaderIcon className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
             <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -127,27 +122,7 @@ export function OrgListCard(): ReactElement {
               </span>
             )}
           </div>
-          <Button
-            to="/manage/orgs/create"
-            variant="secondary"
-            icon={<FiPlusCircle className="h-4 w-4" aria-hidden="true" />}
-          >
-            Tạo mới
-          </Button>
         </div>
-        {(total > 0 || filtering || trashedAll.length > 0) && (
-          <OrgListToolbar
-            query={query}
-            onQuery={(value) => updateParams({ q: value || null, page: null }, true)}
-            bucket={bucket}
-            onBucket={(key) => updateParams({ status: key === "all" ? null : key, page: null })}
-            counts={counts}
-            trashCount={trashedAll.length}
-            sort={sort}
-            onSort={(key) => updateParams({ sort: key === "newest" ? null : key, page: null })}
-            total={total}
-          />
-        )}
         <div
           className="mt-3"
           aria-live="polite"
@@ -201,7 +176,7 @@ export function OrgListCard(): ReactElement {
           )}
           {!outOfRange && items.length > 0 && (
             <>
-              <ul ref={listRef} className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-3">
                 {items.map((org) => (
                   <OrgRow
                     key={org.id}

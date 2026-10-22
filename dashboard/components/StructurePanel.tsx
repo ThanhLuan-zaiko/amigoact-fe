@@ -92,7 +92,7 @@ export function StructurePanel({ orgId }: StructurePanelProps): ReactElement {
   }
 
   return (
-    <div data-rise className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+    <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
       <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
         Cơ sở &amp; khoa/phòng ban
       </h4>

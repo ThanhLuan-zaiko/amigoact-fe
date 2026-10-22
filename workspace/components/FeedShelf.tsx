@@ -11,7 +11,6 @@ import { Pagination } from "../../core/components/Pagination.tsx";
 import type { PostKind, PostPage } from "../board-api.ts";
 import { toVietnameseWorkspaceMessage } from "../messages.tsx";
 import { ArticleCard } from "./ArticleCard.tsx";
-import { DeskCard } from "./DeskCard.tsx";
 import { KindFilterCard } from "./KindFilterCard.tsx";
 
 const FULL_ROW = " ";
@@ -27,7 +26,6 @@ interface FeedShelfProps {
   page: number;
   totalPages: number;
   onPage: (page: number) => void;
-  writeHref: string;
 }
 
 // Published tab content: the pinned feature rail (page 1 only), a filter
@@ -44,7 +42,6 @@ export function FeedShelf({
   page,
   totalPages,
   onPage,
-  writeHref,
 }: FeedShelfProps): ReactElement {
   const pinned = feed.data?.pinned ?? [];
   const pinnedIds = new Set(pinned.map((post) => post.post_id));
@@ -94,15 +91,12 @@ export function FeedShelf({
         <KindFilterCard kind={kind} onKind={onKind} />
       )}
       {empty && kind === undefined && (
-        <>
-          <Section>
-            <EmptyState
-              title="Chưa có bài viết nào"
-              message="Bảng tin đang trống. Hãy viết bài đầu tiên cho tổ chức."
-            />
-          </Section>
-          <DeskCard writeHref={writeHref} />
-        </>
+        <Section>
+          <EmptyState
+            title="Chưa có bài viết nào"
+            message="Bảng tin đang trống. Hãy viết bài đầu tiên cho tổ chức."
+          />
+        </Section>
       )}
       {empty && kind !== undefined && (
         <Section>

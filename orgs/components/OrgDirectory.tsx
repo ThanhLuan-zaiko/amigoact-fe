@@ -11,7 +11,6 @@ import {
   LoadingState,
 } from "../../core/components/Feedback.tsx";
 import { Pagination } from "../../core/components/Pagination.tsx";
-import { useRiseOn } from "../../core/motion.ts";
 import { useOrgsRealtime, usePublicOrgs } from "../hooks.ts";
 import { toVietnameseOrgsMessage } from "../messages.tsx";
 import { DirectoryRow } from "./DirectoryRow.tsx";
@@ -60,7 +59,6 @@ export function OrgDirectory(): ReactElement {
   const outOfRange = orgs.data !== undefined && page > totalPages;
   const searching = query.trim() !== "";
 
-  const listRef = useRiseOn<HTMLUListElement>(`${current}:${items.length}`);
 
   // Pull an out-of-range ?page= back once totals arrive.
   useEffect(() => {
@@ -126,10 +124,7 @@ export function OrgDirectory(): ReactElement {
         )}
         {orgs.data && !outOfRange && items.length > 0 && (
           <Section>
-            <ul
-              ref={listRef}
-              className="-mx-4 -my-4 divide-y divide-zinc-200 dark:divide-zinc-800"
-            >
+            <ul className="-mx-4 -my-4 divide-y divide-zinc-200 dark:divide-zinc-800">
               {items.map((org) => (
                 <DirectoryRow key={org.id} org={org} />
               ))}

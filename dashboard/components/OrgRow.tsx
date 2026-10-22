@@ -66,7 +66,6 @@ export function OrgRow({
 
   return (
     <li
-      data-rise
       className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

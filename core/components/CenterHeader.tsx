@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FiArrowLeft, FiLogIn, FiMenu } from "react-icons/fi";
+import { FiArrowLeft, FiLogIn, FiMenu, FiSidebar } from "react-icons/fi";
 import { useSession } from "../../auth/hooks.ts";
 import { pageMeta } from "../nav-meta.ts";
 import { Avatar } from "./Avatar.tsx";
@@ -17,9 +17,13 @@ const ROUND_BUTTON =
 export function CenterHeader({
   onOpenDrawer,
   drawerOpen,
+  onOpenRail,
+  railOpen,
 }: {
   onOpenDrawer: () => void;
   drawerOpen: boolean;
+  onOpenRail: () => void;
+  railOpen: boolean;
 }): ReactElement {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -71,6 +75,17 @@ export function CenterHeader({
           </p>
         )}
       </div>
+      {!pathname.startsWith("/manage/chat") && (
+        <button
+          type="button"
+          onClick={onOpenRail}
+          aria-label="Mở cột bên"
+          aria-expanded={railOpen}
+          className={`${ROUND_BUTTON} lg:hidden`}
+        >
+          <FiSidebar className="h-5 w-5 -scale-x-100" aria-hidden="true" />
+        </button>
+      )}
       {!profile && !session.isPending && (
         <Button
           to="/login"

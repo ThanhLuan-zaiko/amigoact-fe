@@ -80,7 +80,7 @@ export function OrgDetailHero({ org }: OrgDetailHeroProps): ReactElement {
   });
   return (
     <Section>
-      <div data-rise>
+      <div>
         {org.cover_url ? (
           <img
             src={orgMediaUrl(org.cover_url)}

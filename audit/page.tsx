@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from "react";
+import type { ReactElement } from "react";
 import { FiActivity } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
 import {
@@ -8,6 +8,7 @@ import {
 } from "../core/components/Feedback.tsx";
 import { ApiError } from "../core/api.ts";
 import { useMyOrgs } from "../dashboard/hooks.ts";
+import { useWorkspaceOrg } from "../workspace/hooks.ts";
 import { useOrgAudit } from "./hooks.ts";
 
 const RESULT_LABELS: Record<string, string> = {
@@ -69,13 +70,12 @@ function DetailLines({ detail }: { detail: string | null }): ReactElement | null
 export function AuditPage(): ReactElement {
   const orgs = useMyOrgs(false, { limit: 100 });
   const items = orgs.data?.items ?? [];
-  const [selected, setSelected] = useState("");
-  const orgId = selected || items[0]?.id || "";
+  const { orgId } = useWorkspaceOrg(items);
   const feed = useOrgAudit(orgId || undefined);
 
   return (
     <Section>
-      <div data-rise className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         <FiActivity
           className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
           aria-hidden="true"
@@ -87,24 +87,6 @@ export function AuditPage(): ReactElement {
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
         Ai đã làm gì trong tổ chức — phân quyền, thành viên, hoạt động.
       </p>
-      {items.length > 1 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {items.map((org) => (
-            <button
-              key={org.id}
-              type="button"
-              onClick={() => setSelected(org.id)}
-              className={`min-h-[44px] rounded-xl border px-3 text-sm font-medium transition-colors ${
-                org.id === orgId
-                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950"
-                  : "border-zinc-200 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
-              }`}
-            >
-              {org.name}
-            </button>
-          ))}
-        </div>
-      )}
       <div className="mt-4">
         {feed.isPending ? (
           <LoadingState label="Đang tải nhật ký…" />

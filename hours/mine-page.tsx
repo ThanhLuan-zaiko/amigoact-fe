@@ -28,7 +28,7 @@ export function MyHoursPage(): ReactElement {
   return (
     <>
       <Section>
-        <div data-rise className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <FiAward className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
             Tổng giờ tình nguyện
@@ -72,7 +72,7 @@ export function MyHoursPage(): ReactElement {
         )}
       </Section>
       <Section>
-        <div data-rise className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <FiClock className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
             Lịch sử giờ

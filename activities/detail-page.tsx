@@ -81,7 +81,7 @@ export function EventDetailPage(): ReactElement {
   return (
     <>
       <Section>
-        <div data-rise className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-lg font-semibold text-zinc-900 sm:text-xl dark:text-zinc-100">
             {a.title}
           </h1>

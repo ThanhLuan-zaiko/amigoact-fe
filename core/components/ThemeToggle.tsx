@@ -1,7 +1,6 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import type { ReactElement } from "react";
 import { FiMoon, FiSun } from "react-icons/fi";
-import { swapGlyph } from "../motion.ts";
 import { applyTheme, resolveInitialTheme } from "../theme.ts";
 import type { ThemeMode } from "../theme.ts";
 import { Button } from "./Button.tsx";
@@ -15,19 +14,17 @@ export function ThemeToggle({
   labeled?: boolean;
 }): ReactElement {
   const [mode, setMode] = useState<ThemeMode>(() => resolveInitialTheme());
-  const glyphRef = useRef<HTMLSpanElement>(null);
 
   function handleClick(): void {
     const next: ThemeMode = mode === "dark" ? "light" : "dark";
     setMode(next);
     applyTheme(next);
-    if (glyphRef.current) swapGlyph(glyphRef.current);
   }
 
   const dark = mode === "dark";
   const Icon = dark ? FiSun : FiMoon;
   const glyph = (
-    <span ref={glyphRef} className="inline-flex" aria-hidden="true">
+    <span className="inline-flex" aria-hidden="true">
       <Icon className="h-5 w-5" />
     </span>
   );

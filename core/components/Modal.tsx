@@ -2,7 +2,6 @@ import { useEffect, useId, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { FiArrowLeft, FiX } from "react-icons/fi";
-import { riseIn, slideInX } from "../motion.ts";
 import { Button } from "./Button.tsx";
 
 interface ModalProps {
@@ -30,11 +29,7 @@ export function Modal({ open, title, onClose, children, wide = false, side = fal
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const panel = panelRef.current;
-    if (panel) {
-      if (side) slideInX(panel);
-      else riseIn(panel, { y: 12, duration: 220 });
-      panel.focus({ preventScroll: true });
-    }
+    if (panel) panel.focus({ preventScroll: true });
     function onKey(event: KeyboardEvent): void {
       if (event.key === "Escape") onClose();
     }
@@ -44,7 +39,7 @@ export function Modal({ open, title, onClose, children, wide = false, side = fal
       document.body.style.overflow = prevOverflow;
       prev?.focus({ preventScroll: true });
     };
-  }, [open, onClose, side]);
+  }, [open, onClose]);
 
   if (!open) return null;
 

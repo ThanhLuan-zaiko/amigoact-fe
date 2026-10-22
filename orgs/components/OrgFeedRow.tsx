@@ -30,7 +30,7 @@ export function OrgFeedRow({
   children,
 }: OrgFeedRowProps): ReactElement {
   return (
-    <li data-rise>
+    <li>
       <Link
         to={href}
         className="group flex gap-3 px-4 py-3 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"

@@ -1,6 +1,6 @@
 import { type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiCalendar, FiPlus, FiTrash2, FiX } from "react-icons/fi";
+import { FiCalendar, FiX } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
 import { Button } from "../core/components/Button.tsx";
 import {
@@ -10,7 +10,6 @@ import {
 } from "../core/components/Feedback.tsx";
 import { useMyOrgs } from "../dashboard/hooks.ts";
 import { useWorkspaceOrg } from "../workspace/hooks.ts";
-import { MemberOrgPicker } from "../dashboard/components/MemberOrgPicker.tsx";
 import { ActivityActions } from "./components/ActivityActions.tsx";
 import { ActivityCard } from "./components/ActivityCard.tsx";
 import { ActivityForm } from "./components/ActivityForm.tsx";
@@ -22,8 +21,8 @@ import {
 } from "./hooks.ts";
 
 export function ManageEventsPage(): ReactElement {
-  const orgs = useMyOrgs();
-  const { orgId, selectOrg } = useWorkspaceOrg(orgs.data?.items ?? []);
+  const orgs = useMyOrgs(false, { limit: 100 });
+  const { orgId } = useWorkspaceOrg(orgs.data?.items ?? []);
   // The create form is deep-linkable (?create=1) so the rail's primary
   // action lands straight on it.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -34,16 +33,6 @@ export function ManageEventsPage(): ReactElement {
       (params) => {
         if (next) params.set("create", "1");
         else params.delete("create");
-        return params;
-      },
-      { replace: true },
-    );
-  };
-  const setTrash = (next: boolean): void => {
-    setSearchParams(
-      (params) => {
-        if (next) params.set("trash", "1");
-        else params.delete("trash");
         return params;
       },
       { replace: true },
@@ -75,48 +64,20 @@ export function ManageEventsPage(): ReactElement {
   return (
     <>
       <Section>
-        <div data-rise className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <FiCalendar
-              className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
-              aria-hidden="true"
-            />
-            <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-              Quản lý hoạt động
-            </h1>
-          </div>
-          {selected && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant={trash ? "secondary" : "ghost"}
-                onClick={() => setTrash(!trash)}
-                icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
-                aria-pressed={trash}
-              >
-                Thùng rác
-              </Button>
-              <Button
-                variant={creating ? "secondary" : "primary"}
-                onClick={() => setCreating(!creating)}
-                icon={<FiPlus className="h-4 w-4" aria-hidden="true" />}
-              >
-                {creating ? "Đóng" : "Tạo hoạt động"}
-              </Button>
-            </div>
-          )}
+        <div className="flex items-center gap-2">
+          <FiCalendar
+            className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
+            aria-hidden="true"
+          />
+          <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
+            Quản lý hoạt động
+          </h1>
         </div>
         {orgs.isPending && <LoadingState label="Đang tải tổ chức…" />}
         {orgs.isSuccess && orgs.data.items.length === 0 && (
           <EmptyState
             title="Chưa có tổ chức"
             message="Tạo tổ chức trước khi lên lịch hoạt động."
-          />
-        )}
-        {orgs.isSuccess && orgs.data.items.length > 0 && (
-          <MemberOrgPicker
-            orgs={orgs.data.items}
-            selectedId={selected}
-            onSelect={selectOrg}
           />
         )}
       </Section>

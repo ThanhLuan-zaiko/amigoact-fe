@@ -3,14 +3,12 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Section } from "../../core/components/Section.tsx";
-import { Button } from "../../core/components/Button.tsx";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from "../../core/components/Feedback.tsx";
 import { Pagination } from "../../core/components/Pagination.tsx";
-import { useRiseOn } from "../../core/motion.ts";
 import type { PostPage } from "../board-api.ts";
 import { toVietnameseWorkspaceMessage } from "../messages.tsx";
 import { ArticleRow } from "./ArticleRow.tsx";
@@ -26,7 +24,6 @@ interface ShelfCardProps {
   page: number;
   totalPages: number;
   onPage: (page: number) => void;
-  writeHref: string;
 }
 
 const EMPTY_COPY: Record<string, { title: string; message: string }> = {
@@ -63,11 +60,9 @@ export function ShelfCard({
   page,
   totalPages,
   onPage,
-  writeHref,
 }: ShelfCardProps): ReactElement {
   const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
-  const listRef = useRiseOn<HTMLUListElement>(items.length);
   const copy = EMPTY_COPY[shelf];
   const head = TITLES[shelf];
   const icon =
@@ -79,7 +74,7 @@ export function ShelfCard({
 
   return (
     <Section>
-      <div data-rise className="flex items-center gap-2">
+      <div className="flex items-center gap-2">
         {icon}
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
           {head.title}
@@ -103,22 +98,11 @@ export function ShelfCard({
         {query.data !== undefined && items.length === 0 && (
           <>
             <EmptyState title={copy.title} message={copy.message} />
-            {shelf === "draft" && (
-              <div className="mt-3">
-                <Button
-                  to={writeHref}
-                  variant="primary"
-                  icon={<FiEdit3 className="h-4 w-4" aria-hidden="true" />}
-                >
-                  Viết bài mới
-                </Button>
-              </div>
-            )}
           </>
         )}
         {items.length > 0 && (
           <>
-            <ul ref={listRef} className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-3">
               {items.map((post) => (
                 <ArticleRow
                   key={post.post_id}

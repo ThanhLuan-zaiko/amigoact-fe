@@ -25,7 +25,7 @@ interface MediaItemCardProps {
 export function MediaItemCard({ item, canManage, busy, onRole, onEdit, onDelete }: MediaItemCardProps): ReactElement {
   const src = mediaSrc(item);
   return (
-    <li data-rise className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-2 dark:border-zinc-800">
+    <li className="flex flex-col gap-2 rounded-xl border border-zinc-200 p-2 dark:border-zinc-800">
       <div className="relative">
         {item.kind === "video" ? (
           <video src={src} controls preload="none" className="aspect-video w-full rounded-lg bg-zinc-950" />

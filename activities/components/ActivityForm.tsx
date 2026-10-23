@@ -15,7 +15,6 @@ import { fromLocalInput, toLocalInput } from "../dates.tsx";
 import { TagInput } from "./TagInput.tsx";
 
 interface ActivityFormProps {
-  orgId: string;
   categories: CategoryItem[];
   initial?: ActivityDetail;
   submitLabel: string;
@@ -24,7 +23,6 @@ interface ActivityFormProps {
 }
 
 export function ActivityForm({
-  orgId,
   categories,
   initial,
   submitLabel,
@@ -201,7 +199,7 @@ export function ActivityForm({
           Hoạt động trực tuyến
         </label>
       </div>
-      <TagInput orgId={orgId} value={tags} onChange={setTags} disabled={busy} />
+      <TagInput value={tags} onChange={setTags} disabled={busy} />
       <TextField
         label="Mô tả"
         name="description"

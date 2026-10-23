@@ -61,7 +61,7 @@ export function ManageTagsPage(): ReactElement {
         </div>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Thẻ là của bạn, không thuộc tổ chức nào. Tạo một cái tên ở đây,
-          rồi khi viết bài thì chọn thẻ đó để gắn vào bài.
+          rồi khi viết bài hoặc tạo hoạt động thì chọn thẻ đó để gắn.
         </p>
         <TagCreateForm />
       </Section>
@@ -79,7 +79,7 @@ export function ManageTagsPage(): ReactElement {
         {tags.isSuccess && items.length === 0 && !needle && (
           <EmptyState
             title="Chưa có thẻ"
-            message="Tạo thẻ ở trên. Khi viết bài, chọn thẻ đó để gắn."
+            message="Tạo thẻ ở trên. Khi viết bài hoặc tạo hoạt động, chọn thẻ đó để gắn."
           />
         )}
         {tags.isSuccess && items.length === 0 && needle && (

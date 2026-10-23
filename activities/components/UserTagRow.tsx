@@ -90,11 +90,11 @@ export function UserTagRow({
             className="inline-flex min-h-[44px] min-w-0 flex-1 items-center gap-2 rounded-full px-1 text-left text-sm font-semibold text-zinc-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-100 dark:focus-visible:outline-zinc-400"
           >
             <FiHash className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span className={`truncate${selected ? " font-bold" : ""}`}>
+            <span className={`min-w-0 flex-1 truncate${selected ? " font-bold" : ""}`}>
               {tag.name}
             </span>
             <span className="shrink-0 text-xs font-normal text-zinc-500 dark:text-zinc-400">
-              {`${tag.post_count} bài`}
+              {`${tag.post_count} bài · ${tag.activity_count} hoạt động`}
             </span>
           </button>
         )}

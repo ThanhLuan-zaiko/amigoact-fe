@@ -32,8 +32,8 @@ interface Option {
   detail?: string;
 }
 
-// Free-form hashtag picker. Callers pass the org catalog; unknown names
-// become a trailing create option and are claimed when the form saves.
+// Free-form hashtag picker. Callers pass the suggestion list; unknown
+// names become a trailing create option and are claimed when the form saves.
 export function TagField({
   label = "Thẻ",
   value,

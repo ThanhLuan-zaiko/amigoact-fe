@@ -105,7 +105,6 @@ export function ManageEventDetailPage(): ReactElement {
           </h2>
           <div className="mt-3">
             <ActivityForm
-              orgId={a.org_id}
               categories={categories.data ?? []}
               initial={a}
               submitLabel="Lưu thay đổi"

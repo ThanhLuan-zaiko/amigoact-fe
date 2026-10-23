@@ -89,7 +89,6 @@ export function ManageEventsPage(): ReactElement {
           </h2>
           <div className="mt-3">
             <ActivityForm
-              orgId={selected}
               categories={categories.data ?? []}
               submitLabel="Tạo bản nháp"
               onSubmit={(input) => create.mutateAsync(input)}

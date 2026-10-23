@@ -1,10 +1,8 @@
 import type { ReactElement } from "react";
 import { TagField } from "../../core/components/TagField.tsx";
-import { mergeTagSuggestions } from "../../core/tag-suggestions.ts";
-import { useOrgTags, useOwnedTags } from "../tags-hooks.ts";
+import { useMyTags } from "../tags-hooks.ts";
 
 interface TagInputProps {
-  orgId: string;
   label?: string;
   value: string[];
   onChange: (next: string[]) => void;
@@ -13,29 +11,26 @@ interface TagInputProps {
   hint?: string;
 }
 
-// Activity form picker. Suggestions come from the org catalog; a new
-// name is claimed when the activity is saved.
+// Activity form picker. Tags come from the author's personal list.
 export function TagInput({
-  orgId,
   label = "Thẻ",
   value,
   onChange,
   max = 10,
   disabled = false,
-  hint = "Enter để thêm, tối đa 10 thẻ. Thẻ mới, kể cả thẻ từ tổ chức khác bạn sở hữu, được chép vào danh mục tổ chức này khi lưu.",
+  hint = "Chọn thẻ bạn đã tạo, tối đa 10. Gõ tên mới rồi Enter để thêm thẻ đó vào danh sách của bạn.",
 }: TagInputProps): ReactElement {
-  const search = useOrgTags(orgId);
-  const owned = useOwnedTags(orgId);
+  const tags = useMyTags();
   return (
     <TagField
       label={label}
       value={value}
       onChange={onChange}
-      suggestions={mergeTagSuggestions(
-        search.data?.items ?? [],
-        owned.data ?? [],
-      )}
-      suggestionsError={search.isError || owned.isError}
+      suggestions={(tags.data ?? []).map((tag) => ({
+        name: tag.name,
+        slug: tag.slug,
+      }))}
+      suggestionsError={tags.isError}
       max={max}
       disabled={disabled}
       hint={hint}

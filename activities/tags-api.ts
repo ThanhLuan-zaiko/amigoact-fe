@@ -37,13 +37,22 @@ export function searchPublicTags(
   return apiFetch<PublicTag[]>(`/tags?${params}`);
 }
 
+export interface MyTagActivity {
+  activity_id: string;
+  org_id: string;
+  title: string;
+  draft: boolean;
+}
+
 export interface MyTag {
   name: string;
   slug: string;
   post_count: number;
+  activity_count: number;
   created_at: string;
   // Present on GET /me/tags so picking a tag does not wait on another request.
   posts?: MyTagPost[];
+  activities?: MyTagActivity[];
 }
 
 export interface MyTagPost {

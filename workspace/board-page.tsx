@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useOrgTags } from "../activities/tags-hooks.ts";
 import { useSession } from "../auth/hooks.ts";
 import { useMyMemberships } from "../dashboard/members-hooks.ts";
 import {
@@ -43,9 +44,14 @@ export function WorkspaceBoardPage(): ReactElement {
     kindParam === "announcement" || kindParam === "discussion"
       ? kindParam
       : undefined;
+  const tagParam = (searchParams.get("tag") ?? "").trim();
+  const tag = tagParam === "" ? undefined : tagParam;
+  const catalog = useOrgTags(tag === undefined ? null : orgId);
+  const tagName =
+    catalog.data?.items.find((item) => item.slug === tag)?.name ?? tag;
   const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
   const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
-  const feed = useOrgPosts(orgId, kind, page);
+  const feed = useOrgPosts(orgId, kind, page, tag);
   const drafts = usePostShelf(orgId, "drafts", page, tab === "draft");
   const trash = usePostShelf(orgId, "trash", page, tab === "trash");
   useBoardRealtime(orgId, selfId);
@@ -97,11 +103,17 @@ export function WorkspaceBoardPage(): ReactElement {
               canAnnounce={canAnnounce}
               feed={feed}
               kind={kind}
+              tagSlug={tag}
+              tagName={tagName}
               onKind={(value) =>
                 patchParams({
                   kind: value === undefined ? null : value,
                   page: null,
                 })
+              }
+              onClearTag={() => patchParams({ tag: null, page: null })}
+              onClearFilters={() =>
+                patchParams({ kind: null, tag: null, page: null })
               }
               page={page}
               totalPages={totalPages}

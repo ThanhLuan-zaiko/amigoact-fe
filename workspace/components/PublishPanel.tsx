@@ -15,6 +15,7 @@ import {
   toVietnameseWorkspaceMessage,
 } from "../messages.tsx";
 import { CoverPicker } from "./CoverPicker.tsx";
+import { PostTagField } from "./PostTagField.tsx";
 
 interface PublishPanelProps {
   editor: ArticleEditorState;
@@ -126,6 +127,14 @@ export function PublishPanel({
           </div>
         </div>
       )}
+      <div className="mt-3">
+        <PostTagField
+          orgId={orgId}
+          value={editor.tags}
+          onChange={editor.setTags}
+          disabled={editor.saving}
+        />
+      </div>
       {isRevision && (
         <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
           Đây là bản nháp riêng của bài đang hiển thị — đăng lại sẽ thay

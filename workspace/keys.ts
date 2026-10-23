@@ -11,6 +11,7 @@ export const workspaceKeys = {
       "posts",
       orgId,
       params.kind ?? "all",
+      params.tag ?? "",
       params.page ?? 1,
     ] as const,
   post: (orgId: string | null, postId: string | null) =>

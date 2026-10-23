@@ -19,6 +19,8 @@ const MESSAGES: Record<string, string> = {
   INVALID_POST_STATE: "Bài viết không ở trạng thái phù hợp cho thao tác này.",
   POST_CONTENT_REQUIRED: "Bài viết cần có nội dung trước khi tiếp tục.",
   POST_TITLE_REQUIRED: "Thông báo cần có tiêu đề.",
+  TAG_DELETED:
+    "Thẻ này đang ở thùng rác. Hãy khôi phục thẻ trước khi gắn lại.",
   UPLOAD_IN_PROGRESS: "Đang tải tệp lên, vui lòng chờ hoàn tất.",
   UNSUPPORTED_MEDIA:
     "Chỉ nhận ảnh (JPG, PNG, WebP, GIF, AVIF, BMP, TIFF, HEIC) và video (MP4, WebM, MOV).",

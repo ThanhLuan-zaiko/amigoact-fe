@@ -1,6 +1,8 @@
 import type { ReactElement } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
+import { FiHash, FiX } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
+import { Button } from "../../core/components/Button.tsx";
 import { Section } from "../../core/components/Section.tsx";
 import {
   EmptyState,
@@ -23,6 +25,10 @@ interface FeedShelfProps {
   feed: UseQueryResult<PostPage, ApiError>;
   kind: PostKind | undefined;
   onKind: (kind: PostKind | undefined) => void;
+  tagSlug?: string;
+  tagName?: string;
+  onClearTag: () => void;
+  onClearFilters: () => void;
   page: number;
   totalPages: number;
   onPage: (page: number) => void;
@@ -39,6 +45,10 @@ export function FeedShelf({
   feed,
   kind,
   onKind,
+  tagSlug,
+  tagName,
+  onClearTag,
+  onClearFilters,
   page,
   totalPages,
   onPage,
@@ -87,10 +97,28 @@ export function FeedShelf({
           featured
         />
       ))}
-      {(!empty || kind !== undefined) && page === 1 && (
+      {tagSlug !== undefined && (
+        <Section>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="inline-flex items-center gap-1.5 text-sm text-zinc-700 dark:text-zinc-300">
+              <FiHash className="h-4 w-4" aria-hidden="true" />
+              {`Đang lọc theo thẻ #${tagName ?? tagSlug}`}
+            </p>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClearTag}
+              icon={<FiX className="h-4 w-4" aria-hidden="true" />}
+            >
+              Bỏ lọc
+            </Button>
+          </div>
+        </Section>
+      )}
+      {(!empty || kind !== undefined || tagSlug !== undefined) && page === 1 && (
         <KindFilterCard kind={kind} onKind={onKind} />
       )}
-      {empty && kind === undefined && (
+      {empty && kind === undefined && tagSlug === undefined && (
         <Section>
           <EmptyState
             title="Chưa có bài viết nào"
@@ -98,13 +126,21 @@ export function FeedShelf({
           />
         </Section>
       )}
-      {empty && kind !== undefined && (
+      {empty && (kind !== undefined || tagSlug !== undefined) && (
         <Section>
           <EmptyState
-            title="Không có bài viết phù hợp"
-            message="Thử chọn loại bài khác để xem toàn bộ bảng tin."
+            title={
+              tagSlug !== undefined
+                ? "Không có bài viết gắn thẻ này"
+                : "Không có bài viết phù hợp"
+            }
+            message={
+              tagSlug !== undefined
+                ? "Thẻ này chưa gắn với bài viết nào trên bảng tin."
+                : "Thử chọn loại bài khác để xem toàn bộ bảng tin."
+            }
             actionLabel="Xem tất cả"
-            onAction={() => onKind(undefined)}
+            onAction={onClearFilters}
           />
         </Section>
       )}

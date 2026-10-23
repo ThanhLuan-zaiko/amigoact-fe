@@ -1,6 +1,6 @@
 import { useState, type ReactElement } from "react";
 import { Link } from "react-router-dom";
-import { FiCalendar, FiCheck, FiX } from "react-icons/fi";
+import { FiCalendar, FiCheck, FiFileText, FiX } from "react-icons/fi";
 import type { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -98,6 +98,13 @@ export function TagRow({
         >
           <FiCalendar className="h-4 w-4" aria-hidden="true" />
           {tag.activity_count} hoạt động
+        </Link>
+        <Link
+          to={`/manage/board?org=${orgId}&tag=${tag.slug}`}
+          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-2 text-sm text-zinc-600 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
+        >
+          <FiFileText className="h-4 w-4" aria-hidden="true" />
+          {tag.post_count} bài viết
         </Link>
       </div>
       {canManage && !editing && (

@@ -12,6 +12,7 @@ import { ManageActions } from "./ManageRailActions.tsx";
 import { ManageContextPanels } from "./ManageContextPanels.tsx";
 import { ManageListFilters } from "./ManageListFilters.tsx";
 import { OrgChipList } from "./OrgChipList.tsx";
+import { TagPostRail } from "./TagPostRail.tsx";
 
 function usesQuery(pathname: string): boolean {
   return (
@@ -109,6 +110,9 @@ export function ManageRail({
       </div>
       <ManageActions orgId={orgId} />
       <ManageListFilters />
+      {pathname.startsWith("/manage/tags") ? (
+        <TagPostRail />
+      ) : (
       <RailCard title="Tổ chức của bạn">
         <div className="px-4 pb-4">
           {orgs.isPending && <LoadingState label="Đang tải tổ chức…" />}
@@ -132,6 +136,7 @@ export function ManageRail({
           )}
         </div>
       </RailCard>
+      )}
       <ManageContextPanels orgId={orgId} org={selected} />
     </div>
   );

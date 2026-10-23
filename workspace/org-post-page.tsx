@@ -25,6 +25,7 @@ import {
   toVietnameseWorkspaceMessage,
 } from "./messages.tsx";
 import { ArticleBody } from "./components/ArticleBody.tsx";
+import { PostTagLinks } from "./components/PostTagLinks.tsx";
 
 // Public announcement reader (/orgs/:slug/posts/:postId): guests see the
 // full article without auth; comments and board controls stay member-only.
@@ -104,6 +105,7 @@ export function OrgPostPage(): ReactElement {
                 {formatTime(article.published_at ?? article.updated_at)}
                 {article.edited_at !== null && " · đã chỉnh sửa"}
               </p>
+              <PostTagLinks tags={article.tags} />
               <ArticleBody post={article} />
             </article>
           </Section>

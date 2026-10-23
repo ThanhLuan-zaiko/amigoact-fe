@@ -8,6 +8,7 @@ import {
   sendTypingPing,
   subscribeChannel,
 } from "../core/realtime.ts";
+import { activityKeys } from "../activities/keys.ts";
 import { pushToast } from "../core/toast.ts";
 import { postEventToast } from "./messages.tsx";
 import { workspaceKeys } from "./keys.ts";
@@ -30,6 +31,9 @@ export function useBoardRealtime(orgId: string | null, selfId?: string): void {
       void queryClient.invalidateQueries({
         queryKey: [...workspaceKeys.all, "comments"],
       });
+      if (action.startsWith("tag.")) {
+        void queryClient.invalidateQueries({ queryKey: activityKeys.all });
+      }
       const actorId = payload["actor_id"];
       if (actorId === selfId) return;
       const message = postEventToast(action, null);

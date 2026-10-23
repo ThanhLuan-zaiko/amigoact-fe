@@ -16,6 +16,7 @@ import {
   readingTimeLabel,
 } from "../messages.tsx";
 import { ArticleActions } from "./ArticleActions.tsx";
+import { PostTagLinks } from "./PostTagLinks.tsx";
 
 interface ArticleCardProps {
   orgId: string;
@@ -88,6 +89,7 @@ export function ArticleCard({
           <p className="mt-1 text-sm break-words text-zinc-600 dark:text-zinc-400">
             {excerpt(post)}
           </p>
+          <PostTagLinks tags={post.tags} orgId={orgId} />
           <p className="mt-2 flex flex-wrap items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
             <span>
               {readingTimeLabel(

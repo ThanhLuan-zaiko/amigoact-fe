@@ -9,6 +9,7 @@ import {
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
+import { activityKeys } from "../activities/keys.ts";
 import { ApiError } from "../core/api.ts";
 import {
   addComment,
@@ -56,8 +57,14 @@ export function useOrgPosts(
   orgId: string | null,
   kind?: PostKind,
   page = 1,
+  tag?: string,
 ): UseQueryResult<PostPage, ApiError> {
-  const params: PostListParams = { limit: POST_PAGE_SIZE, kind, page };
+  const params: PostListParams = {
+    limit: POST_PAGE_SIZE,
+    kind,
+    page,
+    tag,
+  };
   return useQuery({
     queryKey: workspaceKeys.posts(orgId, params),
     queryFn: () => listPosts(orgId as string, params),
@@ -124,6 +131,8 @@ async function invalidateBoard(
   await queryClient.invalidateQueries({
     queryKey: [...workspaceKeys.all, "comments"],
   });
+  // A post save can claim a new catalog row, so the tag page refreshes too.
+  await queryClient.invalidateQueries({ queryKey: activityKeys.all });
 }
 
 function useBoardMutation<TVars, TResult>(

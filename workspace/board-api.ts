@@ -36,6 +36,12 @@ export interface OrgPostMedia {
   mime: string;
 }
 
+// Catalog chip on a board post. Same spelling the org tag row uses.
+export interface PostTag {
+  name: string;
+  slug: string;
+}
+
 export interface OrgPost {
   post_id: string;
   org_id: string;
@@ -54,6 +60,7 @@ export interface OrgPost {
   published_at: string | null;
   deleted_at: string | null;
   media: OrgPostMedia[];
+  tags?: PostTag[];
   comment_count: number;
   created_at: string | null;
   updated_at: string | null;
@@ -71,6 +78,7 @@ export interface PostListParams {
   limit?: number;
   page?: number;
   kind?: PostKind;
+  tag?: string;
 }
 
 export interface CreatePostInput {
@@ -82,6 +90,7 @@ export interface CreatePostInput {
   blocks?: ArticleBlock[];
   cover_media_id?: string | null;
   media_ids?: string[];
+  tags?: string[];
 }
 
 export interface UpdatePostInput {
@@ -91,6 +100,7 @@ export interface UpdatePostInput {
   cover_media_id?: string | null;
   kind?: PostKind;
   visibility?: PostVisibility;
+  tags?: string[];
 }
 
 export interface OrgComment {
@@ -123,6 +133,7 @@ function pageQuery(params: PostListParams): string {
       ? String(params.page)
       : undefined,
     kind: params.kind,
+    tag: params.tag,
   });
 }
 

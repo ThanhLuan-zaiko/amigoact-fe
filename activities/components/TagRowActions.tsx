@@ -103,7 +103,7 @@ export function TagRowActions({
         open={eraseOpen}
         danger
         title={`Xóa vĩnh viễn thẻ #${tag.name}?`}
-        message={`Thẻ sẽ bị gỡ khỏi ${tag.activity_count} hoạt động và không thể khôi phục.`}
+        message={`Thẻ sẽ bị gỡ khỏi ${tag.activity_count} hoạt động và ${tag.post_count} bài viết, và không thể khôi phục.`}
         confirmLabel="Xóa vĩnh viễn"
         busyLabel="Đang xóa…"
         busy={hardDelete.isPending}

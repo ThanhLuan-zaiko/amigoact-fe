@@ -18,6 +18,11 @@ export const activityKeys = {
       orgId,
       trash ? "trash" : "live",
     ] as const,
+  ownedTags: (orgId: string) =>
+    [...activityKeys.all, "owned-tags", orgId] as const,
+  myTags: () => [...activityKeys.all, "my-tags"] as const,
+  myTagPosts: (slug: string) =>
+    [...activityKeys.all, "my-tag-posts", slug] as const,
   categories: (orgId?: string) =>
     [...activityKeys.all, "categories", orgId ?? "global"] as const,
   detail: (activityId: string) =>

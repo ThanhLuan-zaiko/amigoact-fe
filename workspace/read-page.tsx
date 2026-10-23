@@ -31,6 +31,7 @@ import {
 import { ArticleActions } from "./components/ArticleActions.tsx";
 import { ArticleBody } from "./components/ArticleBody.tsx";
 import { CommentThread } from "./components/CommentThread.tsx";
+import { PostTagLinks } from "./components/PostTagLinks.tsx";
 
 // Article reader (/manage/board/post?org=<id>&post=<id>): full-bleed
 // article column with byline and comments, plus a meta/action rail.
@@ -148,6 +149,7 @@ export function WorkspaceReadPage(): ReactElement {
                 {formatTime(article.published_at ?? article.updated_at)}
                 {article.edited_at !== null && " · đã chỉnh sửa"}
               </p>
+              <PostTagLinks tags={article.tags} orgId={orgId} />
               <ArticleBody post={article} />
             </article>
             {article.status === "published" && orgId !== null && (

@@ -49,7 +49,8 @@ export function TagTrashRow({
             Đã xóa lúc {formatDateTime(tag.deleted_at)}
           </p>
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Sẽ gắn lại cho {tag.activity_count} hoạt động khi khôi phục
+            Sẽ gắn lại cho {tag.activity_count} hoạt động và{" "}
+            {tag.post_count} bài viết khi khôi phục
           </p>
         </div>
       </div>
@@ -84,7 +85,7 @@ export function TagTrashRow({
         open={eraseOpen}
         danger
         title={`Xóa vĩnh viễn thẻ #${tag.name}?`}
-        message={`Thẻ sẽ bị xóa vĩnh viễn và không thể khôi phục để gắn lại cho ${tag.activity_count} hoạt động.`}
+        message={`Thẻ sẽ bị xóa vĩnh viễn và không thể khôi phục để gắn lại cho ${tag.activity_count} hoạt động và ${tag.post_count} bài viết.`}
         confirmLabel="Xóa vĩnh viễn"
         busyLabel="Đang xóa…"
         busy={hardDelete.isPending}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactElement } from "react";
-import { FiMessageSquare } from "react-icons/fi";
+import { FiHash, FiMessageSquare } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Avatar } from "../../core/components/Avatar.tsx";
 import { Section } from "../../core/components/Section.tsx";
@@ -19,6 +19,9 @@ import { OrgFeedRow } from "./OrgFeedRow.tsx";
 import { PostMediaViewer } from "./MediaViewers.tsx";
 import { OrgMediaMosaic } from "./OrgMediaMosaic.tsx";
 import { mosaicItems } from "../utils.ts";
+
+const CHIP =
+  "inline-flex min-h-[28px] items-center gap-1 rounded-full border border-zinc-200 px-2 py-0.5 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-300";
 
 function TimelineRow({ item }: { item: PublicTimelineItem }): ReactElement {
   const [viewer, setViewer] = useState<number | null>(null);
@@ -62,6 +65,16 @@ function TimelineRow({ item }: { item: PublicTimelineItem }): ReactElement {
           <p className="line-clamp-2 text-[15px] text-zinc-600 dark:text-zinc-400">
             {item.excerpt}
           </p>
+        )}
+        {item.tags.length > 0 && (
+          <ul className="mt-1.5 flex flex-wrap gap-1.5">
+            {item.tags.map((tag) => (
+              <li key={tag.slug} className={CHIP}>
+                <FiHash className="h-3 w-3" aria-hidden="true" />
+                {tag.name}
+              </li>
+            ))}
+          </ul>
         )}
         <OrgMediaMosaic
           org={{

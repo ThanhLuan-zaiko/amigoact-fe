@@ -18,8 +18,10 @@ Cột trang chủ `/` chia hai tab kiểu X qua `home/components/HomeTabs.tsx`
   `author_avatar_url`), meta `đăng trong {tên org} · ngày`, tiêu đề,
   excerpt, mosaic media của bài (cùng `OrgMediaMosaic` như tab Tổ chức:
   `media[]`/`media_count` cover-dẫn-đầu của bài viết, tối đa 4 ô + `+N`),
-  số bình luận — mỗi dòng mở
-  `/orgs/:slug/posts/:postId`; ô media (kể cả `+N`) mở lightbox ngay tại
+  số bình luận, và chip thẻ (`tags[{name,slug}]`, tối đa 3) dưới excerpt.
+  Chip nằm trong dòng, nên bấm cả dòng vẫn mở
+  `/orgs/:slug/posts/:postId`. Timeline không lọc theo thẻ. Ô media
+  (kể cả `+N`) mở lightbox ngay tại
   feed qua `PostMediaViewer` → `GET /orgs/{slug}/announcements/{id}/media`.
   Sentinel `IntersectionObserver`
   (`rootMargin` 600px) tự gọi `fetchNextPage` của `useAnnouncementFeed`

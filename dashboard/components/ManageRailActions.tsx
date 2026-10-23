@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { FiEdit3, FiPlus, FiTrash2, FiUserPlus } from "react-icons/fi";
-import { useOrgTags } from "../../activities/tags-hooks.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { useOrgMembers } from "../members-hooks.ts";
 import type { MemberSortParam } from "../members-api.ts";
@@ -34,7 +33,6 @@ export function ManageActions({
   const { pathname } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const onMembers = pathname.startsWith("/manage/members");
-  const onTags = pathname.startsWith("/manage/tags");
   const sortParam = searchParams.get("sort") ?? "newest";
   const sort: MemberSortParam = (SORTS as readonly string[]).includes(sortParam)
     ? (sortParam as MemberSortParam)
@@ -50,7 +48,6 @@ export function ManageActions({
     limit: 10,
     offset: (page - 1) * 10,
   });
-  const tags = useOrgTags(onTags ? orgId : null);
   const canInvite =
     members.data?.viewer_role === "owner" ||
     (members.data?.viewer_permissions ?? []).includes("member:invite");
@@ -95,20 +92,6 @@ export function ManageActions({
         icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
       >
         Thùng rác
-      </Button>,
-    );
-  }
-  if (onTags && tags.data?.can_manage) {
-    buttons.push(
-      <Button
-        key="trash-tags"
-        type="button"
-        variant={trash ? "primary" : "secondary"}
-        aria-pressed={trash}
-        onClick={() => toggleParam(setSearchParams, "trash", !trash)}
-        icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
-      >
-        {`Thùng rác · ${tags.data.trash_count}`}
       </Button>,
     );
   }

@@ -79,6 +79,9 @@ export function useArticleEditor(
         : "members"),
   );
   const [title, setTitleState] = useState(initial?.title ?? "");
+  const [tags, setTagsState] = useState<string[]>(
+    () => (initial?.tags ?? []).map((tag) => tag.name),
+  );
   const [coverId, setCoverId] = useState<string | null>(initial?.cover_media_id ?? null);
   const [blocks, setBlocks] = useState<EditorBlock[]>(() => startingBlocks(initial));
   const [lookup, setLookup] = useState<MediaLookup>(() => mediaLookup(initial?.media ?? []));
@@ -236,6 +239,7 @@ export function useArticleEditor(
       title: title.trim(),
       blocks: cleanBlocks(blocks),
       cover_media_id: coverId,
+      tags,
     };
     try {
       let saved: OrgPost;
@@ -290,6 +294,7 @@ export function useArticleEditor(
     kind,
     visibility,
     title,
+    tags,
     coverId,
     blocks,
     lookup,
@@ -313,6 +318,10 @@ export function useArticleEditor(
     },
     setTitle: (next: string) => {
       setTitleState(next);
+      touch();
+    },
+    setTags: (next: string[]) => {
+      setTagsState(next);
       touch();
     },
     clearError: () => setErrorCode(null),

@@ -27,8 +27,8 @@ export function TagMergeDialog({
   return (
     <Modal open title={`Gộp thẻ #${tag.name}`} onClose={onClose}>
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Mọi hoạt động gắn #{tag.name} sẽ chuyển sang thẻ đã chọn, sau đó
-        #{tag.name} bị xóa.
+        Mọi hoạt động và bài viết gắn #{tag.name} sẽ chuyển sang thẻ đã
+        chọn, sau đó #{tag.name} bị xóa.
       </p>
       <div className="mt-3">
         <SelectField
@@ -38,7 +38,7 @@ export function TagMergeDialog({
           placeholder="Chọn thẻ…"
           options={others.map((t) => ({
             value: t.slug,
-            label: `#${t.name} · ${t.activity_count} hoạt động`,
+            label: `#${t.name} · ${t.activity_count} hoạt động · ${t.post_count} bài viết`,
           }))}
           error={error || undefined}
         />

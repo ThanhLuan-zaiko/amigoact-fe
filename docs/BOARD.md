@@ -30,7 +30,9 @@ trên `?tab=` (`published` mặc định, `draft`, `trash`) nên deep-link đư�
   `Thông báo` (kind) và/hoặc `Chỉ thành viên` (bài published mà
   `visibility=members`), title, excerpt, tác giả + giờ + `x phút đọc` +
   số bình luận.
-  Lọc kind qua `?kind=` (discussion/announcement). Phân trang số trang qua
+  Lọc kind qua `?kind=` (discussion/announcement) và lọc thẻ qua `?tag=`
+  (đọc index cạnh bài; banner "Đang lọc theo thẻ" + "Bỏ lọc"). Chip thẻ
+  trên `ArticleCard` mở lại đúng bộ lọc. Phân trang số trang qua
   `?page=` + `PostPage.total` — `Pagination` giống `/manage/orgs`; `pinned[]`
   chỉ kèm ở trang 1, đổi tab/kind reset về trang 1.
 - **Nháp**: `ShelfCard` liệt kê `ArticleRow` từ `GET .../posts/drafts`
@@ -52,7 +54,8 @@ trên `?tab=` (`published` mặc định, `draft`, `trash`) nên deep-link đư�
 | Nháp | `Viết tiếp`, `Đăng bài`/`Đăng lại` cho revision (khóa nếu announcement hoặc `visibility=public` mà thiếu `post:announce`), `Bỏ vào thùng rác` |
 | Thùng rác | `Khôi phục`, `Xóa vĩnh viễn` (2 bước) |
 
-Mọi mutation invalidate `[workspace,"posts"]` + `[workspace,"comments"]`;
+Mọi mutation invalidate `[workspace,"posts"]` + `[workspace,"comments"]`
+và catalog thẻ (`activityKeys.all`), vì lưu bài có thể claim thẻ mới.
 `useBoardRealtime` subscribe `posts:{orgId}` và toast các action của người
 khác (`post.created/.updated/.deleted/.pinned/.unpinned/.unpublished/.restored/.purged`).
 
@@ -119,7 +122,8 @@ bài gốc). Publish xong gọi `onPublished` → điều hướng sang trang đ
 
 Cột bài (`lg:col-span-8`): cover, badge kind/`postStatusLabel` (`Nháp`,
 `Nháp chờ đăng`, `Đã gỡ xuống`)/ghim, title display, byline (tác giả +
-`published_at` + `đã chỉnh sửa`), `ArticleBody` render blocks
+`published_at` + `đã chỉnh sửa`), chip thẻ link về
+`/manage/board?org=&tag=`, `ArticleBody` render blocks
 (paragraph/heading/quote/list/figure ảnh+video/divider; media chỉ giải
 qua `media[]` nên asset rác không vỡ layout). `CommentThread` chỉ hiện
 khi `status === "published"`. Cột phải (`lg:col-span-4`): dl meta (tác
@@ -150,8 +154,9 @@ hợp lệ); nháp/revision/thùng rác vẫn nội bộ.
   trang qua `Pagination`; header có nút "Về trang tổ chức".
 - `workspace/org-post-page.tsx` — route `/orgs/:slug/posts/:postId`, khách
   không cần đăng nhập. Đọc qua `GET /orgs/{slug}/announcements/{postId}`
-  (`getPublicOrgPost` + `usePublicOrgPost`; key `publicPost` tách khỏi
-  prefix `posts` vì không gắn board mutation/realtime). Reuse `ArticleBody`
+  (`getPublicOrgPost` + `usePublicOrgPost`). Chip thẻ là chữ, không link
+  vào `/manage`. Key `publicPost` tách khỏi prefix `posts` vì không gắn
+  board mutation/realtime. Reuse `ArticleBody`
   + `coverUrl`/`formatTime`; rail phải link về profile org (qua
   `usePublicOrg` — contract import từ `orgs/hooks.ts`) + meta (ngày đăng,
   thời gian đọc, số bình luận). `CommentThread`/`ArticleActions` không

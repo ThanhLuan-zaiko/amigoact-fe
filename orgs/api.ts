@@ -185,6 +185,7 @@ export interface PublicTimelineItem {
   org: PublicTimelineOrg;
   media: PublicOrgMedia[];
   media_count: number;
+  tags: { name: string; slug: string }[];
 }
 
 export interface PublicTimelinePage {

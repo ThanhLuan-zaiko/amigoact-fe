@@ -13,6 +13,7 @@ import { Modal } from "../../core/components/Modal.tsx";
 import { useOrgMembers } from "../../dashboard/members-hooks.ts";
 import type { ChatChannel } from "../api.ts";
 import { useChannels } from "../channel-hooks.ts";
+import { chatRoomHref } from "../inbox-tab.ts";
 import { toVietnameseWorkspaceMessage } from "../messages.tsx";
 import { ChannelFormDialog } from "./ChannelFormDialog.tsx";
 import { ChannelMembersDialog } from "./ChannelMembersDialog.tsx";
@@ -49,7 +50,7 @@ export function ChannelBrowserDialog({
 
   function openRoom(channel: ChatChannel): void {
     onClose();
-    navigate(`/manage/chat?room=${channel.channel_id}`);
+    navigate(chatRoomHref(channel.channel_id, "threads"));
   }
 
   function fail(err: unknown): void {

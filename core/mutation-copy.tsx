@@ -48,6 +48,7 @@ export const MUTATION_TOAST_TITLES: Record<string, string> = {
   "tag.restore": "Đã khôi phục thẻ.",
   "tag.erase": "Đã xóa vĩnh viễn thẻ.",
   "activity.save": "Đã lưu hoạt động.",
+  "activity.thread": "Đã tạo sự kiện và mở luồng thông báo.",
   "activity.delete": "Đã xóa hoạt động.",
   "activity.category": "Đã tạo danh mục.",
   "activity.announce": "Đã đăng thông báo.",

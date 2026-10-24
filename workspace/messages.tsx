@@ -31,6 +31,7 @@ const MESSAGES: Record<string, string> = {
   CHAT_CONTENT_REQUIRED: "Tin nhắn cần có nội dung hoặc tệp đính kèm.",
   CHANNEL_NOT_FOUND: "Không tìm thấy kênh.",
   CHANNEL_NAME_TAKEN: "Tên kênh này đã được sử dụng.",
+  SLUG_TAKEN: "Đã có sự kiện cùng tên. Hãy đổi tên rồi thử lại.",
   CHANNEL_ARCHIVED:
     "Kênh đã được lưu trữ - chỉ xem được lịch sử trò chuyện.",
   INVALID_CHANNEL_STATE:

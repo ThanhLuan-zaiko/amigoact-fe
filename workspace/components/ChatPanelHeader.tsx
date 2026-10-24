@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import { Avatar } from "../../core/components/Avatar.tsx";
 import { Button } from "../../core/components/Button.tsx";
+import { chatRoomHref } from "../inbox-tab.ts";
 
 interface ChatPanelHeaderProps {
   title: string;
@@ -60,7 +61,7 @@ export function ChatPanelHeader({
         </h2>
         {parentRoom !== null ? (
           <Link
-            to={`?room=${encodeURIComponent(parentRoom.room_id)}`}
+            to={chatRoomHref(parentRoom.room_id, "all")}
             className="flex items-center gap-1 truncate text-xs text-zinc-500 transition-colors hover:text-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-400 dark:hover:text-zinc-200 dark:focus-visible:outline-zinc-400"
           >
             <FiCornerDownRight className="h-3 w-3 shrink-0" aria-hidden="true" />

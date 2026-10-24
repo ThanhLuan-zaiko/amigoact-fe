@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -57,6 +58,13 @@ export function ChatInboxList({
   makeTo,
 }: ChatInboxListProps): ReactElement {
   const byId = new Map(items.map((room) => [room.room_id, room]));
+  useEffect(() => {
+    if (activeRoomId === null) return;
+    const node = document.querySelector(
+      `[data-inbox-id="${CSS.escape(activeRoomId)}"]`,
+    );
+    node?.scrollIntoView({ block: "nearest" });
+  }, [activeRoomId]);
   return (
     <ul aria-label="Danh sách cuộc trò chuyện">
       {items.map((room) => {
@@ -72,9 +80,12 @@ export function ChatInboxList({
           <li key={room.room_id}>
             <Link
               to={makeTo(room)}
+              data-inbox-id={room.room_id}
               aria-current={active ? "page" : undefined}
               className={`${ROW} ${
-                active ? "bg-zinc-100 dark:bg-zinc-900" : ""
+                active
+                  ? "border-l-[3px] border-zinc-900 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900"
+                  : "border-l-[3px] border-transparent"
               }`}
             >
               {room.kind === "channel" ? (

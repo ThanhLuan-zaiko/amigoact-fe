@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useSession } from "../auth/hooks.ts";
@@ -9,7 +9,7 @@ import {
   useOrgPresence,
   usePresenceIds,
 } from "../dashboard/presence-hooks.ts";
-import { useChatInbox, useChatUnread } from "./hooks.ts";
+import { useChatInbox } from "./hooks.ts";
 import { formatLastSeen } from "./messages.tsx";
 import {
   useChatRealtime,
@@ -17,6 +17,8 @@ import {
 } from "./realtime-hooks.ts";
 import { ChatInboxRail } from "./components/ChatInboxRail.tsx";
 import { ChatPanel } from "./components/ChatPanel.tsx";
+import { QuickEventDialog } from "./components/QuickEventDialog.tsx";
+import { ShareThreadDialog } from "./components/ShareThreadDialog.tsx";
 
 // Telegram flow on /manage/chat: the merged cross-org inbox lives in the
 // right rail on lg+ and IS the first screen below that (?room= picks the
@@ -29,6 +31,10 @@ export function WorkspaceChatPage(): ReactElement {
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const [searchParams, setSearchParams] = useSearchParams();
   const roomId = searchParams.get("room");
+  // Holds the general room the quick-event dialog was opened from.
+  // A room change drops it, so the dialog never follows a thread.
+  const [quickFor, setQuickFor] = useState<string | null>(null);
+  const [shareFor, setShareFor] = useState<string | null>(null);
 
   const inbox = useChatInbox(signedIn);
   const inboxItems = inbox.data?.items ?? [];
@@ -58,7 +64,6 @@ export function WorkspaceChatPage(): ReactElement {
     limit: 50,
     status: "active",
   });
-  const unread = useChatUnread(roomId);
   const { typingIds, noteTyping } = useTypingUsers();
   useChatRealtime(roomId, selfId, noteTyping, room?.kind === "dm");
 
@@ -83,9 +88,23 @@ export function WorkspaceChatPage(): ReactElement {
         avatar_url: null,
       },
   );
-  const canManage = (members.data?.viewer_permissions ?? []).includes(
-    "chat:manage",
-  );
+  const permissions = members.data?.viewer_permissions ?? [];
+  const viewerRole = members.data?.viewer_role ?? "member";
+  const canManage = permissions.includes("chat:manage");
+  // Org head owns the general room. Anyone else needs activity:create.
+  // The activity API applies the same owner-or-permission gate.
+  const canCreateEvent =
+    showThreads &&
+    (viewerRole === "owner" ||
+      permissions.includes("activity:create"));
+  const manageActivityTo =
+    room?.activity_id !== null &&
+    room?.activity_id !== undefined &&
+    roomOrgId !== null &&
+    (permissions.includes("activity:create") ||
+      permissions.includes("activity:manage"))
+      ? `/manage/events/${roomOrgId}/${room.activity_id}`
+      : undefined;
 
   const subtitle = useMemo(() => {
     if (room === null) return null;
@@ -113,6 +132,11 @@ export function WorkspaceChatPage(): ReactElement {
     setSearchParams(next, { replace: true });
   }
 
+  if (roomId === null && (quickFor !== null || shareFor !== null)) {
+    setQuickFor(null);
+    setShareFor(null);
+  }
+
   if (roomId === null) {
     if (!isDesktop) return <ChatInboxRail />;
     return (
@@ -126,6 +150,7 @@ export function WorkspaceChatPage(): ReactElement {
   }
 
   return (
+    <>
     <ChatPanel
       key={roomId}
       roomId={roomId}
@@ -147,9 +172,40 @@ export function WorkspaceChatPage(): ReactElement {
       showThreads={showThreads}
       selfId={selfId}
       canManage={canManage}
-      unread={unread.data?.unread ?? 0}
       typingUsers={typingUsers}
       onBack={isDesktop ? undefined : backToInbox}
+      onQuickEvent={
+        canCreateEvent && roomId !== null
+          ? () => setQuickFor(roomId)
+          : undefined
+      }
+      onShareThread={
+        showThreads && roomId !== null
+          ? () => setShareFor(roomId)
+          : undefined
+      }
+      manageActivityTo={manageActivityTo}
     />
+    {roomOrgId !== null && roomId !== null && (
+      <QuickEventDialog
+        open={quickFor === roomId}
+        onClose={() => setQuickFor(null)}
+        orgId={roomOrgId}
+        roomId={roomId}
+        onCreated={(threadId) => {
+          setQuickFor(null);
+          setSearchParams({ room: threadId, inbox: "threads" });
+        }}
+      />
+    )}
+    {roomOrgId !== null && roomId !== null && (
+      <ShareThreadDialog
+        open={shareFor === roomId}
+        onClose={() => setShareFor(null)}
+        orgId={roomOrgId}
+        roomId={roomId}
+      />
+    )}
+    </>
   );
 }

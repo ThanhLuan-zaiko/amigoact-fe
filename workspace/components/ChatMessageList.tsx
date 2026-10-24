@@ -13,8 +13,8 @@ import { ChatSeenBy } from "./ChatSeenBy.tsx";
 import { ChatTypingRow } from "./ChatTypingRow.tsx";
 
 const BUBBLE =
-  "min-w-0 max-w-[78%] rounded-2xl px-3 pb-1.5 pt-2 text-[15px] " +
-  "leading-snug border border-zinc-200/60 dark:border-zinc-700/60";
+  "min-w-0 max-w-[78%] origin-center rounded-2xl px-3 pb-1.5 pt-2 text-[15px] leading-snug " +
+  "border border-zinc-200/60 dark:border-zinc-700/60 transition-transform duration-200 group-data-[jump-pulse]:scale-[1.04]";
 const MINE =
   "rounded-br-md bg-zinc-900 text-white dark:bg-zinc-100 " +
   "dark:text-zinc-950";
@@ -138,7 +138,7 @@ export function ChatMessageList({
             {index === seamIndex && (
               <div
                 className="flex items-center gap-3 py-2"
-                aria-label="Tin nhắn mới"
+                aria-label="Tin nhắn mới" data-unread-seam=""
               >
                 <span className="h-px flex-1 bg-zinc-300 dark:bg-zinc-700" />
                 <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">

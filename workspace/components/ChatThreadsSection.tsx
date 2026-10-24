@@ -8,6 +8,7 @@ import {
   LoadingState,
 } from "../../core/components/Feedback.tsx";
 import { useRoomThreads } from "../channel-hooks.ts";
+import { chatRoomHref } from "../inbox-tab.ts";
 import {
   channelMetaLabel,
   toVietnameseWorkspaceMessage,
@@ -70,7 +71,7 @@ export function ChatThreadsSection({
         {items.map((thread) => (
           <Link
             key={thread.channel_id}
-            to={`?room=${encodeURIComponent(thread.channel_id)}`}
+            to={chatRoomHref(thread.channel_id, "threads")}
             onClick={onClose}
             className="flex items-center gap-3 px-3 py-2.5 transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
           >

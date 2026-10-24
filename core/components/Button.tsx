@@ -55,7 +55,12 @@ export function Button({
   );
   if (to !== undefined) {
     return (
-      <Link to={to} className={classes}>
+      <Link
+        to={to}
+        className={classes}
+        aria-label={rest["aria-label"]}
+        title={rest.title}
+      >
         {content}
       </Link>
     );

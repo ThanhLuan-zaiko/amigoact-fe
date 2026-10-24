@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { FiPaperclip, FiSend, FiX } from "react-icons/fi";
+import { FiPaperclip, FiSend } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -14,6 +14,8 @@ import {
 import { sendChatTyping } from "../realtime-hooks.ts";
 import { toVietnameseWorkspaceMessage } from "../messages.tsx";
 import { ChatContextBar } from "./ChatContextBar.tsx";
+import { ChatComposerShortcuts } from "./ChatComposerShortcuts.tsx";
+import { ChatPendingChips } from "./ChatPendingChips.tsx";
 
 const ACCEPT = "image/*,video/*";
 const MAX_ATTACHMENTS = 4;
@@ -34,6 +36,9 @@ interface ChatComposerBarProps {
   // Channel gates (managers-only/archived): replaces the input with a
   // notice so blocked members never type a message that would 403/409.
   disabledReason?: string | null;
+  onQuickEvent?: () => void;
+  onShareThread?: () => void;
+  manageActivityTo?: string;
 }
 
 // Telegram composer: per-room draft, reply/edit context bars above the
@@ -46,6 +51,9 @@ export function ChatComposerBar({
   onJumpTo,
   onSent,
   disabledReason = null,
+  onQuickEvent,
+  onShareThread,
+  manageActivityTo,
 }: ChatComposerBarProps): ReactElement {
   const [draft, setDraft] = useState(
     () => localStorage.getItem(draftKey(roomId)) ?? "",
@@ -159,28 +167,13 @@ export function ChatComposerBar({
         />
       )}
       {pending.length > 0 && (
-        <div className="mb-1.5 flex flex-wrap gap-1.5">
-          {pending.map((item) => (
-            <span
-              key={item.media_id}
-              className="flex max-w-[180px] items-center gap-1 rounded-full border border-zinc-200 px-2.5 py-1 text-xs dark:border-zinc-700"
-            >
-              <span className="truncate">{item.name}</span>
-              <button
-                type="button"
-                aria-label={`Bỏ ${item.name}`}
-                onClick={() => {
-                  discard.mutate(item.media_id);
-                  setPending((prev) =>
-                    prev.filter((p) => p.media_id !== item.media_id),
-                  );
-                }}
-              >
-                <FiX className="h-3.5 w-3.5" aria-hidden="true" />
-              </button>
-            </span>
-          ))}
-        </div>
+        <ChatPendingChips
+          items={pending}
+          onRemove={(mediaId) => {
+            discard.mutate(mediaId);
+            setPending((prev) => prev.filter((item) => item.media_id !== mediaId));
+          }}
+        />
       )}
       {disabledReason !== null ? (
         <p className="rounded-xl bg-zinc-100 px-3 py-2.5 text-center text-sm text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
@@ -195,6 +188,11 @@ export function ChatComposerBar({
           multiple
           className="hidden"
           onChange={(event) => pickFiles(event.target.files)}
+        />
+        <ChatComposerShortcuts
+          onQuickEvent={onQuickEvent}
+          onShareThread={onShareThread}
+          manageActivityTo={manageActivityTo}
         />
         <Button
           type="button"

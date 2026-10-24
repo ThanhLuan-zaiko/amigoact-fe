@@ -5,6 +5,8 @@ import {
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
+import { createActivity } from "../activities/api.ts";
+import { activityKeys } from "../activities/keys.ts";
 import { ApiError } from "../core/api.ts";
 import {
   addChannelMember,
@@ -162,6 +164,78 @@ export function useCreateRoomThread(
       await queryClient.invalidateQueries({
         queryKey: workspaceKeys.chatInbox(),
       });
+    },
+  });
+}
+
+// The activity row exists, but the linked sub-thread did not open.
+// `code` is the backend envelope code from the thread call.
+export class QuickEventPartialError extends Error {
+  readonly code: string;
+  readonly activityId: string;
+
+  constructor(code: string, activityId: string) {
+    super(code);
+    this.name = "QuickEventPartialError";
+    this.code = code;
+    this.activityId = activityId;
+  }
+}
+
+export interface QuickEventInput {
+  title: string;
+  description: string | null;
+  location: string | null;
+  isRemote: boolean;
+  startAt: string;
+  threadName: string;
+  threadTopic: string;
+}
+
+// Draft activity plus a sub-thread under the open parent room. Inbox
+// and the org activity list refresh before the caller navigates, so
+// the new thread and the events page both see the row immediately.
+export function useQuickEventThread(
+  orgId: string,
+  roomId: string,
+): UseMutationResult<
+  ChatChannel,
+  ApiError | QuickEventPartialError,
+  QuickEventInput
+> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    meta: { successToast: "activity.thread" },
+    mutationFn: async (input: QuickEventInput) => {
+      const activity = await createActivity(orgId, {
+        title: input.title,
+        description: input.description,
+        location: input.location,
+        is_remote: input.isRemote,
+        start_at: input.startAt,
+        hours_awarded: 0,
+      });
+      try {
+        const thread = await createRoomThread(orgId, roomId, {
+          name: input.threadName,
+          topic: input.threadTopic,
+          kind: "text",
+          post_policy: "everyone",
+          activity_id: activity.id,
+        });
+        await queryClient.invalidateQueries({ queryKey: activityKeys.all });
+        await queryClient.invalidateQueries({
+          queryKey: workspaceKeys.roomThreads(orgId, roomId),
+        });
+        await queryClient.invalidateQueries({
+          queryKey: workspaceKeys.chatInbox(),
+        });
+        return thread;
+      } catch (err: unknown) {
+        await queryClient.invalidateQueries({ queryKey: activityKeys.all });
+        const code = err instanceof ApiError ? err.code : "REQUEST_FAILED";
+        throw new QuickEventPartialError(code, activity.id);
+      }
     },
   });
 }

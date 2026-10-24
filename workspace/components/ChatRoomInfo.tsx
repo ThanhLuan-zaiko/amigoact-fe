@@ -228,7 +228,7 @@ export function ChatRoomInfo({
         onCreated={(threadId) => {
           setThreadFormOpen(false);
           close();
-          setSearchParams({ room: threadId });
+          setSearchParams({ room: threadId, inbox: "threads" });
         }}
       />
     )}

@@ -6,6 +6,7 @@ import { Avatar } from "../../core/components/Avatar.tsx";
 import { LoadingState } from "../../core/components/Feedback.tsx";
 import { useOrgMembers } from "../../dashboard/members-hooks.ts";
 import { useOpenDm } from "../hooks.ts";
+import { chatRoomHref } from "../inbox-tab.ts";
 import { ChatMemberMenu } from "./ChatMemberMenu.tsx";
 
 interface ChatMembersCardProps {
@@ -38,7 +39,7 @@ export function ChatMembersCard({
     const room = await openDm.mutateAsync(userId).catch(() => null);
     if (room === null) return;
     onClose();
-    navigate(`/manage/chat?room=${room.room_id}`);
+    navigate(chatRoomHref(room.room_id, "all"));
   }
 
   const body = (

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { FiArrowDown } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
@@ -41,17 +41,17 @@ interface ChatPanelProps {
   // Channel rooms: # icon + post_policy gate for the composer.
   isChannel?: boolean;
   postPolicy?: "everyone" | "managers" | null;
-  // Sub-thread rooms: parent context link in the header. The room
-  // info panel also hides the thread list (threads never nest).
+  // Sub-thread rooms link back to their parent in the header.
   parentRoom?: { room_id: string; title: string } | null;
   // General rooms and top channels can open focused sub-threads.
   showThreads?: boolean;
   selfId?: string;
   canManage: boolean;
-  unread: number;
   typingUsers: { name: string; avatar_url: string | null }[];
-  // Two-screen flow (<lg): back returns to the inbox list.
   onBack?: () => void;
+  onQuickEvent?: () => void;
+  onShareThread?: () => void;
+  manageActivityTo?: string;
 }
 
 // Telegram conversation surface: pinned header + scrollable bubble flow
@@ -72,9 +72,11 @@ export function ChatPanel({
   showThreads = false,
   selfId,
   canManage,
-  unread,
   typingUsers,
   onBack,
+  onQuickEvent,
+  onShareThread,
+  manageActivityTo,
 }: ChatPanelProps): ReactElement {
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [editing, setEditing] = useState<ChatMessage | null>(null);
@@ -97,7 +99,7 @@ export function ChatPanel({
   const peerLastRead = page?.peer_last_read_message_id ?? null;
   const pinned = page?.pinned ?? [];
   const muted = page?.muted ?? false;
-  const latest = items.at(-1);
+  const openUnread = page?.unread ?? 0;
   const {
     scrollRef,
     atBottom,
@@ -108,15 +110,12 @@ export function ChatPanel({
   } = useChatAutoScroll(items, {
     canLoadMore: () => chat.hasNextPage,
     loadOlder: () => chat.fetchNextPage(),
+    unread: openUnread,
+    lastRead,
+    onSeenLatest: (messageId) => {
+      if (!markRead.isPending) markRead.mutate(messageId);
+    },
   });
-
-  // Viewing the newest message moves the read pointer forward.
-  useEffect(() => {
-    if (latest && latest.message_id !== lastRead && !markRead.isPending) {
-      markRead.mutate(latest.message_id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latest?.message_id, lastRead]);
 
   function clearContext(): void {
     setReplyTo(null);
@@ -176,7 +175,7 @@ export function ChatPanel({
               lastRead={lastRead}
               peerLastRead={peerLastRead}
               readers={reads.data?.items ?? []}
-              unread={unread}
+              unread={openUnread}
               hasNextPage={chat.hasNextPage}
               isFetchingNextPage={chat.isFetchingNextPage}
               onLoadOlder={() => void chat.fetchNextPage()}
@@ -219,6 +218,9 @@ export function ChatPanel({
         onClearContext={clearContext}
         onJumpTo={(id) => void jumpTo(id)}
         onSent={scrollToLatest}
+        onQuickEvent={onQuickEvent}
+        onShareThread={onShareThread}
+        manageActivityTo={manageActivityTo}
         disabledReason={
           postPolicy === "managers" && !canManage ? "Chỉ quản lý mới được đăng trong kênh này." : null
         }

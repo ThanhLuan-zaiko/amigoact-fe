@@ -14,12 +14,17 @@ import { useSession } from "../../auth/hooks.ts";
 import { useMyMemberships } from "../../dashboard/members-hooks.ts";
 import type { InboxRoom } from "../api.ts";
 import { useChatInbox } from "../hooks.ts";
+import {
+  chatRoomHref,
+  filterInboxItems,
+  parseInboxTab,
+  tabForRoom,
+  type InboxTab,
+} from "../inbox-tab.ts";
 import { toVietnameseWorkspaceMessage } from "../messages.tsx";
 import { ChatInboxList } from "./ChatInboxList.tsx";
 import { ChannelBrowserDialog } from "./ChannelBrowserDialog.tsx";
 import { NewDmDialog } from "./NewDmDialog.tsx";
-
-type InboxTab = "all" | "unread" | "threads";
 
 const INBOX_TABS: { value: InboxTab; label: string }[] = [
   { value: "all", label: "Tất cả" },
@@ -30,8 +35,10 @@ const INBOX_TABS: { value: InboxTab; label: string }[] = [
 // The merged inbox surface: search + folder tabs + compose over the
 // cross-org ChatInboxList (each row already names its org in the
 // preview line). The "all" tab keeps main conversations (general,
-// activity, dm) so channels never crowd it; the "threads" tab is the
-// only one listing channel rooms (top channels + sub-threads); the
+// activity, dm) so channels never crowd it. An activity room drops
+// out of "all" once a sub-thread is linked to that activity, so the
+// event is not listed twice. The "threads" tab is the only one
+// listing channel rooms (top channels + sub-threads); the
 // "unread" tab keeps every room with unseen messages regardless of
 // kind. Rendered inside the right rail on lg+ and as the center-column
 // list screen on smaller viewports.
@@ -44,7 +51,6 @@ export function ChatInboxRail(): ReactElement {
   const [searchParams, setSearchParams] = useSearchParams();
   const roomId = searchParams.get("room");
   const [term, setTerm] = useState("");
-  const [tab, setTab] = useState<InboxTab>("all");
   const [composing, setComposing] = useState(false);
   const [browsing, setBrowsing] = useState(false);
 
@@ -57,30 +63,28 @@ export function ChatInboxRail(): ReactElement {
     [memberships.data],
   );
 
-  const items = useMemo(() => {
-    let list = inbox.data?.items ?? [];
-    if (tab === "unread") {
-      list = list.filter((room) => room.unread > 0);
-    } else if (tab === "threads") {
-      list = list.filter((room) => room.kind === "channel");
-    } else {
-      list = list.filter((room) => room.kind !== "channel");
-    }
-    const needle = term.trim().toLowerCase();
-    if (needle === "") return list;
-    return list.filter((room) =>
-      `${room.title} ${room.org_name} ${room.last_body ?? ""}`
-        .toLowerCase()
-        .includes(needle),
-    );
-  }, [inbox.data, term, tab]);
+  const inboxItems = inbox.data?.items;
+  const openRoom = (inboxItems ?? []).find((row) => row.room_id === roomId);
+  const followTab: InboxTab =
+    openRoom !== undefined ? tabForRoom(openRoom) : "all";
+  const tab: InboxTab = parseInboxTab(searchParams.get("inbox")) ?? followTab;
+  const items = useMemo(
+    () => filterInboxItems(inboxItems ?? [], tab, term),
+    [inboxItems, tab, term],
+  );
 
   const unreadCount = (inbox.data?.items ?? []).filter(
     (room) => room.unread > 0,
   ).length;
 
   function makeTo(room: InboxRoom): string {
-    return `?room=${encodeURIComponent(room.room_id)}`;
+    return chatRoomHref(room.room_id, tabForRoom(room));
+  }
+
+  function pickFolder(folder: InboxTab): void {
+    const next = new URLSearchParams(searchParams);
+    next.set("inbox", folder);
+    setSearchParams(next, { replace: true });
   }
 
   return (
@@ -133,7 +137,7 @@ export function ChatInboxRail(): ReactElement {
               type="button"
               role="tab"
               aria-selected={tab === value}
-              onClick={() => setTab(value)}
+              onClick={() => pickFolder(value)}
               className={`flex min-w-0 items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400 ${
                 tab === value
                   ? "bg-white text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
@@ -207,9 +211,10 @@ export function ChatInboxRail(): ReactElement {
         selfId={selfId}
         onOpened={(room) => {
           setComposing(false);
-          const next = new URLSearchParams();
-          next.set("room", room);
-          setSearchParams(next, { replace: true });
+          setSearchParams(
+            { room, inbox: "all" },
+            { replace: true },
+          );
         }}
       />
       <ChannelBrowserDialog

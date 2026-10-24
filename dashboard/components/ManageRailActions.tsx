@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
-import { FiEdit3, FiPlus, FiTrash2, FiUserPlus } from "react-icons/fi";
+import { FiEdit3, FiPlus, FiUserPlus } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
 import { useOrgMembers } from "../members-hooks.ts";
 import type { MemberSortParam } from "../members-api.ts";
@@ -52,8 +52,6 @@ export function ManageActions({
     members.data?.viewer_role === "owner" ||
     (members.data?.viewer_permissions ?? []).includes("member:invite");
   const inviting = searchParams.get("invite") === "1";
-  const creating = searchParams.get("create") === "1";
-  const trash = searchParams.get("trash") === "1";
   const buttons: ReactElement[] = [];
 
   if (
@@ -68,30 +66,6 @@ export function ManageActions({
         icon={<FiPlus className="h-4 w-4" aria-hidden="true" />}
       >
         Tạo tổ chức
-      </Button>,
-    );
-  }
-  if (pathname.startsWith("/manage/events") && orgId !== null) {
-    buttons.push(
-      <Button
-        key="create-activity"
-        type="button"
-        variant={creating ? "secondary" : "primary"}
-        aria-pressed={creating}
-        onClick={() => toggleParam(setSearchParams, "create", !creating)}
-        icon={<FiPlus className="h-4 w-4" aria-hidden="true" />}
-      >
-        {creating ? "Đóng biểu mẫu" : "Tạo hoạt động"}
-      </Button>,
-      <Button
-        key="trash-activity"
-        type="button"
-        variant={trash ? "primary" : "secondary"}
-        aria-pressed={trash}
-        onClick={() => toggleParam(setSearchParams, "trash", !trash)}
-        icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
-      >
-        Thùng rác
       </Button>,
     );
   }

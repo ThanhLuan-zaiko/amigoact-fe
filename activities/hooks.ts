@@ -225,7 +225,7 @@ mutationFn: (scheduleId) =>
   });
 }
 
-// Live org activity feed (AGENTS.md 12.1): committed lifecycle events on
+// Live org activity feed (see docs/REALTIME.md): committed lifecycle events on
 // activities:{orgId} (create/update/status change) refresh every activity
 // query. The payload is never trusted as truth; queries are invalidated.
 export function useLiveActivities(orgId: string | undefined): void {

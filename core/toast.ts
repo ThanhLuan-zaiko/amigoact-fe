@@ -1,5 +1,5 @@
 /**
- * App-wide toast store (AGENTS.md 12.5: realtime/mutation feedback toasts).
+ * App-wide toast store (see AGENTS.md, Data: realtime/mutation feedback toasts).
  *
  * A tiny external store consumed by `ToastViewport` via useSyncExternalStore,
  * so pushToast() works from anywhere: components, mutation callbacks, and

@@ -5,8 +5,9 @@ import {
   type UseMutationResult,
   type UseQueryResult,
 } from "@tanstack/react-query";
-import { createActivity } from "../activities/api.ts";
+import { createActivity, type ActivityInput } from "../activities/api.ts";
 import { activityKeys } from "../activities/keys.ts";
+import { useOrgMembers } from "../dashboard/members-hooks.ts";
 import { ApiError } from "../core/api.ts";
 import {
   addChannelMember,
@@ -182,12 +183,17 @@ export class QuickEventPartialError extends Error {
   }
 }
 
+// Owner or activity:create holders may open events from chat. Same rule as
+// the backend gate (chat/channel_helpers.event_creator). The members query
+// matches the room header's, so this adds no request.
+export function useCanCreateEvent(orgId: string | null): boolean {
+  const members = useOrgMembers(orgId, { limit: 50, status: "active" });
+  if (members.data?.viewer_role === "owner") return true;
+  return (members.data?.viewer_permissions ?? []).includes("activity:create");
+}
+
 export interface QuickEventInput {
-  title: string;
-  description: string | null;
-  location: string | null;
-  isRemote: boolean;
-  startAt: string;
+  activity: ActivityInput;
   threadName: string;
   threadTopic: string;
 }
@@ -207,14 +213,7 @@ export function useQuickEventThread(
   return useMutation({
     meta: { successToast: "activity.thread" },
     mutationFn: async (input: QuickEventInput) => {
-      const activity = await createActivity(orgId, {
-        title: input.title,
-        description: input.description,
-        location: input.location,
-        is_remote: input.isRemote,
-        start_at: input.startAt,
-        hours_awarded: 0,
-      });
+      const activity = await createActivity(orgId, input.activity);
       try {
         const thread = await createRoomThread(orgId, roomId, {
           name: input.threadName,

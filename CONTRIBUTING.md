@@ -9,7 +9,7 @@ cd amigoact-fe
 bun install
 ```
 
-Đọc trước: `README.md`, `docs/ARCHITECTURE.md`, `AGENTS.md` mục 2–8.
+Đọc trước: `README.md`, `docs/ARCHITECTURE.md`, `AGENTS.md` (các mục Stack and structure, Data, Design).
 
 ## 2. Tạo tính năng mới
 

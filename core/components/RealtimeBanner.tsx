@@ -20,7 +20,7 @@ interface BannerView {
   issue: RealtimeIssue;
 }
 
-// Feedback-style connection banner (AGENTS.md 12.5): one slim feed row
+// Feedback-style connection banner (see AGENTS.md, Data): one slim feed row
 // under the header, live on every route. Transient reconnecting reads
 // amber; a dead session or denied socket reads red until the user acts.
 // Renders nothing while the socket is healthy.

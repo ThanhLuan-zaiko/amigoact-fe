@@ -46,8 +46,11 @@ export function ManageHeader({
   onToggleEdit,
   onTransition,
 }: ManageHeaderProps): ReactElement {
-  const actions = NEXT_ACTIONS[a.status] ?? [];
-  const editable = a.status === "draft" || a.status === "published";
+  // Trashed rows are read-only until restored; restore is the delete row's job.
+  const trashed = a.deleted_at !== null;
+  const actions = trashed ? [] : (NEXT_ACTIONS[a.status] ?? []);
+  const editable =
+    !trashed && (a.status === "draft" || a.status === "published");
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -89,6 +92,11 @@ export function ManageHeader({
       {notice && (
         <p role="status" className="mt-2 text-sm text-emerald-600 dark:text-emerald-400">
           {notice}
+        </p>
+      )}
+      {trashed && (
+        <p role="status" className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+          Hoạt động đang ở thùng rác. Khôi phục để chỉnh sửa hoặc đổi trạng thái.
         </p>
       )}
       <dl className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">

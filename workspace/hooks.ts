@@ -8,8 +8,6 @@ import {
   type UseQueryResult,
   type UseInfiniteQueryResult,
 } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
 import { ApiError } from "../core/api.ts";
 import {
   deleteChatMessage,
@@ -52,36 +50,8 @@ export * from "./board-hooks.ts";
 const CHAT_PAGE_SIZE = 30;
 const MEDIA_PAGE_SIZE = 30;
 
-// Org selection shared by every workspace view: ?org= deep link, falling
-// back to the first org once the picker data arrives.
-export function useWorkspaceOrg(orgItems: { id: string }[]): {
-  orgId: string | null;
-  selectOrg: (id: string) => void;
-} {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const orgParam = searchParams.get("org");
-  const orgId =
-    orgParam !== null && orgItems.some((item) => item.id === orgParam)
-      ? orgParam
-      : (orgItems[0]?.id ?? null);
-  // Deep-link hygiene: once the membership list lands, drop or rewrite a
-  // missing/unknown ?org= so the URL always names the rendered org.
-  useEffect(() => {
-    if (orgId !== null && orgParam !== orgId) {
-      const next = new URLSearchParams(searchParams);
-      next.set("org", orgId);
-      setSearchParams(next, { replace: true });
-    }
-  }, [orgParam, orgId, searchParams, setSearchParams]);
-  return {
-    orgId,
-    selectOrg: (id: string) => {
-      const next = new URLSearchParams(searchParams);
-      next.set("org", id);
-      setSearchParams(next, { replace: true });
-    },
-  };
-}
+// useWorkspaceOrg lives in org-hooks.ts; re-exported so existing imports hold.
+export { useWorkspaceOrg } from "./org-hooks.ts";
 
 export function useChatMessages(
   roomId: string | null,

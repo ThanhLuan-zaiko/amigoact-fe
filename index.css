@@ -2,7 +2,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Slim scrollbar shared by the whole site (section 5.1 exception).
+/* Slim scrollbar shared by the whole site.
    Firefox uses scrollbar-width/color; Chromium/Safari use the pseudo-elements below. */
 html {
   scrollbar-width: thin;

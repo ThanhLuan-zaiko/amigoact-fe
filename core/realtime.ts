@@ -1,5 +1,5 @@
 /**
- * Single WebSocket client for the whole app (AGENTS.md 12.1).
+ * Single WebSocket client for the whole app (see docs/REALTIME.md).
  *
  * Public facade over `core/realtime-client.ts`: the client mints a
  * one-time ticket via POST /ws/tickets, opens /ws?ticket=..., answers
@@ -43,7 +43,7 @@ export function sendTypingPing(channel: string): void {
   realtime.sendTyping(channel);
 }
 
-/** Force an immediate reconnect, skipping the backoff wait (12.5). */
+/** Force an immediate reconnect, skipping the backoff wait. */
 export function retryRealtime(): void {
   realtime.reconnectNow();
 }

@@ -3,12 +3,20 @@ import type { FormEvent, ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { FiCalendar } from "react-icons/fi";
 import { toLocalInput } from "../../activities/dates.tsx";
+import { useCategories } from "../../activities/hooks.ts";
+import {
+  initialActivityValues,
+  toActivityInput,
+  toTagSuggestions,
+} from "../../activities/form-values.ts";
+import { useMyTags } from "../../activities/tags-hooks.ts";
 import { ApiError } from "../../core/api.ts";
+import {
+  ActivityFields,
+  type ActivityFieldValues,
+} from "../../core/components/ActivityFields.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { Modal } from "../../core/components/Modal.tsx";
-import { SelectField } from "../../core/components/SelectField.tsx";
-import { TextArea } from "../../core/components/TextArea.tsx";
-import { TextField } from "../../core/components/TextField.tsx";
 import {
   QuickEventPartialError,
   useQuickEventThread,
@@ -37,8 +45,14 @@ function nextHourValue(): string {
   return toLocalInput(date.toISOString());
 }
 
-// Few fields from a parent room: a draft activity plus the sub-thread
-// used to announce and coordinate it.
+// Defaults match the activity form on /manage/events, with the start time
+// set to the next full hour.
+function quickEventDefaults(): ActivityFieldValues {
+  return { ...initialActivityValues(), startAt: nextHourValue() };
+}
+
+// Same fields as the activity form on /manage/events. Saving creates a draft
+// activity and a sub-thread in this room, then opens that thread.
 export function QuickEventDialog({
   open,
   onClose,
@@ -46,31 +60,29 @@ export function QuickEventDialog({
   roomId,
   onCreated,
 }: QuickEventDialogProps): ReactElement {
-  const [title, setTitle] = useState("");
-  const [startAt, setStartAt] = useState("");
-  const [place, setPlace] = useState<"place" | "remote">("place");
-  const [location, setLocation] = useState("");
-  const [note, setNote] = useState("");
+  const [values, setValues] = useState<ActivityFieldValues>(quickEventDefaults);
   const [error, setError] = useState<string | null>(null);
   const [draftId, setDraftId] = useState<string | null>(null);
   const [wasOpen, setWasOpen] = useState(open);
   if (wasOpen !== open) {
     setWasOpen(open);
     if (open) {
-      setTitle("");
-      setStartAt(nextHourValue());
-      setPlace("place");
-      setLocation("");
-      setNote("");
+      setValues(quickEventDefaults());
       setError(null);
       setDraftId(null);
     }
   }
 
+  const categories = useCategories(orgId);
+  const tags = useMyTags();
   const create = useQuickEventThread(orgId, roomId);
   const busy = create.isPending;
-  const name = title.trim();
-  const ready = name.length >= 3 && startAt !== "" && !busy;
+  const name = values.title.trim();
+  const ready = name.length >= 3 && values.startAt !== "" && !busy;
+
+  function patch(next: Partial<ActivityFieldValues>): void {
+    setValues((prev) => ({ ...prev, ...next }));
+  }
 
   function fail(err: unknown): void {
     if (err instanceof QuickEventPartialError) {
@@ -91,16 +103,11 @@ export function QuickEventDialog({
     if (!ready) return;
     setError(null);
     setDraftId(null);
-    const remote = place === "remote";
     create.mutate(
       {
-        title: name,
-        description: note.trim() || null,
-        location: remote ? null : location.trim() || null,
-        isRemote: remote,
-        startAt: new Date(startAt).toISOString(),
+        activity: toActivityInput(values),
         threadName: name.slice(0, 80),
-        threadTopic: (note.trim() || name).slice(0, 200),
+        threadTopic: (values.description.trim() || name).slice(0, 200),
       },
       {
         onSuccess: (thread) => {
@@ -113,7 +120,7 @@ export function QuickEventDialog({
   }
 
   return (
-    <Modal open={open} title="Tạo sự kiện nhanh" onClose={onClose}>
+    <Modal open={open} title="Tạo sự kiện nhanh" onClose={onClose} wide>
       <form
         onSubmit={submit}
         className="flex flex-col gap-3"
@@ -123,55 +130,13 @@ export function QuickEventDialog({
           Sự kiện lưu dạng bản nháp trên Quản lý hoạt động. Một luồng
           chat mở ngay để gửi thông báo và điều phối.
         </p>
-        <TextField
-          label="Tên sự kiện"
-          name="quick-event-title"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder="Ngày hội hiến máu"
-          minLength={3}
-          maxLength={160}
-          autoComplete="off"
-          required
-        />
-        <TextField
-          label="Bắt đầu"
-          name="quick-event-start"
-          type="datetime-local"
-          value={startAt}
-          onChange={(event) => setStartAt(event.target.value)}
-          required
-        />
-        <SelectField
-          label="Hình thức"
-          name="quick-event-place"
-          value={place}
-          onChange={(value) => setPlace(value as typeof place)}
-          options={[
-            { value: "place", label: "Tại chỗ" },
-            { value: "remote", label: "Trực tuyến" },
-          ]}
-        />
-        {place === "place" && (
-          <TextField
-            label="Địa điểm"
-            name="quick-event-location"
-            value={location}
-            onChange={(event) => setLocation(event.target.value)}
-            placeholder="Công viên Lê Văn Tám"
-            maxLength={200}
-            autoComplete="off"
-          />
-        )}
-        <TextArea
-          label="Ghi chú"
-          name="quick-event-note"
-          value={note}
-          onChange={(event) => setNote(event.target.value)}
-          placeholder="Việc cần thông báo cho cả phòng"
-          maxLength={200}
-          rows={2}
-          hint="Dùng làm mô tả sự kiện và chủ đề của luồng chat."
+        <ActivityFields
+          values={values}
+          onChange={patch}
+          categories={categories.data ?? []}
+          tagSuggestions={toTagSuggestions(tags.data)}
+          tagSuggestionsError={tags.isError}
+          disabled={busy}
         />
         {error !== null && (
           <p role="alert" className="text-xs text-red-600 dark:text-red-400">

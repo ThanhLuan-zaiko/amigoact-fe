@@ -1,11 +1,11 @@
 # Realtime — `core/realtime.ts` + Speculation Rules
 
-## 1. WebSocket client (module duy nhất, AGENTS.md §12.1)
+## 1. WebSocket client (module duy nhất, xem AGENTS.md, Data)
 
 Toàn bộ vòng đời socket nằm trong `core/realtime.ts`. Component không bao
 giờ gọi `new WebSocket` trực tiếp — dữ liệu live đi qua typed hook trong
 `<feature>/hooks.ts`, và TanStack Query vẫn là source of truth (message WS
-chỉ invalidate đúng query key hoặc apply delta hẹp, §12.2).
+chỉ invalidate đúng query key hoặc apply delta hẹp).
 
 ```ts
 import {
@@ -21,7 +21,7 @@ const off = subscribeChannel(activitiesChannel(orgId), (payload) => {
 });
 ```
 
-Hợp đồng với backend (`amigoact-be` AGENTS.md §16):
+Hợp đồng với backend (`amigoact-be` docs/REALTIME.md):
 
 1. Handshake: client `POST /ws/tickets` (Bearer JWT qua `apiFetch`, tự
    refresh-401) → mở `ws(s)://<api>/ws?ticket=<one-time-ticket>`. Ticket
@@ -47,7 +47,7 @@ API xuất ra:
 | Export | Vai trò |
 |---|---|
 | `subscribeChannel(channel, handler)` | Đăng ký kênh, trả về hàm unsubscribe |
-| `onRealtimeStatus(handler)` | Nghe `idle`/`connecting`/`open`/`reconnecting`/`offline` cho banner kết nối (copy tiếng Việt, §12.5) |
+| `onRealtimeStatus(handler)` | Nghe `idle`/`connecting`/`open`/`reconnecting`/`offline` cho banner kết nối (copy tiếng Việt) |
 | `retryRealtime()` | Reconnect ngay, bỏ qua backoff — dùng cho nút "Thử lại" của banner |
 | `notificationsChannel` / `attendanceChannel` / `activitiesChannel` / `membersChannel` | Helper tên kênh chuẩn backend |
 | `realtime` | Singleton client (dùng nội bộ hai hàm trên) |
@@ -101,7 +101,7 @@ thiếu `detail` thì copy rơi về "vai trò mới". `role_catalog_changed` ch
 đi trên kênh `members:{orgId}` (sự kiện roster, không phải thông báo cá
 nhân), nên membership hook bỏ qua nó một cách tự nhiên.
 
-## 2. Speculation Rules API (`index.html`, §12.4)
+## 2. Speculation Rules API (`index.html`)
 
 `index.html` chứa `<script type="speculationrules">` với `prefetch` và
 `prerender` cùng `eagerness: "moderate"` cho navigation same-origin an
@@ -115,4 +115,4 @@ Danh sách loại trừ (không prerender/prefetch vùng auth hoặc tác vụ):
 - Đường dẫn tải/tác vụ: `/export*` (và mọi mutation URL sau này).
 
 Khi thêm route mới vào `App.tsx`, cập nhật JSON rules trong cùng thay đổi
-(§12.4). Không dùng `instant.page` hay `<link rel="prefetch">` thủ công.
+Không dùng `instant.page` hay `<link rel="prefetch">` thủ công.

@@ -8,6 +8,7 @@ import { LoadingState } from "../../core/components/Feedback.tsx";
 import { useWorkspaceOrg } from "../../workspace/hooks.ts";
 import { useMyOrgs } from "../hooks.ts";
 import { ORG_KIND_LABELS } from "../messages.tsx";
+import { EventsRail } from "../../activities/components/EventsRail.tsx";
 import { ManageActions } from "./ManageRailActions.tsx";
 import { ManageContextPanels } from "./ManageContextPanels.tsx";
 import { ManageListFilters } from "./ManageListFilters.tsx";
@@ -67,7 +68,9 @@ export function ManageRail({
 
   const orgs = useMyOrgs(false, { limit: 100 });
   const items = orgs.data?.items ?? [];
-  const { orgId } = useWorkspaceOrg(items);
+  const { orgId } = useWorkspaceOrg(items, {
+    optional: pathname.startsWith("/manage/events"),
+  });
   const needle = linked ? "" : term.trim().toLowerCase();
   const visible = needle
     ? items.filter((org) =>
@@ -76,6 +79,9 @@ export function ManageRail({
     : items;
   const selected = items.find((org) => org.id === orgId) ?? null;
   const placeholder = searchPlaceholder(pathname, linked);
+  // /manage/events has its own rail: the feed spans every org, so the
+  // org switcher and org search do not apply there.
+  if (pathname.startsWith("/manage/events")) return <EventsRail />;
 
   function selectOrg(id: string): void {
     setSearchParams(

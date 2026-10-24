@@ -1,5 +1,5 @@
 /**
- * Central copy table for mutation toasts (AGENTS.md 4 + 12.5).
+ * Central copy table for mutation toasts (see AGENTS.md, Data).
  *
  * `useMutation` declarations set `meta: { successToast: "<key>" }` inside
  * .ts hooks where Vietnamese literals are not allowed; the MutationCache in

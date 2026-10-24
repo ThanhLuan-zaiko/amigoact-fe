@@ -1,4 +1,4 @@
-# FE CI — 12 required gates (see AGENTS.md §11).
+# FE CI — 12 required gates (see AGENTS.md, Quality and git).
 # No auto-commit / auto-push / docker push in this pipeline.
 name: fe-ci
 

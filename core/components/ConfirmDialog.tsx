@@ -11,7 +11,7 @@ interface ConfirmDialogProps {
   /** Shown on the confirm button while `busy`. */
   busyLabel?: string;
   cancelLabel?: string;
-  /** Destructive confirm: warning icon + red-filled confirm button (AGENTS.md 6). */
+  /** Destructive confirm: warning icon + red-filled confirm button (see AGENTS.md, Design). */
   danger?: boolean;
   busy?: boolean;
   onConfirm: () => void;

@@ -15,6 +15,9 @@ export interface ActivitySummary {
   category_id: string | null;
   tags: TagRef[];
   deleted_at: string | null;
+  location: string | null;
+  is_remote: boolean;
+  hours_awarded: number;
 }
 
 export interface ActivityDetail {

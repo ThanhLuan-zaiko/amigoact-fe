@@ -195,7 +195,7 @@ export function useDeleteOrgRole(
 
 // URL sync for the members tile: default ?org= to the first org, drop an
 // unknown org once the picker loads, and pull an out-of-range ?page= back
-// once totals arrive. Filter state itself stays in the URL (AGENTS.md 7.9).
+// once totals arrive. Filter state itself stays in the URL.
 export function useMemberParamSync(input: {
   updateParams: (patch: Record<string, string | null>, replace?: boolean) => void;
   orgParam: string | null;

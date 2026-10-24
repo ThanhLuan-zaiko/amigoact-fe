@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import type { ButtonHTMLAttributes, ReactElement, ReactNode, Ref } from "react";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
-export type ButtonSize = "md" | "icon";
+export type ButtonSize = "md" | "icon" | "cell";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -21,6 +21,8 @@ const BASE =
 const SIZES: Record<ButtonSize, string> = {
   md: "min-h-[44px] rounded-full px-4 py-2 text-sm",
   icon: "h-11 w-11 rounded-full text-sm",
+  // Dense day cells in the rail calendar; the drawer keeps 44px targets.
+  cell: "h-9 w-9 rounded-full text-xs",
 };
 
 const VARIANTS: Record<ButtonVariant, string> = {

@@ -6,7 +6,7 @@ import { Modal } from "../../core/components/Modal.tsx";
 import { SelectField } from "../../core/components/SelectField.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useOrgActivities } from "../../activities/hooks.ts";
-import { useCreateRoomThread } from "../channel-hooks.ts";
+import { useCanCreateEvent, useCreateRoomThread } from "../channel-hooks.ts";
 import {
   CHANNEL_KIND_LABELS,
   CHANNEL_POST_POLICY_LABELS,
@@ -24,9 +24,10 @@ interface ThreadFormDialogProps {
   onCreated?: (roomId: string) => void;
 }
 
-// Focused sub-thread form: name + topic + kind + optional activity
-// link. Visibility is inherited from the parent room (restricted
-// parents gate threads through their roster), so there is no picker.
+// Focused sub-thread form: name + topic + kind, plus an activity link
+// for owners and activity:create holders only. Visibility is inherited
+// from the parent room (restricted parents gate threads through their
+// roster), so there is no picker.
 export function ThreadFormDialog({
   open,
   onClose,
@@ -56,7 +57,8 @@ export function ThreadFormDialog({
     }
   }
 
-  const activities = useOrgActivities(open ? orgId : null);
+  const canLinkEvent = useCanCreateEvent(open ? orgId : null);
+  const activities = useOrgActivities(open && canLinkEvent ? orgId : null);
   const create = useCreateRoomThread(orgId, roomId);
   const busy = create.isPending;
 
@@ -135,19 +137,21 @@ export function ThreadFormDialog({
             ([value, label]) => ({ value, label }),
           )}
         />
-        <SelectField
-          label="Gắn hoạt động"
-          name="thread-activity"
-          value={activityId}
-          onChange={setActivityId}
-          options={[
-            { value: "", label: "Không gắn" },
-            ...(activities.data ?? []).map((item) => ({
-              value: item.id,
-              label: item.title,
-            })),
-          ]}
-        />
+        {canLinkEvent && (
+          <SelectField
+            label="Gắn hoạt động"
+            name="thread-activity"
+            value={activityId}
+            onChange={setActivityId}
+            options={[
+              { value: "", label: "Không gắn" },
+              ...(activities.data ?? []).map((item) => ({
+                value: item.id,
+                label: item.title,
+              })),
+            ]}
+          />
+        )}
         {error !== null && (
           <p role="alert" className="text-xs text-red-600 dark:text-red-400">
             {error}

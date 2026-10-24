@@ -23,12 +23,12 @@ function isSort(value: string): value is MemberSortParam {
 }
 
 // Members board: stats strip on top, roster tile on the left, org context
-// and custom roles stacked in the right rail (bento 12-col, AGENTS.md 7).
+// and custom roles stacked in the right rail.
 export function DashboardMembersPage(): ReactElement {
   const [searchParams, setSearchParams] = useSearchParams();
   const session = useSession();
 
-  // Filter state lives in the URL so every view is deep-linkable (AGENTS.md 7.9).
+  // Filter state lives in the URL so every view is deep-linkable.
   const orgParam = searchParams.get("org");
   const query = searchParams.get("q") ?? "";
   const bucket = searchParams.get("status") ?? "all";

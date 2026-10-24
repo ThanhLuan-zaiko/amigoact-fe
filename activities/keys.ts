@@ -29,6 +29,10 @@ export const activityKeys = {
     [...activityKeys.all, "detail", activityId] as const,
   bySlug: (orgId: string, slug: string) =>
     [...activityKeys.all, "by-slug", orgId, slug] as const,
+  // Cross-org feed for /manage/events. Under `all`, so every activity
+  // mutation already refreshes it.
+  mine: (trash = false) =>
+    [...activityKeys.all, "mine", trash ? "trash" : "live"] as const,
   orgList: (orgId: string, trash = false) =>
     [
       ...activityKeys.all,

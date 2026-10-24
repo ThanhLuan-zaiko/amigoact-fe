@@ -1,9 +1,10 @@
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
-import { FiCalendar, FiClock } from "react-icons/fi";
+import { FiCalendar, FiClock, FiMapPin } from "react-icons/fi";
 import type { ActivitySummary } from "../api.ts";
 import { formatDateTime } from "../dates.tsx";
 import { ACTIVITY_STATUS_LABELS } from "../messages.tsx";
+import { placeLine } from "../place.tsx";
 
 const STATUS_TONE: Record<string, string> = {
   draft: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
@@ -51,6 +52,12 @@ export function ActivityCard({
           <FiCalendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           {formatDateTime(activity.start_at)}
         </p>
+        {placeLine(activity) !== null && (
+          <p className="mt-1 flex items-center gap-1 text-xs text-zinc-500 sm:text-sm dark:text-zinc-400">
+            <FiMapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {placeLine(activity)}
+          </p>
+        )}
         {activity.tags.length > 0 && (
           <p className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
             {activity.tags.slice(0, 3).map((tag) => (

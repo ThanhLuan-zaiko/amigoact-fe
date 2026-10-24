@@ -1,65 +1,82 @@
-import { type ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FiCalendar, FiX } from "react-icons/fi";
+import { FiCalendar } from "react-icons/fi";
 import { Section } from "../core/components/Section.tsx";
-import { Button } from "../core/components/Button.tsx";
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from "../core/components/Feedback.tsx";
-import { useMyOrgs } from "../dashboard/hooks.ts";
-import { useWorkspaceOrg } from "../workspace/hooks.ts";
-import { ActivityActions } from "./components/ActivityActions.tsx";
-import { ActivityCard } from "./components/ActivityCard.tsx";
-import { ActivityForm } from "./components/ActivityForm.tsx";
+import { ACTIVITY_STATUS_LABELS } from "./messages.tsx";
 import {
-  useCategories,
-  useCreateActivity,
-  useLiveActivities,
-  useOrgActivities,
-} from "./hooks.ts";
+  applyFilters,
+  groupByTime,
+  readFilters,
+  summarize,
+  type FeedFilters,
+} from "./feed-utils.ts";
+import { useLiveMyActivities, useMyActivities } from "./feed-hooks.ts";
+import { ActiveFilters, type ActiveFilter } from "./components/ActiveFilters.tsx";
+import { ActivityFeed, type FeedSection } from "./components/ActivityFeed.tsx";
+import { FeedCreate } from "./components/FeedCreate.tsx";
+import { FeedSummary } from "./components/FeedSummary.tsx";
 
+function dayLabel(day: string): string {
+  const [, month, date] = day.split("-");
+  return `Ngày ${Number(date)}/${Number(month)}`;
+}
+
+// Cross-org events page. The feed shows every activity of every org the
+// caller belongs to; the right rail (EventsRail) holds the filters.
 export function ManageEventsPage(): ReactElement {
-  const orgs = useMyOrgs(false, { limit: 100 });
-  const { orgId } = useWorkspaceOrg(orgs.data?.items ?? []);
-  // The create form is deep-linkable (?create=1) so the rail's primary
-  // action lands straight on it.
   const [searchParams, setSearchParams] = useSearchParams();
+  const filters = readFilters(searchParams);
   const creating = searchParams.get("create") === "1";
-  const trash = searchParams.get("trash") === "1";
-  const setCreating = (next: boolean): void => {
-    setSearchParams(
-      (params) => {
-        if (next) params.set("create", "1");
-        else params.delete("create");
-        return params;
-      },
-      { replace: true },
-    );
-  };
-  const selected = orgId;
-  useLiveActivities(selected ?? undefined);
-  const activities = useOrgActivities(selected, trash);
-  const tag = searchParams.get("tag");
-  const clearTag = (): void => {
-    setSearchParams(
-      (params) => {
-        params.delete("tag");
-        return params;
-      },
-      { replace: true },
-    );
-  };
-  const shown = (activities.data ?? []).filter(
-    (a) => !tag || a.tags.some((t) => t.slug === tag),
+  const feed = useMyActivities(filters.trash);
+  const orgs = feed.data?.orgs ?? [];
+  const items = feed.data?.items ?? [];
+  // Managers first, so the realtime budget goes to the orgs they run.
+  useLiveMyActivities(
+    [...orgs]
+      .sort((a, b) => Number(b.can_manage) - Number(a.can_manage))
+      .map((org) => org.id),
   );
-  const tagName =
-    (activities.data ?? [])
-      .flatMap((a) => a.tags)
-      .find((t) => t.slug === tag)?.name ?? tag;
-  const categories = useCategories(selected ?? undefined);
-  const create = useCreateActivity(selected ?? "");
+  // Captured once per mount so render stays pure; "upcoming" is relative
+  // to when the page opened.
+  const [now] = useState(() => new Date());
+
+  const visible = applyFilters(items, filters);
+  const groups = groupByTime(visible, now);
+  const counts = summarize(visible, now);
+  const createOrgs = orgs.filter((org) => org.can_create);
+  const defaultCreateOrg =
+    createOrgs.find((org) => org.id === filters.org)?.id ??
+    createOrgs[0]?.id ??
+    "";
+  const sections: FeedSection[] = filters.trash
+    ? [{ title: "Thùng rác", items: visible }]
+    : [
+        { title: "Đang diễn ra", items: groups.live },
+        { title: "Sắp tới", items: groups.upcoming },
+        { title: "Đã qua", items: groups.past },
+      ].filter((section) => section.items.length > 0);
+
+  function patch(next: Record<string, string | null>): void {
+    setSearchParams(
+      (prev) => {
+        const params = new URLSearchParams(prev);
+        for (const [key, value] of Object.entries(next)) {
+          if (value === null || value === "") params.delete(key);
+          else params.set(key, value);
+        }
+        return params;
+      },
+      { replace: true },
+    );
+  }
+
+  const activeFilters = activeFilterChips(filters, orgs, items);
+  const filtered = activeFilters.length > 0;
 
   return (
     <>
@@ -73,86 +90,126 @@ export function ManageEventsPage(): ReactElement {
             Quản lý hoạt động
           </h1>
         </div>
-        {orgs.isPending && <LoadingState label="Đang tải tổ chức…" />}
-        {orgs.isSuccess && orgs.data.items.length === 0 && (
-          <EmptyState
-            title="Chưa có tổ chức"
-            message="Tạo tổ chức trước khi lên lịch hoạt động."
-          />
-        )}
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          Hoạt động của mọi tổ chức bạn tham gia. Lọc theo tổ chức, trạng thái
+          hoặc ngày ở cột bên phải.
+        </p>
       </Section>
 
-      {creating && selected && (
+      {creating && (
         <Section>
           <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
             Hoạt động mới
           </h2>
           <div className="mt-3">
-            <ActivityForm
-              categories={categories.data ?? []}
-              submitLabel="Tạo bản nháp"
-              onSubmit={(input) => create.mutateAsync(input)}
-              onDone={() => setCreating(false)}
+            {createOrgs.length > 0 ? (
+              <FeedCreate
+                orgs={createOrgs}
+                initialOrgId={defaultCreateOrg}
+                onDone={() => patch({ create: null })}
+              />
+            ) : (
+              <EmptyState
+                title="Chưa thể tạo hoạt động"
+                message="Bạn chưa có quyền tạo hoạt động ở tổ chức nào."
+              />
+            )}
+          </div>
+        </Section>
+      )}
+
+      {feed.isPending && (
+        <Section>
+          <LoadingState label="Đang tải hoạt động…" />
+        </Section>
+      )}
+      {feed.isError && (
+        <Section>
+          <ErrorState
+            title="Không tải được"
+            message={feed.error.message}
+          />
+        </Section>
+      )}
+
+      {feed.isSuccess && (
+        <Section>
+          <div className="flex flex-col gap-3">
+            <FeedSummary counts={counts} />
+            <ActiveFilters
+              filters={activeFilters}
+              onClear={(key) => patch({ [key]: null })}
+              onClearAll={() =>
+                patch({ org: null, status: null, tag: null, day: null, q: null })
+              }
             />
           </div>
         </Section>
       )}
 
-      {selected && (
+      {feed.isSuccess && orgs.length === 0 && (
         <Section>
-          {activities.isPending && (
-            <LoadingState label="Đang tải hoạt động…" />
-          )}
-          {activities.isError && (
-            <ErrorState
-              title="Không tải được"
-              message={activities.error.message}
-            />
-          )}
-          {tag && (
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <Button
-                variant="secondary"
-                onClick={clearTag}
-                icon={<FiX className="h-4 w-4" aria-hidden="true" />}
-                aria-label={`Bỏ lọc thẻ ${tagName ?? ""}`}
-              >
-                #{tagName}
-              </Button>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                Đang lọc theo thẻ
-              </span>
-            </div>
-          )}
-          {activities.isSuccess && shown.length === 0 && tag && (
-            <EmptyState
-              title="Không có hoạt động"
-              message="Không có hoạt động nào gắn thẻ này."
-            />
-          )}
-          {activities.isSuccess && shown.length === 0 && !tag && (
-            <EmptyState
-              title={trash ? "Thùng rác trống" : "Chưa có hoạt động"}
-              message={
-                trash
-                  ? "Các hoạt động đã xóa mềm sẽ hiện ở đây."
-                  : "Tạo bản nháp đầu tiên cho tổ chức này."
-              }
-            />
-          )}
-          <ul className="flex flex-col gap-2">
-            {shown.map((a) => (
-              <li key={a.id} className="flex flex-col gap-2">
-                <ActivityCard
-                  activity={a}
-                  href={`/manage/events/${a.org_id}/${a.id}`}
-                />
-                <ActivityActions orgId={a.org_id} activity={a} />
-              </li>
-            ))}
-          </ul>
+          <EmptyState
+            title="Chưa có tổ chức"
+            message="Tham gia hoặc tạo tổ chức để xem hoạt động tại đây."
+          />
         </Section>
+      )}
+      {feed.isSuccess && orgs.length > 0 && visible.length === 0 && (
+        <Section>
+          <EmptyState
+            title={
+              filters.trash
+                ? "Thùng rác trống"
+                : filtered
+                  ? "Không có hoạt động"
+                  : "Chưa có hoạt động"
+            }
+            message={
+              filters.trash
+                ? "Các hoạt động đã xóa mềm ở tổ chức bạn quản lý sẽ hiện ở đây."
+                : filtered
+                  ? "Thử bỏ bớt bộ lọc ở trên để xem thêm hoạt động."
+                  : "Tạo bản nháp đầu tiên ở một tổ chức bạn quản lý."
+            }
+          />
+        </Section>
+      )}
+      {visible.length > 0 && (
+        <ActivityFeed sections={sections} orgs={orgs} />
       )}
     </>
   );
+}
+
+// Chips for the filters currently in the URL, labelled for the user.
+function activeFilterChips(
+  filters: FeedFilters,
+  orgs: { id: string; name: string }[],
+  items: { tags: { slug: string; name: string }[] }[],
+): ActiveFilter[] {
+  const chips: ActiveFilter[] = [];
+  if (filters.org !== null) {
+    const name = orgs.find((org) => org.id === filters.org)?.name;
+    chips.push({ key: "org", label: name ?? "Tổ chức" });
+  }
+  if (filters.status !== null) {
+    chips.push({
+      key: "status",
+      label: ACTIVITY_STATUS_LABELS[filters.status] ?? filters.status,
+    });
+  }
+  if (filters.tag !== null) {
+    const name = items
+      .flatMap((item) => item.tags)
+      .find((tag) => tag.slug === filters.tag)?.name;
+    chips.push({ key: "tag", label: `#${name ?? filters.tag}` });
+  }
+  if (filters.day !== null) {
+    chips.push({ key: "day", label: dayLabel(filters.day) });
+  }
+  if (filters.q.trim() !== "") {
+    chips.push({ key: "q", label: `Tìm: ${filters.q.trim()}` });
+  }
+  return chips;
 }

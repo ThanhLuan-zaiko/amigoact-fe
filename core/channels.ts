@@ -1,5 +1,5 @@
 /**
- * Channel names mirror backend AGENTS.md 16.3. The realtime client in
+ * Channel names mirror the backend (see docs/REALTIME.md). The realtime client in
  * core/realtime.ts re-exports these so existing imports keep working.
  */
 

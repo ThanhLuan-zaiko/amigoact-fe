@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Section } from "../core/components/Section.tsx";
 import {
   ErrorState,
@@ -19,6 +19,7 @@ import {
   useTransitionActivity,
   useUpdateActivity,
 } from "./hooks.ts";
+import { ActivityActions } from "./components/ActivityActions.tsx";
 import { ManageHeader } from "./components/ManageHeader.tsx";
 import { ActivityForm } from "./components/ActivityForm.tsx";
 import { AnnouncementPanel } from "./components/AnnouncementPanel.tsx";
@@ -43,6 +44,8 @@ export function ManageEventDetailPage(): ReactElement {
     orgId: string;
     activityId: string;
   }>();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   useLiveActivities(orgId);
   const detail = useActivityDetail(orgId, activityId);
   const categories = useCategories(orgId);
@@ -55,7 +58,8 @@ export function ManageEventDetailPage(): ReactElement {
   const setSkills = useSetSkills(orgId ?? "", activityId ?? "");
   const createCategory = useCreateCategory(orgId ?? "");
   const addAnnouncement = useAddAnnouncement(orgId ?? "", activityId ?? "");
-  const [editing, setEditing] = useState(false);
+  // ?edit=1 opens the form straight away (the feed's row menu links here).
+  const [editing, setEditing] = useState(searchParams.get("edit") === "1");
   const [notice, setNotice] = useState("");
 
   if (detail.isPending) {
@@ -78,7 +82,8 @@ export function ManageEventDetailPage(): ReactElement {
 
   const view = detail.data;
   const a = view.activity;
-  const editable = a.status === "draft" || a.status === "published";
+  const editable =
+    a.deleted_at === null && (a.status === "draft" || a.status === "published");
 
   const runTransition = async (target: string): Promise<void> => {
     await transition.mutateAsync({ activityId: a.id, status: target });
@@ -96,6 +101,13 @@ export function ManageEventDetailPage(): ReactElement {
           onToggleEdit={() => setEditing((v) => !v)}
           onTransition={(target) => void runTransition(target)}
         />
+        <div className="mt-3">
+          <ActivityActions
+            orgId={a.org_id}
+            activity={a}
+            onErased={() => navigate(`/manage/events?org=${a.org_id}`)}
+          />
+        </div>
       </Section>
 
       {editing && (

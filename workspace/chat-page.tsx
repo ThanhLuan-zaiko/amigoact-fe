@@ -5,6 +5,7 @@ import { useSession } from "../auth/hooks.ts";
 import { EmptyState } from "../core/components/Feedback.tsx";
 import { useMediaQuery } from "../core/media-query.ts";
 import { useOrgMembers } from "../dashboard/members-hooks.ts";
+import { useCanCreateEvent } from "./channel-hooks.ts";
 import {
   useOrgPresence,
   usePresenceIds,
@@ -89,14 +90,11 @@ export function WorkspaceChatPage(): ReactElement {
       },
   );
   const permissions = members.data?.viewer_permissions ?? [];
-  const viewerRole = members.data?.viewer_role ?? "member";
   const canManage = permissions.includes("chat:manage");
   // Org head owns the general room. Anyone else needs activity:create.
-  // The activity API applies the same owner-or-permission gate.
-  const canCreateEvent =
-    showThreads &&
-    (viewerRole === "owner" ||
-      permissions.includes("activity:create"));
+  // The activity and thread APIs apply the same owner-or-permission gate.
+  const eventCreator = useCanCreateEvent(roomOrgId);
+  const canCreateEvent = showThreads && eventCreator;
   const manageActivityTo =
     room?.activity_id !== null &&
     room?.activity_id !== undefined &&

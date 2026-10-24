@@ -14,7 +14,7 @@ import type {
   StatusHandler,
 } from "./realtime-types.ts";
 
-/** Socket machinery behind `core/realtime.ts` (AGENTS.md 12.1); core-internal. */
+/** Socket machinery behind `core/realtime.ts` (see docs/REALTIME.md); core-internal. */
 
 const BASE_RETRY_MS = 500;
 const MAX_RETRY_MS = 15_000;

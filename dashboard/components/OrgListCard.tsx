@@ -27,7 +27,7 @@ export function OrgListCard(): ReactElement {
   const session = useSession();
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Filter state lives in the URL so every view is deep-linkable (AGENTS.md 7.9).
+  // Filter state lives in the URL so every view is deep-linkable.
   const query = searchParams.get("q") ?? "";
   const bucket = searchParams.get("status") ?? "all";
   const sortParam = searchParams.get("sort") ?? "newest";

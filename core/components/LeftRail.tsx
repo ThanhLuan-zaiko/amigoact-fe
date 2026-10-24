@@ -11,7 +11,7 @@ import { AccountSwitcher } from "./AccountSwitcher.tsx";
 import { MoreMenu } from "./MoreMenu.tsx";
 import { RailNavItem } from "./RailNavItem.tsx";
 
-// The rail's single full-width pill, X "Post" equivalent (see AGENTS 7.8).
+// The rail's single full-width pill, X "Post" equivalent.
 const CTA_CLASS =
   "flex h-[52px] items-center justify-center gap-2 rounded-full border border-zinc-900 bg-zinc-900 " +
   "text-white transition-colors hover:bg-zinc-800 focus-visible:outline-2 " +

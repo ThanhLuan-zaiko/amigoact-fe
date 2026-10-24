@@ -191,7 +191,7 @@ mutationFn: ({ recordId, actualHours }) =>
   });
 }
 
-// Live check-in feed (AGENTS.md 12.1): committed check-in/out events on
+// Live check-in feed (see docs/REALTIME.md): committed check-in/out events on
 // attendance:{activityId} refresh the roster, the attendance list, and
 // the hours tiles (check-out can credit pending hours). The payload is
 // never trusted as truth; queries are invalidated and refetched.

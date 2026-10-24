@@ -142,7 +142,7 @@ export function UnsavedChangesDialog({
     };
   }, []);
 
-  // Portaled to <body> per AGENTS.md section 5.6: the center column is a size container.
+  // Portaled to <body>: the center column is a size container.
   return createPortal(
     <div
       role="presentation"

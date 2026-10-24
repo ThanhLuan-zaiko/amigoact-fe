@@ -16,11 +16,14 @@ import type { ActivitySummary } from "../api.ts";
 interface ActivityActionsProps {
   orgId: string;
   activity: ActivitySummary;
+  /** Runs after a permanent delete succeeds (the detail page leaves). */
+  onErased?: () => void;
 }
 
 export function ActivityActions({
   orgId,
   activity,
+  onErased,
 }: ActivityActionsProps): ReactElement {
   const softDelete = useSoftDeleteActivity(
     orgId,
@@ -93,7 +96,9 @@ export function ActivityActions({
         }
         onConfirm={() => {
           setEraseOpen(false);
-          void run(hardDelete.mutateAsync(activity.id));
+          void run(
+            hardDelete.mutateAsync(activity.id).then(() => onErased?.()),
+          );
         }}
         onClose={() => setEraseOpen(false)}
       />

@@ -86,8 +86,9 @@ export function ChatThreadsSection({
                 {thread.name}
               </span>
               <span className="block truncate text-xs text-zinc-500 dark:text-zinc-400">
-                {thread.activity_title ??
-                  channelMetaLabel(thread)}
+                {thread.activity_deleted
+                  ? "Sự kiện đã bị xóa"
+                  : (thread.activity_title ?? channelMetaLabel(thread))}
               </span>
             </span>
           </Link>

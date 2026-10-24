@@ -46,7 +46,7 @@ export function ShareThreadDialog({
     if (open) setError(null);
   }
   const items = (threads.data?.items ?? []).filter(
-    (thread) => thread.archived_at === null,
+    (thread) => thread.archived_at === null && !thread.activity_deleted,
   );
 
   function share(threadId: string, name: string): void {

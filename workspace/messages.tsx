@@ -34,6 +34,8 @@ const MESSAGES: Record<string, string> = {
   SLUG_TAKEN: "Đã có sự kiện cùng tên. Hãy đổi tên rồi thử lại.",
   CHANNEL_ARCHIVED:
     "Kênh đã được lưu trữ - chỉ xem được lịch sử trò chuyện.",
+  ACTIVITY_DELETED:
+    "Sự kiện của phòng này đã bị xóa - chỉ xem được lịch sử trò chuyện.",
   INVALID_CHANNEL_STATE:
     "Không thể thực hiện với trạng thái kênh hiện tại.",
   PIN_LIMIT_REACHED: "Phòng này đã đạt tối đa 20 tin ghim.",

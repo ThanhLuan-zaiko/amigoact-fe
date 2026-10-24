@@ -119,6 +119,8 @@ export interface InboxRoom {
   // Sub-thread rows only: the room it hangs under + linked activity.
   parent_room_id: string | null;
   activity_id: string | null;
+  // Linked event trashed or purged: history only, composer frozen.
+  activity_deleted: boolean;
 }
 
 export interface ChatInbox {

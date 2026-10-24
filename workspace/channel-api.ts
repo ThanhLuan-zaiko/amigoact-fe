@@ -24,6 +24,7 @@ export interface ChatChannel {
   parent_room_id: string | null;
   activity_id: string | null;
   activity_title: string | null;
+  activity_deleted: boolean;
 }
 
 export interface ChannelList {

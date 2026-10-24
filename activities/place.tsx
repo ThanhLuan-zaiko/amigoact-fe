@@ -1,6 +1,6 @@
 import type { ActivitySummary } from "./api.ts";
 
-// "Trực tuyến" or the venue, then awarded hours when there are any.
+// The online label or the venue, then awarded hours when there are any.
 export function placeLine(activity: ActivitySummary): string | null {
   const place = activity.is_remote ? "Trực tuyến" : activity.location;
   const hours =

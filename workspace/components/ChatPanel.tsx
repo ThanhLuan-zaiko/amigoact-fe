@@ -41,6 +41,8 @@ interface ChatPanelProps {
   // Channel rooms: # icon + post_policy gate for the composer.
   isChannel?: boolean;
   postPolicy?: "everyone" | "managers" | null;
+  // Linked event trashed or purged: the composer turns read-only.
+  activityDeleted?: boolean;
   // Sub-thread rooms link back to their parent in the header.
   parentRoom?: { room_id: string; title: string } | null;
   // General rooms and top channels can open focused sub-threads.
@@ -68,6 +70,7 @@ export function ChatPanel({
   isDm,
   isChannel = false,
   postPolicy = null,
+  activityDeleted = false,
   parentRoom = null,
   showThreads = false,
   selfId,
@@ -222,7 +225,8 @@ export function ChatPanel({
         onShareThread={onShareThread}
         manageActivityTo={manageActivityTo}
         disabledReason={
-          postPolicy === "managers" && !canManage ? "Chỉ quản lý mới được đăng trong kênh này." : null
+          activityDeleted ? "Sự kiện của phòng này đã bị xóa - chỉ xem được lịch sử trò chuyện."
+            : postPolicy === "managers" && !canManage ? "Chỉ quản lý mới được đăng trong kênh này." : null
         }
       />
       <ChatRoomInfo

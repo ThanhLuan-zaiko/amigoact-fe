@@ -162,6 +162,7 @@ export function WorkspaceChatPage(): ReactElement {
       isDm={room?.kind === "dm"}
       isChannel={room?.kind === "channel"}
       postPolicy={room?.post_policy ?? null}
+      activityDeleted={room?.activity_deleted ?? false}
       parentRoom={
         parentRoom !== null
           ? { room_id: parentRoom.room_id, title: parentRoom.title }

@@ -9,6 +9,7 @@ import { useWorkspaceOrg } from "../../workspace/hooks.ts";
 import { useMyOrgs } from "../hooks.ts";
 import { ORG_KIND_LABELS } from "../messages.tsx";
 import { EventsRail } from "../../activities/components/EventsRail.tsx";
+import { VolunteerRail } from "../../profiles/components/VolunteerRail.tsx";
 import { ManageActions } from "./ManageRailActions.tsx";
 import { ManageContextPanels } from "./ManageContextPanels.tsx";
 import { ManageListFilters } from "./ManageListFilters.tsx";
@@ -82,6 +83,8 @@ export function ManageRail({
   // /manage/events has its own rail: the feed spans every org, so the
   // org switcher and org search do not apply there.
   if (pathname.startsWith("/manage/events")) return <EventsRail />;
+  // /manage/volunteer: the profile overview, avatar and public card.
+  if (pathname.startsWith("/manage/volunteer")) return <VolunteerRail />;
 
   function selectOrg(id: string): void {
     setSearchParams(

@@ -28,10 +28,6 @@ export const PROFILE_MESSAGES: Record<string, string> = {
 export const PROFILE_TOAST = {
   saved: "Đã lưu hồ sơ.",
   blocked: "Chưa lưu được hồ sơ.",
-  skillsSaved: "Đã lưu kỹ năng.",
-  contactAdded: "Đã thêm liên hệ khẩn cấp.",
-  contactBlocked: "Chưa thêm được liên hệ.",
-  contactRemoved: "Đã xoá liên hệ.",
   avatarSaved: "Đã cập nhật ảnh đại diện.",
 } as const;
 

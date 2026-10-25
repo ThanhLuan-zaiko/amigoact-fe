@@ -1,21 +1,12 @@
-import type { FormEvent, ReactElement } from "react";
+import type { ReactElement } from "react";
 import { useState } from "react";
-import { FiSave, FiUser } from "react-icons/fi";
+import { FiUser } from "react-icons/fi";
 import { Section } from "../../core/components/Section.tsx";
-import { Button } from "../../core/components/Button.tsx";
 import { SelectField } from "../../core/components/SelectField.tsx";
 import { TextArea } from "../../core/components/TextArea.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
-import { useUpdateProfile } from "../hooks.ts";
-import {
-  PROFILE_TOAST,
-  fieldText,
-  profileMessage,
-  toastProfileBlocked,
-  toastProfileError,
-} from "../messages.tsx";
-import { profileFieldErrors, profilePayload } from "../validate.ts";
-import type { VolunteerProfile } from "../api.ts";
+import { fieldText } from "../messages.tsx";
+import type { ProfileDraft } from "../validate.ts";
 import { useMyOrgs } from "../../dashboard/hooks.ts";
 import {
   useCampuses,
@@ -30,67 +21,39 @@ const STATUS_OPTIONS = [
   { value: "working", label: "Đang đi làm" },
 ];
 
+// Profile fields of the volunteer form. Controlled: the page owns the draft
+// and the single save. The org picker only narrows the campus and department
+// lists, so it stays local and is never saved.
 export function VolunteerProfileCard({
-  profile,
+  value,
+  errors,
+  onChange,
 }: {
-  profile: VolunteerProfile;
+  value: ProfileDraft;
+  errors: Record<string, string>;
+  onChange: (patch: Partial<ProfileDraft>) => void;
 }): ReactElement {
-  const update = useUpdateProfile(PROFILE_TOAST.saved);
-  const [studentCode, setStudentCode] = useState(profile.student_code ?? "");
   const [orgId, setOrgId] = useState("");
-  const [campusId, setCampusId] = useState(profile.campus_id ?? "");
-  const [deptId, setDeptId] = useState(profile.department_id ?? "");
   const myOrgs = useMyOrgs();
   const campuses = useCampuses(orgId || null);
   const departments = useDepartments(orgId || null);
-  const [className, setClassName] = useState(profile.class_name ?? "");
-  const [year, setYear] = useState(profile.enrollment_year?.toString() ?? "");
-  const [school, setSchool] = useState(profile.school_name ?? "");
-  const [bio, setBio] = useState(profile.bio ?? "");
-  const [interests, setInterests] = useState(profile.interests.join(", "));
-  const [status, setStatus] = useState(profile.status ?? "");
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const isStudent = status === "studying" || status === "suspended";
-  const needsSchool = isStudent || status === "graduated";
-
-  const onSubmit = (event: FormEvent): void => {
-    event.preventDefault();
-    setError(null);
-    const draft = {
-      status, studentCode, campusId, departmentId: deptId,
-      className, year, school, bio, interests,
-    };
-    const errors = profileFieldErrors(draft);
-    const formCode = errors.form;
-    const fields = { ...errors };
-    delete fields.form;
-    setFieldErrors(fields);
-    if (formCode) setError(profileMessage(formCode));
-    const codes = Object.values(errors);
-    if (codes.length > 0) {
-      toastProfileBlocked(PROFILE_TOAST.blocked, codes);
-      return;
-    }
-    update.mutate(profilePayload(draft), {
-      onError: (err) => setError(toastProfileError(err)),
-    });
-  };
+  const isStudent = value.status === "studying" || value.status === "suspended";
+  const needsSchool = isStudent || value.status === "graduated";
 
   return (
     <Section>
       <div className="flex items-center gap-2">
         <FiUser className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-          Hồ sơ tình nguyện viên
+          Thông tin cá nhân
         </h2>
       </div>
-      <form className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2" noValidate onSubmit={onSubmit}>
+      <div className="mt-4 grid grid-cols-1 gap-4 @md:grid-cols-2">
         <SelectField
           label="Trạng thái"
           name="status"
-          value={status}
-          onChange={setStatus}
+          value={value.status}
+          onChange={(status) => onChange({ status })}
           options={STATUS_OPTIONS}
           hint={
             isStudent
@@ -103,19 +66,18 @@ export function VolunteerProfileCard({
           name="student_code"
           required={isStudent}
           maxLength={40}
-          value={studentCode}
-          onChange={(e) => setStudentCode(e.target.value)}
-          error={fieldText(fieldErrors, "student_code")}
+          value={value.studentCode}
+          onChange={(e) => onChange({ studentCode: e.target.value })}
+          error={fieldText(errors, "student_code")}
           placeholder="VD: SV2022001"
         />
         <SelectField
           label="Tổ chức (để tra cứu mã SV)"
           name="structure_org"
           value={orgId}
-          onChange={(v) => {
-            setOrgId(v);
-            setCampusId("");
-            setDeptId("");
+          onChange={(id) => {
+            setOrgId(id);
+            onChange({ campusId: "", departmentId: "" });
           }}
           options={[
             { value: "", label: "Chọn tổ chức" },
@@ -128,25 +90,25 @@ export function VolunteerProfileCard({
         <SelectField
           label="Cơ sở"
           name="campus_id"
-          value={campusId}
-          onChange={setCampusId}
+          value={value.campusId}
+          onChange={(campusId) => onChange({ campusId })}
           disabled={!orgId}
           options={[
             { value: "", label: "Chọn cơ sở" },
             ...(campuses.data ?? [])
               .filter((c) => c.status === "active")
               .map((c) => ({ value: c.id, label: c.name })),
-            ...(campusId &&
-            !(campuses.data ?? []).some((c) => c.id === campusId)
-              ? [{ value: campusId, label: "Cơ sở đã lưu" }]
+            ...(value.campusId &&
+            !(campuses.data ?? []).some((c) => c.id === value.campusId)
+              ? [{ value: value.campusId, label: "Cơ sở đã lưu" }]
               : []),
           ]}
         />
         <SelectField
           label="Khoa/phòng ban"
           name="department_id"
-          value={deptId}
-          onChange={setDeptId}
+          value={value.departmentId}
+          onChange={(departmentId) => onChange({ departmentId })}
           disabled={!orgId}
           options={[
             { value: "", label: "Chọn khoa/phòng" },
@@ -154,15 +116,15 @@ export function VolunteerProfileCard({
               .filter(
                 (d) =>
                   d.status === "active" &&
-                  (!campusId || d.campus_id === campusId),
+                  (!value.campusId || d.campus_id === value.campusId),
               )
               .map((d) => ({
                 value: d.id,
                 label: d.code ? `${d.name} (${d.code})` : d.name,
               })),
-            ...(deptId &&
-            !(departments.data ?? []).some((d) => d.id === deptId)
-              ? [{ value: deptId, label: "Khoa đã lưu" }]
+            ...(value.departmentId &&
+            !(departments.data ?? []).some((d) => d.id === value.departmentId)
+              ? [{ value: value.departmentId, label: "Khoa đã lưu" }]
               : []),
           ]}
         />
@@ -171,9 +133,9 @@ export function VolunteerProfileCard({
           name="class_name"
           required={isStudent}
           maxLength={60}
-          value={className}
-          onChange={(e) => setClassName(e.target.value)}
-          error={fieldText(fieldErrors, "class_name")}
+          value={value.className}
+          onChange={(e) => onChange({ className: e.target.value })}
+          error={fieldText(errors, "class_name")}
           placeholder="VD: CTK43"
         />
         <TextField
@@ -181,9 +143,9 @@ export function VolunteerProfileCard({
           name="enrollment_year"
           inputMode="numeric"
           maxLength={4}
-          value={year}
-          onChange={(e) => setYear(e.target.value)}
-          error={fieldText(fieldErrors, "enrollment_year")}
+          value={value.year}
+          onChange={(e) => onChange({ year: e.target.value })}
+          error={fieldText(errors, "enrollment_year")}
           placeholder="VD: 2022"
         />
         <TextField
@@ -191,47 +153,32 @@ export function VolunteerProfileCard({
           name="school_name"
           required={needsSchool}
           maxLength={160}
-          value={school}
-          onChange={(e) => setSchool(e.target.value)}
-          error={fieldText(fieldErrors, "school_name")}
+          value={value.school}
+          onChange={(e) => onChange({ school: e.target.value })}
+          error={fieldText(errors, "school_name")}
           placeholder="VD: Đại học Bách Khoa"
         />
         <TextField
           label="Sở thích (phân cách bằng dấu phẩy)"
           name="interests"
-          value={interests}
-          onChange={(e) => setInterests(e.target.value)}
-          error={fieldText(fieldErrors, "interests")}
+          value={value.interests}
+          onChange={(e) => onChange({ interests: e.target.value })}
+          error={fieldText(errors, "interests")}
           hint="Tối đa 20 mục. Sau khi lưu, danh sách được sắp xếp lại."
           placeholder="VD: biển, dã ngoại, lập trình"
-          className="sm:col-span-2"
+          className="@md:col-span-2"
         />
         <TextArea
           label="Giới thiệu bản thân"
           name="bio"
           rows={4}
           maxLength={2000}
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
+          value={value.bio}
+          onChange={(e) => onChange({ bio: e.target.value })}
           placeholder="Chia sẻ đôi nét về bạn với các nhà tổ chức…"
-          className="sm:col-span-2"
+          className="@md:col-span-2"
         />
-        {error && (
-          <p role="alert" className="text-xs text-red-600 sm:col-span-2 dark:text-red-400">
-            {error}
-          </p>
-        )}
-        <div className="sm:col-span-2">
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={update.isPending}
-            icon={<FiSave className="h-4 w-4" aria-hidden="true" />}
-          >
-            {update.isPending ? "Đang lưu…" : "Lưu hồ sơ"}
-          </Button>
-        </div>
-      </form>
+      </div>
     </Section>
   );
 }

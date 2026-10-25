@@ -47,11 +47,12 @@ export interface ProfilePayload {
   status: string | null;
 }
 
-export interface ContactPayload {
+// One row of the full-replace contact list. A null contact_id is a new row.
+export interface ContactDraft {
+  contact_id: string | null;
   name: string;
   relation: string | null;
   phone: string;
-  is_primary: boolean;
 }
 
 export interface PublicVolunteer {
@@ -92,20 +93,12 @@ export async function setMySkills(
   });
 }
 
-export async function addMyContact(
-  payload: ContactPayload,
+export async function replaceMyContacts(
+  contacts: ContactDraft[],
 ): Promise<VolunteerProfile> {
   return apiFetch<VolunteerProfile>("/profiles/me/contacts", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
-}
-
-export async function removeMyContact(
-  contactId: string,
-): Promise<VolunteerProfile> {
-  return apiFetch<VolunteerProfile>(`/profiles/me/contacts/${contactId}`, {
-    method: "DELETE",
+    method: "PUT",
+    body: JSON.stringify({ contacts }),
   });
 }
 

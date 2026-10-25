@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 import { useRef, useState } from "react";
 import { FiCamera, FiUser } from "react-icons/fi";
-import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { apiBaseUrl } from "../../core/api.ts";
 import { useUploadAvatar } from "../hooks.ts";
@@ -11,6 +10,8 @@ import {
   toastProfileError,
 } from "../messages.tsx";
 
+// Avatar upload for the volunteer rail. It saves on its own, outside the
+// form's single save, so the card body carries no heading of its own.
 export function AvatarCard({
   avatarUrl,
   fullName,
@@ -38,21 +39,18 @@ export function AvatarCard({
   };
 
   return (
-    <Section>
-      <h2 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-        Ảnh đại diện
-      </h2>
-      <div className="mt-4 flex items-center gap-4">
+    <div className="px-4 pb-4">
+      <div className="flex items-center gap-4">
         {src ? (
           <img
             src={src}
             alt={`Ảnh đại diện của ${fullName}`}
-            className="h-20 w-20 rounded-full border border-zinc-200 object-cover dark:border-zinc-700"
+            className="h-20 w-20 shrink-0 rounded-full border border-zinc-200 object-cover dark:border-zinc-700"
           />
         ) : (
           <span
             aria-hidden="true"
-            className="flex h-20 w-20 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500"
+            className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-500"
           >
             <FiUser className="h-8 w-8" />
           </span>
@@ -89,6 +87,6 @@ export function AvatarCard({
           {error}
         </p>
       )}
-    </Section>
+    </div>
   );
 }

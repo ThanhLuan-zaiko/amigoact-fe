@@ -18,6 +18,8 @@ export const dashboardKeys = {
     [...dashboardKeys.all, "departments", orgId] as const,
   presence: (orgId: string | null) =>
     [...dashboardKeys.all, "presence", orgId] as const,
+  volunteerProfile: (orgId: string, userId: string) =>
+    [...dashboardKeys.all, "volunteer-profile", orgId, userId] as const,
   myMemberships: (status?: string) =>
     [...dashboardKeys.all, "memberships", status ?? "all"] as const,
 };

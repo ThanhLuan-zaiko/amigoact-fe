@@ -79,16 +79,10 @@ export function Modal({ open, title, onClose, children, wide = false, side = fal
         className={
           side
             ? "relative flex h-full w-full max-w-[420px] flex-col border-l border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
-            : `relative max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 dark:border-zinc-800 dark:bg-zinc-950 ${wide ? "max-w-3xl" : "max-w-md"}`
+            : `relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 ${wide ? "max-w-3xl" : "max-w-md"}`
         }
       >
-        <div
-          className={
-            side
-              ? "flex shrink-0 items-center justify-between gap-2 px-4 pt-4 sm:px-6 sm:pt-6"
-              : "flex items-center justify-between gap-2"
-          }
-        >
+        <div className="flex shrink-0 items-center justify-between gap-2 px-4 pt-4 sm:px-6 sm:pt-6">
           {onBack !== undefined && (
             <Button
               type="button"
@@ -119,16 +113,10 @@ export function Modal({ open, title, onClose, children, wide = false, side = fal
           />
         </div>
         {/*
-         * Side drawers pin the header and let only the body scroll, so
-         * long drill-in lists keep the title/back/close row reachable.
+         * Every variant pins the title/back/close row and lets only the body
+         * scroll, so long content keeps the close button reachable.
          */}
-        <div
-          className={
-            side
-              ? "mt-3 min-h-0 flex-1 overflow-y-auto px-4 pb-4 sm:px-6 sm:pb-6"
-              : "mt-3"
-          }
-        >
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto px-4 pb-4 sm:px-6 sm:pb-6">
           {children}
         </div>
       </div>

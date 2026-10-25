@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ReactElement } from "react";
 import type { IconType } from "react-icons";
 import {
+  FiFileText,
   FiMinusCircle,
   FiPlay,
   FiShield,
@@ -25,6 +26,8 @@ interface MemberActionsProps {
   viewerPermissions: string[];
   orgRoles: OrgRole[];
   isSelf: boolean;
+  // Present only when the viewer may open this member's volunteer profile.
+  onViewProfile?: () => void;
 }
 
 export function MemberActions({
@@ -34,6 +37,7 @@ export function MemberActions({
   viewerPermissions,
   orgRoles,
   isSelf,
+  onViewProfile,
 }: MemberActionsProps): ReactElement | null {
   const update = useUpdateMember(orgId);
   const remove = useRemoveMember(orgId);
@@ -103,7 +107,8 @@ export function MemberActions({
     !canReactivate &&
     !canRevoke &&
     !canRemove &&
-    !canLeave
+    !canLeave &&
+    onViewProfile === undefined
   ) {
     return null;
   }
@@ -145,6 +150,17 @@ export function MemberActions({
   }
 
   const items: MenuAction[] = [];
+  if (onViewProfile) {
+    items.push({
+      key: "profile",
+      label: "Xem hồ sơ tình nguyện",
+      Icon: FiFileText,
+      onSelect: () => {
+        setMenuOpen(false);
+        onViewProfile();
+      },
+    });
+  }
   if (canAssign) {
     items.push({
       key: "roles",

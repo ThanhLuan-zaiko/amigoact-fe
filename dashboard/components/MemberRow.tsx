@@ -1,6 +1,7 @@
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { FiUser } from "react-icons/fi";
 import { apiBaseUrl } from "../../core/api.ts";
+import { MemberVolunteerModal } from "./MemberVolunteerModal.tsx";
 import { MEMBER_ROLE_LABELS, MEMBER_STATUS_LABELS } from "../messages-members.tsx";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
 import { MemberActions } from "./MemberActions.tsx";
@@ -72,6 +73,11 @@ export function MemberRow({
 }: MemberRowProps): ReactElement {
   const joined = joinedLabel(member.joined_at);
   const statusBadge = member.status === "active" ? null : STATUS_BADGES[member.status];
+  // The volunteer profile is manager-only and exists for active members.
+  const [profileOpen, setProfileOpen] = useState(false);
+  const canViewProfile =
+    member.status === "active" &&
+    (viewerRole === "owner" || viewerPermissions.includes("member:view"));
   // Presence only applies to active members; other statuses keep their dot.
   const dotTone =
     member.status === "active"
@@ -150,7 +156,17 @@ export function MemberRow({
         viewerPermissions={viewerPermissions}
         orgRoles={orgRoles}
         isSelf={selfId !== undefined && member.user_id === selfId}
+        onViewProfile={canViewProfile ? () => setProfileOpen(true) : undefined}
       />
+      {canViewProfile && (
+        <MemberVolunteerModal
+          orgId={orgId}
+          userId={member.user_id}
+          name={member.full_name}
+          open={profileOpen}
+          onClose={() => setProfileOpen(false)}
+        />
+      )}
     </li>
   );
 }

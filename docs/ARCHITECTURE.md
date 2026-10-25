@@ -67,3 +67,4 @@ page.tsx / components/*.tsx
 - `docs/BOARD.md`: bảng tin bài viết — tab đã đăng/nháp/thùng rác, block editor (chèn ảnh/video mọi vị trí), trang đọc, vòng đời xóa mềm/khôi phục/xóa cứng.
 - `docs/ORGS.md`: trang chủ 2 tab `Bài đăng`/`Tổ chức` (`/orgs` redirect về `/?tab=orgs`) + timeline thông báo `announcements:feed` + `/orgs/:slug` (discovery board, trust checklist, realtime `orgs:directory`), CRUD tổ chức (xóa mềm/khôi phục/xóa cứng), thùng rác, dropzone ảnh/video, upload `FormData`.
 - `docs/REALTIME.md`: singleton socket `core/realtime.ts`, ticket một lần, socket ẩn danh cho kênh public, resubscribe + backoff.
+- `docs/EVENTS.md`: trang `/events` (feed sự kiện công khai, tab thời gian, bộ lọc trên URL, "Của tôi", realtime `events:feed`).

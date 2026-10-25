@@ -36,7 +36,7 @@ export function ActivityGallery({
             <button
               type="button"
               onClick={() => setIndex(i)}
-              className="block w-full overflow-hidden rounded-xl border border-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:border-zinc-800"
+              className="block w-full overflow-hidden rounded-xl border border-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:border-zinc-800 dark:focus-visible:outline-zinc-400"
               aria-label={m.caption ?? `Media ${i + 1}`}
             >
               {m.kind === "video" ? (
@@ -77,7 +77,7 @@ export function ActivityGallery({
                 href={orgMediaUrl(m.file_url)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+                className="flex items-center gap-2 text-sm text-zinc-900 hover:underline dark:text-zinc-100"
               >
                 <FiFile className="h-4 w-4" aria-hidden="true" />
                 {m.caption ?? m.original_name ?? "Tài liệu"}

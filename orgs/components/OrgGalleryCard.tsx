@@ -49,7 +49,7 @@ export function OrgGalleryCard({ org }: OrgGalleryCardProps): ReactElement {
                 key={item.url}
                 aria-label={`Xem media ${index + 1} của ${org.name}`}
                 onClick={() => setViewer(index)}
-                className="relative cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-sky-500"
+                className="relative cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400"
               >
                 {item.kind === "video" ? (
                   <span className="relative block">

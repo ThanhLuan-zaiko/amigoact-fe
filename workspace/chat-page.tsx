@@ -147,6 +147,32 @@ export function WorkspaceChatPage(): ReactElement {
     );
   }
 
+  // A dissolved event keeps no readable chat: show the notice instead.
+  // Hard delete archives linked threads, which then leave the inbox, so a
+  // stale link (shared card) resolves to no room once the inbox loaded.
+  if (
+    room?.activity_deleted === true ||
+    (room === null && inbox.isSuccess)
+  ) {
+    return (
+      <div className="flex h-[calc(100dvh-53px)] flex-col items-center justify-center gap-4 px-6">
+        <EmptyState
+          title="Sự kiện đã bị xóa"
+          message="Sự kiện của cuộc trò chuyện này đã bị xóa nên không thể xem lại nội dung."
+        />
+        {!isDesktop && (
+          <button
+            type="button"
+            onClick={backToInbox}
+            className="rounded-md border px-4 py-2 text-sm"
+          >
+            Quay lại danh sách
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
     <>
     <ChatPanel

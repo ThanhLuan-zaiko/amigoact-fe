@@ -1,7 +1,12 @@
-import type { ActivitySummary } from "./api.ts";
+// Structural slice shared by ActivitySummary and the browse feed items.
+interface PlaceFields {
+  is_remote: boolean;
+  location: string | null;
+  hours_awarded: number;
+}
 
 // The online label or the venue, then awarded hours when there are any.
-export function placeLine(activity: ActivitySummary): string | null {
+export function placeLine(activity: PlaceFields): string | null {
   const place = activity.is_remote ? "Trực tuyến" : activity.location;
   const hours =
     activity.hours_awarded > 0 ? `${activity.hours_awarded} giờ` : null;

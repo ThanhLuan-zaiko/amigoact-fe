@@ -8,6 +8,7 @@ import {
 import { useEffect } from "react";
 import { ApiError } from "../core/api.ts";
 import { attendanceChannel, subscribeChannel } from "../core/realtime.ts";
+import { activityKeys } from "../activities/keys.ts";
 import { hourKeys } from "../hours/keys.ts";
 import {
   applyToActivity,
@@ -105,13 +106,16 @@ export function useActivityAttendance(
   });
 }
 
+// Every registration write also moves seat counts and the signed-in
+// statuses shown on /events, so the browse family refreshes too.
 function useInvalidateRegistrations() {
   const queryClient = useQueryClient();
   return {
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: registrationKeys.all,
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: registrationKeys.all }),
+        queryClient.invalidateQueries({ queryKey: activityKeys.browseAll() }),
+      ]);
     },
   };
 }

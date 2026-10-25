@@ -137,17 +137,6 @@ export function fetchDiscovery(limit = 6): Promise<DiscoveryResponse> {
   return apiFetch<DiscoveryResponse>(`/activities/discovery?limit=${limit}`);
 }
 
-export function listActivities(
-  status = "published",
-  categoryId?: string,
-  tag?: string,
-): Promise<ActivitySummary[]> {
-  const params = new URLSearchParams({ status });
-  if (categoryId) params.set("category_id", categoryId);
-  if (tag) params.set("tag", tag);
-  return apiFetch<ActivitySummary[]>(`/activities?${params}`);
-}
-
 export function listCategories(orgId?: string): Promise<CategoryItem[]> {
   const params = orgId ? `?org_id=${orgId}` : "";
   return apiFetch<CategoryItem[]>(`/categories${params}`);

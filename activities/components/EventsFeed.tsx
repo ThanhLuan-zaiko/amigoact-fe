@@ -1,0 +1,110 @@
+import type { ReactElement } from "react";
+import { ApiError } from "../../core/api.ts";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../core/components/Feedback.tsx";
+import { Pagination } from "../../core/components/Pagination.tsx";
+import type { BrowseItem } from "../browse-api.ts";
+import { EVENTS_PAGE_SIZE, type EventsTab } from "../browse-utils.ts";
+import { toVietnameseBrowseMessage } from "../messages.tsx";
+import { EventRow } from "./EventRow.tsx";
+
+export interface FeedRow {
+  item: BrowseItem;
+  myStatus?: string;
+}
+
+const EMPTY_TITLE: Record<EventsTab, string> = {
+  upcoming: "Chưa có sự kiện sắp tới",
+  live: "Chưa có sự kiện đang diễn ra",
+  past: "Chưa có sự kiện đã qua",
+  mine: "Bạn chưa đăng ký sự kiện nào",
+};
+
+interface EventsFeedProps {
+  tab: EventsTab;
+  loading: boolean;
+  error: Error | null;
+  rows: FeedRow[];
+  total: number;
+  truncated: boolean;
+  dimmed: boolean;
+  page: number;
+  narrowed: boolean;
+  onRetry: () => void;
+  onClear: () => void;
+  onPage: (page: number) => void;
+}
+
+// Every state the feed can show: loading, error, empty (per tab or per
+// filter), the list itself, and the paging footer.
+export function EventsFeed({
+  tab,
+  loading,
+  error,
+  rows,
+  total,
+  truncated,
+  dimmed,
+  page,
+  narrowed,
+  onRetry,
+  onClear,
+  onPage,
+}: EventsFeedProps): ReactElement {
+  if (loading) return <LoadingState label="Đang tải sự kiện…" />;
+  if (error !== null) {
+    return (
+      <ErrorState
+        title="Không tải được"
+        message={toVietnameseBrowseMessage(
+          error instanceof ApiError ? error.code : "REQUEST_FAILED",
+        )}
+        actionLabel="Thử lại"
+        onAction={onRetry}
+      />
+    );
+  }
+  if (rows.length === 0) {
+    return narrowed ? (
+      <EmptyState
+        title="Không có sự kiện phù hợp"
+        message="Thử bỏ bớt bộ lọc để xem thêm sự kiện."
+        actionLabel="Xóa bộ lọc"
+        onAction={onClear}
+      />
+    ) : (
+      <EmptyState title={EMPTY_TITLE[tab]} message="Quay lại sau để xem thêm." />
+    );
+  }
+  const totalPages = Math.max(1, Math.ceil(total / EVENTS_PAGE_SIZE));
+  return (
+    <div className="flex flex-col gap-3">
+      {truncated && (
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          Chỉ hiển thị các sự kiện gần nhất. Thu hẹp bộ lọc để xem đầy đủ hơn.
+        </p>
+      )}
+      <ul
+        className={`-mx-4 -my-4 divide-y divide-zinc-200 dark:divide-zinc-800 ${
+          dimmed ? "opacity-60" : ""
+        }`}
+      >
+        {rows.map((row) => (
+          <EventRow
+            key={row.item.id}
+            item={row.item}
+            myStatus={row.myStatus}
+          />
+        ))}
+      </ul>
+      <Pagination
+        page={Math.min(page, totalPages)}
+        totalPages={totalPages}
+        onPage={onPage}
+      />
+    </div>
+  );
+}

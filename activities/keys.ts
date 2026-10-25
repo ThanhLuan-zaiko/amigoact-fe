@@ -1,14 +1,14 @@
 export const activityKeys = {
   all: ["activities"] as const,
   discovery: () => [...activityKeys.all, "discovery"] as const,
-  feed: (status: string, categoryId?: string, tag?: string) =>
-    [
-      ...activityKeys.all,
-      "feed",
-      status,
-      categoryId ?? "all",
-      tag ?? "all",
-    ] as const,
+  // Public /events browse feed. Lists, the signed-in view and the brief
+  // map all sit under browseAll, so one invalidation refreshes every view.
+  browseAll: () => [...activityKeys.all, "browse"] as const,
+  browse: (params: Record<string, string>) =>
+    [...activityKeys.browseAll(), "list", params] as const,
+  browseMine: (params: Record<string, string>) =>
+    [...activityKeys.browseAll(), "mine", params] as const,
+  myBriefs: () => [...activityKeys.browseAll(), "my-briefs"] as const,
   tags: (query: string) =>
     [...activityKeys.all, "tags", query] as const,
   orgTags: (orgId: string, trash = false) =>

@@ -28,6 +28,11 @@ export function announcementsChannel(): string {
   return "announcements:feed";
 }
 
+// Public guest channel for the /events browse feed (no UUID).
+export function eventsFeedChannel(): string {
+  return "events:feed";
+}
+
 export function chatChannel(roomId: string): string {
   return `chat:${roomId}`;
 }

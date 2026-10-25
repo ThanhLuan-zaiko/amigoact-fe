@@ -78,7 +78,7 @@ function Tile({
         event.stopPropagation();
         onOpen(index);
       }}
-      className={`${base} cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-sky-500`}
+      className={`${base} cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-zinc-500 dark:focus-visible:outline-zinc-400`}
     >
       {body}
     </button>

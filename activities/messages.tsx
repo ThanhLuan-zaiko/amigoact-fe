@@ -33,6 +33,34 @@ export function toVietnameseActivityMessage(code: string): string {
   return MESSAGES[code] ?? "";
 }
 
+export const EVENTS_TAB_LABELS: Record<string, string> = {
+  upcoming: "Sắp tới",
+  live: "Đang diễn ra",
+  past: "Đã qua",
+  mine: "Của tôi",
+};
+
+export const MY_REGISTRATION_LABELS: Record<string, string> = {
+  pending: "Chờ duyệt",
+  approved: "Đã duyệt",
+  waitlisted: "Danh sách chờ",
+  attended: "Đã tham gia",
+  rejected: "Bị từ chối",
+  cancelled: "Đã hủy",
+};
+
+const BROWSE_MESSAGES: Record<string, string> = {
+  VALIDATION_ERROR: "Bộ lọc chưa hợp lệ. Thử đặt lại bộ lọc.",
+  UNAUTHORIZED: "Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại.",
+  TOO_MANY_REQUESTS: "Bạn thao tác quá nhanh. Thử lại sau ít phút.",
+  SERVER_OVERLOADED: "Hệ thống đang bận. Thử lại sau.",
+  REQUEST_FAILED: "Không tải được danh sách. Thử lại sau.",
+};
+
+export function toVietnameseBrowseMessage(code: string): string {
+  return BROWSE_MESSAGES[code] ?? BROWSE_MESSAGES.REQUEST_FAILED;
+}
+
 const TAG_MESSAGES: Record<string, string> = {
   TAG_EXISTS:
     'Tổ chức đã có thẻ này. Dùng "Gộp" nếu muốn hợp nhất hai thẻ.',

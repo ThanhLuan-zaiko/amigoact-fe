@@ -1,22 +1,37 @@
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
-import { FiHash, FiX } from "react-icons/fi";
+import { FiChevronDown, FiHash, FiX } from "react-icons/fi";
 import { useDismiss } from "../../core/dismiss.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
+import type { TagFacet } from "../browse-api.ts";
+import { foldText } from "../browse-utils.ts";
 import { usePublicTagSearch } from "../tags-hooks.ts";
 
 interface TagFilterProps {
   slug: string | undefined;
   name: string | undefined;
+  // Tags on the current results, with counts. Opening the field lists them.
+  tags: TagFacet[];
   onChange: (slug: string | undefined, name?: string) => void;
 }
 
-// Public /events filter: a single-pick hashtag combobox. Once a tag is
-// active it renders as a removable pill next to the search box.
+interface TagOption {
+  slug: string;
+  name: string;
+  // Null for directory matches outside the current results.
+  count: number | null;
+}
+
+const LISTBOX_ID = "events-tag-listbox";
+
+// Single-pick tag dropdown. Focusing the field lists the tags in the current
+// results. Typing narrows that list at once, and the public tag directory
+// adds matches outside the results. Arrow keys and Enter pick an option.
 export function TagFilter({
   slug,
   name,
+  tags,
   onChange,
 }: TagFilterProps): ReactElement {
   const [query, setQuery] = useState("");
@@ -25,20 +40,26 @@ export function TagFilter({
   const rootRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const listboxId = "tag-filter-listbox";
-  const search = usePublicTagSearch(query);
-  const options = search.data ?? [];
+  const needle = foldText(query.trim());
+  const directory = usePublicTagSearch(query);
+
+  const inResults = new Set(tags.map((tag) => tag.slug));
+  const options: TagOption[] = [
+    ...tags
+      .filter((tag) => needle === "" || foldText(tag.name).includes(needle))
+      .map((tag) => ({ slug: tag.slug, name: tag.name, count: tag.count })),
+    ...(directory.data ?? [])
+      .filter((tag) => !inResults.has(tag.slug))
+      .map((tag) => ({ slug: tag.slug, name: tag.name, count: null })),
+  ];
 
   useDismiss(open, rootRef, () => setOpen(false), inputRef);
   useEffect(() => {
     if (!open || active < 0) return;
-    listRef.current?.children[active]?.scrollIntoView({
-      block: "nearest",
-    });
+    listRef.current?.children[active]?.scrollIntoView({ block: "nearest" });
   }, [open, active]);
 
-  function pick(index: number): void {
-    const option = options[index];
+  function pick(option: TagOption | undefined): void {
     if (!option) return;
     onChange(option.slug, option.name);
     setQuery("");
@@ -47,29 +68,25 @@ export function TagFilter({
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
-    const key = event.key;
-    if (key === "Enter") {
-      event.preventDefault();
-      if (open && options.length > 0) {
-        pick(active >= 0 ? active : 0);
-      } else if (query.trim()) {
-        onChange(query.trim().toLowerCase());
-        setQuery("");
-      }
-    } else if (key === "ArrowDown" || key === "ArrowUp") {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
       if (!open) {
         setOpen(true);
         setActive(0);
-      } else {
-        setActive((i) =>
-          key === "ArrowDown"
-            ? Math.min(i + 1, options.length - 1)
-            : Math.max(i - 1, 0),
-        );
+        return;
       }
-    } else if (key === "Tab") {
+      const last = options.length - 1;
+      setActive((index) =>
+        event.key === "ArrowDown"
+          ? Math.min(index + 1, last)
+          : Math.max(index - 1, 0),
+      );
+    } else if (event.key === "Enter" && open) {
+      event.preventDefault();
+      pick(options[active >= 0 ? active : 0]);
+    } else if (event.key === "Escape") {
       setOpen(false);
+      setActive(-1);
     }
   }
 
@@ -87,80 +104,74 @@ export function TagFilter({
   }
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} className="flex flex-col gap-2">
       <TextField
         pill
         hideLabel
         label="Lọc theo thẻ"
-        placeholder="Lọc theo thẻ…"
+        placeholder="Chọn hoặc gõ tên thẻ"
         icon={<FiHash className="h-4 w-4" aria-hidden="true" />}
+        trailing={
+          <FiChevronDown className="mr-3 h-4 w-4 text-zinc-400" aria-hidden="true" />
+        }
         value={query}
         role="combobox"
         aria-expanded={open}
-        aria-controls={open ? listboxId : undefined}
-        aria-activedescendant={
-          open && active >= 0
-            ? `${listboxId}-opt-${active}`
-            : undefined
-        }
+        aria-controls={open ? LISTBOX_ID : undefined}
         aria-autocomplete="list"
+        aria-activedescendant={
+          open && active >= 0 ? `${LISTBOX_ID}-opt-${active}` : undefined
+        }
         ref={inputRef}
-        onChange={(e) => {
-          setQuery(e.target.value);
+        onChange={(event) => {
+          setQuery(event.target.value);
           setActive(-1);
           setOpen(true);
         }}
-        onKeyDown={onKeyDown}
         onFocus={() => setOpen(true)}
+        onClick={() => setOpen(true)}
+        onKeyDown={onKeyDown}
       />
-      {open && query.trim().length > 0 && (
+      {open && (
         <ul
           ref={listRef}
-          id={listboxId}
+          id={LISTBOX_ID}
           role="listbox"
-          aria-label="Gợi ý thẻ"
-          onMouseDown={(e) => e.preventDefault()}
-          className="absolute left-0 top-full z-50 mt-1 max-h-60 w-full min-w-[16rem] overflow-y-auto rounded-xl border border-zinc-200 bg-white p-1 dark:border-zinc-800 dark:bg-zinc-950"
+          aria-label="Danh sách thẻ"
+          onMouseDown={(event) => event.preventDefault()}
+          className="max-h-60 overflow-y-auto rounded-xl border border-zinc-200 p-1 dark:border-zinc-800"
         >
-          {search.isError && (
+          {options.map((option, index) => (
             <li
-              role="alert"
-              className="px-3 py-2 text-xs text-red-600 dark:text-red-400"
-            >
-              Không tải được gợi ý thẻ.
-            </li>
-          )}
-          {options.map((tag, index) => (
-            <li
-              key={tag.slug}
-              id={`${listboxId}-opt-${index}`}
+              key={option.slug}
+              id={`${LISTBOX_ID}-opt-${index}`}
               role="option"
               aria-selected={index === active}
               onMouseEnter={() => setActive(index)}
-              onClick={() => pick(index)}
-              className={`flex min-h-[40px] w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300${
-                index === active ? " bg-zinc-100 dark:bg-zinc-900" : ""
+              onClick={() => pick(option)}
+              className={`flex min-h-[40px] cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 ${
+                index === active ? "bg-zinc-100 dark:bg-zinc-900" : ""
               }`}
             >
               <FiHash className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span className="min-w-0 flex-1 truncate">{tag.name}</span>
+              <span className="min-w-0 flex-1 truncate">{option.name}</span>
+              {option.count !== null && (
+                <span className="tabular-nums text-xs text-zinc-500 dark:text-zinc-400">
+                  {option.count}
+                </span>
+              )}
             </li>
           ))}
-          {search.isSuccess && options.length === 0 && (
-            <li
-              role="option"
-              aria-selected={false}
-              onClick={() => {
-                onChange(query.trim().toLowerCase());
-                setQuery("");
-                setOpen(false);
-              }}
-              className="flex min-h-[40px] w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300"
-            >
-              <FiHash className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span className="min-w-0 flex-1 truncate">
-                Lọc theo "{query.trim()}"
-              </span>
+          {options.length === 0 && (
+            <li className="px-3 py-2 text-xs text-zinc-500 dark:text-zinc-400">
+              {needle === ""
+                ? "Chưa có thẻ nào trong kết quả này."
+                : "Không có thẻ nào khớp."}
+            </li>
+          )}
+          {directory.isError && needle !== "" && (
+            <li role="alert" className="px-3 py-2 text-xs text-red-600 dark:text-red-400">
+              Không tải thêm được gợi ý thẻ.
             </li>
           )}
         </ul>

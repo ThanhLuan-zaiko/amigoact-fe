@@ -28,7 +28,8 @@ Hợp đồng với backend (`amigoact-be` docs/REALTIME.md):
    một lần nên mỗi lần (re)connect đều xin ticket mới.
 2. **Guest**: `401` khi xin ticket (chưa đăng nhập) → client mở
    `ws(s)://<api>/ws` không ticket — socket ẩn danh của backend chỉ
-   subscribe được kênh public (`orgs:directory`, `announcements:feed`);
+   subscribe được kênh public (`orgs:directory`, `announcements:feed`,
+   `events:feed`);
    kênh private vẫn nhận `FORBIDDEN` + `4403` như thường.
 3. Sau khi mở, server gửi `ready.v1` (`heartbeat_seconds` được dùng để chỉnh
    watchdog) rồi client `subscribe.v1` lại toàn bộ kênh đang giữ
@@ -70,10 +71,13 @@ nếu kênh được subscribe lại trong cửa sổ đó (StrictMode mount hai
 hai lớp giảm frame này tránh `error.v1` `TOO_MANY_REQUESTS`.
 
 Socket tự teardown về `idle` khi không còn subscriber/status listener nào.
-Hai kênh public hoạt động trên socket ẩn danh: `orgs:directory` (qua
-`useOrgsRealtime`) và `announcements:feed` (qua `useAnnouncementsRealtime`,
-payload `{action, post_id, org_id}`). Cả hai chỉ là gợi ý invalidate query,
-không phải sự thật.
+Các kênh public hoạt động trên socket ẩn danh: `orgs:directory` (qua
+`useOrgsRealtime`), `announcements:feed` (qua `useAnnouncementsRealtime`,
+payload `{action, post_id, org_id}`) và `events:feed` (qua
+`useEventsRealtime` ở trang `/events`, payload `{action, activity_id, org_id}`
+với `action` là `updated`, `removed` hoặc `seats`). Tất cả chỉ là gợi ý
+invalidate query, không phải sự thật; trang `/events` gộp các gợi ý trong
+800 ms rồi invalidate toàn bộ nhóm `activityKeys.browseAll()`.
 
 ### Toast realtime (thành viên)
 

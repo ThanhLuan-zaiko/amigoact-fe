@@ -17,7 +17,7 @@ Source of truth for AI agents and contributors. Follow it strictly; add a rule h
 - Borders, never shadows: no `shadow-*`, `ring-*`, `drop-shadow-*`. Focus uses visible `focus-visible:` outlines.
 - Neutral zinc chrome. Red = error, amber = warning, emerald = success. No purple, blue, indigo, teal, orange or pink. Every color needs a `dark:` pair.
 - Theme: `.dark` on `<html>`, saved under `amigoact-theme`, OS preference on first visit. Only `core/theme.ts` touches storage.
-- Mobile-first at 360px. Shell uses `sm:`/`lg:`/`xl:`; page content uses `@2xl:`/`@4xl:` container queries.
+- Mobile-first at 360px. Shell uses `sm:`/`lg:`/`xl:`; page content uses container queries. The `PageShell` centre column is `max-w-[600px]`, so inside it only `@md:` (448px), `@lg:` (512px) and `@xl:` (576px) can match; `@2xl:` (672px) and `@4xl:` (896px) never do.
 - No entrance animations. Only loaders (`animate-spin`/`animate-pulse`) and the chat jump pulse may animate.
 - Buttons are content-sized via `core/components/Button.tsx`, never `w-full` on desktop. Icon-only buttons need a Vietnamese `aria-label`.
 

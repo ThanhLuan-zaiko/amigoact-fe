@@ -1,39 +1,47 @@
-import { useState, type ReactElement } from "react";
-import { useSearchParams } from "react-router-dom";
-import { FiCompass, FiFilter } from "react-icons/fi";
+import type { ReactElement } from "react";
+import { useNavigate } from "react-router-dom";
+import { FiCompass } from "react-icons/fi";
+import { EmptyState } from "../core/components/Feedback.tsx";
 import { Section } from "../core/components/Section.tsx";
-import { Button } from "../core/components/Button.tsx";
 import {
-  EmptyState,
-  ErrorState,
-  LoadingState,
-} from "../core/components/Feedback.tsx";
-import { useActivityFeed, useCategories } from "./hooks.ts";
-import { ActivityCard } from "./components/ActivityCard.tsx";
-import { DiscoverySections } from "./components/DiscoverySections.tsx";
-import { TagFilter } from "./components/TagFilter.tsx";
+  useBrowse,
+  useBrowseMine,
+  useEventsRealtime,
+  useEventsUrl,
+  useMyBriefMap,
+  useSignedIn,
+} from "./browse-hooks.ts";
+import {
+  CLEARED_FILTERS,
+  hasNarrowing,
+  toMineQuery,
+  toPublicQuery,
+} from "./browse-utils.ts";
+import { EventsFeed, type FeedRow } from "./components/EventsFeed.tsx";
 
+// The feed column. Tabs, search and filters live in the right rail
+// (EventsBrowseRail) and share this page's URL state.
 export function EventsPage(): ReactElement {
-  const [categoryId, setCategoryId] = useState<string | undefined>();
-  // The hashtag filter is deep-linkable (?tag=slug) so tag chips on
-  // cards and detail pages route here directly.
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tagSlug = searchParams.get("tag") ?? undefined;
-  const [tagName, setTagName] = useState<string | undefined>();
-  const feed = useActivityFeed("published", categoryId, tagSlug);
-  const categories = useCategories();
+  const navigate = useNavigate();
+  const { filters, patch } = useEventsUrl();
+  const signedIn = useSignedIn();
+  const mineView = signedIn && filters.tab === "mine";
+  const browse = useBrowse(toPublicQuery(filters), filters.tab !== "mine");
+  const mine = useBrowseMine(toMineQuery(filters), mineView);
+  const briefs = useMyBriefMap(signedIn);
+  useEventsRealtime();
 
-  const setTag = (slug: string | undefined, name?: string): void => {
-    setTagName(name);
-    setSearchParams(
-      (params) => {
-        if (slug) params.set("tag", slug);
-        else params.delete("tag");
-        return params;
-      },
-      { replace: true },
-    );
-  };
+  const source = mineView ? mine : browse;
+  const rows: FeedRow[] = mineView
+    ? (mine.data?.items ?? []).map((item) => ({
+        item,
+        myStatus: item.my_registration.status,
+      }))
+    : (browse.data?.items ?? []).map((item) => ({
+        item,
+        myStatus: briefs[item.id]?.status,
+      }));
+  const guestMine = filters.tab === "mine" && !signedIn;
 
   return (
     <>
@@ -44,72 +52,45 @@ export function EventsPage(): ReactElement {
             aria-hidden="true"
           />
           <h1 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
-            Khám phá hoạt động
+            Khám phá sự kiện
           </h1>
         </div>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Các hoạt động tình nguyện đang mở đăng ký từ cộng đồng.
+          Các hoạt động tình nguyện đang mở đăng ký và sắp diễn ra từ cộng đồng.
         </p>
+      </Section>
+      <Section>
         <div
-          role="group"
-          aria-label="Lọc theo danh mục"
-          className="mt-3 flex flex-wrap items-center gap-2"
+          id="events-feed"
+          role="tabpanel"
+          aria-labelledby={`events-tab-${filters.tab}`}
         >
-          <Button
-            variant={categoryId === undefined ? "primary" : "secondary"}
-            onClick={() => setCategoryId(undefined)}
-            icon={<FiFilter className="h-4 w-4" aria-hidden="true" />}
-          >
-            Tất cả
-          </Button>
-          {(categories.data ?? []).map((c) => (
-            <Button
-              key={c.id}
-              variant={categoryId === c.id ? "primary" : "secondary"}
-              onClick={() => setCategoryId(c.id)}
-            >
-              {c.name}
-            </Button>
-          ))}
-        </div>
-        <div className="mt-2 flex items-center gap-2">
-          <TagFilter slug={tagSlug} name={tagName} onChange={setTag} />
-          {tagSlug !== undefined && (
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              Đang lọc theo thẻ
-            </span>
+          {guestMine ? (
+            <EmptyState
+              title="Đăng nhập để xem sự kiện của bạn"
+              message="Các sự kiện bạn đã đăng ký sẽ hiện ở đây."
+              actionLabel="Đăng nhập"
+              onAction={() => navigate("/login")}
+            />
+          ) : (
+            <EventsFeed
+              tab={filters.tab}
+              loading={source.isPending}
+              error={source.error}
+              rows={rows}
+              total={source.data?.total ?? 0}
+              truncated={source.data?.truncated ?? false}
+              dimmed={source.isPlaceholderData}
+              page={filters.page}
+              narrowed={hasNarrowing(filters)}
+              onRetry={() => void source.refetch()}
+              onClear={() => patch(CLEARED_FILTERS)}
+              onPage={(page) =>
+                patch({ page: page > 1 ? String(page) : null })
+              }
+            />
           )}
         </div>
-      </Section>
-      {categoryId === undefined && tagSlug === undefined && (
-        <Section>
-          <DiscoverySections />
-        </Section>
-      )}
-      <Section>
-        {feed.isPending && <LoadingState label="Đang tải hoạt động…" />}
-        {feed.isError && (
-          <ErrorState
-            title="Không tải được"
-            message={feed.error.message}
-          />
-        )}
-        {feed.isSuccess && feed.data.length === 0 && (
-          <EmptyState
-            title="Chưa có hoạt động"
-            message="Chưa có hoạt động nào được công bố phù hợp bộ lọc này."
-          />
-        )}
-        <ul className="flex flex-col gap-2">
-          {(feed.data ?? []).map((a) => (
-            <li key={a.id}>
-              <ActivityCard
-                activity={a}
-                href={`/events/${a.org_id}/${a.slug}`}
-              />
-            </li>
-          ))}
-        </ul>
       </Section>
     </>
   );

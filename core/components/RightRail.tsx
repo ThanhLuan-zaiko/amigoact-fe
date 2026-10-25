@@ -18,6 +18,7 @@ import { TextField } from "./TextField.tsx";
 import { ManageRail } from "../../dashboard/components/ManageRail.tsx";
 import { MANAGE_ROOT } from "../nav.tsx";
 import { ChatInboxRail } from "../../workspace/components/ChatInboxRail.tsx";
+import { EventsBrowseRail } from "../../activities/components/EventsBrowseRail.tsx";
 
 const YEAR = new Date().getFullYear();
 
@@ -78,6 +79,10 @@ export function RightRail(): ReactElement {
   const { pathname } = useLocation();
   if (pathname === "/manage/chat" && signedIn) {
     return <ChatInboxRail />;
+  }
+  // /events keeps its filters here so the feed column stays list-only.
+  if (pathname === "/events") {
+    return <EventsBrowseRail />;
   }
   if (pathname.startsWith(MANAGE_ROOT) && signedIn) {
     return (

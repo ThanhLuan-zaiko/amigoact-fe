@@ -16,7 +16,6 @@ import {
   getActivityDetail,
   getRegistrationForm,
   hardDeleteActivity,
-  listActivities,
   listCategories,
   listOrgActivities,
   restoreActivity,
@@ -51,18 +50,6 @@ export function useDiscovery(): UseQueryResult<
     queryKey: activityKeys.discovery(),
     queryFn: () => fetchDiscovery(),
     staleTime: 60_000,
-  });
-}
-
-export function useActivityFeed(
-  status: string,
-  categoryId?: string,
-  tag?: string,
-): UseQueryResult<ActivitySummary[], ApiError> {
-  return useQuery({
-    queryKey: activityKeys.feed(status, categoryId, tag),
-    queryFn: () => listActivities(status, categoryId, tag),
-    staleTime: 30_000,
   });
 }
 

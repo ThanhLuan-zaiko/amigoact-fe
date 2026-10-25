@@ -69,7 +69,10 @@ export function ChatThreadShareCard({
   }, [chat.data]);
   const latest = speakers.slice(0, SPEAKER_CAP);
   const stacked = [...latest].reverse();
-  const blurb = shareBlurb(name, channel);
+  const gone =
+    inbox.isSuccess &&
+    (room === undefined || room.activity_deleted);
+  const blurb = gone ? "Sự kiện đã bị xóa" : shareBlurb(name, channel);
   const names = latest.map((row) => row.name).join(", ");
   const tone = mine
     ? "border-white/30 bg-white/10 text-white hover:bg-white/20 dark:border-zinc-900/20 dark:bg-zinc-900/10 dark:text-zinc-950 dark:hover:bg-zinc-900/20"

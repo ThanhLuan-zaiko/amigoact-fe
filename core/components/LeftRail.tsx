@@ -36,10 +36,13 @@ export function LeftRail(): ReactElement {
         <Link
           to="/"
           aria-label="AmigoACT - Trang chủ"
-          className="inline-flex h-[52px] w-[52px] items-center justify-center rounded-full transition-colors hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
+          className="inline-flex h-[52px] w-[52px] items-center justify-center gap-2.5 rounded-full transition-colors xl:w-auto xl:px-2 hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-400"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">
             <FiActivity className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="hidden pr-2 text-xl font-extrabold tracking-tight text-zinc-900 xl:inline dark:text-zinc-100">
+            AmigoACT
           </span>
         </Link>
       </div>

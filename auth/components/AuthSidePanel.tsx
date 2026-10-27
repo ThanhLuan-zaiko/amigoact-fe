@@ -7,14 +7,7 @@ import {
   FiMail,
   FiUsers,
 } from "react-icons/fi";
-import type { IconType } from "react-icons";
-import { Section } from "../../core/components/Section.tsx";
-
-interface Benefit {
-  Icon: IconType;
-  title: string;
-  body: string;
-}
+import { HeroPanel, type HeroItem as Benefit } from "./HeroPanel.tsx";
 
 const LOGIN_BENEFITS: Benefit[] = [
   {
@@ -57,44 +50,20 @@ export function AuthSidePanel({
 }: {
   variant: "login" | "register";
 }): ReactElement {
-  const isLogin = variant === "login";
-  const items = isLogin ? LOGIN_BENEFITS : REGISTER_STEPS;
-  return (
-    <Section>
-      <div className="flex flex-col justify-start gap-5 p-2 sm:p-4">
-        <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">
-            <FiActivity className="h-5 w-5" aria-hidden="true" />
-          </span>
-          <span className="text-base font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-            AmigoACT
-          </span>
-        </div>
-        <h2
-          className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100"
-        >
-          {isLogin
-            ? "Một tài khoản, mọi hoạt động tình nguyện."
-            : "Bắt đầu hành trình tình nguyện trong 1 phút."}
-        </h2>
-        <ul className="flex flex-col gap-4">
-          {items.map(({ Icon, title, body }) => (
-            <li key={title} className="flex items-start gap-3">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950">
-                <Icon className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <span>
-                <span className="block text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  {title}
-                </span>
-                <span className="block text-sm text-zinc-600 dark:text-zinc-400">
-                  {body}
-                </span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Section>
+  return variant === "login" ? (
+    <HeroPanel
+      eyebrow="Chào mừng trở lại"
+      headline="Một tài khoản, mọi hoạt động tình nguyện."
+      lead="Tiếp tục hành trình đóng góp của bạn: sự kiện, đội nhóm và giờ tình nguyện đều ở đây."
+      items={LOGIN_BENEFITS}
+    />
+  ) : (
+    <HeroPanel
+      eyebrow="Chỉ 3 bước"
+      headline="Bắt đầu hành trình tình nguyện trong 1 phút."
+      lead="Tạo tài khoản miễn phí, xác minh email và tham gia hoạt động đầu tiên của bạn."
+      items={REGISTER_STEPS}
+      numbered
+    />
   );
 }

@@ -20,7 +20,7 @@ function Shell({
   return (
     <div
       role={onAction ? "alert" : "status"}
-      className="flex flex-col items-start gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
+      className="flex flex-col items-start gap-2 py-4"
     >
       <div className="flex items-center gap-2">
         {icon}
@@ -76,7 +76,7 @@ export function LoadingState({ label }: { label: string }): ReactElement {
       role="status"
       aria-busy="true"
       aria-label={label}
-      className="flex items-center gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-800"
+      className="flex items-center gap-2 py-4"
     >
       <FiLoader
         className="h-5 w-5 animate-spin text-zinc-500 dark:text-zinc-400"

@@ -71,17 +71,16 @@ export function LoginCard(): ReactElement {
   return (
     <Section>
       <div className="flex flex-col">
-      <div className="flex items-center gap-2">
-        <FiLogIn
-          className="h-5 w-5 text-zinc-900 dark:text-zinc-100"
-          aria-hidden="true"
-        />
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
+          <FiLogIn className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
+        </span>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           Đăng nhập
         </h1>
       </div>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Chào mừng trở lại. Nhập email và mật khẩu để tiếp tục.
+        Rất vui được gặp lại bạn. Nhập email và mật khẩu để tiếp tục.
       </p>
       {(state?.verified || state?.registered) && (
         <p

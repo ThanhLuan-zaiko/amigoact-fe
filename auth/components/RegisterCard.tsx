@@ -142,8 +142,10 @@ export function RegisterCard(): ReactElement {
   return (
     <Section>
       <div className="flex flex-col">
-      <div className="flex items-center gap-2">
-        <FiUserPlus className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
+          <FiUserPlus className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
+        </span>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100">
           Đăng ký
         </h1>

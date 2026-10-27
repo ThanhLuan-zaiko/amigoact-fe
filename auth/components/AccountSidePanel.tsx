@@ -4,12 +4,12 @@ import {
   FiHash,
   FiKey,
   FiRefreshCw,
-  FiShield,
   FiSmartphone,
   FiType,
 } from "react-icons/fi";
 import type { IconType } from "react-icons";
 import { Section } from "../../core/components/Section.tsx";
+import { HeroPanel } from "./HeroPanel.tsx";
 
 interface Benefit {
   Icon: IconType;
@@ -69,8 +69,18 @@ export function AccountSidePanel({
   variant: "profile" | "password";
 }): ReactElement {
   const isProfile = variant === "profile";
-  const items = isProfile ? PROFILE_BENEFITS : PASSWORD_RULES;
-  const HeadIcon = isProfile ? FiShield : FiKey;
+  if (isProfile) {
+    return (
+      <HeroPanel
+        eyebrow="Tài khoản"
+        headline="Mọi thông tin tài khoản, gọn trong một chỗ."
+        lead="Cập nhật hồ sơ, ảnh đại diện và giữ tài khoản luôn an toàn."
+        items={PROFILE_BENEFITS}
+      />
+    );
+  }
+  const items = PASSWORD_RULES;
+  const HeadIcon = FiKey;
   return (
     <Section>
       <div className="flex flex-col justify-start gap-5 p-2 sm:p-4">
@@ -85,9 +95,7 @@ export function AccountSidePanel({
         <h2
           className="text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl dark:text-zinc-100"
         >
-          {isProfile
-            ? "Mọi thông tin tài khoản, gọn trong một chỗ."
-            : "Đặt mật khẩu mạnh chỉ trong 30 giây."}
+          Đặt mật khẩu mạnh chỉ trong 30 giây.
         </h2>
         <ul className="flex flex-col gap-4">
           {items.map(({ Icon, title, body }) => (

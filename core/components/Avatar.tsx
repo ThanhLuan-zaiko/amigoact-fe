@@ -6,6 +6,7 @@ const SIZES = {
   sm: "h-8 w-8 text-sm",
   md: "h-10 w-10 text-base",
   lg: "h-12 w-12 text-lg",
+  xl: "h-24 w-24 text-4xl border-4",
 } as const;
 
 function initialOf(name: string): string {

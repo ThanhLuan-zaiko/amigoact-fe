@@ -47,6 +47,10 @@ export function RailNavItem({
         title={expanded ? undefined : label}
         className={`${RAIL_PILL} ${compact ? "gap-4 px-3 py-2" : "gap-5 p-3"} ${
           expanded ? "pr-5" : "xl:pr-5"
+        } ${
+          active
+            ? "bg-zinc-100 dark:bg-zinc-900 xl:border xl:border-zinc-200 dark:xl:border-zinc-800"
+            : "xl:border xl:border-transparent"
         }`}
       >
         <span className="relative inline-flex">

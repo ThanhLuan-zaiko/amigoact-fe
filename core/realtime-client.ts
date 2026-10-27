@@ -102,8 +102,9 @@ export class RealtimeClient {
     this.maybeTeardown();
   }
 
+  // Deferred so a StrictMode remount in the same tick keeps the socket and timers alive.
   private maybeTeardown(): void {
-    if (this.handlers.size === 0 && this.statusHandlers.size === 0) this.teardown();
+    setTimeout(() => this.handlers.size === 0 && this.statusHandlers.size === 0 && this.teardown(), 0);
   }
 
   private isOpen(): boolean {
@@ -313,9 +314,7 @@ export class RealtimeClient {
       MAX_WATCHDOG_MS,
       Math.max(MIN_WATCHDOG_MS, this.watchdogMs),
     );
-    this.watchdogTimer = setTimeout(() => {
-      this.socket?.close();
-    }, clamped);
+    this.watchdogTimer = setTimeout(() => this.socket?.close(), clamped);
   }
 
   private clearWatchdog(): void {

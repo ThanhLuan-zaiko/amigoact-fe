@@ -31,7 +31,11 @@ export function Modal({ open, title, onClose, children, wide = false, side = fal
     const panel = panelRef.current;
     if (panel) panel.focus({ preventScroll: true });
     function onKey(event: KeyboardEvent): void {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      // Stacked dialogs: only the topmost (last portaled) one reacts.
+      const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+      if (dialogs[dialogs.length - 1] !== panelRef.current) return;
+      onClose();
     }
     document.addEventListener("keydown", onKey);
     return () => {
@@ -57,10 +61,14 @@ export function Modal({ open, title, onClose, children, wide = false, side = fal
       // hit a page element under the cursor. Both press and release must land
       // outside the panel (the backdrop covers the overlay, so comparing
       // against currentTarget never fires) - a drag out of the panel won't close.
+      // React bubbles events from a dialog portaled out of this one (nested
+      // confirm); those targets sit outside this overlay's DOM and are ignored.
       onMouseDown={(event) => {
+        if (!event.currentTarget.contains(event.target as Node)) return;
         downOnOverlay.current = !panelRef.current?.contains(event.target as Node);
       }}
       onClick={(event) => {
+        if (!event.currentTarget.contains(event.target as Node)) return;
         if (
           downOnOverlay.current &&
           !panelRef.current?.contains(event.target as Node)

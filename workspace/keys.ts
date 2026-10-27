@@ -58,6 +58,9 @@ export const workspaceKeys = {
   // Sub-thread listing of one parent room (general or top channel).
   roomThreads: (orgId: string | null, roomId: string | null) =>
     [...workspaceKeys.all, "room-threads", orgId, roomId] as const,
+  // Chat safety (attachment policy + timeouts) of one org.
+  safety: (orgId: string | null) =>
+    [...workspaceKeys.all, "safety", orgId] as const,
   // Cross-org Telegram inbox: one merged list, never org-scoped.
   chatInbox: () => [...workspaceKeys.all, "chat-inbox"] as const,
 };

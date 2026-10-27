@@ -21,7 +21,17 @@ export const PERMISSION_LABELS: Record<string, string> = {
   "activity:view": "Xem sự kiện nội bộ",
   "activity:create": "Tạo sự kiện",
   "activity:manage": "Quản lý sự kiện",
+  "activity:delete": "Xóa và khôi phục sự kiện",
   "tag:manage": "Quản lý thẻ",
+  "post:announce": "Đăng thông báo của tổ chức",
+  "post:manage": "Quản lý bài viết và bình luận",
+  "chat:manage": "Toàn quyền chat (gồm mọi quyền chat bên dưới)",
+  "chat:timeout": "Tạm cấm chat thành viên",
+  "chat:mention-all": "Nhắc cả nhóm bằng @all",
+  "chat:attach": "Đính kèm tệp khi tổ chức hạn chế tệp",
+  "chat:moderate": "Ghim và xóa tin nhắn của người khác",
+  "chat:channel": "Quản lý kênh và thành viên kênh",
+  "chat:view-private": "Xem kênh hạn chế mà không cần được thêm",
 };
 
 // Grouped labels keep the role editor readable; order is display order.
@@ -43,7 +53,21 @@ export const PERMISSION_GROUPS: { label: string; codes: string[] }[] = [
       "activity:view",
       "activity:create",
       "activity:manage",
+      "activity:delete",
       "tag:manage",
+    ],
+  },
+  { label: "Bài viết", codes: ["post:announce", "post:manage"] },
+  {
+    label: "Trò chuyện",
+    codes: [
+      "chat:moderate",
+      "chat:timeout",
+      "chat:channel",
+      "chat:view-private",
+      "chat:mention-all",
+      "chat:attach",
+      "chat:manage",
     ],
   },
 ];
@@ -76,6 +100,10 @@ export function memberMutationToast(action: string, name: string | null): string
       return "Bạn đã rời tổ chức.";
     case "roles":
       return `Đã cập nhật vai trò của ${member}.`;
+    case "timeout":
+      return `Đã tạm cấm chat ${member}.`;
+    case "untimeout":
+      return `Đã bỏ cấm chat ${member}.`;
     default:
       return toVietnameseDashboardMessage("MEMBER_UPDATED");
   }
@@ -103,7 +131,17 @@ export function memberEventToast(
       return actor
         ? `${actor} đã thu vai trò ${role} của ${target}.`
         : `${target} đã bị thu vai trò ${role}.`;
+    case "chat_timeout":
+      return actor
+        ? `${actor} đã tạm cấm chat ${target}.`
+        : `${target} đã bị tạm cấm chat.`;
+    case "chat_untimeout":
+      return actor
+        ? `${actor} đã bỏ cấm chat ${target}.`
+        : `${target} đã được bỏ cấm chat.`;
     case "role_catalog_changed":
+      if (detail === "order") return "Thứ tự vai trò của tổ chức vừa thay đổi.";
+      if (detail === "defaults") return "Quyền mặc định của thành viên vừa thay đổi.";
       return `Danh sách vai trò của tổ chức vừa được cập nhật (${role}).`;
     case "promoted":
       return actor
@@ -146,6 +184,19 @@ export function memberEventToast(
   }
 }
 
+// A " until HH:mm dd/MM" suffix for an ISO instant, "" when absent or unparseable.
+function untilLabel(iso: string | null): string {
+  const date = iso === null ? null : new Date(iso);
+  if (date === null || Number.isNaN(date.getTime())) return "";
+  const clock = date.toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+  });
+  return ` đến ${clock}`;
+}
+
 // Toast copy for membership events pushed on notifications:{userId} where
 // the viewer is the target (invited, suspended, removed, role changes).
 // Self-caused actions (accepted/declined/joined/left) return null.
@@ -167,6 +218,15 @@ export function membershipEventToast(
       return `Bạn đã được gán vai trò ${role} tại ${org}.`;
     case "role_revoked":
       return `Bạn không còn vai trò ${role} tại ${org}.`;
+    case "chat_timeout":
+      return `Bạn bị tạm cấm chat tại ${org}${untilLabel(detail)}.`;
+    case "chat_untimeout":
+      return `Bạn đã được bỏ cấm chat tại ${org}.`;
+    case "role_catalog_changed":
+      if (detail === "defaults") {
+        return `Quyền mặc định của thành viên tại ${org} vừa thay đổi.`;
+      }
+      return `Vai trò ${role} tại ${org} vừa thay đổi, quyền của bạn có thể đã khác.`;
     case "suspended":
       return `Bạn đã bị tạm khóa khỏi ${org}.`;
     case "reactivated":

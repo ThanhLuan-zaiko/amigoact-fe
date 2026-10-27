@@ -2,7 +2,10 @@ import { useState, type ReactElement } from "react";
 import { FiUser } from "react-icons/fi";
 import { apiBaseUrl } from "../../core/api.ts";
 import { MemberVolunteerModal } from "./MemberVolunteerModal.tsx";
-import { MEMBER_ROLE_LABELS, MEMBER_STATUS_LABELS } from "../messages-members.tsx";
+import { MEMBER_STATUS_LABELS } from "../messages-members.tsx";
+import { roleLabel } from "../messages-roles.tsx";
+import { hasPermission } from "../members-utils.ts";
+import { ROLE_BADGE_CLASS, colorOfRole } from "../role-colors.ts";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
 import { MemberActions } from "./MemberActions.tsx";
 
@@ -11,6 +14,7 @@ interface MemberRowProps {
   member: DashboardMember;
   viewerRole: string;
   viewerPermissions: string[];
+  viewerCeiling: number | null;
   orgRoles: OrgRole[];
   selfId: string | undefined;
   online: boolean;
@@ -22,10 +26,6 @@ const ROLE_BADGES: Record<string, string> = {
     "dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400",
   admin: "border-zinc-300 bg-zinc-100 text-zinc-900 dark:border-zinc-700 dark:text-zinc-100",
 };
-
-const CUSTOM_BADGE =
-  "border-zinc-300 bg-zinc-50 text-zinc-700 " +
-  "dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300";
 
 const STATUS_BADGES: Record<string, string> = {
   invited:
@@ -67,6 +67,7 @@ export function MemberRow({
   member,
   viewerRole,
   viewerPermissions,
+  viewerCeiling,
   orgRoles,
   selfId,
   online,
@@ -77,7 +78,7 @@ export function MemberRow({
   const [profileOpen, setProfileOpen] = useState(false);
   const canViewProfile =
     member.status === "active" &&
-    (viewerRole === "owner" || viewerPermissions.includes("member:view"));
+    hasPermission(viewerRole, viewerPermissions, "member:view");
   // Presence only applies to active members; other statuses keep their dot.
   const dotTone =
     member.status === "active"
@@ -126,9 +127,9 @@ export function MemberRow({
           {member.roles.map((role) => (
             <span
               key={role}
-              className={`rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_BADGES[role] ?? CUSTOM_BADGE}`}
+              className={`rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_BADGES[role] ?? ROLE_BADGE_CLASS[colorOfRole(role, orgRoles)]}`}
             >
-              {MEMBER_ROLE_LABELS[role] ?? role}
+              {roleLabel(role)}
             </span>
           ))}
           {statusBadge && (
@@ -154,6 +155,7 @@ export function MemberRow({
         member={member}
         viewerRole={viewerRole}
         viewerPermissions={viewerPermissions}
+        viewerCeiling={viewerCeiling}
         orgRoles={orgRoles}
         isSelf={selfId !== undefined && member.user_id === selfId}
         onViewProfile={canViewProfile ? () => setProfileOpen(true) : undefined}

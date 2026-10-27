@@ -2,24 +2,26 @@ import { useEffect, useRef } from "react";
 import type { ReactElement } from "react";
 import type { IconType } from "react-icons";
 import { FiMoreHorizontal } from "react-icons/fi";
-import { Button } from "../../core/components/Button.tsx";
-import { MenuItem } from "../../core/components/MenuItem.tsx";
+import { useDismiss } from "../dismiss.ts";
+import { Button } from "./Button.tsx";
+import { MenuItem } from "./MenuItem.tsx";
 
 export interface MenuAction {
   key: string;
   label: string;
   Icon: IconType;
+  // Destructive entries render red; pair them with a ConfirmDialog.
   danger?: boolean;
-  // Armed entries show the second-press confirm state (destructive flow).
-  armed?: boolean;
   onSelect: () => void;
 }
 
-interface MemberMenuProps {
+interface ActionMenuProps {
   label: string;
   items: MenuAction[];
   open: boolean;
   busy?: boolean;
+  // Last rows of a clipped list flip the panel upward.
+  openUp?: boolean;
   onToggle: () => void;
   onClose: () => void;
 }
@@ -31,18 +33,19 @@ const MOVES: Record<string, (index: number, count: number) => number> = {
   End: (_index, count) => count - 1,
 };
 
-// Overflow menu for a member row: icon trigger plus a bordered panel of
-// menu items. Opening focuses the first item; arrows/Home/End move focus,
-// Escape or picking an item returns focus to the trigger, an outside
-// press or Tab simply dismisses it.
-export function MemberMenu({
+// Overflow menu for a list row: icon trigger plus a bordered panel of menu
+// items. Outside press and Escape go through useDismiss; opening focuses
+// the first item, arrows/Home/End move focus, Tab dismisses, and picking an
+// item returns focus to the trigger.
+export function ActionMenu({
   label,
   items,
   open,
   busy = false,
+  openUp = false,
   onToggle,
   onClose,
-}: MemberMenuProps): ReactElement {
+}: ActionMenuProps): ReactElement {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -54,6 +57,8 @@ export function MemberMenu({
     closeRef.current = onClose;
   });
 
+  useDismiss(open, rootRef, onClose, triggerRef);
+
   useEffect(() => {
     if (!open) {
       if (returnFocus.current) triggerRef.current?.focus();
@@ -61,14 +66,8 @@ export function MemberMenu({
       return undefined;
     }
     panelRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
-    function onPointerDown(event: MouseEvent): void {
-      if (rootRef.current?.contains(event.target as Node)) return;
-      returnFocus.current = false;
-      closeRef.current();
-    }
     function onKey(event: KeyboardEvent): void {
-      if (event.key === "Escape" || event.key === "Tab") {
-        returnFocus.current = event.key === "Escape";
+      if (event.key === "Tab") {
         closeRef.current();
         return;
       }
@@ -81,12 +80,8 @@ export function MemberMenu({
       const current = rows.indexOf(document.activeElement as HTMLElement);
       rows[move(Math.max(current, 0), rows.length)]?.focus();
     }
-    document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKey);
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
   return (
@@ -107,27 +102,20 @@ export function MemberMenu({
           ref={panelRef}
           role="menu"
           aria-label={`Hành động cho ${label}`}
-          className="absolute top-full right-0 z-20 mt-1 w-56 rounded-xl border border-zinc-200 bg-white p-1.5 dark:border-zinc-800 dark:bg-zinc-950"
+          className={`absolute right-0 z-20 w-56 rounded-xl border border-zinc-200 bg-white p-1.5 dark:border-zinc-800 dark:bg-zinc-950 ${
+            openUp ? "bottom-full mb-1" : "top-full mt-1"
+          }`}
         >
           {items.map((item) => (
             <MenuItem
               key={item.key}
               disabled={busy}
-              tone={item.armed ? "danger" : "default"}
+              tone={item.danger ? "danger" : "default"}
               onClick={() => {
                 returnFocus.current = true;
                 item.onSelect();
               }}
-              icon={
-                <item.Icon
-                  className={
-                    item.danger
-                      ? "h-4 w-4 shrink-0 text-red-600 dark:text-red-400"
-                      : "h-4 w-4 shrink-0"
-                  }
-                  aria-hidden="true"
-                />
-              }
+              icon={<item.Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
             >
               {item.label}
             </MenuItem>

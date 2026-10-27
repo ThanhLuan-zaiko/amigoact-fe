@@ -7,6 +7,7 @@ interface MemberInviteModalProps {
   orgId: string;
   viewerRole: string;
   viewerPermissions: string[];
+  viewerCeiling: number | null;
   orgRoles: OrgRole[];
   open: boolean;
   onClose: () => void;
@@ -16,6 +17,7 @@ export function MemberInviteModal({
   orgId,
   viewerRole,
   viewerPermissions,
+  viewerCeiling,
   orgRoles,
   open,
   onClose,
@@ -27,6 +29,7 @@ export function MemberInviteModal({
         orgId={orgId}
         viewerRole={viewerRole}
         viewerPermissions={viewerPermissions}
+        viewerCeiling={viewerCeiling}
         orgRoles={orgRoles}
         onDone={onClose}
       />

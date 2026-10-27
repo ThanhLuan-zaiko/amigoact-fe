@@ -9,8 +9,9 @@ import {
   subscribeChannel,
 } from "../core/realtime.ts";
 import { activityKeys } from "../activities/keys.ts";
+import { applyPresencePayload } from "../dashboard/presence-hooks.ts";
 import { pushToast } from "../core/toast.ts";
-import { postEventToast } from "./messages.tsx";
+import { postEventToast } from "./messages-events.tsx";
 import { workspaceKeys } from "./keys.ts";
 
 const TYPING_MIN_INTERVAL_MS = 2_000;
@@ -144,8 +145,13 @@ export function useChatInboxRealtime(
     const orgChannels = joined === "" ? [] : joined.split(",");
     const unsubscribers = [
       subscribeChannel(notificationsChannel(userId), invalidate),
+      // This is usually the first subscriber of members:{org}, so it also
+      // receives the presence snapshot the members page can no longer get.
       ...orgChannels.map((orgId) =>
-        subscribeChannel(membersChannel(orgId), invalidate),
+        subscribeChannel(membersChannel(orgId), (payload) => {
+          applyPresencePayload(queryClient, orgId, payload);
+          invalidate(payload);
+        }),
       ),
     ];
     return () => {

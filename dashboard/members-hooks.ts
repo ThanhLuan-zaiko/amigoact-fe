@@ -41,6 +41,7 @@ import {
 import type { OrgListPage } from "./api.ts";
 import { dashboardKeys } from "./keys.ts";
 import { memberEventToast, membershipEventToast } from "./messages-members.tsx";
+import { syncPermissionScopes } from "./permission-sync.ts";
 
 export function useOrgMembers(
   orgId: string | null,
@@ -239,8 +240,8 @@ export function useMemberParamSync(input: {
 }
 
 // Member events the viewer should read as losses: rendered as error toasts.
-const NEGATIVE_EVENTS = new Set(["suspended", "removed", "revoked"]);
-const SELF_POSITIVE_EVENTS = new Set(["promoted", "reactivated"]);
+const NEGATIVE_EVENTS = new Set(["suspended", "removed", "revoked", "chat_timeout"]);
+const SELF_POSITIVE_EVENTS = new Set(["promoted", "reactivated", "chat_untimeout"]);
 
 function cachedMemberName(
   queryClient: ReturnType<typeof useQueryClient>,
@@ -295,7 +296,7 @@ export function useMemberRealtime(
       // Presence frames share the channel but carry "presence", not
       // "action" - they must never invalidate the roster.
       if (typeof action !== "string") return;
-      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
+      syncPermissionScopes(queryClient, action);
       const actorId = payload["actor_id"];
       const targetId = payload["user_id"];
       const detail = payload["detail"];
@@ -326,8 +327,8 @@ export function useMembershipRealtime(userId: string | undefined): void {
     if (userId === undefined) return undefined;
     return subscribeChannel(notificationsChannel(userId), (payload) => {
       if (payload["scope"] !== "membership") return;
-      void queryClient.invalidateQueries({ queryKey: dashboardKeys.all });
       const action = payload["action"];
+      syncPermissionScopes(queryClient, action);
       const orgId = payload["org_id"];
       const detail = payload["detail"];
       if (typeof action !== "string") return;

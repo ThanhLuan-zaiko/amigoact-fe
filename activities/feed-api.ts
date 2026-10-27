@@ -8,6 +8,8 @@ export interface MyActivityOrg {
   kind: string;
   can_create: boolean;
   can_manage: boolean;
+  // Trash, restore and erase rights (activity:delete, or activity:manage).
+  can_delete: boolean;
   activity_count: number;
   // Public logo path (/media/...) or null when the org has no logo.
   logo_url: string | null;
@@ -15,6 +17,7 @@ export interface MyActivityOrg {
 
 export interface MyActivityItem extends ActivitySummary {
   can_manage: boolean;
+  can_delete: boolean;
 }
 
 export interface MyActivitiesResponse {

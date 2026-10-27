@@ -13,6 +13,7 @@ interface MemberOrgCardProps {
   inviting: boolean;
   viewerRole: string;
   viewerPermissions: string[];
+  viewerCeiling: number | null;
   orgRoles: OrgRole[];
   onCloseInvite: () => void;
 }
@@ -28,6 +29,7 @@ export function MemberOrgCard({
   inviting,
   viewerRole,
   viewerPermissions,
+  viewerCeiling,
   orgRoles,
   onCloseInvite,
 }: MemberOrgCardProps): ReactElement | null {
@@ -43,6 +45,7 @@ export function MemberOrgCard({
           orgId={orgId}
           viewerRole={viewerRole}
           viewerPermissions={viewerPermissions}
+          viewerCeiling={viewerCeiling}
           orgRoles={orgRoles}
           open={inviting && canInvite}
           onClose={onCloseInvite}

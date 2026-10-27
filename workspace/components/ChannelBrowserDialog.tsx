@@ -46,7 +46,7 @@ export function ChannelBrowserDialog({
   const navigate = useNavigate();
   const canManage =
     (members.data?.viewer_role ?? "") === "owner" ||
-    (members.data?.viewer_permissions ?? []).includes("chat:manage");
+    (members.data?.viewer_permissions ?? []).includes("chat:channel");
 
   function openRoom(channel: ChatChannel): void {
     onClose();

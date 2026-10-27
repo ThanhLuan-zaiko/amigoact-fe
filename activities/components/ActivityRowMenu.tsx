@@ -46,7 +46,9 @@ export function ActivityRowMenu({
     "Đã xóa vĩnh viễn.",
   );
   const trashed = activity.deleted_at !== null;
+  // Deleters without activity:manage only get the trash entries.
   const editable =
+    activity.can_manage &&
     !trashed && (activity.status === "draft" || activity.status === "published");
   const busy =
     softDelete.isPending || restore.isPending || hardDelete.isPending;

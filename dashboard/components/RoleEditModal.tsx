@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent, ReactElement } from "react";
-import { FiCheck, FiLock, FiX } from "react-icons/fi";
+import { FiCheck, FiX } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
@@ -8,12 +8,12 @@ import { Modal } from "../../core/components/Modal.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { pushToast } from "../../core/toast.ts";
 import { useCreateOrgRole, useUpdateOrgRole } from "../members-hooks.ts";
+import { sameSet } from "../members-utils.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
-import {
-  PERMISSION_GROUPS,
-  PERMISSION_LABELS,
-} from "../messages-members.tsx";
 import type { OrgRole } from "../members-api.ts";
+import { PermissionPicker } from "./PermissionPicker.tsx";
+import { RoleColorPicker } from "./RoleColorPicker.tsx";
+import { RoleTemplatePicker } from "./RoleTemplatePicker.tsx";
 
 interface RoleEditModalProps {
   orgId: string;
@@ -40,6 +40,7 @@ export function RoleEditModal({
   const [name, setName] = useState(role?.name ?? "");
   const [description, setDescription] = useState(role?.description ?? "");
   const [perms, setPerms] = useState<string[]>(role?.permissions ?? []);
+  const [color, setColor] = useState(role?.color ?? "");
   const [serverCode, setServerCode] = useState<string | null>(null);
 
   // Resync drafts whenever the dialog opens on a different role/mode.
@@ -50,6 +51,7 @@ export function RoleEditModal({
       setName(role?.name ?? "");
       setDescription(role?.description ?? "");
       setPerms(role?.permissions ?? []);
+      setColor(role?.color ?? "");
       setServerCode(null);
     }
   }
@@ -61,18 +63,13 @@ export function RoleEditModal({
   // Delegates may only wire permissions they already hold (subset rule).
   const lockedOut = (code: string): boolean =>
     !isOwner && !viewerPermissions.includes(code);
-  const groups = PERMISSION_GROUPS.map((group) => ({
-    label: group.label,
-    codes: group.codes.filter((code) => assignable.includes(code)),
-  })).filter((group) => group.codes.length > 0);
-
-  function toggle(code: string): void {
-    setPerms((current) =>
-      current.includes(code)
-        ? current.filter((item) => item !== code)
-        : [...current, code],
-    );
-  }
+  const valid = perms.length > 0 && name.trim().length >= 2;
+  const dirty =
+    role === null ||
+    name.trim() !== role.name ||
+    description.trim() !== role.description ||
+    color !== (role.color ?? "") ||
+    !sameSet(perms, role.permissions);
 
   async function save(event: FormEvent): Promise<void> {
     event.preventDefault();
@@ -84,6 +81,7 @@ export function RoleEditModal({
           name: clean,
           description: description.trim(),
           permissions: perms,
+          color,
         });
         pushToast({ tone: "success", title: `Đã tạo vai trò ${clean}.` });
       } else {
@@ -93,6 +91,7 @@ export function RoleEditModal({
             name: clean,
             description: description.trim(),
             permissions: perms,
+            color,
           },
         });
         pushToast({ tone: "success", title: `Đã cập nhật vai trò ${clean}.` });
@@ -117,6 +116,18 @@ export function RoleEditModal({
             message={toVietnameseDashboardMessage(serverCode)}
           />
         )}
+        {role === null && (
+          <RoleTemplatePicker
+            assignable={assignable}
+            isLocked={lockedOut}
+            onPick={(template) => {
+              setName(template.name);
+              setDescription(template.description);
+              setPerms(template.permissions);
+              setColor(template.color === "zinc" ? "" : template.color);
+            }}
+          />
+        )}
         <TextField
           label="Tên vai trò"
           name="role-name"
@@ -132,54 +143,40 @@ export function RoleEditModal({
           onChange={(event) => setDescription(event.target.value)}
           placeholder="Phụ trách vận hành sự kiện"
         />
+        <RoleColorPicker value={color} onChange={setColor} />
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Quyền hạn</p>
-          {groups.map((group) => (
-            <div key={group.label} className="flex flex-col gap-1">
-              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-                {group.label}
-              </p>
-              <div role="group" aria-label={group.label} className="flex flex-wrap gap-2">
-                {group.codes.map((code) => (
-                  <Button
-                    key={code}
-                    type="button"
-                    variant={perms.includes(code) ? "primary" : "secondary"}
-                    onClick={() => toggle(code)}
-                    aria-pressed={perms.includes(code)}
-                    disabled={lockedOut(code)}
-                    icon={
-                      lockedOut(code) ? (
-                        <FiLock className="h-4 w-4" aria-hidden="true" />
-                      ) : undefined
-                    }
-                  >
-                    {PERMISSION_LABELS[code] ?? code}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          ))}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Quyền hạn</p>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              {`Đã chọn ${perms.length} quyền`}
+            </p>
+          </div>
+          <PermissionPicker
+            assignable={assignable}
+            selected={perms}
+            isLocked={lockedOut}
+            onChange={setPerms}
+          />
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
-            Chọn ít nhất một quyền. Quyền bị khóa nằm ngoài quyền hạn của bạn.
+            Chọn ít nhất một quyền. Bạn chỉ có thể gán những quyền mình đang có.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={busy || perms.length === 0 || name.trim().length < 2}
-            icon={<FiCheck className="h-4 w-4" aria-hidden="true" />}
-          >
-            {busy ? "Đang lưu…" : role === null ? "Tạo vai trò" : "Lưu thay đổi"}
-          </Button>
+        <div className="flex flex-wrap justify-end gap-2">
           <Button
             type="button"
             variant="secondary"
             onClick={onClose}
             icon={<FiX className="h-4 w-4" aria-hidden="true" />}
           >
-            Đóng
+            Hủy
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={busy || !valid || !dirty}
+            icon={<FiCheck className="h-4 w-4" aria-hidden="true" />}
+          >
+            {busy ? "Đang lưu…" : role === null ? "Tạo vai trò" : "Lưu thay đổi"}
           </Button>
         </div>
       </form>

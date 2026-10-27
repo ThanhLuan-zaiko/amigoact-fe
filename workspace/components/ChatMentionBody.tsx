@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import type { ChatMessage } from "../api.ts";
-import { ChatThreadShareCard, parseThreadShare } from "./thread-share.tsx";
+import { ChatThreadShareCard } from "./ChatThreadShareCard.tsx";
+import { parseThreadShare } from "./thread-share.tsx";
 
 // Wrap each stored @mention in a bolder span inside the bubble body.
 // Mentions are persisted server-side, so the names here are exact.
@@ -30,7 +31,7 @@ export function ChatMentionBody({
     `@(${names
       .map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
       .join("|")})`,
-    "g",
+    "gi",
   );
   const parts = message.body.split(pattern).map((part, index) =>
     index % 2 === 1 ? (

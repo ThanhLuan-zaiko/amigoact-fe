@@ -22,7 +22,7 @@ export function EventsRail(): ReactElement {
   const orgs = feed.data?.orgs ?? [];
   const items = feed.data?.items ?? [];
   const canCreate = orgs.some((org) => org.can_create);
-  const canManage = orgs.some((org) => org.can_manage);
+  const canTrash = orgs.some((org) => org.can_delete);
   const month = parseMonth(searchParams.get("month"));
   // Each facet counts the rows that pass every filter except its own, so a
   // chip's number always says what clicking it would show.
@@ -64,7 +64,7 @@ export function EventsRail(): ReactElement {
           />
         </form>
       </div>
-      {(canCreate || canManage) && (
+      {(canCreate || canTrash) && (
         <div className="flex flex-wrap gap-2">
           {canCreate && (
             // Create is an action, so it is always the filled primary button.
@@ -78,7 +78,7 @@ export function EventsRail(): ReactElement {
               {creating ? "Đóng biểu mẫu" : "Tạo hoạt động"}
             </Button>
           )}
-          {canManage && (
+          {canTrash && (
             <FilterChip
               selected={filters.trash}
               onClick={() => patch({ trash: filters.trash ? null : "1" })}

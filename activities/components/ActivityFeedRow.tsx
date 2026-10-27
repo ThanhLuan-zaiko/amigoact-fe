@@ -73,7 +73,7 @@ export function ActivityFeedRow({
           </ul>
         )}
       </div>
-      {item.can_manage && <ActivityRowMenu activity={item} />}
+      {(item.can_manage || item.can_delete) && <ActivityRowMenu activity={item} />}
     </li>
   );
 }

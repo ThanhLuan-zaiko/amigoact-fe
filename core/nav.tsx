@@ -60,7 +60,7 @@ export const PRIMARY_LINKS: NavEntry[] = [
     auth: true,
   },
   { to: "/leaderboard", label: "Bảng xếp hạng", Icon: FiAward },
-  { to: "/manage", label: "Bảng điều khiển", Icon: FiGrid, auth: true },
+  { to: "/manage/overview", label: "Bảng điều khiển", Icon: FiGrid, auth: true },
   { to: "/profile", label: "Hồ sơ", Icon: FiUser, auth: true },
 ];
 
@@ -115,7 +115,7 @@ export const TAB_PATHS_MEMBER = [
   "/events",
   "/notifications",
   "/manage/chat",
-  "/manage",
+  "/manage/overview",
 ];
 export const TAB_PATHS_GUEST = ["/", "/events", "/leaderboard"];
 

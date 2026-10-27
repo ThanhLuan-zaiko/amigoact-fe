@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { FiCheck, FiLock, FiShield, FiX } from "react-icons/fi";
+import { FiCheck, FiX } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
@@ -8,15 +8,18 @@ import { Modal } from "../../core/components/Modal.tsx";
 import { useUpdateMember } from "../members-hooks.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
 import { memberMutationToast } from "../messages-members.tsx";
+import { ADMIN_OPTION, customRoleOption, optionForRole } from "../messages-roles.tsx";
 import { pushToast } from "../../core/toast.ts";
-import { canGrantRole } from "../members-utils.ts";
+import { canGrantRole, sameSet } from "../members-utils.ts";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
+import { RoleChoice } from "./RoleChoice.tsx";
 
 interface MemberRoleEditorProps {
   orgId: string;
   member: DashboardMember;
   viewerRole: string;
   viewerPermissions: string[];
+  viewerCeiling: number | null;
   orgRoles: OrgRole[];
   open: boolean;
   onClose: () => void;
@@ -27,6 +30,7 @@ export function MemberRoleEditor({
   member,
   viewerRole,
   viewerPermissions,
+  viewerCeiling,
   orgRoles,
   open,
   onClose,
@@ -52,16 +56,20 @@ export function MemberRoleEditor({
   // Roles the member holds that the viewer may not touch stay locked on.
   const grantable = new Set(
     customs
-      .filter((role) => canGrantRole(role, viewerRole, viewerPermissions))
+      .filter((role) =>
+        canGrantRole(role, viewerRole, viewerPermissions, viewerCeiling),
+      )
       .map((role) => role.name),
   );
   const locked = member.roles.filter(
     (name) => name !== "owner" && !(name === "admin" ? isOwner : grantable.has(name)),
   );
   const editable = [
-    ...(isOwner ? ["admin"] : []),
-    ...customs.filter((role) => grantable.has(role.name)).map((role) => role.name),
+    ...(isOwner ? [ADMIN_OPTION] : []),
+    ...customs.filter((role) => grantable.has(role.name)).map(customRoleOption),
   ];
+  const next = Array.from(new Set([...locked, ...selected]));
+  const dirty = !sameSet(next, member.roles);
 
   function toggle(name: string): void {
     setSelected((current) =>
@@ -73,7 +81,6 @@ export function MemberRoleEditor({
 
   async function save(): Promise<void> {
     setServerCode(null);
-    const next = Array.from(new Set([...locked, ...selected]));
     try {
       await update.mutateAsync({ userId: member.user_id, input: { roles: next } });
       pushToast({
@@ -95,29 +102,28 @@ export function MemberRoleEditor({
             message={toVietnameseDashboardMessage(serverCode)}
           />
         )}
-        <div role="group" aria-label="Chọn vai trò" className="flex flex-wrap gap-2">
-          {editable.map((name) => (
-            <Button
-              key={name}
-              type="button"
-              variant={selected.includes(name) ? "primary" : "secondary"}
-              onClick={() => toggle(name)}
-              aria-pressed={selected.includes(name)}
-              icon={<FiShield className="h-4 w-4" aria-hidden="true" />}
-            >
-              {name === "admin" ? "Quản trị viên" : name}
-            </Button>
+        <div role="group" aria-label="Chọn vai trò" className="flex flex-col gap-2">
+          {editable.map((option) => (
+            <RoleChoice
+              key={option.key}
+              type="checkbox"
+              name="member-roles"
+              option={option}
+              checked={selected.includes(option.key)}
+              onChange={() => toggle(option.key)}
+            />
           ))}
           {locked.map((name) => (
-            <Button
+            <RoleChoice
               key={name}
-              type="button"
-              variant="secondary"
+              type="checkbox"
+              name="member-roles"
+              option={optionForRole(name, orgRoles)}
+              checked
               disabled
-              icon={<FiLock className="h-4 w-4" aria-hidden="true" />}
-            >
-              {name === "admin" ? "Quản trị viên" : name}
-            </Button>
+              lockedNote="Nằm ngoài quyền bạn có thể gán."
+              onChange={() => undefined}
+            />
           ))}
           {editable.length === 0 && locked.length === 0 && (
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -125,26 +131,23 @@ export function MemberRoleEditor({
             </p>
           )}
         </div>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Vai trò bị khóa nằm ngoài quyền bạn có thể gán.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="primary"
-            disabled={update.isPending}
-            onClick={() => void save()}
-            icon={<FiCheck className="h-4 w-4" aria-hidden="true" />}
-          >
-            {update.isPending ? "Đang lưu…" : "Lưu vai trò"}
-          </Button>
+        <div className="flex flex-wrap justify-end gap-2">
           <Button
             type="button"
             variant="secondary"
             onClick={onClose}
             icon={<FiX className="h-4 w-4" aria-hidden="true" />}
           >
-            Đóng
+            Hủy
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            disabled={update.isPending || !dirty}
+            onClick={() => void save()}
+            icon={<FiCheck className="h-4 w-4" aria-hidden="true" />}
+          >
+            {update.isPending ? "Đang lưu…" : "Lưu vai trò"}
           </Button>
         </div>
       </div>

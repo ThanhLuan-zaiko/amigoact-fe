@@ -96,14 +96,37 @@ từ bất kỳ đâu, kể cả handler kênh ngoài React). Hai điểm phát:
   `dashboardKeys.all`; action tự gây ra (accepted/declined/joined/left)
   trả `null` nên không toast.
 
+Hai hook trên đều gọi `syncPermissionScopes` (`dashboard/permission-sync.ts`).
+Ngoài `dashboardKeys.all`, các action làm đổi quyền (`promoted`, `demoted`,
+`role_granted`, `role_revoked`, `role_catalog_changed`, `suspended`,
+`reactivated`, `removed`) còn invalidate `activityKeys.all` (feed
+`/manage/events` mang `can_create`/`can_manage`), nhóm `posts` và `channels`
+của workspace (mang `viewer_permissions`). Backend vẫn kiểm quyền ở mọi request;
+bước này chỉ giữ nút bấm khớp với quyền thật.
+
 Payload member event có thêm trường tùy chọn `detail` (chuỗi) khi hành động
 gắn với một vai trò cụ thể — backend gửi ở các action
 `role_granted` / `role_revoked` (tên vai trò vừa gán/thu) và
 `role_catalog_changed` (tên vai trò vừa thay đổi trong danh mục).
 `memberEventToast` / `membershipEventToast` nhận `detail` làm đối số cuối;
-thiếu `detail` thì copy rơi về "vai trò mới". `role_catalog_changed` chỉ
-đi trên kênh `members:{orgId}` (sự kiện roster, không phải thông báo cá
-nhân), nên membership hook bỏ qua nó một cách tự nhiên.
+thiếu `detail` thì copy rơi về "vai trò mới". `role_catalog_changed` đi trên
+kênh `members:{orgId}` (roster) và, khi *quyền* của vai trò đổi hoặc vai trò
+bị xóa, còn đi riêng tới `notifications:{user}` của từng người đang giữ vai
+trò đó (trừ người thực hiện) để họ cập nhật dù không mở trang thành viên.
+Đổi tên hoặc mô tả vai trò không gửi thông báo cá nhân.
+
+`role_catalog_changed` còn mang hai `detail` đặc biệt: `order` (chủ sở hữu đổi
+thứ tự bậc vai trò, chỉ đi trên `members:{orgId}`) và `defaults` (chủ sở hữu
+đổi quyền mặc định của thành viên, đi trên `members:{orgId}` và tới từng thành
+viên đang hoạt động, tối đa 500 người). `memberEventToast` /
+`membershipEventToast` có copy riêng cho hai giá trị này.
+
+Tạm cấm chat dùng hai action `chat_timeout` (kèm `detail` là thời điểm hết hạn,
+ISO-8601) và `chat_untimeout`. Cả hai đi trên `members:{orgId}` và tới
+`notifications:{user}` của người bị cấm. `syncPermissionScopes` coi chúng như
+action đổi quyền: invalidate nhóm `safety` của workspace (`workspaceKeys.safety`)
+để ô soạn tin khóa hoặc mở lại. Truy vấn `safety` tự poll mỗi 30 giây khi người
+xem đang bị cấm, vì hạn cấm hết theo đồng hồ chứ không có sự kiện.
 
 ## 2. Speculation Rules API (`index.html`)
 

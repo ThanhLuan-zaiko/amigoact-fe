@@ -47,16 +47,10 @@ export function MemberListCard({
   const total = members.data?.total ?? 0;
   const viewerRole = members.data?.viewer_role ?? "member";
   const viewerPermissions = members.data?.viewer_permissions ?? [];
-
+  const viewerCeiling = members.data?.viewer_ceiling ?? null;
 
   return (
-    <Section
-      className={
-        hasOrgs
-          ? " "
-          : " "
-      }
-    >
+    <Section>
       <div className="flex items-center gap-2">
         <FiUsers className="h-5 w-5 text-zinc-900 dark:text-zinc-100" aria-hidden="true" />
         <h3 className="text-base font-semibold text-zinc-900 sm:text-lg dark:text-zinc-100">
@@ -115,6 +109,7 @@ export function MemberListCard({
                   member={member}
                   viewerRole={viewerRole}
                   viewerPermissions={viewerPermissions}
+                  viewerCeiling={viewerCeiling}
                   orgRoles={orgRoles}
                   selfId={selfId}
                   online={onlineIds.has(member.user_id)}

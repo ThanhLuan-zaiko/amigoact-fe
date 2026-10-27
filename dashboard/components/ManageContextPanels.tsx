@@ -10,8 +10,11 @@ import type { ArticleShelf } from "../../workspace/components/ArticleActions.tsx
 import type { DashboardOrg } from "../api.ts";
 import { useOrgRoles, useOrgMembers } from "../members-hooks.ts";
 import type { MemberSortParam } from "../members-api.ts";
+import { hasPermission } from "../members-utils.ts";
 import { MemberOrgCard } from "./MemberOrgCard.tsx";
 import { MemberStatsCard } from "./MemberStatsCard.tsx";
+import { ChatRulesCard } from "./ChatRulesCard.tsx";
+import { MemberDefaultsCard } from "./MemberDefaultsCard.tsx";
 import { RoleManageCard } from "./RoleManageCard.tsx";
 
 const MEMBER_SORTS = ["newest", "name", "role"] as const;
@@ -60,6 +63,7 @@ export function ManageContextPanels({
 
   const viewerRole = members.data?.viewer_role ?? "member";
   const viewerPermissions = members.data?.viewer_permissions ?? [];
+  const viewerCeiling = members.data?.viewer_ceiling ?? null;
   const tab = shelfOf(searchParams.get("tab"));
   const writeHref = `/manage/board/write?org=${orgId}`;
 
@@ -121,12 +125,11 @@ export function ManageContextPanels({
         org={org}
         orgId={orgId}
         selfId={session.data?.id}
-        canInvite={
-          viewerRole === "owner" || viewerPermissions.includes("member:invite")
-        }
+        canInvite={hasPermission(viewerRole, viewerPermissions, "member:invite")}
         inviting={searchParams.get("invite") === "1"}
         viewerRole={viewerRole}
         viewerPermissions={viewerPermissions}
+        viewerCeiling={viewerCeiling}
         orgRoles={roles.data?.items ?? []}
         onCloseInvite={() => patch({ invite: null })}
       />
@@ -135,8 +138,22 @@ export function ManageContextPanels({
           orgId={orgId}
           viewerRole={viewerRole}
           viewerPermissions={viewerPermissions}
+          viewerCeiling={viewerCeiling}
         />
       </Section>
+      <Section>
+        <MemberDefaultsCard orgId={orgId} viewerRole={viewerRole} />
+      </Section>
+      {(hasPermission(viewerRole, viewerPermissions, "chat:channel") ||
+        hasPermission(viewerRole, viewerPermissions, "chat:timeout")) && (
+        <Section>
+          <ChatRulesCard
+            orgId={orgId}
+            viewerRole={viewerRole}
+            viewerPermissions={viewerPermissions}
+          />
+        </Section>
+      )}
     </div>
   );
 }

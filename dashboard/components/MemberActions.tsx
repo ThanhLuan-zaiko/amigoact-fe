@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { ReactElement } from "react";
-import type { IconType } from "react-icons";
 import {
   FiFileText,
   FiMinusCircle,
@@ -10,13 +9,17 @@ import {
   FiUserX,
 } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
+import { ActionMenu } from "../../core/components/ActionMenu.tsx";
+import type { MenuAction } from "../../core/components/ActionMenu.tsx";
+import { ConfirmDialog } from "../../core/components/ConfirmDialog.tsx";
 import { pushToast } from "../../core/toast.ts";
 import { useRemoveMember, useRevokeInvitation, useUpdateMember } from "../members-hooks.ts";
+import { hasAnyRight, memberRights } from "../members-utils.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
 import { memberMutationToast } from "../messages-members.tsx";
+import { CONFIRM_ACTIONS, memberConfirmCopy } from "../messages-roles.tsx";
+import type { MemberConfirmKind } from "../messages-roles.tsx";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
-import { MemberMenu } from "./MemberMenu.tsx";
-import type { MenuAction } from "./MemberMenu.tsx";
 import { MemberRoleEditor } from "./MemberRoleEditor.tsx";
 
 interface MemberActionsProps {
@@ -24,6 +27,7 @@ interface MemberActionsProps {
   member: DashboardMember;
   viewerRole: string;
   viewerPermissions: string[];
+  viewerCeiling: number | null;
   orgRoles: OrgRole[];
   isSelf: boolean;
   // Present only when the viewer may open this member's volunteer profile.
@@ -35,6 +39,7 @@ export function MemberActions({
   member,
   viewerRole,
   viewerPermissions,
+  viewerCeiling,
   orgRoles,
   isSelf,
   onViewProfile,
@@ -43,50 +48,18 @@ export function MemberActions({
   const remove = useRemoveMember(orgId);
   const revoke = useRevokeInvitation(orgId);
   const [open, setOpen] = useState(false);
-  const [confirming, setConfirming] = useState<string | null>(null);
+  const [confirm, setConfirm] = useState<MemberConfirmKind | null>(null);
   const [editingRoles, setEditingRoles] = useState(false);
   const busy = update.isPending || remove.isPending || revoke.isPending;
 
-  // Every close path disarms the destructive confirm, so a reopened menu
-  // never shows a stale "press again" entry that deletes in one click.
-  function setMenuOpen(next: boolean): void {
-    setOpen(next);
-    if (!next) setConfirming(null);
-  }
+  const rights = memberRights(viewerRole, viewerPermissions, member, isSelf);
+  if (!hasAnyRight(rights) && onViewProfile === undefined) return null;
 
-  const isOwner = viewerRole === "owner";
-  const targetOwner = member.roles.includes("owner");
-  const targetAdmin = member.roles.includes("admin");
-  // Non-owners can never act on an admin; nobody acts on the owner.
-  const canActOnTarget =
-    !isSelf && !targetOwner && (isOwner || !targetAdmin);
-  const can = (code: string): boolean =>
-    isOwner || viewerPermissions.includes(code);
-  const canAssign =
-    canActOnTarget && member.status === "active" && can("member:role-assign");
-  const canSuspend =
-    canActOnTarget && member.status === "active" && can("member:suspend");
-  const canReactivate =
-    canActOnTarget && member.status === "suspended" && can("member:suspend");
-  // Invites are withdrawn through the dedicated invitation endpoint, so
-  // revocation rides on member:invite; member:remove stays for real members.
-  const canRevoke =
-    canActOnTarget && member.status === "invited" && can("member:invite");
-  const canRemove =
-    canActOnTarget &&
-    (member.status === "active" || member.status === "suspended") &&
-    can("member:remove");
-  const canLeave =
-    isSelf &&
-    !targetOwner &&
-    member.status !== "left" &&
-    member.status !== "invited" &&
-    member.status !== "revoked";
+  const name = member.full_name || "thành viên";
 
   async function run(task: Promise<unknown>, action: string): Promise<void> {
     try {
       await task;
-      setConfirming(null);
       pushToast({
         tone: "success",
         title: memberMutationToast(action, member.full_name || null),
@@ -101,52 +74,27 @@ export function MemberActions({
     }
   }
 
-  if (
-    !canAssign &&
-    !canSuspend &&
-    !canReactivate &&
-    !canRevoke &&
-    !canRemove &&
-    !canLeave &&
-    onViewProfile === undefined
-  ) {
-    return null;
-  }
-
   function updateStatus(status: "active" | "suspended", action: string): void {
-    setMenuOpen(false);
+    setOpen(false);
     void run(
       update.mutateAsync({ userId: member.user_id, input: { status } }),
       action,
     );
   }
 
-  // Destructive entries arm on the first press and fire on the second,
-  // keeping the confirm step inside the menu.
-  function destructive(
-    key: string,
-    idleLabel: string,
-    armedLabel: string,
-    Icon: IconType,
-    action: string,
-    act: () => Promise<unknown>,
-  ): MenuAction {
-    const armed = confirming === key;
-    return {
-      key,
-      Icon,
-      danger: true,
-      armed,
-      label: armed ? armedLabel : idleLabel,
-      onSelect: () => {
-        if (!armed) {
-          setConfirming(key);
-          return;
-        }
-        setMenuOpen(false);
-        void run(act(), action);
-      },
-    };
+  // Destructive entries open a confirm dialog instead of acting at once.
+  function ask(kind: MemberConfirmKind): void {
+    setOpen(false);
+    setConfirm(kind);
+  }
+
+  async function confirmed(kind: MemberConfirmKind): Promise<void> {
+    const task =
+      kind === "revoke"
+        ? revoke.mutateAsync(member.user_id)
+        : remove.mutateAsync(member.user_id);
+    await run(task, CONFIRM_ACTIONS[kind]);
+    setConfirm(null);
   }
 
   const items: MenuAction[] = [];
@@ -156,23 +104,23 @@ export function MemberActions({
       label: "Xem hồ sơ tình nguyện",
       Icon: FiFileText,
       onSelect: () => {
-        setMenuOpen(false);
+        setOpen(false);
         onViewProfile();
       },
     });
   }
-  if (canAssign) {
+  if (rights.assign) {
     items.push({
       key: "roles",
       label: "Vai trò",
       Icon: FiShield,
       onSelect: () => {
-        setMenuOpen(false);
+        setOpen(false);
         setEditingRoles(true);
       },
     });
   }
-  if (canSuspend) {
+  if (rights.suspend) {
     items.push({
       key: "suspend",
       label: "Tạm khóa",
@@ -180,7 +128,7 @@ export function MemberActions({
       onSelect: () => updateStatus("suspended", "suspended"),
     });
   }
-  if (canReactivate) {
+  if (rights.reactivate) {
     items.push({
       key: "reactivate",
       label: "Kích hoạt",
@@ -188,56 +136,65 @@ export function MemberActions({
       onSelect: () => updateStatus("active", "reactivated"),
     });
   }
-  if (canRevoke) {
-    items.push(
-      destructive(
-        "revoke",
-        "Thu hồi lời mời",
-        "Bấm lại để xác nhận",
-        FiUserX,
-        "revoked",
-        () => revoke.mutateAsync(member.user_id),
-      ),
-    );
+  if (rights.revoke) {
+    items.push({
+      key: "revoke",
+      label: "Thu hồi lời mời",
+      Icon: FiUserX,
+      danger: true,
+      onSelect: () => ask("revoke"),
+    });
   }
-  if (canRemove) {
-    items.push(
-      destructive("remove", "Xóa", "Bấm lại để xác nhận", FiUserX, "removed", () =>
-        remove.mutateAsync(member.user_id),
-      ),
-    );
+  if (rights.remove) {
+    items.push({
+      key: "remove",
+      label: "Xóa khỏi tổ chức",
+      Icon: FiUserX,
+      danger: true,
+      onSelect: () => ask("remove"),
+    });
   }
-  if (canLeave) {
-    items.push(
-      destructive(
-        "leave",
-        "Rời tổ chức",
-        "Bấm lại để rời",
-        FiUserMinus,
-        "left",
-        () => remove.mutateAsync(member.user_id),
-      ),
-    );
+  if (rights.leave) {
+    items.push({
+      key: "leave",
+      label: "Rời tổ chức",
+      Icon: FiUserMinus,
+      danger: true,
+      onSelect: () => ask("leave"),
+    });
   }
 
+  const copy = memberConfirmCopy(confirm ?? "remove", name);
   return (
     <>
-      <MemberMenu
-        label={member.full_name || "thành viên"}
+      <ActionMenu
+        label={name}
         items={items}
         open={open}
         busy={busy}
-        onToggle={() => setMenuOpen(!open)}
-        onClose={() => setMenuOpen(false)}
+        onToggle={() => setOpen(!open)}
+        onClose={() => setOpen(false)}
       />
       <MemberRoleEditor
         orgId={orgId}
         member={member}
         viewerRole={viewerRole}
         viewerPermissions={viewerPermissions}
+        viewerCeiling={viewerCeiling}
         orgRoles={orgRoles}
         open={editingRoles}
         onClose={() => setEditingRoles(false)}
+      />
+      <ConfirmDialog
+        open={confirm !== null}
+        danger
+        title={copy.title}
+        message={copy.message}
+        confirmLabel={copy.confirmLabel}
+        busyLabel={copy.busyLabel}
+        busy={busy}
+        onConfirm={() => confirm !== null && void confirmed(confirm)}
+        onClose={() => !busy && setConfirm(null)}
       />
     </>
   );

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { FiPaperclip, FiSend } from "react-icons/fi";
+import { FiSend } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
@@ -13,6 +13,8 @@ import {
 } from "../hooks.ts";
 import { sendChatTyping } from "../realtime-hooks.ts";
 import { toVietnameseWorkspaceMessage } from "../messages.tsx";
+import { useComposerSafety } from "../safety-state.tsx";
+import { ChatAttachButton } from "./ChatAttachButton.tsx";
 import { ChatContextBar } from "./ChatContextBar.tsx";
 import { ChatComposerShortcuts } from "./ChatComposerShortcuts.tsx";
 import { ChatPendingChips } from "./ChatPendingChips.tsx";
@@ -36,6 +38,8 @@ interface ChatComposerBarProps {
   // Channel gates (managers-only/archived): replaces the input with a
   // notice so blocked members never type a message that would 403/409.
   disabledReason?: string | null;
+  // Org whose safety rules apply (null for dm rooms).
+  orgId?: string | null;
   onQuickEvent?: () => void;
   onShareThread?: () => void;
   manageActivityTo?: string;
@@ -50,7 +54,8 @@ export function ChatComposerBar({
   onClearContext,
   onJumpTo,
   onSent,
-  disabledReason = null,
+  disabledReason: roomReason = null,
+  orgId = null,
   onQuickEvent,
   onShareThread,
   manageActivityTo,
@@ -62,6 +67,8 @@ export function ChatComposerBar({
   const [pending, setPending] = useState<ChatAttachment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const safety = useComposerSafety(orgId);
+  const disabledReason = roomReason ?? safety.blockedReason;
   const send = useSendChatMessage(roomId);
   const edit = useEditChatMessage(roomId);
   const upload = useUploadChatAttachment(roomId);
@@ -181,27 +188,17 @@ export function ChatComposerBar({
         </p>
       ) : (
       <div className="flex items-end gap-1.5">
-        <input
-          ref={fileRef}
-          type="file"
-          accept={ACCEPT}
-          multiple
-          className="hidden"
-          onChange={(event) => pickFiles(event.target.files)}
-        />
         <ChatComposerShortcuts
           onQuickEvent={onQuickEvent}
           onShareThread={onShareThread}
           manageActivityTo={manageActivityTo}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => fileRef.current?.click()}
+        <ChatAttachButton
+          fileRef={fileRef}
+          accept={ACCEPT}
           disabled={busy || pending.length >= MAX_ATTACHMENTS}
-          aria-label="Đính kèm ảnh hoặc video"
-          icon={<FiPaperclip className="h-5 w-5" aria-hidden="true" />}
+          visible={safety.canAttach}
+          onPick={pickFiles}
         />
         <TextField
           label="Nhắn tin"

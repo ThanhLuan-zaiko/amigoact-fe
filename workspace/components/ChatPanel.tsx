@@ -2,10 +2,7 @@ import { useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { FiArrowDown } from "react-icons/fi";
 import { ApiError } from "../../core/api.ts";
-import {
-  ErrorState,
-  LoadingState,
-} from "../../core/components/Feedback.tsx";
+import { ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import {
   useChatMessages,
   useChatReads,
@@ -48,6 +45,7 @@ interface ChatPanelProps {
   // General rooms and top channels can open focused sub-threads.
   showThreads?: boolean;
   selfId?: string;
+  // Moderators (chat:moderate) may pin and delete others' messages.
   canManage: boolean;
   typingUsers: { name: string; avatar_url: string | null }[];
   onBack?: () => void;
@@ -224,9 +222,10 @@ export function ChatPanel({
         onQuickEvent={onQuickEvent}
         onShareThread={onShareThread}
         manageActivityTo={manageActivityTo}
+        orgId={isDm ? null : orgId}
         disabledReason={
           activityDeleted ? "Sự kiện của phòng này đã bị xóa - chỉ xem được lịch sử trò chuyện."
-            : postPolicy === "managers" && !canManage ? "Chỉ quản lý mới được đăng trong kênh này." : null
+            : postPolicy === "managers" ? "Chỉ quản lý mới được đăng trong kênh này." : null
         }
       />
       <ChatRoomInfo

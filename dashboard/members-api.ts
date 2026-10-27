@@ -39,6 +39,9 @@ export interface MemberListPage {
   viewer_role: string;
   // Effective permission codes the viewer holds inside this org.
   viewer_permissions: string[];
+  // Seniority of the viewer's top custom role; null = not limited (owner,
+  // or no ranked role). Roles at or above it are off limits.
+  viewer_ceiling: number | null;
 }
 
 export interface MyMembership {
@@ -169,24 +172,34 @@ export interface OrgRole {
   permissions: string[];
   member_count: number;
   is_system: boolean;
+  // Colour key from `colors` on the list response ("" = default).
+  color: string;
+  // Seniority inside the org: higher outranks lower.
+  position: number;
 }
 
 export interface OrgRoleList {
   items: OrgRole[];
   // Every permission code a custom role may carry.
   assignable_permissions: string[];
+  // Baseline every active member holds, and the codes the owner may pick.
+  member_defaults: string[];
+  baseline_permissions: string[];
+  colors: string[];
 }
 
 export interface CreateOrgRoleInput {
   name: string;
   description?: string;
   permissions: string[];
+  color?: string;
 }
 
 export interface UpdateOrgRoleInput {
   name?: string;
   description?: string;
   permissions?: string[];
+  color?: string;
 }
 
 export async function listOrgRoles(orgId: string): Promise<OrgRoleList> {

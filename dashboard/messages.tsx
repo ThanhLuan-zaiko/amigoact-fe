@@ -40,6 +40,7 @@ const MESSAGES: Record<string, string> = {
   INVALID_ROLE: "Vai trò không hợp lệ hoặc quyền hạn không được hỗ trợ.",
   ROLE_NAME_TAKEN: "Tên vai trò này đã được sử dụng.",
   ROLE_NOT_FOUND: "Không tìm thấy vai trò này.",
+  ROLE_ABOVE_YOU: "Vai trò này ngang hoặc cao hơn vai trò cao nhất của bạn nên bạn không thể thay đổi.",
   INVITE_ONLY: "Tổ chức này chỉ nhận thành viên qua lời mời.",
   INVALID_EMAIL: "Địa chỉ email không hợp lệ.",
   INVITE_SENT: "Đã gửi lời mời.",

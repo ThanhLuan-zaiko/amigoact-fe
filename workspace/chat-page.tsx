@@ -90,7 +90,10 @@ export function WorkspaceChatPage(): ReactElement {
       },
   );
   const permissions = members.data?.viewer_permissions ?? [];
-  const canManage = permissions.includes("chat:manage");
+  // chat:manage still implies both, and the server expands it into
+  // viewer_permissions, so checking the split codes is enough.
+  const canManage = permissions.includes("chat:moderate");
+  const canPostManaged = permissions.includes("chat:channel");
   // Org head owns the general room. Anyone else needs activity:create.
   // The activity and thread APIs apply the same owner-or-permission gate.
   const eventCreator = useCanCreateEvent(roomOrgId);
@@ -187,7 +190,7 @@ export function WorkspaceChatPage(): ReactElement {
       showAuthor={room?.kind !== "dm"}
       isDm={room?.kind === "dm"}
       isChannel={room?.kind === "channel"}
-      postPolicy={room?.post_policy ?? null}
+      postPolicy={canPostManaged ? null : (room?.post_policy ?? null)}
       activityDeleted={room?.activity_deleted ?? false}
       parentRoom={
         parentRoom !== null

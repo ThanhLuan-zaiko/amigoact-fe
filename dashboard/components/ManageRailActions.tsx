@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { FiEdit3, FiPlus, FiUserPlus } from "react-icons/fi";
 import { Button } from "../../core/components/Button.tsx";
+import { useOrgBoardAccess } from "../../workspace/permission-hooks.ts";
 import { useOrgMembers } from "../members-hooks.ts";
 import type { MemberSortParam } from "../members-api.ts";
 
@@ -51,6 +52,8 @@ export function ManageActions({
   const canInvite =
     members.data?.viewer_role === "owner" ||
     (members.data?.viewer_permissions ?? []).includes("member:invite");
+  const onBoard = pathname.startsWith("/manage/board");
+  const canWrite = useOrgBoardAccess(onBoard ? orgId : null).abilities.create;
   const inviting = searchParams.get("invite") === "1";
   const buttons: ReactElement[] = [];
 
@@ -83,7 +86,7 @@ export function ManageActions({
       </Button>,
     );
   }
-  if (pathname.startsWith("/manage/board") && orgId !== null) {
+  if (onBoard && canWrite && orgId !== null) {
     buttons.push(
       <Button
         key="write"

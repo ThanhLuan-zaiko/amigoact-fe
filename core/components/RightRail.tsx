@@ -86,7 +86,7 @@ export function RightRail(): ReactElement {
   }
   if (pathname.startsWith(MANAGE_ROOT) && signedIn) {
     return (
-      <div className="flex flex-col gap-4 pb-8">
+      <div className="flex flex-col gap-4 pb-8 pr-3">
         <ManageRail placement="rail" />
         <footer className="px-4 text-[13px] text-zinc-500 dark:text-zinc-400">
           <p>{`© ${YEAR} AmigoACT`}</p>
@@ -95,8 +95,8 @@ export function RightRail(): ReactElement {
     );
   }
   return (
-    <div className="flex flex-col gap-4 pb-8">
-      <div className="sticky top-0 z-10 bg-white py-2 dark:bg-zinc-950">
+    <div className="flex flex-col gap-4 pb-8 pr-3">
+      <div className="sticky top-0 z-10 bg-white pb-2 pt-3 dark:bg-zinc-950">
         <SearchBox />
       </div>
       {signedIn ? <JourneyCard /> : !session.isPending && <JoinCard />}

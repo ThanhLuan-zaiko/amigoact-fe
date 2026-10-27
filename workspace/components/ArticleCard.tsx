@@ -1,3 +1,4 @@
+import type { BoardAbilities } from "../board-abilities.tsx";
 import type { ReactElement } from "react";
 import { FiBookmark, FiMessageCircle } from "react-icons/fi";
 import { Section } from "../../core/components/Section.tsx";
@@ -22,8 +23,7 @@ interface ArticleCardProps {
   orgId: string;
   post: OrgPost;
   selfId?: string;
-  canManage: boolean;
-  canAnnounce: boolean;
+  abilities: BoardAbilities;
   // Pinned rail renders one wide feature card instead of a grid tile.
   featured?: boolean;
 }
@@ -34,8 +34,7 @@ export function ArticleCard({
   orgId,
   post,
   selfId,
-  canManage,
-  canAnnounce,
+  abilities,
   featured = false,
 }: ArticleCardProps): ReactElement {
   const cover = coverUrl(post);
@@ -106,8 +105,7 @@ export function ArticleCard({
               orgId={orgId}
               post={post}
               selfId={selfId}
-              canManage={canManage}
-              canAnnounce={canAnnounce}
+              abilities={abilities}
               shelf="published"
             />
           </div>

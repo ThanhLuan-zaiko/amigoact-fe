@@ -1,3 +1,4 @@
+import type { BoardAbilities } from "../board-abilities.tsx";
 import type { ReactElement } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { FiHash, FiX } from "react-icons/fi";
@@ -20,8 +21,7 @@ const FULL_ROW = " ";
 interface FeedShelfProps {
   orgId: string;
   selfId?: string;
-  canManage: boolean;
-  canAnnounce: boolean;
+  abilities: BoardAbilities;
   feed: UseQueryResult<PostPage, ApiError>;
   kind: PostKind | undefined;
   onKind: (kind: PostKind | undefined) => void;
@@ -40,8 +40,7 @@ interface FeedShelfProps {
 export function FeedShelf({
   orgId,
   selfId,
-  canManage,
-  canAnnounce,
+  abilities,
   feed,
   kind,
   onKind,
@@ -92,8 +91,7 @@ export function FeedShelf({
           orgId={orgId}
           post={post}
           selfId={selfId}
-          canManage={canManage}
-          canAnnounce={canAnnounce}
+          abilities={abilities}
           featured
         />
       ))}
@@ -150,8 +148,7 @@ export function FeedShelf({
           orgId={orgId}
           post={post}
           selfId={selfId}
-          canManage={canManage}
-          canAnnounce={canAnnounce}
+          abilities={abilities}
         />
       ))}
       {totalPages > 1 && (

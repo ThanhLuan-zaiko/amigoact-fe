@@ -5,6 +5,7 @@ import { Section } from "../../core/components/Section.tsx";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { cleanBlocks, readingMinutes, wordCount } from "../article.ts";
+import type { BoardAbilities } from "../board-abilities.tsx";
 import type { ArticleEditorState } from "../editor-hooks.ts";
 import {
   formatTime,
@@ -20,7 +21,9 @@ import { PostTagField } from "./PostTagField.tsx";
 interface PublishPanelProps {
   editor: ArticleEditorState;
   orgId: string;
-  canAnnounce: boolean;
+  abilities: BoardAbilities;
+  // False when post:edit-any opens another member's post (no private drafts).
+  isAuthor: boolean;
 }
 
 // Right rail of the write page: status chip, kind toggle (standalone
@@ -30,8 +33,10 @@ interface PublishPanelProps {
 export function PublishPanel({
   editor,
   orgId,
-  canAnnounce,
+  abilities,
+  isAuthor,
 }: PublishPanelProps): ReactElement {
+  const canAnnounce = abilities.announce;
   const blocks = cleanBlocks(editor.blocks);
   const words = wordCount(blocks);
   const minutes = readingMinutes(words);
@@ -50,13 +55,16 @@ export function PublishPanel({
   const announceBlocked =
     (editor.kind === "announcement" || editor.visibility === "public") &&
     !canAnnounce;
+  const publishDenied = !published && !abilities.publish;
   const saveLabel = published
     ? "Lưu thay đổi"
-    : announceBlocked
-      ? "Cần quyền đăng công khai"
-      : isRevision || editor.wasPublished
-        ? "Đăng lại"
-        : "Đăng bài";
+    : publishDenied
+      ? "Cần quyền đăng bài"
+      : announceBlocked
+        ? "Cần quyền đăng công khai"
+        : isRevision || editor.wasPublished
+          ? "Đăng lại"
+          : "Đăng bài";
   const draftLabel = published ? "Lưu nháp riêng" : "Lưu nháp";
 
   return (
@@ -177,21 +185,23 @@ export function PublishPanel({
         <Button
           type="button"
           variant="primary"
-          disabled={editor.saving || announceBlocked}
+          disabled={editor.saving || announceBlocked || publishDenied}
           onClick={() => void editor.save("publish")}
           icon={<FiSend className="h-4 w-4" aria-hidden="true" />}
         >
           {editor.saving ? "Đang lưu…" : saveLabel}
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={editor.saving}
-          onClick={() => void editor.save("draft")}
-          icon={<FiCheckCircle className="h-4 w-4" aria-hidden="true" />}
-        >
-          {editor.saving ? "Đang lưu…" : draftLabel}
-        </Button>
+        {(isAuthor || !published) && (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={editor.saving}
+            onClick={() => void editor.save("draft")}
+            icon={<FiCheckCircle className="h-4 w-4" aria-hidden="true" />}
+          >
+            {editor.saving ? "Đang lưu…" : draftLabel}
+          </Button>
+        )}
       </div>
     </Section>
   );

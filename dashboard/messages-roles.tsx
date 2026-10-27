@@ -1,6 +1,7 @@
 // Role and confirm-dialog copy for the members board. Vietnamese lives in
 // .tsx modules only; code and comments stay English.
-import { MEMBER_ROLE_LABELS, PERMISSION_LABELS } from "./messages-members.tsx";
+import { MEMBER_ROLE_LABELS } from "./messages-members.tsx";
+import { PERMISSION_LABELS } from "./permission-catalog.tsx";
 import type { OrgRole } from "./members-api.ts";
 
 export const ROLE_COLOR_LABELS: Record<string, string> = {

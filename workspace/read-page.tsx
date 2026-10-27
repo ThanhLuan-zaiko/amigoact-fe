@@ -18,7 +18,8 @@ import {
   readingMinutes,
   wordCount,
 } from "./article.ts";
-import { useOrgPost, useOrgPosts, useWorkspaceOrg } from "./hooks.ts";
+import { useOrgPost, useWorkspaceOrg } from "./hooks.ts";
+import { useOrgBoardAccess } from "./permission-hooks.ts";
 import { useBoardRealtime } from "./realtime-hooks.ts";
 import {
   formatTime,
@@ -52,11 +53,8 @@ export function WorkspaceReadPage(): ReactElement {
   const { orgId } = useWorkspaceOrg(orgs);
   const postId = searchParams.get("post");
   const post = useOrgPost(orgId, postId);
-  const feed = useOrgPosts(orgId);
+  const { abilities } = useOrgBoardAccess(orgId);
   useBoardRealtime(orgId, selfId);
-  const permissions = feed.data?.viewer_permissions ?? [];
-  const canManage = permissions.includes("post:manage");
-  const canAnnounce = permissions.includes("post:announce");
   const boardHref = orgId === null ? "/manage/board" : `/manage/board?org=${orgId}`;
   const article = post.data ?? null;
   const cover = article === null ? null : coverUrl(article);
@@ -157,7 +155,7 @@ export function WorkspaceReadPage(): ReactElement {
                 orgId={orgId}
                 postId={article.post_id}
                 selfId={selfId}
-                canManage={canManage}
+                abilities={abilities}
               />
             )}
           </Section>
@@ -201,8 +199,7 @@ export function WorkspaceReadPage(): ReactElement {
                 orgId={orgId}
                 post={article}
                 selfId={selfId}
-                canManage={canManage}
-                canAnnounce={canAnnounce}
+                abilities={abilities}
                 shelf={
                   article.deleted_at !== null ? "trash" : article.status
                 }

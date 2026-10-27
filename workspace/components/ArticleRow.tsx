@@ -1,3 +1,4 @@
+import type { BoardAbilities } from "../board-abilities.tsx";
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { coverUrl, excerpt } from "../article.ts";
@@ -14,8 +15,7 @@ interface ArticleRowProps {
   orgId: string;
   post: OrgPost;
   selfId?: string;
-  canManage: boolean;
-  canAnnounce: boolean;
+  abilities: BoardAbilities;
   shelf: ArticleShelf;
 }
 
@@ -25,8 +25,7 @@ export function ArticleRow({
   orgId,
   post,
   selfId,
-  canManage,
-  canAnnounce,
+  abilities,
   shelf,
 }: ArticleRowProps): ReactElement {
   const cover = coverUrl(post);
@@ -81,8 +80,7 @@ export function ArticleRow({
             orgId={orgId}
             post={post}
             selfId={selfId}
-            canManage={canManage}
-            canAnnounce={canAnnounce}
+            abilities={abilities}
             shelf={shelf}
           />
         </div>

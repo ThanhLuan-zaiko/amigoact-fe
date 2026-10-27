@@ -56,7 +56,7 @@ export function EventsBrowseRail(): ReactElement {
   const facets = mineView ? mine.data?.facets : browse.data?.facets;
 
   return (
-    <div className="flex flex-col gap-4 pb-8">
+    <div className="flex flex-col gap-4 pb-8 pr-3 pt-3">
       <EventsFilters
         q={filters.q}
         mode={filters.mode}

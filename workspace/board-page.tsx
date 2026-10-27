@@ -11,6 +11,7 @@ import {
   usePostShelf,
   useWorkspaceOrg,
 } from "./hooks.ts";
+import { boardAbilities } from "./board-abilities.tsx";
 import { useBoardRealtime } from "./realtime-hooks.ts";
 import type { PostKind } from "./board-api.ts";
 import type { ArticleShelf } from "./components/ArticleActions.tsx";
@@ -74,13 +75,12 @@ export function WorkspaceBoardPage(): ReactElement {
     }
   }, [activePage.data, page, totalPages, searchParams, setSearchParams]);
 
-  const permissions =
+  const abilities = boardAbilities(
     feed.data?.viewer_permissions ??
-    drafts.data?.viewer_permissions ??
-    trash.data?.viewer_permissions ??
-    [];
-  const canAnnounce = permissions.includes("post:announce");
-  const canManage = permissions.includes("post:manage");
+      drafts.data?.viewer_permissions ??
+      trash.data?.viewer_permissions ??
+      [],
+  );
 
   function patchParams(patch: Record<string, string | null>): void {
     const next = new URLSearchParams(searchParams);
@@ -99,8 +99,7 @@ export function WorkspaceBoardPage(): ReactElement {
             <FeedShelf
               orgId={orgId}
               selfId={selfId}
-              canManage={canManage}
-              canAnnounce={canAnnounce}
+              abilities={abilities}
               feed={feed}
               kind={kind}
               tagSlug={tag}
@@ -127,8 +126,7 @@ export function WorkspaceBoardPage(): ReactElement {
               <ShelfCard
                 orgId={orgId}
                 selfId={selfId}
-                canManage={canManage}
-                canAnnounce={canAnnounce}
+                abilities={abilities}
                 shelf="draft"
                 query={drafts}
                 page={page}
@@ -144,8 +142,7 @@ export function WorkspaceBoardPage(): ReactElement {
               <ShelfCard
                 orgId={orgId}
                 selfId={selfId}
-                canManage={canManage}
-                canAnnounce={canAnnounce}
+                abilities={abilities}
                 shelf="trash"
                 query={trash}
                 page={page}

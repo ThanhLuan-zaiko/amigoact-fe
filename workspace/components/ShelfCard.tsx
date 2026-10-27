@@ -1,3 +1,4 @@
+import type { BoardAbilities } from "../board-abilities.tsx";
 import type { ReactElement } from "react";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
@@ -17,8 +18,7 @@ import type { ArticleShelf } from "./ArticleActions.tsx";
 interface ShelfCardProps {
   orgId: string;
   selfId?: string;
-  canManage: boolean;
-  canAnnounce: boolean;
+  abilities: BoardAbilities;
   shelf: Exclude<ArticleShelf, "published">;
   query: UseQueryResult<PostPage, ApiError>;
   page: number;
@@ -53,8 +53,7 @@ const TITLES: Record<string, { title: string; hint: string }> = {
 export function ShelfCard({
   orgId,
   selfId,
-  canManage,
-  canAnnounce,
+  abilities,
   shelf,
   query,
   page,
@@ -109,8 +108,7 @@ export function ShelfCard({
                   orgId={orgId}
                   post={post}
                   selfId={selfId}
-                  canManage={canManage}
-                  canAnnounce={canAnnounce}
+                  abilities={abilities}
                   shelf={shelf}
                 />
               ))}

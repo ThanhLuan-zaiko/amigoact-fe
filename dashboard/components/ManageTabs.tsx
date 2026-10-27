@@ -5,6 +5,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { prefersReducedMotion } from "../../core/motion.ts";
 import { activeEntry } from "../../core/nav-meta.ts";
 import { MANAGE_LINKS } from "../../core/nav.tsx";
+import { useMyOrgs } from "../hooks.ts";
 import { useMyMemberships } from "../members-hooks.ts";
 
 const EDGE_BUTTON =
@@ -23,6 +24,12 @@ export function ManageTabs(): ReactElement {
   const { pathname } = useLocation();
   const active = activeEntry(pathname, MANAGE_LINKS);
   const invites = useMyMemberships("invited").data?.total ?? 0;
+  // The audit log only lists orgs the viewer owns, so the tab is pointless
+  // (and a dead end) for plain members.
+  const ownsOrg = (useMyOrgs(false, { limit: 1 }).data?.total ?? 0) > 0;
+  const links = MANAGE_LINKS.filter(
+    (entry) => ownsOrg || entry.to !== "/manage/audit",
+  );
   const activeRef = useRef<HTMLAnchorElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ start: false, end: false });
@@ -80,7 +87,7 @@ export function ManageTabs(): ReactElement {
         ref={stripRef}
         className="flex flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {MANAGE_LINKS.map((entry) => {
+        {links.map((entry) => {
           const selected = entry === active;
           const count = entry.badge === "invites" ? invites : 0;
           return (

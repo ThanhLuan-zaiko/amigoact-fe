@@ -7,13 +7,14 @@ import { LoadingState } from "../../core/components/Feedback.tsx";
 import { TextArea } from "../../core/components/TextArea.tsx";
 import { useAddComment, useComments, useDeleteComment } from "../hooks.ts";
 import type { OrgComment } from "../api.ts";
+import type { BoardAbilities } from "../board-abilities.tsx";
 import { formatTime, toVietnameseWorkspaceMessage } from "../messages.tsx";
 
 interface CommentThreadProps {
   orgId: string;
   postId: string;
   selfId?: string;
-  canManage: boolean;
+  abilities: BoardAbilities;
 }
 
 // Oldest-first thread under one post: paged history, inline composer,
@@ -23,7 +24,7 @@ export function CommentThread({
   orgId,
   postId,
   selfId,
-  canManage,
+  abilities,
 }: CommentThreadProps): ReactElement {
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +51,7 @@ export function CommentThread({
   }
 
   function canDelete(comment: OrgComment): boolean {
-    return comment.author_id === selfId || canManage;
+    return comment.author_id === selfId || abilities.deleteComment;
   }
 
   return (
@@ -111,30 +112,36 @@ export function CommentThread({
           </Button>
         </div>
       )}
-      <div className="mt-3 flex flex-col gap-2">
-        <TextArea
-          label="Viết bình luận"
-          name={`comment-${postId}`}
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder="Viết bình luận…"
-          maxLength={2000}
-          rows={2}
-          autoGrow
-          error={error ?? undefined}
-        />
-        <div className="flex justify-end">
-          <Button
-            type="button"
-            variant="primary"
-            onClick={submit}
-            disabled={add.isPending || !draft.trim()}
-            icon={<FiSend className="h-4 w-4" aria-hidden="true" />}
-          >
-            Gửi
-          </Button>
+      {abilities.comment ? (
+        <div className="mt-3 flex flex-col gap-2">
+          <TextArea
+            label="Viết bình luận"
+            name={`comment-${postId}`}
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="Viết bình luận…"
+            maxLength={2000}
+            rows={2}
+            autoGrow
+            error={error ?? undefined}
+          />
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={submit}
+              disabled={add.isPending || !draft.trim()}
+              icon={<FiSend className="h-4 w-4" aria-hidden="true" />}
+            >
+              Gửi
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+          Bạn chưa có quyền bình luận trong tổ chức này.
+        </p>
+      )}
     </div>
   );
 }

@@ -77,10 +77,10 @@ export function TextField({
           required={required}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className={`min-h-[44px] w-full border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:text-zinc-100 dark:focus-visible:outline-zinc-400 ${
+          className={`min-h-[44px] w-full border px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 dark:text-zinc-100 ${
             pill
-              ? "rounded-full bg-white dark:bg-zinc-950"
-              : "rounded-lg bg-white dark:bg-zinc-950"
+              ? "rounded-full bg-white outline-none focus-visible:border-zinc-500 dark:bg-zinc-950 dark:focus-visible:border-zinc-400"
+              : "rounded-lg bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500 dark:bg-zinc-950 dark:focus-visible:outline-zinc-400"
           } ${icon ? (pill ? "pl-11" : "pl-9") : ""} ${trailing ? "pr-12" : ""} ${
             error
               ? "border-red-600 dark:border-red-400"

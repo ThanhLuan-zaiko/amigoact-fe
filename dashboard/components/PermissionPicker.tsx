@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { FiLock } from "react-icons/fi";
-import { PERMISSION_GROUPS } from "../messages-members.tsx";
+import { PERMISSION_GROUPS } from "../permission-catalog.tsx";
 import { permissionLabel } from "../messages-roles.tsx";
 
 interface PermissionPickerProps {

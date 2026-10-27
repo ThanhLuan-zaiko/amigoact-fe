@@ -47,7 +47,7 @@ export function EventsRail(): ReactElement {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="sticky top-0 z-10 bg-white py-2 dark:bg-zinc-950">
+      <div className="sticky top-0 z-10 bg-white pb-2 pt-3 dark:bg-zinc-950">
         <form role="search" onSubmit={(event) => event.preventDefault()}>
           <TextField
             label="Tìm hoạt động"

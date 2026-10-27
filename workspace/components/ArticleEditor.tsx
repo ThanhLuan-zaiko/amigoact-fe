@@ -4,6 +4,7 @@ import { FiImage } from "react-icons/fi";
 import { Section } from "../../core/components/Section.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { UnsavedGuard } from "../../core/components/UnsavedGuard.tsx";
+import type { BoardAbilities } from "../board-abilities.tsx";
 import type { OrgPost } from "../board-api.ts";
 import { useArticleEditor } from "../editor-hooks.ts";
 import { BlockEditor } from "./BlockEditor.tsx";
@@ -13,7 +14,9 @@ import { PublishPanel } from "./PublishPanel.tsx";
 interface ArticleEditorProps {
   orgId: string;
   initial: OrgPost | null;
-  canAnnounce: boolean;
+  abilities: BoardAbilities;
+  // False when an editor with post:edit-any opens someone else's post.
+  isAuthor: boolean;
   onPublished: (post: OrgPost) => void;
 }
 
@@ -43,10 +46,16 @@ function partitionFiles(files: File[]): { images: File[]; videos: File[] } {
 export function ArticleEditor({
   orgId,
   initial,
-  canAnnounce,
+  abilities,
+  isAuthor,
   onPublished,
 }: ArticleEditorProps): ReactElement {
-  const editor = useArticleEditor(orgId, initial, onPublished, canAnnounce);
+  const editor = useArticleEditor(
+    orgId,
+    initial,
+    onPublished,
+    abilities.announce,
+  );
   const uploading = Object.values(editor.uploads).includes("uploading");
   const [dropActive, setDropActive] = useState(false);
 
@@ -205,7 +214,12 @@ export function ArticleEditor({
           )}
         </div>
       </Section>
-      <PublishPanel editor={editor} orgId={orgId} canAnnounce={canAnnounce} />
+      <PublishPanel
+        editor={editor}
+        orgId={orgId}
+        abilities={abilities}
+        isAuthor={isAuthor}
+      />
     </>
   );
 }

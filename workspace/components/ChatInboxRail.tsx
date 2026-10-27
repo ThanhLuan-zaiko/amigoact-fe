@@ -91,7 +91,7 @@ export function ChatInboxRail(): ReactElement {
     <div className="flex flex-col pb-4">
       {/* Inside the center column (<lg) it must clear the 53px sticky
           CenterHeader; in the aside's own scroller (lg+) top-0. */}
-      <div className="sticky top-[53px] z-10 bg-white px-4 py-2 lg:top-0 dark:bg-zinc-950">
+      <div className="sticky top-[53px] z-10 bg-white px-4 pb-2 pt-3 lg:top-0 dark:bg-zinc-950">
         <div className="flex items-center gap-2">
           <TextField
             label="Tìm cuộc trò chuyện"

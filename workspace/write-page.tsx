@@ -12,7 +12,8 @@ import {
 } from "../core/components/Feedback.tsx";
 import { useSession } from "../auth/hooks.ts";
 import { useMyMemberships } from "../dashboard/members-hooks.ts";
-import { useOrgPost, useOrgPosts, useWorkspaceOrg } from "./hooks.ts";
+import { useOrgPost, useWorkspaceOrg } from "./hooks.ts";
+import { useOrgBoardAccess } from "./permission-hooks.ts";
 import { toVietnameseWorkspaceMessage } from "./messages.tsx";
 import { ArticleEditor } from "./components/ArticleEditor.tsx";
 
@@ -21,6 +22,7 @@ import { ArticleEditor } from "./components/ArticleEditor.tsx";
 // hands the block editor to ArticleEditor.
 export function WorkspaceWritePage(): ReactElement {
   const session = useSession();
+  const selfId = session.data?.id;
   const memberships = useMyMemberships("active", session.data != null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -35,15 +37,16 @@ export function WorkspaceWritePage(): ReactElement {
   const { orgId } = useWorkspaceOrg(orgs);
   const postId = searchParams.get("post");
   const post = useOrgPost(orgId, postId);
-  const feed = useOrgPosts(orgId);
-  const permissions = feed.data?.viewer_permissions ?? [];
-  const canAnnounce = permissions.includes("post:announce");
+  const { ready: accessReady, abilities } = useOrgBoardAccess(orgId);
   const orgName = orgs.find((org) => org.id === orgId)?.name ?? "";
   const boardHref = orgId === null ? "/manage/board" : `/manage/board?org=${orgId}`;
   // Wait for the feed envelope too: viewer_permissions decides the
   // default kind (announcement for managers) and the kind toggle state.
   const ready =
-    (postId === null || post.data !== undefined) && !feed.isPending;
+    (postId === null || post.data !== undefined) && accessReady;
+  // Own posts need post:create; opening someone else's needs post:edit-any.
+  const isAuthor = post.data === undefined || post.data.author_id === selfId;
+  const allowed = isAuthor ? abilities.create : abilities.editAny;
 
   return (
     <>
@@ -102,12 +105,21 @@ export function WorkspaceWritePage(): ReactElement {
           />
         </div>
       )}
-      {orgId !== null && ready && (
+      {orgId !== null && ready && !allowed && (
+        <div>
+          <EmptyState
+            title="Bạn chưa có quyền viết bài"
+            message="Vai trò của bạn trong tổ chức này không bao gồm quyền viết bài. Hãy nhờ quản trị viên cấp quyền."
+          />
+        </div>
+      )}
+      {orgId !== null && ready && allowed && (
         <ArticleEditor
           key={`${orgId}:${postId ?? "new"}`}
           orgId={orgId}
           initial={post.data ?? null}
-          canAnnounce={canAnnounce}
+          abilities={abilities}
+          isAuthor={isAuthor}
           onPublished={(saved) =>
             navigate(`/manage/board/post?org=${orgId}&post=${saved.post_id}`)
           }

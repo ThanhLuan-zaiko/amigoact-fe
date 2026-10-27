@@ -15,6 +15,10 @@ import {
 import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
+import {
+  publishBlockReason,
+  type BoardAbilities,
+} from "../board-abilities.tsx";
 import type { OrgPost } from "../board-api.ts";
 import {
   useCreateRevision,
@@ -33,8 +37,7 @@ interface ArticleActionsProps {
   orgId: string;
   post: OrgPost;
   selfId?: string;
-  canManage: boolean;
-  canAnnounce: boolean;
+  abilities: BoardAbilities;
   shelf: ArticleShelf;
   // Runs after any successful lifecycle mutation (read page navigates back).
   onDone?: () => void;
@@ -47,8 +50,7 @@ export function ArticleActions({
   orgId,
   post,
   selfId,
-  canManage,
-  canAnnounce,
+  abilities,
   shelf,
   onDone,
 }: ArticleActionsProps): ReactElement {
@@ -62,46 +64,32 @@ export function ArticleActions({
   const navigate = useNavigate();
   const [confirmErase, setConfirmErase] = useState(false);
   const [serverCode, setServerCode] = useState<string | null>(null);
-  const busy =
-    publish.isPending ||
-    unpublish.isPending ||
-    softDelete.isPending ||
-    hardDelete.isPending ||
-    restore.isPending ||
-    pin.isPending ||
-    revise.isPending;
-
+  const busy = [publish, unpublish, softDelete, hardDelete, restore, pin, revise]
+    .some((mutation) => mutation.isPending);
   const mine = post.author_id === selfId;
   const pinned = post.pinned_at !== null;
-  const announceBlocked =
-    (post.kind === "announcement" || post.visibility === "public") &&
-    !canAnnounce;
-  const publishTitle = announceBlocked
-    ? "Chỉ quản lý mới đăng được bài công khai"
-    : undefined;
+  // Own posts need post:create; other people's need the "-any" codes.
+  const canDelete = mine ? abilities.create : abilities.deleteAny;
+  const publishTitle = publishBlockReason(abilities, post);
   const writeHref = `/manage/board/write?org=${orgId}&post=${post.post_id}`;
   const readHref = `/manage/board/post?org=${orgId}&post=${post.post_id}`;
-
-  async function run(task: Promise<unknown>): Promise<void> {
+  // Runs a mutation, then `after` (defaults to the parent's onDone).
+  async function run(
+    task: Promise<unknown>,
+    after: (result: never) => void = () => onDone?.(),
+  ): Promise<void> {
     setServerCode(null);
     try {
-      await task;
-      onDone?.();
+      after((await task) as never);
     } catch (error) {
       setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
     }
   }
 
-  async function openRevision(): Promise<void> {
-    setServerCode(null);
-    try {
-      const rev = await revise.mutateAsync(post.post_id);
-      navigate(`/manage/board/write?org=${orgId}&post=${rev.post_id}`);
-    } catch (error) {
-      setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
-    }
-  }
-
+  const openRevision = () =>
+    run(revise.mutateAsync(post.post_id), (rev: OrgPost) =>
+      navigate(`/manage/board/write?org=${orgId}&post=${rev.post_id}`),
+    );
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
@@ -114,7 +102,7 @@ export function ArticleActions({
             >
               Đọc
             </Button>
-            {mine && (
+            {mine && abilities.create && (
               <Button
                 type="button"
                 variant="secondary"
@@ -125,7 +113,16 @@ export function ArticleActions({
                 {revise.isPending ? "Đang mở…" : "Sửa"}
               </Button>
             )}
-            {canManage && (
+            {!mine && abilities.editAny && (
+              <Button
+                to={writeHref}
+                variant="secondary"
+                icon={<FiEdit2 className="h-4 w-4" aria-hidden="true" />}
+              >
+                Sửa
+              </Button>
+            )}
+            {abilities.pin && (
               <Button
                 type="button"
                 variant="ghost"
@@ -139,7 +136,7 @@ export function ArticleActions({
                 {pinned ? "Bỏ ghim" : "Ghim"}
               </Button>
             )}
-            {mine && (
+            {mine && abilities.create && (
               <Button
                 type="button"
                 variant="ghost"
@@ -154,18 +151,20 @@ export function ArticleActions({
         )}
         {shelf === "draft" && (
           <>
-            <Button
-              to={writeHref}
-              variant="primary"
-              icon={<FiEdit3 className="h-4 w-4" aria-hidden="true" />}
-            >
-              Viết tiếp
-            </Button>
-            {mine && (
+            {abilities.create && (
+              <Button
+                to={writeHref}
+                variant="primary"
+                icon={<FiEdit3 className="h-4 w-4" aria-hidden="true" />}
+              >
+                Viết tiếp
+              </Button>
+            )}
+            {mine && abilities.create && (
               <Button
                 type="button"
                 variant="secondary"
-                disabled={busy || announceBlocked}
+                disabled={busy || publishTitle !== undefined}
                 title={publishTitle}
                 onClick={() => run(publish.mutateAsync(post.post_id))}
                 icon={<FiSend className="h-4 w-4" aria-hidden="true" />}
@@ -179,7 +178,7 @@ export function ArticleActions({
             )}
           </>
         )}
-        {shelf === "trash" && (mine || canManage) && (
+        {shelf === "trash" && canDelete && (
           <Button
             type="button"
             variant="primary"
@@ -190,7 +189,7 @@ export function ArticleActions({
             {restore.isPending ? "Đang khôi phục…" : "Khôi phục"}
           </Button>
         )}
-        {shelf !== "trash" && (mine || canManage) && (
+        {shelf !== "trash" && canDelete && (
           <Button
             type="button"
             variant="ghost"
@@ -201,7 +200,7 @@ export function ArticleActions({
             {softDelete.isPending ? "Đang xóa…" : "Bỏ vào thùng rác"}
           </Button>
         )}
-        {shelf === "trash" && (mine || canManage) && (
+        {shelf === "trash" && canDelete && (
           <Button
             type="button"
             variant="secondary"

@@ -78,6 +78,7 @@ export function ActivityForm({
         categories={categories}
         tagSuggestions={toTagSuggestions(tags.data)}
         tagSuggestionsError={tags.isError}
+        tagSuggestionsLoading={tags.isPending}
         disabled={busy}
       />
       <div className="flex justify-end">

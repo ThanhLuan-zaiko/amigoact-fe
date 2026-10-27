@@ -20,6 +20,7 @@ interface TagFieldProps {
   onChange: (next: string[]) => void;
   suggestions: TagSuggestion[];
   suggestionsError?: boolean;
+  loading?: boolean;
   max?: number;
   disabled?: boolean;
   hint?: string;
@@ -40,6 +41,7 @@ export function TagField({
   onChange,
   suggestions,
   suggestionsError = false,
+  loading = false,
   max = 10,
   disabled = false,
   hint,
@@ -76,6 +78,8 @@ export function TagField({
       ? [{ key: "__create__", name: trimmed, create: true }]
       : []),
   ];
+  const emptyText =
+    suggestionsError || trimmed ? "" : loading ? "Đang tải thẻ…" : suggestions.length === 0 ? "Chưa có thẻ nào để chọn. Gõ tên mới rồi Enter để tạo." : "Bạn đã chọn hết thẻ có sẵn.";
 
   useDismiss(open, rootRef, () => setOpen(false), inputRef);
   useEffect(() => {
@@ -175,6 +179,7 @@ export function TagField({
             onChange={onInput}
             onKeyDown={onKeyDown}
             onFocus={() => setOpen(true)}
+            onClick={() => setOpen(true)}
             disabled={disabled || full}
             placeholder={
               value.length === 0 ? "Gõ rồi Enter để thêm thẻ…" : "Thêm thẻ…"
@@ -222,6 +227,9 @@ export function TagField({
               </li>
             ))}
           </ul>
+        )}
+        {open && options.length === 0 && emptyText && (
+          <p role="status" className="absolute top-full left-0 z-50 mt-1 w-full rounded-xl border border-zinc-200 bg-white p-3 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400">{emptyText}</p>
         )}
       </div>
       {suggestionsError && (

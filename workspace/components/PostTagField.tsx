@@ -23,6 +23,7 @@ export function PostTagField({
         slug: tag.slug,
       }))}
       suggestionsError={tags.isError}
+      loading={tags.isPending}
       max={3}
       disabled={disabled}
       hint="Chọn thẻ bạn đã tạo, tối đa 3. Gõ tên mới rồi Enter để thêm thẻ đó vào danh sách của bạn."

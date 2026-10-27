@@ -2,23 +2,18 @@ import type { ReactElement } from "react";
 import { RailCard } from "../../core/components/RailCard.tsx";
 import { useMediaQuery } from "../../core/media-query.ts";
 import { ActivityChatsCard } from "../../workspace/components/ActivityChatsCard.tsx";
-import {
-  GUEST_TABS,
-  SIGNED_IN_TABS,
-  useEventsBrowseState,
-} from "../browse-state-hooks.ts";
+import { useEventsBrowseState } from "../browse-state-hooks.ts";
 import { CLEARED_FILTERS, hasNarrowing } from "../browse-utils.ts";
 import { EventsFilterPanel } from "./EventsFilterPanel.tsx";
 import { EventsFilters } from "./EventsFilters.tsx";
-import { EventsTabs } from "./EventsTabs.tsx";
 import { MyEventsCard } from "./MyEventsCard.tsx";
 import { MyStatusFilter } from "./MyStatusFilter.tsx";
 
 const YEAR = new Date().getFullYear();
 
-// Right rail for /events. On desktop it holds the time tabs, search and every
-// filter. On phones those controls live in the feed column (EventsMobileBar),
-// so the rail sheet keeps only the personal cards.
+// Right rail for /events. On desktop it holds search and every filter; the
+// time tabs sit above the feed (page.tsx). On phones those controls live in
+// the feed column (EventsMobileBar), so the rail keeps only the personal cards.
 export function EventsBrowseRail(): ReactElement {
   const state = useEventsBrowseState();
   const desktop = useMediaQuery("(min-width: 1024px)");
@@ -31,7 +26,6 @@ export function EventsBrowseRail(): ReactElement {
     facets,
     tagName,
     setTag,
-    selectTab,
   } = state;
 
   return (
@@ -44,15 +38,6 @@ export function EventsBrowseRail(): ReactElement {
             open={filters.open}
             onPatch={patch}
           />
-          <RailCard title="Thời gian">
-            <div className="px-4 pb-4">
-              <EventsTabs
-                tabs={signedIn ? SIGNED_IN_TABS : GUEST_TABS}
-                value={filters.tab}
-                onChange={selectTab}
-              />
-            </div>
-          </RailCard>
           <RailCard title="Bộ lọc">
             <div className="px-4 pb-4">
               <EventsFilterPanel

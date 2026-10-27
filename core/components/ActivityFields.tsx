@@ -33,6 +33,7 @@ interface ActivityFieldsProps {
   categories: CategoryOption[];
   tagSuggestions: TagSuggestion[];
   tagSuggestionsError: boolean;
+  tagSuggestionsLoading?: boolean;
   disabled: boolean;
 }
 
@@ -43,6 +44,7 @@ export function ActivityFields({
   categories,
   tagSuggestions,
   tagSuggestionsError,
+  tagSuggestionsLoading = false,
   disabled,
 }: ActivityFieldsProps): ReactElement {
   return (
@@ -155,6 +157,7 @@ export function ActivityFields({
         onChange={(tags) => onChange({ tags })}
         suggestions={tagSuggestions}
         suggestionsError={tagSuggestionsError}
+        loading={tagSuggestionsLoading}
         max={10}
         disabled={disabled}
         hint="Chọn thẻ bạn đã tạo, tối đa 10. Gõ tên mới rồi Enter để thêm thẻ đó vào danh sách của bạn."

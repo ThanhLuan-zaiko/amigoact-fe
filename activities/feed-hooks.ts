@@ -8,10 +8,11 @@ import { activityKeys } from "./keys.ts";
 // orgs (managers first, as the feed orders them) stay live.
 const REALTIME_ORG_LIMIT = 12;
 
-export function useMyActivities(trash = false) {
+export function useMyActivities(trash = false, enabled = true) {
   return useQuery({
     queryKey: activityKeys.mine(trash),
     queryFn: () => listMyActivities(trash),
+    enabled,
     staleTime: 30_000,
   });
 }

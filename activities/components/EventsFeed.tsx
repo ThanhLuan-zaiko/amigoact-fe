@@ -44,6 +44,9 @@ interface EventsFeedProps {
   onRetry: () => void;
   onClear: () => void;
   onPage: (page: number) => void;
+  // Set only for callers who can create an activity; adds a button to the
+  // empty state so the column always offers a next step.
+  onCreate?: () => void;
 }
 
 // Every state the feed can show: loading, error, empty (per tab or per
@@ -62,6 +65,7 @@ export function EventsFeed({
   onRetry,
   onClear,
   onPage,
+  onCreate,
 }: EventsFeedProps): ReactElement {
   if (loading) return <LoadingState label="Đang tải sự kiện…" />;
   if (error !== null) {
@@ -106,7 +110,12 @@ export function EventsFeed({
       );
     }
     return (
-      <EmptyState title={EMPTY_TITLE[tab]} message="Quay lại sau để xem thêm." />
+      <EmptyState
+        title={EMPTY_TITLE[tab]}
+        message="Quay lại sau để xem thêm."
+        actionLabel={onCreate ? "Tạo sự kiện" : undefined}
+        onAction={onCreate}
+      />
     );
   }
   const totalPages = Math.max(1, Math.ceil(total / EVENTS_PAGE_SIZE));

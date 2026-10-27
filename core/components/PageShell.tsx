@@ -12,6 +12,7 @@ import { RealtimeBanner } from "./RealtimeBanner.tsx";
 import { RightRail } from "./RightRail.tsx";
 import { ToastViewport } from "./ToastViewport.tsx";
 import { RAIL_SCROLL } from "../rail-styles.ts";
+import { useMediaQuery } from "../media-query.ts";
 
 // X-style three-column shell, centered as one group:
 // left rail (icons sm-xl, labels xl+) | 600px bordered column | right rail
@@ -36,6 +37,9 @@ export function PageShell(): ReactElement {
     null,
   );
   const railOpen = rail !== null && rail.path === pathname && rail.open;
+  // The rail mounts once: in the aside on desktop, in the sheet on phones.
+  // Mounting both at once duplicated DOM ids inside the rail.
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   return (
     <div className="min-h-dvh bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
@@ -61,14 +65,14 @@ export function PageShell(): ReactElement {
           aria-label="Thông tin cá nhân"
           className={`sticky top-0 ml-6 hidden h-dvh w-[290px] shrink-0 lg:block xl:w-[350px] ${RAIL_SCROLL}`}
         >
-          <RightRail />
+          {isDesktop && <RightRail />}
         </aside>
       </div>
       <MobileTabBar />
       <NavDrawer open={drawerOpen} onClose={closeDrawer} />
       <Modal
         side
-        open={railOpen}
+        open={railOpen && !isDesktop}
         title="Thông tin"
         onClose={() => setRail({ path: pathname, open: false })}
       >

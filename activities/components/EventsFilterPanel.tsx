@@ -7,7 +7,7 @@ import type {
   CityFacet,
   TagFacet,
 } from "../browse-api.ts";
-import type { EventsFilters } from "../browse-utils.ts";
+import { isRangeReversed, type EventsFilters } from "../browse-utils.ts";
 import { TagFilter } from "./TagFilter.tsx";
 
 interface EventsFilterPanelProps {
@@ -30,6 +30,8 @@ const SORT_OPTIONS = [
   { value: "start", label: "Ngày diễn ra" },
   { value: "published", label: "Mới công bố" },
 ];
+
+const RANGE_ERROR = "Ngày kết thúc phải sau ngày bắt đầu";
 
 // Category, city, dates and tag. Each change resets paging to page 1.
 export function EventsFilterPanel({
@@ -76,6 +78,7 @@ export function EventsFilterPanel({
         <TextField
           label="Từ ngày"
           type="date"
+          max={filters.to || undefined}
           value={filters.from}
           onChange={(event) =>
             onPatch({ from: event.target.value || null, page: null })
@@ -84,7 +87,9 @@ export function EventsFilterPanel({
         <TextField
           label="Đến ngày"
           type="date"
+          min={filters.from || undefined}
           value={filters.to}
+          error={isRangeReversed(filters) ? RANGE_ERROR : undefined}
           onChange={(event) =>
             onPatch({ to: event.target.value || null, page: null })
           }

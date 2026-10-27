@@ -17,13 +17,13 @@ interface SchedulePanelProps {
   activityId: string;
   schedules: ScheduleItem[];
   canManage: boolean;
-  onAdd: (input: {
+  onAdd?: (input: {
     title: string;
     location: string | null;
     start_at: string | null;
     end_at: string | null;
   }) => Promise<unknown>;
-  onDelete: (scheduleId: string) => Promise<unknown>;
+  onDelete?: (scheduleId: string) => Promise<unknown>;
 }
 
 export function SchedulePanel({
@@ -40,6 +40,7 @@ export function SchedulePanel({
   const [error, setError] = useState("");
 
   const add = async (): Promise<void> => {
+    if (!onAdd) return;
     setError("");
     try {
       await onAdd({
@@ -85,7 +86,7 @@ export function SchedulePanel({
                     size="icon"
                     variant="ghost"
                     aria-label="Xóa lịch"
-                    onClick={() => void onDelete(s.id)}
+                    onClick={() => void onDelete?.(s.id)}
                     icon={<FiTrash2 className="h-4 w-4" aria-hidden="true" />}
                   >
                     <span className="sr-only">Xóa</span>

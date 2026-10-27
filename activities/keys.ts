@@ -9,6 +9,9 @@ export const activityKeys = {
   browseMine: (params: Record<string, string>) =>
     [...activityKeys.browseAll(), "mine", params] as const,
   myBriefs: () => [...activityKeys.browseAll(), "my-briefs"] as const,
+  // The detail page's card. Under browseAll, so feed refreshes reach it too.
+  card: (activityId: string) =>
+    [...activityKeys.browseAll(), "card", activityId] as const,
   tags: (query: string) =>
     [...activityKeys.all, "tags", query] as const,
   orgTags: (orgId: string, trash = false) =>

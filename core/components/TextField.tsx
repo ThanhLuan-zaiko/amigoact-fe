@@ -1,3 +1,4 @@
+import { useId } from "react";
 import type {
   InputHTMLAttributes,
   ReactElement,
@@ -32,7 +33,8 @@ export function TextField({
   ref,
   ...rest
 }: TextFieldProps): ReactElement {
-  const fieldId = id ?? `field-${label.length}-${rest.name ?? "input"}`;
+  const generatedId = useId();
+  const fieldId = id ?? generatedId;
   const describedBy =
     [error ? `${fieldId}-error` : "", hint ? `${fieldId}-hint` : ""]
       .filter(Boolean)

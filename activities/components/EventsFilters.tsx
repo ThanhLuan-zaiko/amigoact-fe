@@ -4,6 +4,8 @@ import { TextField } from "../../core/components/TextField.tsx";
 import { FilterChip } from "./FilterChip.tsx";
 
 const SEARCH_DEBOUNCE_MS = 350;
+// Backend cap on the search text (docs/EVENTS.md).
+const SEARCH_MAX = 100;
 
 interface EventsFiltersProps {
   q: string;
@@ -44,6 +46,7 @@ export function EventsFilters({
         pill
         type="search"
         autoComplete="off"
+        maxLength={SEARCH_MAX}
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         placeholder="Tên sự kiện, địa điểm, tổ chức"

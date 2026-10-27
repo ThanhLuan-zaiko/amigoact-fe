@@ -8,6 +8,7 @@ import { Button } from "../../core/components/Button.tsx";
 import { ErrorState } from "../../core/components/Feedback.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useLogin } from "../hooks.ts";
+import { safeNextPath } from "../next-path.ts";
 import { validateLoginField, validateLoginForm, type FieldErrors } from "../schemas.ts";
 import { toVietnameseMessage } from "../messages.tsx";
 import { VisibilityToggle } from "./VisibilityToggle.tsx";
@@ -62,7 +63,10 @@ export function LoginCard(): ReactElement {
     const email = form.email.trim().toLowerCase();
     try {
       await login.mutateAsync({ email, password: form.password });
-      navigate("/", { replace: true });
+      navigate(
+        safeNextPath(new URLSearchParams(location.search).get("next")) ?? "/",
+        { replace: true },
+      );
     } catch (error) {
       setServerCode(error instanceof ApiError ? error.code : "REQUEST_FAILED");
     }

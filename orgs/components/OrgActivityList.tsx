@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { FiCalendar, FiChevronRight, FiMapPin, FiZap } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { Button } from "../../core/components/Button.tsx";
 import { Section } from "../../core/components/Section.tsx";
 import { EmptyState } from "../../core/components/Feedback.tsx";
 import type { PublicOrgDetail } from "../api.ts";
@@ -42,9 +43,7 @@ export function OrgActivityList({ org }: OrgActivityListProps): ReactElement {
                       {activity.start_at && (
                         <span className="flex items-center gap-1">
                           <FiCalendar className="h-3.5 w-3.5" aria-hidden="true" />
-                          {new Date(activity.start_at).toLocaleDateString(
-                            "vi-VN",
-                          )}
+                          {new Date(activity.start_at).toLocaleDateString("vi-VN")}
                         </span>
                       )}
                       {activity.city && (
@@ -72,6 +71,13 @@ export function OrgActivityList({ org }: OrgActivityListProps): ReactElement {
               title="Chưa có hoạt động"
               message="Tổ chức chưa tổ chức hoạt động công khai nào trên AmigoACT."
             />
+          </div>
+        )}
+        {org.activity_count > 0 && (
+          <div className="mt-3">
+            <Button to={`/events?org=${org.slug}`} variant="secondary">
+              Xem tất cả sự kiện
+            </Button>
           </div>
         )}
       </div>

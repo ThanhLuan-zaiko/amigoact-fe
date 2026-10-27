@@ -25,9 +25,11 @@ export function notificationLink(item: NotificationItem): string | null {
     case "announcement": {
       const orgId = str(data.org_id);
       const postId = str(data.post_id);
-      return orgId !== null && postId !== null
+      if (orgId === null) return null;
+      // Older rows may lack post_id; the org board is still the closest page.
+      return postId !== null
         ? `/manage/board/post?org=${orgId}&post=${postId}`
-        : null;
+        : `/manage/board?org=${orgId}`;
     }
     case "registration":
     case "staff":

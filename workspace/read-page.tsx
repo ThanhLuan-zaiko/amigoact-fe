@@ -50,12 +50,16 @@ export function WorkspaceReadPage(): ReactElement {
       })),
     [memberships.data],
   );
-  const { orgId } = useWorkspaceOrg(orgs);
+  const { orgId } = useWorkspaceOrg(orgs, { optional: true });
   const postId = searchParams.get("post");
   const post = useOrgPost(orgId, postId);
   const { abilities } = useOrgBoardAccess(orgId);
   useBoardRealtime(orgId, selfId);
   const boardHref = orgId === null ? "/manage/board" : `/manage/board?org=${orgId}`;
+  // Membership settled but no org resolved: the viewer left it, or the link has
+  // no ?org=. Surface that instead of loading forever or switching org silently.
+  const orgUnavailable =
+    postId !== null && orgId === null && !memberships.isPending;
   const article = post.data ?? null;
   const cover = article === null ? null : coverUrl(article);
 
@@ -83,7 +87,25 @@ export function WorkspaceReadPage(): ReactElement {
           />
         </div>
       )}
-      {postId !== null && post.isPending && (
+      {postId !== null && orgUnavailable && (
+        <div>
+          <ErrorState
+            title="Không mở được bài viết"
+            message={
+              memberships.isError
+                ? toVietnameseWorkspaceMessage(
+                    memberships.error instanceof ApiError
+                      ? memberships.error.code
+                      : "REQUEST_FAILED",
+                  )
+                : "Bài viết này thuộc tổ chức bạn không còn tham gia, hoặc đường dẫn thiếu thông tin tổ chức."
+            }
+            actionLabel="Tổ chức của tôi"
+            onAction={() => navigate("/manage/orgs")}
+          />
+        </div>
+      )}
+      {postId !== null && !orgUnavailable && post.isPending && (
         <div>
           <LoadingState label="Đang tải bài viết…" />
         </div>

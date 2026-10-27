@@ -71,7 +71,9 @@ export function useActivityBySlug(
     queryKey: activityKeys.bySlug(orgId ?? "", slug ?? ""),
     queryFn: () => getActivityBySlug(orgId ?? "", slug ?? ""),
     enabled: Boolean(orgId && slug),
-    retry: 1,
+    // A missing activity is final; only other failures get one retry.
+    retry: (count, error) =>
+      !(error instanceof ApiError && error.status === 404) && count < 1,
   });
 }
 
@@ -272,12 +274,13 @@ mutationFn: (activityId) => restoreActivity(orgId, activityId),
 export function useRegistrationForm(
   orgId: string | undefined,
   activityId: string | undefined,
+  enabled = true,
 ): UseQueryResult<FormQuestion[], ApiError> {
   return useQuery({
     queryKey: activityKeys.form(orgId ?? "", activityId ?? ""),
     queryFn: () =>
       getRegistrationForm(orgId as string, activityId as string),
-    enabled: Boolean(orgId && activityId),
+    enabled: enabled && Boolean(orgId && activityId),
   });
 }
 

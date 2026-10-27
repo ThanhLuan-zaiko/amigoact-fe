@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { FiCheck, FiChevronDown } from "react-icons/fi";
 
@@ -35,7 +35,8 @@ export function SelectField({
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const typeRef = useRef({ buf: "", at: 0 });
-  const fieldId = id ?? `select-${label.length}-${name ?? "field"}`;
+  const generatedId = useId();
+  const fieldId = id ?? generatedId;
   const labelId = `${fieldId}-label`;
   const listboxId = `${fieldId}-listbox`;
   const selectedIndex = options.findIndex((o) => o.value === value);

@@ -1,14 +1,14 @@
 import { useState, type ReactElement } from "react";
+import { useLocation } from "react-router-dom";
 import {
   FiCheckCircle,
   FiLogIn,
   FiSend,
-  FiXCircle,
 } from "react-icons/fi";
-import { ApiError } from "../../core/api.ts";
 import { Button } from "../../core/components/Button.tsx";
 import { TextField } from "../../core/components/TextField.tsx";
 import { useSession } from "../../auth/hooks.ts";
+import { loginPath } from "../../auth/next-path.ts";
 import { useRegistrationForm } from "../../activities/hooks.ts";
 import { useSlots } from "../../activities/slots-hooks.ts";
 import {
@@ -16,32 +16,39 @@ import {
   useCancelRegistration,
   useMyRegistrations,
 } from "../hooks.ts";
+import { applyOutcomeCopy, toRegistrationFailure } from "../messages.tsx";
+import { ExistingRegistration } from "./ExistingRegistration.tsx";
 import { FormFields } from "./FormFields.tsx";
-import {
-  REGISTRATION_STATUS_LABELS,
-  toVietnameseRegistrationError,
-} from "../messages.tsx";
-import { TicketCard } from "./TicketCard.tsx";
+import { SlotPicker } from "./SlotPicker.tsx";
 
 interface ApplyCardProps {
   orgId: string;
   activityId: string;
   activityStatus: string;
+  // The card's view of the registration window; undefined until it loads.
+  registrationOpen?: boolean;
 }
 
-const CANCELLABLE = new Set(["pending", "approved", "waitlisted"]);
-
+// Registration panel on the event detail page: a login prompt for guests,
+// the caller's own registration, or the apply form.
 export function ApplyCard({
   orgId,
   activityId,
   activityStatus,
+  registrationOpen,
 }: ApplyCardProps): ReactElement {
+  // Only events that take sign-ups fetch the form and the slots. A closed
+  // registration window overrules the status.
+  const applyable =
+    (activityStatus === "published" || activityStatus === "ongoing") &&
+    registrationOpen !== false;
   const session = useSession();
+  const location = useLocation();
   const mine = useMyRegistrations(session.data != null);
   const apply = useApply(activityId);
   const cancel = useCancelRegistration();
-  const form = useRegistrationForm(orgId, activityId);
-  const slots = useSlots(orgId, activityId);
+  const form = useRegistrationForm(orgId, activityId, applyable);
+  const slots = useSlots(orgId, activityId, applyable);
   const [note, setNote] = useState("");
   const [slotId, setSlotId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -55,7 +62,7 @@ export function ApplyCard({
         </p>
         <div className="mt-3">
           <Button
-            to="/login"
+            to={loginPath(`${location.pathname}${location.search}`)}
             icon={<FiLogIn className="h-4 w-4" aria-hidden="true" />}
           >
             Đăng nhập
@@ -68,11 +75,7 @@ export function ApplyCard({
   const existing = (mine.data ?? []).find(
     (r) => r.activity_id === activityId,
   );
-
-  const failMessage = (err: unknown): string =>
-    err instanceof ApiError
-      ? toVietnameseRegistrationError(err.code, err.message)
-      : "Có lỗi xảy ra.";
+  const slotList = slots.data ?? [];
 
   const onApply = async (): Promise<void> => {
     setError("");
@@ -84,7 +87,7 @@ export function ApplyCard({
         slotId: slotId ?? undefined,
       });
     } catch (err) {
-      setError(failMessage(err));
+      setError(toRegistrationFailure(err));
     }
   };
 
@@ -97,56 +100,22 @@ export function ApplyCard({
         registrationId: existing.registration_id,
       });
     } catch (err) {
-      setError(failMessage(err));
+      setError(toRegistrationFailure(err));
     }
   };
 
   if (existing && existing.status !== "cancelled") {
-    const label =
-      REGISTRATION_STATUS_LABELS[existing.status] ?? existing.status;
     return (
-      <div className="flex flex-col gap-3">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Trạng thái đăng ký của bạn:{" "}
-          <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-            {label}
-          </span>
-        </p>
-        {existing.review_note && (
-          <p className="rounded-lg border border-zinc-200 px-3 py-2 text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-            Ghi chú từ ban tổ chức: {existing.review_note}
-          </p>
-        )}
-        {(existing.status === "approved" ||
-          existing.status === "attended") && (
-          <TicketCard
-            activityId={activityId}
-            registrationId={existing.registration_id}
-          />
-        )}
-        {CANCELLABLE.has(existing.status) && (
-          <div>
-            <Button
-              variant="ghost"
-              disabled={cancel.isPending}
-              onClick={() => void onCancel()}
-              icon={<FiXCircle className="h-4 w-4" aria-hidden="true" />}
-            >
-              Hủy đăng ký
-            </Button>
-          </div>
-        )}
-        {error && (
-          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-            {error}
-          </p>
-        )}
-      </div>
+      <ExistingRegistration
+        activityId={activityId}
+        registration={existing}
+        cancelling={cancel.isPending}
+        error={error}
+        onCancel={() => void onCancel()}
+      />
     );
   }
 
-  const applyable =
-    activityStatus === "published" || activityStatus === "ongoing";
   if (!applyable) {
     return (
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -169,43 +138,12 @@ export function ApplyCard({
         placeholder="Giới thiệu ngắn về bạn…"
         maxLength={500}
       />
-      {(slots.data?.length ?? 0) > 0 && (
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            Chọn ca tham gia
-          </legend>
-          {slots.data!.map((s) => {
-            const full =
-              s.capacity != null && s.registered >= s.capacity;
-            return (
-              <label
-                key={s.slot_id}
-                className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm ${
-                  slotId === s.slot_id
-                    ? "border-zinc-900 dark:border-zinc-100"
-                    : "border-zinc-200 dark:border-zinc-800"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="slot"
-                    checked={slotId === s.slot_id}
-                    onChange={() => setSlotId(s.slot_id)}
-                  />
-                  <span className="text-zinc-900 dark:text-zinc-100">
-                    {s.title}
-                  </span>
-                </span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {s.capacity != null
-                    ? `${s.registered}/${s.capacity}${full ? " · đầy" : ""}`
-                    : `${s.registered} đã đăng ký`}
-                </span>
-              </label>
-            );
-          })}
-        </fieldset>
+      {slotList.length > 0 && (
+        <SlotPicker
+          slots={slotList}
+          value={slotId}
+          onChange={setSlotId}
+        />
       )}
       {form.data && form.data.length > 0 && (
         <FormFields
@@ -236,9 +174,7 @@ export function ApplyCard({
           className="flex items-center gap-1 text-sm text-emerald-600 dark:text-emerald-400"
         >
           <FiCheckCircle className="h-4 w-4" aria-hidden="true" />
-          {apply.data?.status === "waitlisted"
-            ? "Hoạt động đã đầy — bạn được xếp vào danh sách chờ."
-            : "Đã gửi đăng ký — chờ ban tổ chức duyệt."}
+          {applyOutcomeCopy(apply.data?.status)}
         </p>
       )}
     </div>

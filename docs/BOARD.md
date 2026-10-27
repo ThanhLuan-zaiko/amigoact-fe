@@ -132,7 +132,7 @@ gian đọc, bình luận) + `ArticleActions` với `onDone` điều hướng v�
 tin — shelf suy từ `deleted_at` trước rồi `status` nên bài trong thùng
 rác hiện đúng cặp Khôi phục/Xóa vĩnh viễn. Quyền lấy từ `useOrgPosts`
 (cache chung với board). `useBoardRealtime` mount để bình luận/bài tươi
-theo kênh.
+theo kênh. Nếu `?org=` không nằm trong các tổ chức đang tham gia (đã rời CLB hoặc link thiếu `org`), trang không tự chuyển sang tổ chức khác mà hiện lỗi kèm nút `Tổ chức của tôi`; trong lúc danh sách tổ chức còn tải thì hiện loading.
 
 ## 5. Cổng public (`/orgs/:slug`)
 

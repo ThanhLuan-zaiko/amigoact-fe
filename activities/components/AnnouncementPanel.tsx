@@ -10,7 +10,7 @@ import { formatDateTime } from "../dates.tsx";
 interface AnnouncementPanelProps {
   announcements: AnnouncementItem[];
   canManage: boolean;
-  onAdd: (input: { title: string; body: string }) => Promise<unknown>;
+  onAdd?: (input: { title: string; body: string }) => Promise<unknown>;
 }
 
 export function AnnouncementPanel({
@@ -23,6 +23,7 @@ export function AnnouncementPanel({
   const [error, setError] = useState("");
 
   const add = async (): Promise<void> => {
+    if (!onAdd) return;
     setError("");
     try {
       await onAdd({ title, body });

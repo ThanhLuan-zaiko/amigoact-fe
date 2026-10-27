@@ -2,12 +2,16 @@
 interface PlaceFields {
   is_remote: boolean;
   location: string | null;
+  city?: string | null;
   hours_awarded: number;
 }
 
-// The online label or the venue, then awarded hours when there are any.
+// The online label or the venue and city, then awarded hours when there are any.
 export function placeLine(activity: PlaceFields): string | null {
-  const place = activity.is_remote ? "Trực tuyến" : activity.location;
+  const venue = [activity.location, activity.city]
+    .filter((part) => Boolean(part))
+    .join(", ");
+  const place = activity.is_remote ? "Trực tuyến" : venue || null;
   const hours =
     activity.hours_awarded > 0 ? `${activity.hours_awarded} giờ` : null;
   const parts = [place, hours].filter((part) => Boolean(part));

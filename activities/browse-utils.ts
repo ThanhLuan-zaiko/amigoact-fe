@@ -16,9 +16,20 @@ export interface EventsFilters {
   to: string;
   page: number;
   reg: string;
+  org: string;
+  cursor: string;
 }
 
 export const EVENTS_PAGE_SIZE = 12;
+// Backend caps (docs/EVENTS.md): search 100 and city 80 characters, tag 60,
+// organization 80, and offset 500. MAX_PAGE is the last page whose offset
+// stays within 500.
+const QUERY_MAX = 100;
+const TAG_MAX = 60;
+const CITY_MAX = 80;
+const ORG_MAX = 80;
+const CURSOR_MAX = 512;
+const MAX_PAGE = Math.floor(500 / EVENTS_PAGE_SIZE) + 1;
 
 const TABS: readonly EventsTab[] = ["upcoming", "live", "past", "mine"];
 const MODES: readonly string[] = ["online", "offline"];
@@ -46,17 +57,22 @@ export function readFilters(search: URLSearchParams): EventsFilters {
   const reg = search.get("reg") ?? "";
   return {
     tab,
-    q: (search.get("q") ?? "").trim(),
+    q: (search.get("q") ?? "").trim().slice(0, QUERY_MAX),
     category: search.get("category") ?? "",
-    tag: search.get("tag") ?? "",
-    city: (search.get("city") ?? "").trim(),
+    tag: (search.get("tag") ?? "").slice(0, TAG_MAX),
+    city: (search.get("city") ?? "").trim().slice(0, CITY_MAX),
     mode: MODES.includes(mode) ? mode : "",
     open: search.get("open") === "1",
     sort: search.get("sort") === "published" ? "published" : "start",
     from: validDay(search.get("from")),
     to: validDay(search.get("to")),
-    page: Number.isInteger(pageNumber) && pageNumber > 0 ? pageNumber : 1,
+    page:
+      Number.isInteger(pageNumber) && pageNumber > 0
+        ? Math.min(pageNumber, MAX_PAGE)
+        : 1,
     reg: MY_STATUSES.includes(reg) ? reg : "",
+    org: (search.get("org") ?? "").trim().slice(0, ORG_MAX),
+    cursor: (search.get("cursor") ?? "").slice(0, CURSOR_MAX),
   };
 }
 
@@ -65,6 +81,12 @@ export function localDayStart(day: string, offsetDays = 0): string | undefined {
   if (!LOCAL_DAY.test(day)) return undefined;
   const [year, month, date] = day.split("-").map(Number);
   return new Date(year, month - 1, date + offsetDays).toISOString();
+}
+
+// True when the end date falls before the start date. The feed then drops
+// the end bound, and the date field shows an error.
+export function isRangeReversed(filters: EventsFilters): boolean {
+  return filters.from !== "" && filters.to !== "" && filters.to < filters.from;
 }
 
 function phaseFor(tab: EventsTab): string {
@@ -83,7 +105,12 @@ function withValues(
   return query;
 }
 
-// Query for the public browse feed; the page cursor is offset-based.
+function endBound(filters: EventsFilters): string | undefined {
+  return isRangeReversed(filters) ? undefined : localDayStart(filters.to, 1);
+}
+
+// Query for the public browse feed. Paging is offset-based inside the window
+// that the cursor names.
 export function toPublicQuery(filters: EventsFilters): Record<string, string> {
   const query = withValues({
     phase: phaseFor(filters.tab),
@@ -97,15 +124,17 @@ export function toPublicQuery(filters: EventsFilters): Record<string, string> {
     ["mode", filters.mode],
     ["sort", filters.sort === "published" ? "published" : undefined],
     ["starts_from", localDayStart(filters.from)],
-    ["starts_to", localDayStart(filters.to, 1)],
+    ["starts_to", endBound(filters)],
+    ["org", filters.org],
+    ["cursor", filters.cursor],
   ]);
   if (filters.open) query.registration_open = "true";
   return query;
 }
 
-// Query for the signed-in view: its own filters, no time window.
+// Query for the signed-in view: its own filters and time window, no cursor.
 export function toMineQuery(filters: EventsFilters): Record<string, string> {
-  return withValues({
+  const query = withValues({
     limit: String(EVENTS_PAGE_SIZE),
     offset: String((filters.page - 1) * EVENTS_PAGE_SIZE),
   }, [
@@ -115,7 +144,11 @@ export function toMineQuery(filters: EventsFilters): Record<string, string> {
     ["city", filters.city],
     ["mode", filters.mode],
     ["my_status", filters.reg],
+    ["starts_from", localDayStart(filters.from)],
+    ["starts_to", endBound(filters)],
   ]);
+  if (filters.open) query.registration_open = "true";
+  return query;
 }
 
 // Every filter back to its default; the paging key goes too.
@@ -130,15 +163,35 @@ export const CLEARED_FILTERS: Record<string, null> = {
   to: null,
   reg: null,
   sort: null,
+  org: null,
   page: null,
+  cursor: null,
 };
 
+// The organization scope narrows only the public tabs; the signed-in view
+// ignores it, so it does not count there.
 export function hasNarrowing(filters: EventsFilters): boolean {
   return Boolean(
     filters.q || filters.category || filters.tag || filters.city ||
       filters.mode || filters.open || filters.from || filters.to ||
-      filters.reg,
+      filters.reg || (filters.tab !== "mine" && filters.org),
   );
+}
+
+// How many filters are set, for the mobile filter button.
+export function activeFilterCount(filters: EventsFilters): number {
+  return [
+    Boolean(filters.q),
+    Boolean(filters.category),
+    Boolean(filters.tag),
+    Boolean(filters.city),
+    Boolean(filters.mode),
+    filters.open,
+    Boolean(filters.from || filters.to),
+    Boolean(filters.reg),
+    filters.sort === "published",
+    filters.tab !== "mine" && Boolean(filters.org),
+  ].filter(Boolean).length;
 }
 
 // Lower-case and strip diacritics, so a query typed without accents finds

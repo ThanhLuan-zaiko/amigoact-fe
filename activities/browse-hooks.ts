@@ -25,7 +25,13 @@ export function useEventsUrl() {
   const [searchParams, setSearchParams] = useSearchParams();
   const patch = useCallback(
     (changes: Record<string, string | null>, push = false) => {
-      setSearchParams((current) => patchParams(current, changes), {
+      // Any change to what the feed shows starts again from the first window.
+      const shown = Object.keys(changes).some(
+        (key) => key !== "page" && key !== "cursor",
+      );
+      const next =
+        shown && !("cursor" in changes) ? { ...changes, cursor: null } : changes;
+      setSearchParams((current) => patchParams(current, next), {
         replace: !push,
       });
     },

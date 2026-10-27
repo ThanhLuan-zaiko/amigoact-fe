@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { ApiError } from "../../core/api.ts";
+import { Button } from "../../core/components/Button.tsx";
 import {
   EmptyState,
   ErrorState,
@@ -14,6 +15,12 @@ import { EventRow } from "./EventRow.tsx";
 export interface FeedRow {
   item: BrowseItem;
   myStatus?: string;
+}
+
+// Moves between time windows. null means that direction has nothing to offer.
+export interface WindowNav {
+  next: (() => void) | null;
+  first: (() => void) | null;
 }
 
 const EMPTY_TITLE: Record<EventsTab, string> = {
@@ -33,13 +40,14 @@ interface EventsFeedProps {
   dimmed: boolean;
   page: number;
   narrowed: boolean;
+  windowNav: WindowNav;
   onRetry: () => void;
   onClear: () => void;
   onPage: (page: number) => void;
 }
 
 // Every state the feed can show: loading, error, empty (per tab or per
-// filter), the list itself, and the paging footer.
+// filter), the list itself, the window footer and the paging footer.
 export function EventsFeed({
   tab,
   loading,
@@ -50,32 +58,54 @@ export function EventsFeed({
   dimmed,
   page,
   narrowed,
+  windowNav,
   onRetry,
   onClear,
   onPage,
 }: EventsFeedProps): ReactElement {
   if (loading) return <LoadingState label="Đang tải sự kiện…" />;
   if (error !== null) {
-    return (
+    const code = error instanceof ApiError ? error.code : "REQUEST_FAILED";
+    const message = toVietnameseBrowseMessage(code);
+    // A rejected cursor or filter is fixed by clearing the filters, not by retrying.
+    return code === "VALIDATION_ERROR" ? (
       <ErrorState
         title="Không tải được"
-        message={toVietnameseBrowseMessage(
-          error instanceof ApiError ? error.code : "REQUEST_FAILED",
-        )}
+        message={message}
+        actionLabel="Xóa bộ lọc"
+        onAction={onClear}
+      />
+    ) : (
+      <ErrorState
+        title="Không tải được"
+        message={message}
         actionLabel="Thử lại"
         onAction={onRetry}
       />
     );
   }
   if (rows.length === 0) {
-    return narrowed ? (
-      <EmptyState
-        title="Không có sự kiện phù hợp"
-        message="Thử bỏ bớt bộ lọc để xem thêm sự kiện."
-        actionLabel="Xóa bộ lọc"
-        onAction={onClear}
-      />
-    ) : (
+    if (narrowed) {
+      return (
+        <EmptyState
+          title="Không có sự kiện phù hợp"
+          message="Thử bỏ bớt bộ lọc để xem thêm sự kiện."
+          actionLabel="Xóa bộ lọc"
+          onAction={onClear}
+        />
+      );
+    }
+    if (windowNav.next !== null) {
+      return (
+        <EmptyState
+          title="Chưa có sự kiện trong khoảng này"
+          message="Xem tiếp các sự kiện xa hơn."
+          actionLabel="Xem sự kiện xa hơn"
+          onAction={windowNav.next}
+        />
+      );
+    }
+    return (
       <EmptyState title={EMPTY_TITLE[tab]} message="Quay lại sau để xem thêm." />
     );
   }
@@ -84,20 +114,23 @@ export function EventsFeed({
     <div className="flex flex-col gap-3">
       {truncated && (
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Chỉ hiển thị các sự kiện gần nhất. Thu hẹp bộ lọc để xem đầy đủ hơn.
+          Mỗi lần chỉ hiển thị một khoảng thời gian. Chọn khoảng ngày hoặc bấm
+          &quot;Xem sự kiện xa hơn&quot; để xem tiếp.
+        </p>
+      )}
+      {dimmed && (
+        <p role="status" className="sr-only">
+          Đang cập nhật…
         </p>
       )}
       <ul
+        aria-busy={dimmed}
         className={`-mx-4 -my-4 divide-y divide-zinc-200 dark:divide-zinc-800 ${
           dimmed ? "opacity-60" : ""
         }`}
       >
         {rows.map((row) => (
-          <EventRow
-            key={row.item.id}
-            item={row.item}
-            myStatus={row.myStatus}
-          />
+          <EventRow key={row.item.id} item={row.item} myStatus={row.myStatus} />
         ))}
       </ul>
       <Pagination
@@ -105,6 +138,22 @@ export function EventsFeed({
         totalPages={totalPages}
         onPage={onPage}
       />
+      {(windowNav.first !== null || windowNav.next !== null) && (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {windowNav.first !== null ? (
+            <Button variant="ghost" onClick={windowNav.first}>
+              Về đầu danh sách
+            </Button>
+          ) : (
+            <span />
+          )}
+          {windowNav.next !== null && (
+            <Button variant="secondary" onClick={windowNav.next}>
+              Xem sự kiện xa hơn
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

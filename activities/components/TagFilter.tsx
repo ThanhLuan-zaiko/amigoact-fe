@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { FiChevronDown, FiHash, FiX } from "react-icons/fi";
 import { useDismiss } from "../../core/dismiss.ts";
@@ -23,8 +23,6 @@ interface TagOption {
   count: number | null;
 }
 
-const LISTBOX_ID = "events-tag-listbox";
-
 // Single-pick tag dropdown. Focusing the field lists the tags in the current
 // results. Typing narrows that list at once, and the public tag directory
 // adds matches outside the results. Arrow keys and Enter pick an option.
@@ -34,6 +32,7 @@ export function TagFilter({
   tags,
   onChange,
 }: TagFilterProps): ReactElement {
+  const listboxId = useId();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
@@ -117,10 +116,10 @@ export function TagFilter({
         value={query}
         role="combobox"
         aria-expanded={open}
-        aria-controls={open ? LISTBOX_ID : undefined}
+        aria-controls={open ? listboxId : undefined}
         aria-autocomplete="list"
         aria-activedescendant={
-          open && active >= 0 ? `${LISTBOX_ID}-opt-${active}` : undefined
+          open && active >= 0 ? `${listboxId}-opt-${active}` : undefined
         }
         ref={inputRef}
         onChange={(event) => {
@@ -135,7 +134,7 @@ export function TagFilter({
       {open && (
         <ul
           ref={listRef}
-          id={LISTBOX_ID}
+          id={listboxId}
           role="listbox"
           aria-label="Danh sách thẻ"
           onMouseDown={(event) => event.preventDefault()}
@@ -144,7 +143,7 @@ export function TagFilter({
           {options.map((option, index) => (
             <li
               key={option.slug}
-              id={`${LISTBOX_ID}-opt-${index}`}
+              id={`${listboxId}-opt-${index}`}
               role="option"
               aria-selected={index === active}
               onMouseEnter={() => setActive(index)}

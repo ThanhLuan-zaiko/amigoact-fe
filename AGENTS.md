@@ -7,6 +7,8 @@ Source of truth for AI agents and contributors. Follow it strictly; add a rule h
 - Icons: `react-icons` only, one family. No animation libraries, no CSS-in-JS.
 - No `src/`. Each feature is a root folder: `api.ts`, `keys.ts`, `hooks.ts`, `schemas.ts`, `utils.ts`, `components/`, `page.tsx`. Shared UI lives in `core/`.
 - Components call hooks only, never `api.ts` or `fetch`. `.tsx` <= 250 lines, `.ts` <= 350 lines.
+- Page titles: each page calls `useDocumentTitle` (`core/page-title.ts`) itself. `PageShell` sets no default, because child effects run before parent effects and a parent default would overwrite the page title.
+- Return paths after sign-in: read `?next=` only through `safeNextPath` and build login links with `loginPath` (`auth/next-path.ts`). Never redirect to a raw query value.
 
 ## Data
 - Mutations invalidate exact query keys and show backend `{ code, message }` errors via `Feedback.tsx`. Each new error code gets a Vietnamese copy entry in the same change.
@@ -28,3 +30,4 @@ Source of truth for AI agents and contributors. Follow it strictly; add a rule h
 - Before finishing: `bun run build` and `bun run lint` pass; file-size and shadow checks pass; changed pages are checked at 360, 768, 1024 and 1440 px in both themes.
 - Never commit or push unless the user explicitly asks. Never commit junk (`node_modules/`, `dist/`, `.env*`, logs); never `git add -A`.
 - After each task, run `git status --short` and report it.
+- Before every push, check CI: `.github/workflows/ci.yml` runs on every branch and gate-12 is the required check. Run each gate locally first (the `python` heredocs and shell steps, on a snapshot of `git ls-files -co --exclude-standard` so local `dist/` and caches do not count), plus `bunx tsc -b` (gate 09) and `bun run lint` (gate 10). Gate 11 (Docker build) runs only in CI, so check the Actions run after pushing. Do not push while a gate fails.

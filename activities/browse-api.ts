@@ -34,6 +34,8 @@ export interface BrowseItem {
   seats_left: number | null;
   registration_deadline: string | null;
   registration_open: boolean;
+  // Open now and asks nothing beyond a click: no form questions, no slots.
+  quick_apply: boolean;
   org: BrowseOrg;
 }
 
@@ -82,6 +84,8 @@ export interface BrowsePage {
   total: number;
   truncated: boolean;
   facets: BrowseFacets;
+  // Token for the next time window; set only when this window was cut.
+  next_cursor: string | null;
 }
 
 export interface MineBrowsePage {
@@ -115,4 +119,9 @@ export function fetchBrowseMine(query: BrowseQuery): Promise<MineBrowsePage> {
 
 export function fetchMyBriefs(): Promise<MyBrief[]> {
   return apiFetch<MyBrief[]>("/registrations/mine/brief");
+}
+
+// One card for the detail page, in the feed's item shape.
+export function fetchEventCard(activityId: string): Promise<BrowseItem> {
+  return apiFetch<BrowseItem>(`/activities/${activityId}/card`);
 }

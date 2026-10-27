@@ -1,3 +1,5 @@
+import { ApiError } from "../core/api.ts";
+
 // Vietnamese UI copy lives in this .tsx module (never in .ts) so the
 // ASCII-only code gate keeps passing. Code and comments stay English.
 export const REGISTRATION_STATUS_LABELS: Record<string, string> = {
@@ -31,4 +33,18 @@ export function toVietnameseRegistrationError(
   fallback?: string,
 ): string {
   return ERROR_MESSAGES[code] ?? fallback ?? "Có lỗi xảy ra.";
+}
+
+// Message for a failed apply or cancel call.
+export function toRegistrationFailure(err: unknown): string {
+  return err instanceof ApiError
+    ? toVietnameseRegistrationError(err.code, err.message)
+    : "Có lỗi xảy ra.";
+}
+
+// Confirmation line after a successful apply; a waitlisted result gets its own wording.
+export function applyOutcomeCopy(status: string | undefined): string {
+  return status === "waitlisted"
+    ? "Hoạt động đã đầy — bạn được xếp vào danh sách chờ."
+    : "Đã gửi đăng ký — chờ ban tổ chức duyệt.";
 }

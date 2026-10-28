@@ -7,6 +7,8 @@ import { ErrorState, LoadingState } from "../../core/components/Feedback.tsx";
 import { Section } from "../../core/components/Section.tsx";
 import { useMyMemberships } from "../../dashboard/members-hooks.ts";
 import { FormFields } from "../../registrations/components/FormFields.tsx";
+import { ChoiceField } from "./ChoiceField.tsx";
+import { EvidenceField } from "./EvidenceField.tsx";
 import { useApplyToOrg, useMembershipForm } from "../application-hooks.ts";
 import type { PublicOrgDetail } from "../api.ts";
 import { toVietnameseOrgsMessage } from "../messages.tsx";
@@ -30,6 +32,7 @@ export function ApplyOrgCard({ org }: ApplyOrgCardProps): ReactElement | null {
   const form = useMembershipForm(org.id, canApply);
   const apply = useApplyToOrg(org.slug);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [fileNames, setFileNames] = useState<Record<string, string>>({});
   const [missing, setMissing] = useState(false);
 
   if (!signedIn) return null;
@@ -91,13 +94,45 @@ export function ApplyOrgCard({ org }: ApplyOrgCardProps): ReactElement | null {
   } else {
     body = (
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
-        <FormFields
-          questions={questions}
-          answers={answers}
-          onChange={(questionId, value) =>
-            setAnswers((prev) => ({ ...prev, [questionId]: value }))
+        {questions.map((q) => {
+          if (q.field_type === "file") {
+            return (
+              <EvidenceField
+                key={q.question_id}
+                orgId={org.id}
+                question={q}
+                value={answers[q.question_id] ?? ""}
+                name={fileNames[q.question_id] ?? null}
+                onChange={(value, name) => {
+                  setAnswers((prev) => ({ ...prev, [q.question_id]: value }));
+                  setFileNames((prev) => ({ ...prev, [q.question_id]: name ?? "" }));
+                }}
+              />
+            );
           }
-        />
+          if (q.field_type === "choice") {
+            return (
+              <ChoiceField
+                key={q.question_id}
+                question={q}
+                value={answers[q.question_id] ?? ""}
+                onChange={(value) =>
+                  setAnswers((prev) => ({ ...prev, [q.question_id]: value }))
+                }
+              />
+            );
+          }
+          return (
+            <FormFields
+              key={q.question_id}
+              questions={[q]}
+              answers={answers}
+              onChange={(questionId, value) =>
+                setAnswers((prev) => ({ ...prev, [questionId]: value }))
+              }
+            />
+          );
+        })}
         {missing && (
           <p className="text-sm text-red-700 dark:text-red-300">
             {toVietnameseOrgsMessage("ANSWER_REQUIRED")}
@@ -122,8 +157,13 @@ export function ApplyOrgCard({ org }: ApplyOrgCardProps): ReactElement | null {
     <div id="apply-org">
       <Section>
         <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-          Nộp hồ sơ tình nguyện
+          {form.data?.title || "Nộp hồ sơ tình nguyện"}
         </h2>
+        {form.data?.description && (
+          <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
+            {form.data.description}
+          </p>
+        )}
         <div className="mt-3">{body}</div>
       </Section>
     </div>

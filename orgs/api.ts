@@ -1,4 +1,10 @@
-import { apiBaseUrl, apiFetch } from "../core/api.ts";
+import {
+  apiBaseUrl,
+  apiBlobFetch,
+  apiFetch,
+  apiUpload,
+  type BlobResult,
+} from "../core/api.ts";
 
 export type OrgKind = "organization" | "club" | "group" | "business";
 export type JoinPolicy = "invite" | "open" | "review";
@@ -223,9 +229,13 @@ export interface MembershipQuestion {
   label: string;
   field_type: string;
   required: boolean;
+  options: string[];
+  allow_other: boolean;
 }
 
 export interface MembershipForm {
+  title: string;
+  description: string;
   questions: MembershipQuestion[];
 }
 
@@ -233,6 +243,14 @@ export interface MembershipQuestionInput {
   label: string;
   field_type: string;
   required: boolean;
+  options: string[];
+  allow_other: boolean;
+}
+
+export interface MembershipFormInput {
+  title: string;
+  description: string;
+  questions: MembershipQuestionInput[];
 }
 
 export async function getMembershipForm(orgId: string): Promise<MembershipForm> {
@@ -241,12 +259,38 @@ export async function getMembershipForm(orgId: string): Promise<MembershipForm> 
 
 export async function saveMembershipForm(
   orgId: string,
-  questions: MembershipQuestionInput[],
+  form: MembershipFormInput,
 ): Promise<MembershipForm> {
   return apiFetch<MembershipForm>(`/orgs/${orgId}/membership-form`, {
     method: "PUT",
-    body: JSON.stringify({ questions }),
+    body: JSON.stringify(form),
   });
+}
+
+// Evidence file an applicant staged; its media_id is the answer to a file question.
+export interface StagedEvidence {
+  media_id: string;
+  name: string;
+  mime: string;
+  size_bytes: number;
+}
+
+export async function uploadMembershipFile(
+  orgId: string,
+  file: File,
+): Promise<StagedEvidence> {
+  const form = new FormData();
+  form.append("file", file);
+  return apiUpload<StagedEvidence>(`/orgs/${orgId}/membership-applications/files`, form);
+}
+
+// Reviewer download of one evidence file; the server checks the submission first.
+export async function downloadApplicationFile(
+  orgId: string,
+  userId: string,
+  mediaId: string,
+): Promise<BlobResult> {
+  return apiBlobFetch(`/orgs/${orgId}/members/${userId}/application-files/${mediaId}`);
 }
 
 export async function applyToOrg(

@@ -11,11 +11,22 @@ import {
   applyToOrg,
   getMembershipForm,
   saveMembershipForm,
+  uploadMembershipFile,
   type MembershipForm,
-  type MembershipQuestionInput,
+  type MembershipFormInput,
   type OrgMembership,
+  type StagedEvidence,
 } from "./api.ts";
 import { orgKeys } from "./keys.ts";
+
+// Stages one evidence file; the returned media_id goes into the answer.
+export function useUploadMembershipFile(
+  orgId: string,
+): UseMutationResult<StagedEvidence, ApiError, File> {
+  return useMutation({
+    mutationFn: (file: File) => uploadMembershipFile(orgId, file),
+  });
+}
 
 // Applicant and manager share the org's form: GET is open to signed-in viewers.
 export function useMembershipForm(
@@ -33,12 +44,11 @@ export function useMembershipForm(
 
 export function useSaveMembershipForm(
   orgId: string,
-): UseMutationResult<MembershipForm, ApiError, MembershipQuestionInput[]> {
+): UseMutationResult<MembershipForm, ApiError, MembershipFormInput> {
   const queryClient = useQueryClient();
   return useMutation({
     meta: { successToast: "member.form" },
-    mutationFn: (questions: MembershipQuestionInput[]) =>
-      saveMembershipForm(orgId, questions),
+    mutationFn: (form: MembershipFormInput) => saveMembershipForm(orgId, form),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: orgKeys.membershipForm(orgId),

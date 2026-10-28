@@ -234,10 +234,20 @@ export async function deleteOrgRole(orgId: string, roleId: string): Promise<void
   });
 }
 
+export interface ApplicationFile {
+  media_id: string;
+  name: string;
+  mime: string;
+  size_bytes: number;
+}
+
 export interface ApplicationAnswer {
   question_id: string;
   label: string;
   answer: string;
+  // True when the applicant typed their own answer under "Khác".
+  is_other: boolean;
+  file: ApplicationFile | null;
 }
 
 export interface MemberApplication {

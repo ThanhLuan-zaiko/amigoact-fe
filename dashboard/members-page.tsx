@@ -13,7 +13,6 @@ import type { MemberSortParam } from "./members-api.ts";
 import { useOrgPresence, usePresenceIds } from "./presence-hooks.ts";
 import { InvitationInboxCard } from "./components/InvitationInboxCard.tsx";
 import { MemberListCard } from "./components/MemberListCard.tsx";
-import { MembershipFormCard } from "./components/MembershipFormCard.tsx";
 import { hasPermission } from "./members-utils.ts";
 
 const PAGE_SIZE = 10;
@@ -117,14 +116,6 @@ export function DashboardMembersPage(): ReactElement {
         onPage={(n) => updateParams({ page: n > 1 ? String(n) : null })}
         onResetFilters={resetFilters}
       />
-      {orgId !== null &&
-        org?.join_policy === "review" &&
-        members.data !== undefined &&
-        hasPermission(
-          members.data.viewer_role,
-          members.data.viewer_permissions,
-          "member:invite",
-        ) && <MembershipFormCard orgId={orgId} />}
     </>
   );
 }

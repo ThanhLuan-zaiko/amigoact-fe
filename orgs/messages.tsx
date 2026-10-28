@@ -59,6 +59,8 @@ const MESSAGES: Record<string, string> = {
   SERVER_OVERLOADED: "Máy chủ đang quá tải. Vui lòng thử lại sau giây lát.",
   REQUEST_FAILED: "Có lỗi xảy ra. Vui lòng thử lại sau.",
   VALIDATION_ERROR: "Dữ liệu gửi lên chưa hợp lệ.",
+  UNSUPPORTED_MEDIA: "Chỉ nhận file PDF hoặc ảnh.",
+  MEDIA_TOO_LARGE: "File vượt quá 10 MB. Vui lòng chọn file nhỏ hơn.",
 };
 
 export function toVietnameseOrgsMessage(code: string): string {

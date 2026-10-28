@@ -60,7 +60,7 @@ export function OrgDetailPage(): ReactElement {
   return (
     <>
       <OrgDetailHero org={detail} />
-      {detail.join_policy === "review" && <ApplyOrgCard org={detail} />}
+      {detail.join_policy !== "open" && <ApplyOrgCard org={detail} />}
       <OrgTrustCard org={detail} />
       <OrgAboutCard org={detail} />
       <OrgContactCard org={detail} />

@@ -29,27 +29,16 @@ function joinCta(
   signedIn: boolean,
   join: ReturnType<typeof useJoinOrg>,
 ): ReactElement {
-  if (org.join_policy === "invite") {
-    return (
-      <p className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-        <FiMail className="h-4 w-4" aria-hidden="true" />
-        Tổ chức này nhận thành viên qua lời mời
-      </p>
-    );
-  }
-  if (org.join_policy === "review") {
-    if (!signedIn) {
-      return (
-        <Button
-          to="/login"
-          variant="primary"
-          icon={<FiLogIn className="h-4 w-4" aria-hidden="true" />}
-        >
-          Đăng nhập để nộp hồ sơ
-        </Button>
-      );
-    }
-    return (
+  if (org.join_policy === "invite" || org.join_policy === "review") {
+    const apply = !signedIn ? (
+      <Button
+        to="/login"
+        variant="primary"
+        icon={<FiLogIn className="h-4 w-4" aria-hidden="true" />}
+      >
+        Đăng nhập để nộp hồ sơ
+      </Button>
+    ) : (
       <Button
         variant="primary"
         onClick={() =>
@@ -59,8 +48,18 @@ function joinCta(
         }
         icon={<FiFileText className="h-4 w-4" aria-hidden="true" />}
       >
-        Nộp hồ sơ
+        Nộp hồ sơ tình nguyện
       </Button>
+    );
+    if (org.join_policy === "review") return apply;
+    return (
+      <>
+        {apply}
+        <p className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+          <FiMail className="h-4 w-4" aria-hidden="true" />
+          Tổ chức này nhận thành viên qua lời mời hoặc hồ sơ tình nguyện
+        </p>
+      </>
     );
   }
   if (!signedIn) {

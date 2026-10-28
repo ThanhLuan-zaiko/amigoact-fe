@@ -15,6 +15,7 @@ import { MemberOrgCard } from "./MemberOrgCard.tsx";
 import { MemberStatsCard } from "./MemberStatsCard.tsx";
 import { ChatRulesCard } from "./ChatRulesCard.tsx";
 import { MemberDefaultsCard } from "./MemberDefaultsCard.tsx";
+import { MembershipFormCard } from "./MembershipFormCard.tsx";
 import { RoleManageCard } from "./RoleManageCard.tsx";
 
 const MEMBER_SORTS = ["newest", "name", "role"] as const;
@@ -141,6 +142,10 @@ export function ManageContextPanels({
           viewerCeiling={viewerCeiling}
         />
       </Section>
+      {org?.join_policy !== "open" &&
+        hasPermission(viewerRole, viewerPermissions, "member:invite") && (
+          <MembershipFormCard orgId={orgId} />
+        )}
       <Section>
         <MemberDefaultsCard orgId={orgId} viewerRole={viewerRole} />
       </Section>

@@ -156,13 +156,20 @@ export interface ConfirmCopy {
   busyLabel: string;
 }
 
-export type MemberConfirmKind = "remove" | "leave" | "revoke";
+export type MemberConfirmKind =
+  | "remove"
+  | "leave"
+  | "revoke"
+  | "reject"
+  | "withdraw";
 
 // Mutation key understood by memberMutationToast for each confirm kind.
 export const CONFIRM_ACTIONS: Record<MemberConfirmKind, string> = {
   remove: "removed",
   leave: "left",
   revoke: "revoked",
+  reject: "rejected",
+  withdraw: "withdrawn",
 };
 
 export function memberConfirmCopy(
@@ -184,6 +191,20 @@ export function memberConfirmCopy(
           "Bạn sẽ mất quyền truy cập tổ chức và các phòng chat, và cần được mời lại để tham gia.",
         confirmLabel: "Rời tổ chức",
         busyLabel: "Đang xử lý…",
+      };
+    case "reject":
+      return {
+        title: `Từ chối hồ sơ của ${name}?`,
+        message: "Người nộp sẽ được thông báo và phải chờ 7 ngày trước khi nộp lại.",
+        confirmLabel: "Từ chối hồ sơ",
+        busyLabel: "Đang từ chối…",
+      };
+    case "withdraw":
+      return {
+        title: "Rút hồ sơ?",
+        message: "Hồ sơ của bạn sẽ bị hủy. Bạn có thể nộp lại ngay.",
+        confirmLabel: "Rút hồ sơ",
+        busyLabel: "Đang rút…",
       };
     case "revoke":
       return {

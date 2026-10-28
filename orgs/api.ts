@@ -1,7 +1,7 @@
 import { apiBaseUrl, apiFetch } from "../core/api.ts";
 
 export type OrgKind = "organization" | "club" | "group" | "business";
-export type JoinPolicy = "invite" | "open";
+export type JoinPolicy = "invite" | "open" | "review";
 export type PublicOrgSort = "newest" | "name" | "members";
 
 export interface PublicOrgMedia {
@@ -215,5 +215,46 @@ export interface OrgMembership {
 export async function joinOrg(orgId: string): Promise<OrgMembership> {
   return apiFetch<OrgMembership>(`/orgs/${orgId}/members/join`, {
     method: "POST",
+  });
+}
+
+export interface MembershipQuestion {
+  question_id: string;
+  label: string;
+  field_type: string;
+  required: boolean;
+}
+
+export interface MembershipForm {
+  questions: MembershipQuestion[];
+}
+
+export interface MembershipQuestionInput {
+  label: string;
+  field_type: string;
+  required: boolean;
+}
+
+export async function getMembershipForm(orgId: string): Promise<MembershipForm> {
+  return apiFetch<MembershipForm>(`/orgs/${orgId}/membership-form`);
+}
+
+export async function saveMembershipForm(
+  orgId: string,
+  questions: MembershipQuestionInput[],
+): Promise<MembershipForm> {
+  return apiFetch<MembershipForm>(`/orgs/${orgId}/membership-form`, {
+    method: "PUT",
+    body: JSON.stringify({ questions }),
+  });
+}
+
+export async function applyToOrg(
+  orgId: string,
+  answers: Record<string, string>,
+): Promise<OrgMembership> {
+  return apiFetch<OrgMembership>(`/orgs/${orgId}/members/apply`, {
+    method: "POST",
+    body: JSON.stringify({ answers }),
   });
 }

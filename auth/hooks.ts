@@ -6,6 +6,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 import { ApiError } from "../core/api.ts";
+import { refreshRealtimeSession } from "../core/realtime.ts";
 import { useUploadAvatar } from "../profiles/hooks.ts";
 import {
   changePasswordAccount,
@@ -39,10 +40,12 @@ export function useSession(): UseQueryResult<SessionProfile | null> {
   });
 }
 
-function useInvalidateSession<TData>() {
+function useInvalidateSession<TData>(identityChanged = false) {
   const queryClient = useQueryClient();
   return {
     onSuccess: async (data: TData) => {
+      // The socket's ticket is bound at handshake, so a new identity redials.
+      if (identityChanged) refreshRealtimeSession();
       await queryClient.invalidateQueries({ queryKey: authKeys.session() });
       return data;
     },
@@ -67,7 +70,7 @@ export function useVerifyEmail(): UseMutationResult<
 > {
   return useMutation({
     mutationFn: verifyEmailAccount,
-    ...useInvalidateSession<SessionProfile>(),
+    ...useInvalidateSession<SessionProfile>(true),
   });
 }
 
@@ -91,7 +94,7 @@ export function useLogin(): UseMutationResult<
       access_token: string;
       token_type: string;
       expires_in: number;
-    }>(),
+    }>(true),
   });
 }
 
@@ -113,6 +116,7 @@ export function useLogout(): UseMutationResult<void, ApiError, void> {
     mutationFn: logoutAccount,
     onSettled: async () => {
       clearSessionToken();
+      refreshRealtimeSession();
       queryClient.setQueryData(authKeys.session(), null);
       await queryClient.invalidateQueries({ queryKey: authKeys.session() });
     },
@@ -125,6 +129,7 @@ export function useLogoutAll(): UseMutationResult<void, ApiError, void> {
     mutationFn: logoutAllSessions,
     onSettled: async () => {
       clearSessionToken();
+      refreshRealtimeSession();
       queryClient.setQueryData(authKeys.session(), null);
       await queryClient.invalidateQueries({ queryKey: authKeys.session() });
     },

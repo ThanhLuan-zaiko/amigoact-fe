@@ -42,6 +42,12 @@ Hợp đồng với backend (`amigoact-be` docs/REALTIME.md):
    `FORBIDDEN` trên kênh → đánh dấu denied, không resubscribe kênh đó nữa.
 6. Mã đóng: `4401` ticket sai, `4403` bị từ chối, `4400` bad frame, `4408`
    miss pong — mọi close đều chạy reconnect trừ khi teardown chủ động.
+7. Đổi phiên (đăng nhập, xác minh email, đăng xuất): `refreshRealtimeSession()`
+   tách socket cũ ra rồi dial lại ngay, nên handshake mang ticket của phiên mới.
+   Socket khách không bao giờ được nâng quyền; nếu giữ nó, `notifications:{userId}`
+   bị `FORBIDDEN` + `4403` ngay sau đăng ký. Socket cũ được tách trước khi đóng
+   nên không báo `reconnecting`, banner không chớp. `Thử lại` đi cùng đường này và
+   xóa danh sách kênh `denied`.
 
 API xuất ra:
 
@@ -55,7 +61,8 @@ API xuất ra:
 
 Socket machinery nằm trong `core/realtime-client.ts` (class
 `RealtimeClient`, bookkeeping `RealtimeIssue`: `session` / `denied` /
-`error`); `core/realtime.ts` chỉ là facade export API. Banner kết nối là
+`error`); `core/realtime.ts` chỉ là facade export API. Watchdog heartbeat nằm trong
+`core/realtime-watchdog.ts`. Banner kết nối là
 `core/components/RealtimeBanner.tsx`, mount một lần trong `PageShell`
 dưới `CenterHeader`: reconnecting đọc amber (transient), `session`
 (4401) và `denied` (4403) đọc red kèm hành động Đăng nhập / Thử lại,

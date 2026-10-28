@@ -13,15 +13,12 @@ import type {
   RealtimeStatus,
   StatusHandler,
 } from "./realtime-types.ts";
+import { Watchdog } from "./realtime-watchdog.ts";
 
 /** Socket machinery behind `core/realtime.ts` (see docs/REALTIME.md); core-internal. */
 
 const BASE_RETRY_MS = 500;
 const MAX_RETRY_MS = 15_000;
-const DEFAULT_WATCHDOG_MS = 40_000;
-const WATCHDOG_GRACE_MS = 15_000;
-const MIN_WATCHDOG_MS = 5_000;
-const MAX_WATCHDOG_MS = 120_000;
 // Server budgets subscribe.v1 at 20/min: a StrictMode remount would
 // burn a leave+join pair, so leaves linger and cancel on resubscribe.
 const UNSUB_LINGER_MS = 750;
@@ -38,8 +35,7 @@ export class RealtimeClient {
   private issue: RealtimeIssue = null;
   private retryAttempt = 0;
   private retryTimer: Timer | null = null;
-  private watchdogTimer: Timer | null = null;
-  private watchdogMs = DEFAULT_WATCHDOG_MS;
+  private readonly watchdog = new Watchdog(() => this.socket?.close());
   private manualClose = false;
   private connecting = false;
   private generation = 0; // teardown() bumps this to drop in-flight connect()
@@ -144,12 +140,29 @@ export class RealtimeClient {
     void this.connect();
   }
 
-  /** User-triggered retry: drop the backoff wait and dial immediately. */
+  /**
+   * Redial with a fresh ticket. The old socket is detached before it closes, so
+   * its close never reports "reconnecting" and its late events cannot reach us.
+   */
   reconnectNow(): void {
-    if (this.socket !== null || this.connecting) return;
     this.clearRetryTimer();
+    this.watchdog.clear();
+    this.denied.clear();
     this.retryAttempt = 0;
-    void this.connect();
+    const stale = this.socket;
+    this.socket = null;
+    if (stale !== null) {
+      stale.onopen = null;
+      stale.onmessage = null;
+      stale.onclose = null;
+      stale.close();
+    }
+    // Like a fresh subscribe, a socket opens only while some channel wants it.
+    if (this.handlers.size > 0) void this.connect();
+    else {
+      this.setIssue(null);
+      this.setStatus("idle");
+    }
   }
 
   private async connect(): Promise<void> {
@@ -172,7 +185,7 @@ export class RealtimeClient {
         this.retryAttempt = 0;
         this.setIssue(null);
         this.setStatus("open");
-        this.armWatchdog();
+        this.watchdog.arm();
         this.resubscribe();
       };
       socket.onmessage = (event: MessageEvent) => this.handleMessage(event);
@@ -185,24 +198,14 @@ export class RealtimeClient {
   private handleMessage(event: MessageEvent): void {
     const raw = typeof event.data === "string" ? event.data : String(event.data);
     if (raw.length > MAX_FRAME_CHARS) return;
-    this.armWatchdog();
+    this.watchdog.arm();
     const frame = parseEnvelope(raw);
     if (frame === null) return;
     switch (frame.type) {
       case "ping.v1": this.send("pong.v1"); break;
       case "ready.v1": {
         const ready = frame.data as { heartbeat_seconds?: number };
-        const hb = ready.heartbeat_seconds;
-        if (
-          typeof hb === "number" &&
-          Number.isFinite(hb) &&
-          hb >= 5 &&
-          hb <= 120
-        ) {
-          this.watchdogMs = hb * 1000 + WATCHDOG_GRACE_MS;
-        } else {
-          this.watchdogMs = DEFAULT_WATCHDOG_MS;
-        }
+        this.watchdog.setHeartbeat(ready.heartbeat_seconds);
         break;
       }
       case "event.v1": {
@@ -245,7 +248,7 @@ export class RealtimeClient {
 
   private handleClose(event: CloseEvent): void {
     this.socket = null;
-    this.clearWatchdog();
+    this.watchdog.clear();
     this.connecting = false;
     if (this.manualClose) {
       this.manualClose = false;
@@ -308,26 +311,10 @@ export class RealtimeClient {
     this.send("typing.v1", { channel });
   }
 
-  private armWatchdog(): void {
-    this.clearWatchdog();
-    const clamped = Math.min(
-      MAX_WATCHDOG_MS,
-      Math.max(MIN_WATCHDOG_MS, this.watchdogMs),
-    );
-    this.watchdogTimer = setTimeout(() => this.socket?.close(), clamped);
-  }
-
-  private clearWatchdog(): void {
-    if (this.watchdogTimer !== null) {
-      clearTimeout(this.watchdogTimer);
-      this.watchdogTimer = null;
-    }
-  }
-
   private teardown(): void {
     this.generation += 1;
     this.clearRetryTimer();
-    this.clearWatchdog();
+    this.watchdog.clear();
     for (const timer of this.pendingUnsub.values()) clearTimeout(timer);
     this.pendingUnsub.clear();
     this.denied.clear();

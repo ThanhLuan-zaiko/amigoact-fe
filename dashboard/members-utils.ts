@@ -47,6 +47,9 @@ export interface MemberRights {
   suspend: boolean;
   reactivate: boolean;
   revoke: boolean;
+  approve: boolean;
+  reject: boolean;
+  application: boolean;
   remove: boolean;
   leave: boolean;
 }
@@ -69,6 +72,10 @@ export function memberRights(
     suspend: onTarget && status === "active" && can("member:suspend"),
     reactivate: onTarget && status === "suspended" && can("member:suspend"),
     revoke: onTarget && status === "invited" && can("member:invite"),
+    // Applicants are not members yet, so the owner/admin hierarchy does not apply.
+    approve: status === "applied" && !isSelf && can("member:invite"),
+    reject: status === "applied" && !isSelf && can("member:invite"),
+    application: status === "applied" && !isSelf && can("member:invite"),
     remove:
       onTarget &&
       (status === "active" || status === "suspended") &&

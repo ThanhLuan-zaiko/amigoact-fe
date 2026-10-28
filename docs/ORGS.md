@@ -184,3 +184,26 @@ vùng thư viện bên trong cuộn):
 giữ nguyên cơ chế thử lại `401` + refresh token như `apiFetch()`.
 `uploadOrgMedia` gửi kèm trường `role` trong multipart form
 (`gallery`/`cover`/`logo`).
+
+### Nộp hồ sơ duyệt (`join_policy = review`)
+
+- Tổ chức có chính sách `review` hiện `ApplyOrgCard` ngay dưới hero (`#apply-org`),
+  chỉ khi người xem đã đăng nhập. Nút CTA trong hero cuộn tới thẻ này; khách thấy
+  `Đăng nhập để nộp hồ sơ`.
+- Thẻ đọc trạng thái của người xem qua `useMyMemberships` và chỉ hiện biểu mẫu khi
+  người xem chưa có quan hệ nào hoặc đã rời/bị thu hồi. Đang `applied`, `active`,
+  `invited` hoặc `suspended` thì thẻ chỉ hiện trạng thái tương ứng.
+- Biểu mẫu lấy qua `useMembershipForm` (`GET /orgs/{id}/membership-form`) và
+  render bằng `FormFields` dùng chung với đăng ký hoạt động. Câu bắt buộc được kiểm
+  ở client trước khi gửi; backend vẫn kiểm lại và trả `ANSWER_REQUIRED`.
+- Quản lý (`member:invite` hoặc owner) có `MembershipFormCard` trong trang thành
+  viên khi tổ chức ở chế độ `review`: thêm, sửa, xóa câu hỏi rồi lưu. Lưu gửi cả
+  danh sách qua `PUT`, nên thứ tự và số lượng luôn khớp backend (tối đa 32).
+- Trong danh sách thành viên có thẻ `Chờ duyệt` (`applied`). Dòng `applied` có
+  `Xem hồ sơ nộp` (`MemberApplicationDialog`), `Duyệt hồ sơ` và `Từ chối hồ sơ`;
+  người nộp tự rút bằng `Rút hồ sơ` (đi qua luồng rời tổ chức có sẵn), có hộp xác nhận riêng.
+  `Từ chối hồ sơ` mở hộp xác nhận vì người nộp sẽ được báo và phải chờ 7 ngày mới
+  nộp lại. `Duyệt hồ sơ` không có hộp xác nhận. Backend trả `APPLICATION_COOLDOWN`
+  khi còn trong thời gian chờ, và `TOO_MANY_REQUESTS` khi nộp quá nhiều lần.
+- Chủ tổ chức đổi chính sách qua ô chọn trong `MemberManageActions` (Chỉ mời,
+  Nộp hồ sơ duyệt, Mở tham gia).

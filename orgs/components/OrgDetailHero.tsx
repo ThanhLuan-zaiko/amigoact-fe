@@ -3,6 +3,7 @@ import {
   FiArrowLeft,
   FiCalendar,
   FiCheckCircle,
+  FiFileText,
   FiImage,
   FiLogIn,
   FiMail,
@@ -34,6 +35,32 @@ function joinCta(
         <FiMail className="h-4 w-4" aria-hidden="true" />
         Tổ chức này nhận thành viên qua lời mời
       </p>
+    );
+  }
+  if (org.join_policy === "review") {
+    if (!signedIn) {
+      return (
+        <Button
+          to="/login"
+          variant="primary"
+          icon={<FiLogIn className="h-4 w-4" aria-hidden="true" />}
+        >
+          Đăng nhập để nộp hồ sơ
+        </Button>
+      );
+    }
+    return (
+      <Button
+        variant="primary"
+        onClick={() =>
+          document
+            .getElementById("apply-org")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+        icon={<FiFileText className="h-4 w-4" aria-hidden="true" />}
+      >
+        Nộp hồ sơ
+      </Button>
     );
   }
   if (!signedIn) {

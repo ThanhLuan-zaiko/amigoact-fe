@@ -14,4 +14,6 @@ export const orgKeys = {
   postMediaAll: () => [...orgKeys.all, "post-media"] as const,
   orgDetails: () => [...orgKeys.all, "detail"] as const,
   orgPosts: () => [...orgKeys.all, "posts"] as const,
+  membershipForm: (orgId: string) =>
+    [...orgKeys.all, "membership-form", orgId] as const,
 };

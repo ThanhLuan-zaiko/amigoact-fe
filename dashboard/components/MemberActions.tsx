@@ -5,6 +5,7 @@ import {
   FiMinusCircle,
   FiPlay,
   FiShield,
+  FiUserCheck,
   FiUserMinus,
   FiUserX,
 } from "react-icons/fi";
@@ -13,6 +14,7 @@ import { ActionMenu } from "../../core/components/ActionMenu.tsx";
 import type { MenuAction } from "../../core/components/ActionMenu.tsx";
 import { ConfirmDialog } from "../../core/components/ConfirmDialog.tsx";
 import { pushToast } from "../../core/toast.ts";
+import { useApproveMember, useRejectMember } from "../application-hooks.ts";
 import { useRemoveMember, useRevokeInvitation, useUpdateMember } from "../members-hooks.ts";
 import { hasAnyRight, memberRights } from "../members-utils.ts";
 import { toVietnameseDashboardMessage } from "../messages.tsx";
@@ -20,6 +22,7 @@ import { memberMutationToast } from "../messages-members.tsx";
 import { CONFIRM_ACTIONS, memberConfirmCopy } from "../messages-roles.tsx";
 import type { MemberConfirmKind } from "../messages-roles.tsx";
 import type { DashboardMember, OrgRole } from "../members-api.ts";
+import { MemberApplicationDialog } from "./MemberApplicationDialog.tsx";
 import { MemberRoleEditor } from "./MemberRoleEditor.tsx";
 
 interface MemberActionsProps {
@@ -47,10 +50,13 @@ export function MemberActions({
   const update = useUpdateMember(orgId);
   const remove = useRemoveMember(orgId);
   const revoke = useRevokeInvitation(orgId);
+  const approve = useApproveMember(orgId);
+  const reject = useRejectMember(orgId);
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState<MemberConfirmKind | null>(null);
   const [editingRoles, setEditingRoles] = useState(false);
-  const busy = update.isPending || remove.isPending || revoke.isPending;
+  const [viewingApplication, setViewingApplication] = useState(false);
+  const busy = update.isPending || remove.isPending || revoke.isPending || approve.isPending || reject.isPending;
 
   const rights = memberRights(viewerRole, viewerPermissions, member, isSelf);
   if (!hasAnyRight(rights) && onViewProfile === undefined) return null;
@@ -92,7 +98,9 @@ export function MemberActions({
     const task =
       kind === "revoke"
         ? revoke.mutateAsync(member.user_id)
-        : remove.mutateAsync(member.user_id);
+        : kind === "reject"
+          ? reject.mutateAsync(member.user_id)
+          : remove.mutateAsync(member.user_id);
     await run(task, CONFIRM_ACTIONS[kind]);
     setConfirm(null);
   }
@@ -145,6 +153,37 @@ export function MemberActions({
       onSelect: () => ask("revoke"),
     });
   }
+  if (rights.application) {
+    items.push({
+      key: "application",
+      label: "Xem hồ sơ nộp",
+      Icon: FiFileText,
+      onSelect: () => {
+        setOpen(false);
+        setViewingApplication(true);
+      },
+    });
+  }
+  if (rights.approve) {
+    items.push({
+      key: "approve",
+      label: "Duyệt hồ sơ",
+      Icon: FiUserCheck,
+      onSelect: () => {
+        setOpen(false);
+        void run(approve.mutateAsync(member.user_id), "approved");
+      },
+    });
+  }
+  if (rights.reject) {
+    items.push({
+      key: "reject",
+      label: "Từ chối hồ sơ",
+      Icon: FiUserX,
+      danger: true,
+      onSelect: () => ask("reject"),
+    });
+  }
   if (rights.remove) {
     items.push({
       key: "remove",
@@ -157,10 +196,10 @@ export function MemberActions({
   if (rights.leave) {
     items.push({
       key: "leave",
-      label: "Rời tổ chức",
+      label: member.status === "applied" ? "Rút hồ sơ" : "Rời tổ chức",
       Icon: FiUserMinus,
       danger: true,
-      onSelect: () => ask("leave"),
+      onSelect: () => ask(member.status === "applied" ? "withdraw" : "leave"),
     });
   }
 
@@ -185,6 +224,13 @@ export function MemberActions({
         open={editingRoles}
         onClose={() => setEditingRoles(false)}
       />
+      {viewingApplication && (
+        <MemberApplicationDialog
+          orgId={orgId}
+          member={member}
+          onClose={() => setViewingApplication(false)}
+        />
+      )}
       <ConfirmDialog
         open={confirm !== null}
         danger

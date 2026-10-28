@@ -17,6 +17,8 @@ export class ApiError extends Error {
 
 let accessToken: string | null = null;
 let refreshPromise: Promise<string> | null = null;
+// Token in place when the in-flight refresh was sent: its failure may only clear that token.
+let refreshBaseline: string | null = null;
 // True once the boot probe (or a failed refresh retry) proved there is no
 // usable refresh cookie: protected calls then fail fast instead of paying
 // a doomed refresh round-trip per request.
@@ -132,6 +134,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 async function refreshAccessToken(): Promise<string> {
   if (!refreshPromise) {
+    refreshBaseline = accessToken;
     refreshPromise = (async () => {
       const body = await request<{
         access_token: string;
@@ -152,12 +155,18 @@ async function refreshAccessToken(): Promise<string> {
 // Shared refresh-or-fail step for every public wrapper: a dead refresh
 // cookie (401) marks the page guest so later calls stop retrying.
 async function refreshForRetry(original: ApiError): Promise<void> {
+  // Read right after the call: refreshBaseline then belongs to this refresh.
+  const pending = refreshAccessToken();
+  const baseline = refreshBaseline;
   try {
-    await refreshAccessToken();
+    await pending;
   } catch (refreshError) {
-    setAccessToken(null);
-    if (refreshError instanceof ApiError && refreshError.status === 401) {
-      guestOnly = true;
+    // A sign-in that landed during the refresh owns the token, so keep it.
+    if (accessToken === baseline) {
+      setAccessToken(null);
+      if (refreshError instanceof ApiError && refreshError.status === 401) {
+        guestOnly = true;
+      }
     }
     throw original;
   }

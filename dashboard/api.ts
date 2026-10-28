@@ -1,7 +1,7 @@
 import { ApiError, apiBaseUrl, apiFetch, apiUpload } from "../core/api.ts";
 
 export type OrgKind = "organization" | "club" | "group" | "business";
-export type JoinPolicy = "invite" | "open";
+export type JoinPolicy = "invite" | "open" | "review";
 
 export interface DashboardOrg {
   id: string;

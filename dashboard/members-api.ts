@@ -3,6 +3,7 @@ import type { BucketCount } from "./api.ts";
 
 export type MemberStatus =
   | "active"
+  | "applied"
   | "invited"
   | "suspended"
   | "left"
@@ -230,5 +231,44 @@ export async function updateOrgRole(
 export async function deleteOrgRole(orgId: string, roleId: string): Promise<void> {
   await apiFetch<unknown>(`/orgs/${orgId}/roles/${roleId}`, {
     method: "DELETE",
+  });
+}
+
+export interface ApplicationAnswer {
+  question_id: string;
+  label: string;
+  answer: string;
+}
+
+export interface MemberApplication {
+  user_id: string;
+  submitted_at: string;
+  answers: ApplicationAnswer[];
+}
+
+export async function getMemberApplication(
+  orgId: string,
+  userId: string,
+): Promise<MemberApplication> {
+  return apiFetch<MemberApplication>(
+    `/orgs/${orgId}/members/${userId}/application`,
+  );
+}
+
+export async function approveMember(
+  orgId: string,
+  userId: string,
+): Promise<DashboardMember> {
+  return apiFetch<DashboardMember>(`/orgs/${orgId}/members/${userId}/approve`, {
+    method: "POST",
+  });
+}
+
+export async function rejectMember(
+  orgId: string,
+  userId: string,
+): Promise<DashboardMember> {
+  return apiFetch<DashboardMember>(`/orgs/${orgId}/members/${userId}/reject`, {
+    method: "POST",
   });
 }

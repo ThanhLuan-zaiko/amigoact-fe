@@ -28,6 +28,9 @@ const ROLE_BADGES: Record<string, string> = {
 };
 
 const STATUS_BADGES: Record<string, string> = {
+  applied:
+    "border-amber-300 bg-amber-50 text-amber-700 " +
+    "dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400",
   invited:
     "border-amber-300 bg-amber-50 text-amber-700 " +
     "dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400",
@@ -45,6 +48,7 @@ const STATUS_BADGES: Record<string, string> = {
 // Avatar corner dot mirrors the status badge palette.
 const STATUS_DOTS: Record<string, string> = {
   active: "bg-emerald-500",
+  applied: "bg-amber-500",
   invited: "bg-amber-500",
   suspended: "bg-red-500",
   left: "bg-zinc-400",

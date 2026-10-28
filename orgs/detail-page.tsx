@@ -12,6 +12,7 @@ import { toVietnameseOrgsMessage } from "./messages.tsx";
 import { OrgAboutCard } from "./components/OrgAboutCard.tsx";
 import { OrgActivityList } from "./components/OrgActivityList.tsx";
 import { OrgContactCard } from "./components/OrgContactCard.tsx";
+import { ApplyOrgCard } from "./components/ApplyOrgCard.tsx";
 import { OrgDetailHero } from "./components/OrgDetailHero.tsx";
 import { OrgGalleryCard } from "./components/OrgGalleryCard.tsx";
 import { OrgNewsCard } from "./components/OrgNewsCard.tsx";
@@ -59,6 +60,7 @@ export function OrgDetailPage(): ReactElement {
   return (
     <>
       <OrgDetailHero org={detail} />
+      {detail.join_policy === "review" && <ApplyOrgCard org={detail} />}
       <OrgTrustCard org={detail} />
       <OrgAboutCard org={detail} />
       <OrgContactCard org={detail} />

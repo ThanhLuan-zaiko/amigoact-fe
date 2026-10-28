@@ -76,6 +76,7 @@ export const ORG_STATUS_LABELS: Record<string, string> = {
 
 export const JOIN_POLICY_LABELS: Record<string, string> = {
   invite: "Chỉ mời",
+  review: "Nộp hồ sơ duyệt",
   open: "Mở",
 };
 

@@ -31,10 +31,12 @@ export const MUTATION_TOAST_TITLES: Record<string, string> = {
   "org.media.delete": "Đã xóa ảnh.",
   "org.media.wipe": "Đã xóa toàn bộ ảnh.",
   "org.join": "Đã tham gia tổ chức.",
+  "org.apply": "Đã gửi hồ sơ tình nguyện.",
   // members / roles
   "member.invite": "Đã gửi lời mời.",
   "member.remove": "Đã xóa thành viên.",
   "member.approve": "Đã duyệt thành viên.",
+  "member.form": "Đã lưu biểu mẫu hồ sơ.",
   "member.ban": "Đã chặn thành viên.",
   "member.unban": "Đã bỏ chặn thành viên.",
   "member.role": "Đã cập nhật vai trò.",

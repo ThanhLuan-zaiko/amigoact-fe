@@ -240,8 +240,8 @@ export function useMemberParamSync(input: {
 }
 
 // Member events the viewer should read as losses: rendered as error toasts.
-const NEGATIVE_EVENTS = new Set(["suspended", "removed", "revoked", "chat_timeout"]);
-const SELF_POSITIVE_EVENTS = new Set(["promoted", "reactivated", "chat_untimeout"]);
+const NEGATIVE_EVENTS = new Set(["suspended", "removed", "revoked", "rejected", "chat_timeout"]);
+const SELF_POSITIVE_EVENTS = new Set(["promoted", "reactivated", "chat_untimeout", "approved"]);
 
 function cachedMemberName(
   queryClient: ReturnType<typeof useQueryClient>,

@@ -10,6 +10,7 @@ export const MEMBER_ROLE_LABELS: Record<string, string> = {
 
 export const MEMBER_STATUS_LABELS: Record<string, string> = {
   active: "Hoạt động",
+  applied: "Chờ duyệt",
   invited: "Đã mời",
   suspended: "Tạm khóa",
   left: "Đã rời",
@@ -34,6 +35,12 @@ export function memberMutationToast(action: string, name: string | null): string
       return `Đã thu hồi lời mời của ${member}.`;
     case "left":
       return "Bạn đã rời tổ chức.";
+    case "withdrawn":
+      return "Bạn đã rút hồ sơ.";
+    case "approved":
+      return `Đã duyệt hồ sơ của ${member}.`;
+    case "rejected":
+      return `Đã từ chối hồ sơ của ${member}.`;
     case "roles":
       return `Đã cập nhật vai trò của ${member}.`;
     case "timeout":
@@ -115,6 +122,8 @@ export function memberEventToast(
       return `${target} đã từ chối lời mời tham gia.`;
     case "joined":
       return `${target} vừa gia nhập tổ chức.`;
+    case "applied":
+      return `${target} vừa nộp hồ sơ tình nguyện.`;
     default:
       return null;
   }
@@ -171,6 +180,10 @@ export function membershipEventToast(
       return `Bạn đã bị xóa khỏi ${org}.`;
     case "revoked":
       return `Lời mời tham gia ${org} đã bị thu hồi.`;
+    case "approved":
+      return `Hồ sơ vào ${org} đã được duyệt.`;
+    case "rejected":
+      return `Hồ sơ vào ${org} chưa được duyệt.`;
     default:
       return null;
   }

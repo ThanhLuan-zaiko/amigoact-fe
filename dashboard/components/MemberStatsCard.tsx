@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import type { IconType } from "react-icons";
 import {
+  FiInbox,
   FiMail,
   FiMinusCircle,
   FiUserCheck,
@@ -48,6 +49,12 @@ const TILES: StatSpec[] = [
     label: MEMBER_STATUS_LABELS["active"],
     Icon: FiUserCheck,
     tone: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    key: "applied",
+    label: MEMBER_STATUS_LABELS["applied"],
+    Icon: FiInbox,
+    tone: "text-amber-600 dark:text-amber-400",
   },
   {
     key: "invited",

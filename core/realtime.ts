@@ -47,3 +47,8 @@ export function sendTypingPing(channel: string): void {
 export function retryRealtime(): void {
   realtime.reconnectNow();
 }
+
+/** Session changed (sign in or out): the open socket still holds the old identity. */
+export function refreshRealtimeSession(): void {
+  realtime.reconnectNow();
+}

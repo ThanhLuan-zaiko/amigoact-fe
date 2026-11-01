@@ -1,0 +1,205 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate-01-frozen-install:
+    name: "Gate 01: install with frozen lockfile"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
+      - run: bun install --frozen-lockfile
+
+  gate-02-lint:
+    name: "Gate 02: lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
+      - run: bun install --frozen-lockfile
+      - run: bunx biome lint .
+
+  gate-03-format:
+    name: "Gate 03: format"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
+      - run: bun install --frozen-lockfile
+      - run: bunx biome format .
+
+  gate-04-type-check:
+    name: "Gate 04: type check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit
+
+  gate-05-build:
+    name: "Gate 05: production build"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+
+  gate-06-tests:
+    name: "Gate 06: tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
+      - name: Check for test files
+        id: detect
+        run: |
+          if git ls-files -co --exclude-standard | grep -qE '\.(test|spec)\.tsx?$|(^|/)__tests__/'; then
+            echo "has_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_tests=false" >> "$GITHUB_OUTPUT"
+            echo "No test files yet; skipping bun test."
+          fi
+      - if: steps.detect.outputs.has_tests == 'true'
+        run: bun install --frozen-lockfile
+      - if: steps.detect.outputs.has_tests == 'true'
+        run: bun test
+
+  gate-07-no-src-and-ts-file-length:
+    name: "Gate 07: no src folder and .ts files at most 350 lines"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject a src folder
+        run: |
+          if [ -d src ]; then
+            echo "::error::Code must not live in a src/ folder. Move it to the repo root or app/."
+            exit 1
+          fi
+      - name: Check line counts
+        run: |
+          status=0
+          while IFS= read -r file; do
+            lines=$(wc -l < "$file")
+            if [ "$lines" -gt 350 ]; then
+              echo "::error file=$file::$lines lines; the limit for .ts files is 350"
+              status=1
+            fi
+          done < <(git ls-files -co --exclude-standard -- '*.ts')
+          exit $status
+
+  gate-08-tsx-file-length:
+    name: "Gate 08: .tsx files at most 260 lines"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check line counts
+        run: |
+          status=0
+          while IFS= read -r file; do
+            lines=$(wc -l < "$file")
+            if [ "$lines" -gt 260 ]; then
+              echo "::error file=$file::$lines lines; the limit for .tsx files is 260"
+              status=1
+            fi
+          done < <(git ls-files -co --exclude-standard -- '*.tsx')
+          exit $status
+
+  gate-09-english-identifiers:
+    name: "Gate 09: English identifiers"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject non-ASCII declaration names
+        run: |
+          mapfile -t files < <(git ls-files -co --exclude-standard -- '*.ts' '*.tsx')
+          if [ "${#files[@]}" -gt 0 ] && grep -nP '\b(const|let|var|function|class|type|interface|enum)\s+[\w$]*[^\x00-\x7F]' "${files[@]}"; then
+            echo "::error::Non-ASCII identifier found. Variable, function, and type names must be in English."
+            exit 1
+          fi
+
+  gate-10-no-junk-files:
+    name: "Gate 10: no junk files tracked"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject junk files
+        run: |
+          junk=$(git ls-files -co --exclude-standard \
+            | grep -E '(^|/)(node_modules|\.next|coverage)/|(^|/)\.env(\..+)?$|\.log$|(^|/)\.DS_Store$|(^|/)Thumbs\.db$|\.tmp$|\.bak$|\.tsbuildinfo$' \
+            | grep -v '\.env\.example$' || true)
+          if [ -n "$junk" ]; then
+            echo "$junk"
+            echo "::error::Junk files are tracked. Remove them from the repository."
+            exit 1
+          fi
+
+  gate-11-secret-scan:
+    name: "Gate 11: secret scan"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  gate-12-workflow-lint:
+    name: "Gate 12: workflow lint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker://rhysd/actionlint:1.7.7
+
+  gate-13-tailwind-only:
+    name: "Gate 13: Tailwind-only styling"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reject custom stylesheets and inline styles
+        run: |
+          status=0
+          mapfile -t styles < <(git ls-files -co --exclude-standard | grep -iE '\.(css|scss|sass|less)$')
+          for file in "${styles[@]}"; do
+            if [ "$file" != "app/globals.css" ]; then
+              echo "::error file=$file::Only app/globals.css may exist. Style with Tailwind classes."
+              status=1
+            fi
+          done
+          if [ -f app/globals.css ]; then
+            content=$(grep -v '^\s*$' app/globals.css)
+            if [ "$content" != '@import "tailwindcss";' ]; then
+              echo "::error file=app/globals.css::Must contain only: @import \"tailwindcss\";"
+              status=1
+            fi
+          fi
+          mapfile -t sources < <(git ls-files -co --exclude-standard -- '*.tsx' '*.ts')
+          if [ "${#sources[@]}" -gt 0 ] && grep -nP '\sstyle=\{' "${sources[@]}"; then
+            echo "::error::Inline style props are not allowed. Use Tailwind classes."
+            status=1
+          fi
+          exit $status

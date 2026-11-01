@@ -192,8 +192,9 @@ jobs:
           done
           if [ -f app/globals.css ]; then
             content=$(grep -v '^\s*$' app/globals.css)
-            if [ "$content" != '@import "tailwindcss";' ]; then
-              echo "::error file=app/globals.css::Must contain only: @import \"tailwindcss\";"
+            expected=$(printf '%s\n%s' '@import "tailwindcss";' '@custom-variant dark (&:where(.dark, .dark *));')
+            if [ "$content" != "$expected" ]; then
+              echo "::error file=app/globals.css::Must contain only: @import \"tailwindcss\"; and @custom-variant dark (&:where(.dark, .dark *));"
               status=1
             fi
           fi

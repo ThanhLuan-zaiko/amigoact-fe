@@ -53,9 +53,12 @@ export function useAccountForm(
   const [clientErrors, setClientErrors] = useState<FieldErrors | null>(null);
   // One switch per form, so every password field in it shows or hides together.
   const [passwordsVisible, setPasswordsVisible] = useState(false);
-  const state: FormState = clientErrors
-    ? { fieldErrors: clientErrors }
-    : serverState;
+  // While a submit is pending, the result of the previous one is hidden.
+  const state: FormState = pending
+    ? {}
+    : clientErrors
+      ? { fieldErrors: clientErrors }
+      : serverState;
   const fieldErrors = state.fieldErrors;
 
   useEffect(() => {

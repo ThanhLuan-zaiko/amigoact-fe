@@ -18,7 +18,6 @@ export default function LoginForm({ next }: { next?: string }) {
   const { state, pending, formProps, passwordProps } = useAccountForm(login);
   return (
     <form {...formProps} className="flex flex-col gap-4">
-      <FormMessage state={state} />
       {next ? <input type="hidden" name="next" value={next} /> : null}
       <TextField
         errors={state.fieldErrors}
@@ -38,6 +37,7 @@ export default function LoginForm({ next }: { next?: string }) {
       <Link href="/forgot-password" className={`${linkClass} text-sm`}>
         Quên mật khẩu?
       </Link>
+      <FormMessage state={state} />
       <SubmitButton pending={pending} icon={FiLogIn} className={submitClass}>
         Đăng nhập
       </SubmitButton>

@@ -22,7 +22,7 @@ function FieldNotes({
 }) {
   return (
     <>
-      {hint ? (
+      {hint && !error ? (
         <span className="text-xs text-slate-500 dark:text-slate-400">
           {hint}
         </span>

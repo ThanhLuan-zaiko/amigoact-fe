@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { FiLogIn, FiUser } from "react-icons/fi";
+import { FiLogIn } from "react-icons/fi";
+import { logout } from "@/app/_actions/account";
 import { getCurrentUser } from "@/lib/auth";
 import { iconButton } from "../ui";
+import AccountMenu from "./AccountMenu";
 
 // Reads the session, so AppHeader renders it behind a Suspense boundary.
 export default async function HeaderAccount() {
@@ -13,14 +15,5 @@ export default async function HeaderAccount() {
       </Link>
     );
   }
-  return (
-    <Link
-      href="/account"
-      aria-label={`Tài khoản của ${user.full_name}`}
-      title={user.full_name}
-      className="flex h-10 w-10 shrink-0 items-center justify-center border border-teal-700 text-teal-700 dark:border-teal-400 dark:text-teal-400"
-    >
-      <FiUser aria-hidden="true" />
-    </Link>
-  );
+  return <AccountMenu name={user.full_name} logoutAction={logout} />;
 }

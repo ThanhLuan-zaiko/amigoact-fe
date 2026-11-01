@@ -22,6 +22,14 @@ bun dev
 
 Mở [http://localhost:3000](http://localhost:3000) trên trình duyệt. Trang sẽ tự cập nhật khi bạn sửa file.
 
+Khi máy chủ khởi động, terminal sẽ in một dòng cho biết frontend có gọi được API của backend không:
+
+- `Backend API connected: ...` nghĩa là backend đang phản hồi.
+- `Backend API unreachable: ...` nghĩa là không kết nối được. Hãy kiểm tra backend đã chạy chưa.
+- `Backend API returned HTTP ...` nghĩa là backend trả về lỗi. Hãy kiểm tra log của backend.
+
+Mặc định frontend gọi `http://127.0.0.1:8100`. Muốn đổi địa chỉ, sao chép `.env.example` thành `.env.local` rồi sửa `BACKEND_URL`. Cách khác là đặt biến môi trường `BACKEND_URL` trước khi chạy `bun dev`. File `.env.local` không được commit.
+
 ## Lệnh thường dùng
 
 | Lệnh | Mục đích |
@@ -49,6 +57,7 @@ amigoact-fe/
 ├── public/           tệp tĩnh
 ├── .github/          CI và các mẫu issue, pull request
 ├── biome.json        cấu hình Biome
+├── instrumentation.ts  kiểm tra kết nối backend khi khởi động
 ├── next.config.ts    cấu hình Next.js
 └── tsconfig.json     cấu hình TypeScript
 ```

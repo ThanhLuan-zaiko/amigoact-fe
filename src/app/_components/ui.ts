@@ -26,5 +26,8 @@ export const mutedText = "text-sm text-slate-500 dark:text-slate-400";
 export const fieldLabel =
   "text-sm font-semibold text-slate-700 dark:text-slate-300";
 
+export const inputFieldInvalid =
+  "w-full border border-slate-900 bg-transparent px-3 py-2 text-sm text-slate-900 outline-none dark:border-slate-100 dark:text-slate-100";
+
 export const inputField =
   "w-full border border-slate-200 bg-transparent px-3 py-2 text-sm text-slate-900 outline-none focus:border-teal-700 dark:border-slate-800 dark:text-slate-100 dark:focus:border-teal-400";

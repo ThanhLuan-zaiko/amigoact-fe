@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { FiBell, FiPlus, FiSearch, FiUser } from "react-icons/fi";
+import { Suspense } from "react";
+import { FiBell, FiPlus, FiSearch } from "react-icons/fi";
+import HeaderAccount from "./account/HeaderAccount";
 import ThemeToggle from "./ThemeToggle";
 import { iconButton, primaryButton } from "./ui";
 
@@ -35,12 +37,18 @@ export default function AppHeader() {
           <span className="hidden sm:inline">Tạo bài</span>
         </Link>
         <ThemeToggle />
-        <button type="button" aria-label="Thông báo" className={iconButton}>
-          <FiBell aria-hidden="true" />
-        </button>
-        <div className="hidden h-10 w-10 items-center justify-center border border-teal-700 text-teal-700 sm:flex dark:border-teal-400 dark:text-teal-400">
-          <FiUser aria-hidden="true" />
+        <div className="hidden sm:block">
+          <button type="button" aria-label="Thông báo" className={iconButton}>
+            <FiBell aria-hidden="true" />
+          </button>
         </div>
+        <Suspense
+          fallback={
+            <div className="h-10 w-10 shrink-0 border border-slate-200 dark:border-slate-800" />
+          }
+        >
+          <HeaderAccount />
+        </Suspense>
       </div>
     </header>
   );

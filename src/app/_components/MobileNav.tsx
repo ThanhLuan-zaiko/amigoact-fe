@@ -19,7 +19,7 @@ const mobileItems: MobileItem[] = [
   { label: "Khám phá", href: "/explore", icon: FiCompass },
   { label: "Tạo bài", href: "/compose", icon: FiPlus },
   { label: "Tin nhắn", href: "/messages", icon: FiMessageSquare },
-  { label: "Hồ sơ", href: "/profile", icon: FiUser },
+  { label: "Hồ sơ", href: "/account", icon: FiUser },
 ];
 
 type MobileNavProps = {

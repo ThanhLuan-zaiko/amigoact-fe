@@ -43,21 +43,29 @@ Mặc định frontend gọi `http://127.0.0.1:8100`. Muốn đổi địa chỉ
 
 ## Quy tắc giao diện
 
-- Chỉ dùng Tailwind CSS. File `app/globals.css` chỉ chứa dòng `@import "tailwindcss";`.
+- Chỉ dùng Tailwind CSS. File `src/app/globals.css` chỉ chứa dòng `@import "tailwindcss";`.
 - Không viết file CSS riêng và không dùng thuộc tính `style={{...}}`.
 - Tên biến, hàm, component và kiểu dữ liệu viết bằng tiếng Anh. Chữ hiển thị cho người dùng viết bằng tiếng Việt.
 - Giới hạn độ dài file: `.ts` tối đa 350 dòng, `.tsx` tối đa 260 dòng.
-- Không đặt code trong thư mục `src/`. Mã ứng dụng nằm trong `app/`.
+- Mã ứng dụng nằm trong thư mục `src/`, ví dụ `src/app/`.
+
+## Tài liệu
+
+Tài liệu chi tiết nằm trong thư mục [`docs/`](docs):
+
+- [Xác thực và tài khoản](docs/authentication.md): luồng đăng nhập, cookie, form và kiểm tra dữ liệu.
 
 ## Cấu trúc thư mục
 
 ```
 amigoact-fe/
-├── app/              layout.tsx, page.tsx, globals.css
+├── src/
+│   ├── app/          layout.tsx, page.tsx, globals.css
+│   └── instrumentation.ts  kiểm tra kết nối backend khi khởi động
+├── docs/             tài liệu chi tiết
 ├── public/           tệp tĩnh
 ├── .github/          CI và các mẫu issue, pull request
 ├── biome.json        cấu hình Biome
-├── instrumentation.ts  kiểm tra kết nối backend khi khởi động
 ├── next.config.ts    cấu hình Next.js
 └── tsconfig.json     cấu hình TypeScript
 ```

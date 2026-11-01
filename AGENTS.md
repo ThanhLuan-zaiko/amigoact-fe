@@ -10,13 +10,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Project structure
 
-- Do not put code in a `src/` folder. Keep application code in the repo's existing folders, such as `app/`.
-- CI gate 07 fails if a `src/` folder exists.
+- Application code lives in the `src/` folder, for example `src/app/` and `src/instrumentation.ts`. The `@/*` import alias points to `src/*`.
+- `public/` and config files stay at the repo root. Do not create an `app/` folder at the repo root, because Next.js would then ignore `src/app/`.
 
 ## Styling: Tailwind only
 
 - Style every element with Tailwind utility classes. Do not write custom CSS.
-- `app/globals.css` must contain only two lines: `@import "tailwindcss";` and `@custom-variant dark (&:where(.dark, .dark *));`. Do not add rules, `@apply`, or other stylesheets (`.css`, `.scss`, `.sass`, `.less`).
+- `src/app/globals.css` must contain only two lines: `@import "tailwindcss";` and `@custom-variant dark (&:where(.dark, .dark *));`. Do not add rules, `@apply`, or other stylesheets (`.css`, `.scss`, `.sass`, `.less`).
 - Do not use inline style props such as `style={{ ... }}`. Use Tailwind classes instead.
 - CI gate 13 enforces these rules.
 
@@ -25,7 +25,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Mobile first. Write the base classes for a phone screen (about 375px wide), then add `sm:`, `md:`, and `lg:` classes for wider screens. Never design the desktop layout first and shrink it later.
 - Flat design. Do not use `shadow-*` or `drop-shadow-*`. Do not use gradients (`bg-gradient-*`, `from-*`, `to-*`) or other decorative effects.
 - Use one accent color, teal (`teal-700` in light mode and `teal-400` in dark mode). Use neutral slate colors for everything else. Do not add other accent colors.
-- Do not use the Inter font. The app uses Be Vietnam Pro, loaded in `app/layout.tsx`.
+- Do not use the Inter font. The app uses Be Vietnam Pro, loaded in `src/app/layout.tsx`.
 - Do not nest cards inside cards. Separate sections with borders and dividers.
 - Do not round corners. Icons and their containers use square corners, and the app does not use `rounded-*` classes.
 - Use borders to show emphasis, such as an active item, a pinned post, or a selected option. Do not use fills or shadows for this.
@@ -33,10 +33,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Dark mode
 
-- The theme is controlled by a `dark` class on `<html>`. The class is set before the first paint by the `theme-init` script in `app/layout.tsx`, and it follows the saved choice in `localStorage` (key `theme`) or the system setting when nothing is saved.
-- Write dark styles with the normal `dark:` prefix (for example `text-slate-900 dark:text-slate-100`). The `dark` variant is defined in `app/globals.css` by `@custom-variant dark (&:where(.dark, .dark *));`, so it follows the `dark` class and the toggle.
+- The theme is controlled by a `dark` class on `<html>`. The class is set before the first paint by the `theme-init` script in `src/app/layout.tsx`, and it follows the saved choice in `localStorage` (key `theme`) or the system setting when nothing is saved.
+- Write dark styles with the normal `dark:` prefix (for example `text-slate-900 dark:text-slate-100`). The `dark` variant is defined in `src/app/globals.css` by `@custom-variant dark (&:where(.dark, .dark *));`, so it follows the `dark` class and the toggle.
 - Do not change that custom variant or add other lines to `globals.css` (see Styling above).
-- The toggle button is `app/_components/ThemeToggle.tsx`. Add it to the header, not to each page.
+- The toggle button is `src/app/_components/ThemeToggle.tsx`. Add it to the header, not to each page.
+
+## Authentication
+
+- Details are in `docs/authentication.md`.
+- The browser never talks to the backend. Server Actions in `src/app/_actions/` and helpers in `src/lib/` call it with `BACKEND_URL`.
+- Tokens live only in httpOnly cookies. Never expose them to client components or `localStorage`.
+- `src/proxy.ts` refreshes an expired access token and sends visitors without a session away from `/account`. Pages still check the user with `requireUser`.
+- With Cache Components enabled, a component that reads the session must sit behind a `<Suspense>` boundary. Do not wrap session reads in React `cache`.
+- Forms use `useAccountForm` so that typed input survives a rejected submit.
+- Password inputs use `PasswordField` with `passwordProps` from `useAccountForm`. All password fields of one form show or hide together, and the eye button has `tabIndex={-1}`.
 
 ## Language
 
@@ -64,6 +74,11 @@ Never create or commit these: `node_modules/`, `.next/`, `coverage/`, `.env` fil
 
 Put scratch work in the session scratchpad directory, not in the repository. CI gate 10 fails if junk files are tracked.
 
+## Documentation
+
+- Write detailed documentation in `docs/`, one file per topic. Keep `README.md` short: setup, commands, and links to `docs/`.
+- When behavior changes, update the matching file in `docs/` in the same change.
+
 ## Commands
 
 ```bash
@@ -89,7 +104,7 @@ bun test                     # tests (once test files exist)
 | 04 | Type check (`tsc --noEmit`) |
 | 05 | Production build (`bun run build`) |
 | 06 | Tests (`bun test`, runs once test files exist) |
-| 07 | No `src/` folder, and every `.ts` file is at most 350 lines |
+| 07 | Every `.ts` file is at most 350 lines |
 | 08 | `.tsx` files are at most 260 lines |
 | 09 | Identifiers are English (ASCII only) |
 | 10 | No junk files tracked |

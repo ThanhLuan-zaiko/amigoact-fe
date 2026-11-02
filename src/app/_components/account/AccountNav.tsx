@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FiShield, FiUser } from "react-icons/fi";
+import { segmentActive, segmentIdle, segmentItem, segmentList } from "../ui";
 
 const ITEMS = [
   { href: "/account", label: "Thông tin", icon: FiUser },
@@ -12,25 +13,21 @@ const ITEMS = [
 export default function AccountNav() {
   const pathname = usePathname();
   return (
-    <nav
-      aria-label="Tài khoản"
-      className="flex border-b border-slate-200 dark:border-slate-800"
-    >
+    <nav aria-label="Tài khoản" className={segmentList}>
       {ITEMS.map(({ href, label, icon: Icon }) => {
         const active = pathname === href;
         return (
           <Link
             key={href}
             href={href}
+            aria-label={label}
+            title={label}
             aria-current={active ? "page" : undefined}
-            className={`-mb-px flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold ${
-              active
-                ? "border-teal-700 text-teal-700 dark:border-teal-400 dark:text-teal-400"
-                : "border-transparent text-slate-500 dark:text-slate-400"
-            }`}
+            className={`${segmentItem} ${active ? segmentActive : segmentIdle}`}
           >
             <Icon aria-hidden="true" />
-            {label}
+            {/* On a phone only the current section keeps its word. */}
+            <span className={active ? "" : "hidden sm:inline"}>{label}</span>
           </Link>
         );
       })}

@@ -1,0 +1,113 @@
+// Shapes of the organization API responses, with their labels for the UI.
+
+export type OrgRole = "owner" | "admin" | "member";
+export type OrgType = "organization" | "club" | "group" | "business";
+export type JoinPolicy = "open" | "invite";
+
+export type OrganizationSummary = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  org_type: OrgType;
+  join_policy: JoinPolicy;
+  member_count: number;
+  created_at: string;
+};
+
+export type OrganizationPage = {
+  items: OrganizationSummary[];
+  next_offset: number | null;
+};
+
+export type ViewerMembership = {
+  status: string | null;
+  role: OrgRole | null;
+  can_manage: boolean;
+  reapply_after: string | null;
+};
+
+export type OrganizationDetail = OrganizationSummary & {
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  address: string | null;
+  city: string | null;
+  owner_name: string;
+  activity_count: number;
+  volunteer_hours: number;
+  viewer: ViewerMembership;
+};
+
+export type MyOrganization = OrganizationSummary & {
+  status: string;
+  role: OrgRole | null;
+};
+
+export type MemberInfo = {
+  user_id: string;
+  full_name: string;
+  role: OrgRole;
+  joined_at: string | null;
+};
+
+export type MemberPage = {
+  items: MemberInfo[];
+  next_offset: number | null;
+};
+
+export type ApplicationInfo = {
+  user_id: string;
+  full_name: string;
+  message: string | null;
+  submitted_at: string | null;
+};
+
+export type ApplicationPage = {
+  items: ApplicationInfo[];
+  next_offset: number | null;
+};
+
+export const ORG_TYPE_LABELS: Record<OrgType, string> = {
+  organization: "Tổ chức",
+  club: "Câu lạc bộ",
+  group: "Nhóm",
+  business: "Doanh nghiệp",
+};
+
+export const JOIN_POLICY_LABELS: Record<JoinPolicy, string> = {
+  open: "Mở tham gia",
+  invite: "Cần duyệt",
+};
+
+export const ROLE_LABELS: Record<OrgRole, string> = {
+  owner: "Chủ sở hữu",
+  admin: "Quản trị viên",
+  member: "Thành viên",
+};
+
+const dateFormat = new Intl.DateTimeFormat("vi-VN", {
+  dateStyle: "short",
+  timeZone: "Asia/Ho_Chi_Minh",
+});
+
+export function formatDate(value: string | null): string {
+  return value ? dateFormat.format(new Date(value)) : "";
+}
+
+// Up to two letters from the first two words, for the placeholder logo and avatars.
+export function initials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => Array.from(word)[0] ?? "")
+    .join("")
+    .toUpperCase();
+}
+
+// Offset from a page's search params. Anything that is not a whole number means the start.
+export function parseOffset(value: unknown): number {
+  const offset = typeof value === "string" ? Number(value) : 0;
+  return Number.isInteger(offset) && offset > 0 ? offset : 0;
+}

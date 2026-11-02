@@ -31,6 +31,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Use a small, consistent corner radius: `rounded-sm` (2px) or `rounded-md` (6px) on inputs, buttons, and cards. Do not use `rounded-lg` or larger. Use `rounded-full` only for avatars and status dots. Icons and their containers stay square.
 - Use borders or a light tint to show emphasis, such as an active item, a pinned post, or a selected option (for example a teal border with `bg-teal-50 dark:bg-teal-950/40`). Do not use shadows for this.
 - Every decorative icon comes from `react-icons`. Every icon-only `<button>` must have an icon and an `aria-label`. A button with visible text may have an icon but does not need one.
+- Prefer icons over words for what everyone already understands: dates, places, counts, search, edit, delete, close, paging. Use `IconStat` for an icon with a value, and icon-only buttons with `aria-label` and `title`. Keep visible words for form labels, the main action of a page, confirmation prompts, and anything an icon cannot make clear.
 
 ## Dark mode
 
@@ -48,6 +49,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - With Cache Components enabled, a component that reads the session must sit behind a `<Suspense>` boundary. Do not wrap session reads in React `cache`.
 - Forms use `useAccountForm` so that typed input survives a rejected submit.
 - Password inputs use `PasswordField` with `passwordProps` from `useAccountForm`. All password fields of one form show or hide together, and the eye button has `tabIndex={-1}`.
+
+## Organizations
+
+- Details are in `docs/organizations.md`.
+- Pages with the app header and navigation live in the `src/app/(app)/` route group. Read route params and backend data behind a `<Suspense>` boundary.
+- `authedFetch` in `src/lib/auth.ts` is the only way Server Actions call the backend with a token.
+- Activities are described in `docs/activities.md`. `datetime-local` inputs mean Vietnam time: convert them with `toLocalInput` and `fromLocalInput` from `src/lib/activities.ts`.
+
+## Attendance
+
+- Details are in `docs/attendance.md`. The QR is drawn on the server with `qrcode`. Set `APP_URL` so the QR opens on a phone.
 
 ## Language
 

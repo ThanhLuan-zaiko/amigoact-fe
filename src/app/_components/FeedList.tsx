@@ -9,17 +9,15 @@ type FeedListProps = {
 export default function FeedList({ posts }: FeedListProps) {
   if (posts.length === 0) {
     return (
-      <div className="py-6">
-        <EmptyState
-          title="Chưa có bài viết"
-          description="Bài viết từ các tổ chức bạn theo dõi sẽ hiện ở đây."
-        />
-      </div>
+      <EmptyState
+        title="Chưa có bài viết"
+        description="Bài viết từ các tổ chức bạn theo dõi sẽ hiện ở đây."
+      />
     );
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-3">
       {posts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}

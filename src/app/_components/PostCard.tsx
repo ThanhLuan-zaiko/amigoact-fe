@@ -1,6 +1,6 @@
 import { FiGlobe, FiLock, FiMessageCircle } from "react-icons/fi";
 import type { Post } from "./types";
-import { mutedText, tagChip } from "./ui";
+import { mutedText, panel, tagChip } from "./ui";
 
 const kindLabel: Record<Post["kind"], string> = {
   announcement: "Thông báo",
@@ -22,14 +22,12 @@ export default function PostCard({ post }: PostCardProps) {
 
   return (
     <article
-      className={`flex flex-col gap-3 border-b border-slate-200 py-4 dark:border-slate-800 ${
-        post.pinned
-          ? "border-l-[3px] border-l-teal-700 pl-4 dark:border-l-teal-400"
-          : ""
+      className={`${panel} flex flex-col gap-3 p-4 ${
+        post.pinned ? "border-teal-700 dark:border-teal-400" : ""
       }`}
     >
       <header className="flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-teal-700 font-bold text-teal-700 dark:border-teal-400 dark:text-teal-400">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
           {post.organizationInitials}
         </div>
         <div className="min-w-0 flex-1">
@@ -41,10 +39,10 @@ export default function PostCard({ post }: PostCardProps) {
           </p>
         </div>
         <span
-          className={`shrink-0 border px-2 py-0.5 text-xs font-bold ${
+          className={`shrink-0 rounded-sm px-2 py-0.5 text-xs font-semibold ${
             isAnnouncement
-              ? "border-teal-700 text-teal-700 dark:border-teal-400 dark:text-teal-400"
-              : "border-slate-200 text-slate-700 dark:border-slate-800 dark:text-slate-300"
+              ? "border border-slate-300 text-slate-900 dark:border-slate-600 dark:text-slate-100"
+              : "border border-slate-200 text-slate-600 dark:border-slate-800 dark:text-slate-300"
           }`}
         >
           {kindLabel[post.kind]}
@@ -56,7 +54,7 @@ export default function PostCard({ post }: PostCardProps) {
         {post.body}
       </p>
 
-      <footer className="flex flex-wrap items-center gap-2">
+      <footer className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
         {post.tags.map((tag) => (
           <span key={tag} className={tagChip}>
             #{tag}

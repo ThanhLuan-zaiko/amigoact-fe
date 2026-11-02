@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/lib/account";
-import { clearTokens, getAccessToken, getCurrentUser } from "@/lib/auth";
-import { type ApiResult, backendFetch } from "@/lib/backend";
+import { authedFetch, clearTokens, getCurrentUser } from "@/lib/auth";
+import type { ApiResult } from "@/lib/backend";
 import {
   failureState,
   passwordValue,
@@ -12,27 +12,6 @@ import {
   textValue,
 } from "@/lib/forms";
 import { FIELD_MESSAGES } from "@/lib/validation";
-
-type AuthedOptions = {
-  method?: "POST" | "PATCH" | "DELETE";
-  body?: unknown;
-};
-
-// Every action authorizes itself: the backend checks the token on each call.
-async function authedFetch(
-  path: string,
-  options: AuthedOptions = {},
-): Promise<ApiResult<unknown>> {
-  const result = await backendFetch(path, {
-    ...options,
-    token: await getAccessToken(),
-  });
-  if (!result.ok && result.status === 401) {
-    await clearTokens();
-    redirect("/login");
-  }
-  return result;
-}
 
 function failure(result: ApiResult<unknown>): FormState {
   return result.ok ? {} : failureState(result.code, result.issues);

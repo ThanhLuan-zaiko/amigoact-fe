@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { SessionInfo, TokenPair, User } from "./account";
 import { ACCESS_COOKIE, REFRESH_COOKIE, tokenCookies } from "./authCookies";
-import { backendFetch } from "./backend";
+import { type ApiResult, backendFetch } from "./backend";
 
 export async function getAccessToken(): Promise<string | undefined> {
   return (await cookies()).get(ACCESS_COOKIE)?.value;
@@ -43,6 +43,27 @@ export async function requireUser(next: string): Promise<User> {
     redirect(`/login?next=${encodeURIComponent(next)}`);
   }
   return user;
+}
+
+type AuthedOptions = {
+  method?: "POST" | "PUT" | "PATCH" | "DELETE";
+  body?: unknown;
+};
+
+// For Server Actions. Every action authorizes itself: the backend checks the token on each call.
+export async function authedFetch<T = unknown>(
+  path: string,
+  options: AuthedOptions = {},
+): Promise<ApiResult<T>> {
+  const result = await backendFetch<T>(path, {
+    ...options,
+    token: await getAccessToken(),
+  });
+  if (!result.ok && result.status === 401) {
+    await clearTokens();
+    redirect("/login");
+  }
+  return result;
 }
 
 export async function getSessions(): Promise<SessionInfo[]> {

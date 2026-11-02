@@ -16,25 +16,33 @@ import {
   chipButton,
   chipPressed,
   fieldLabel,
+  iconButton,
   inputField,
   mutedText,
+  panel,
   primaryButton,
-  secondaryButton,
 } from "./ui";
 
+const TOOLBAR = [
+  { label: "Tiêu đề", icon: FiType },
+  { label: "Trích dẫn", icon: FiMessageSquare },
+  { label: "Danh sách", icon: FiList },
+  { label: "Ảnh", icon: FiImage },
+  { label: "Video", icon: FiVideo },
+  { label: "Đường kẻ", icon: FiMinus },
+];
+
 const toolbarButton =
-  "inline-flex h-9 items-center gap-2 border-r border-slate-200 px-3 text-sm text-slate-700 last:border-r-0 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-teal-700 dark:border-slate-800 dark:text-slate-300 dark:hover:text-teal-400 dark:focus-visible:outline-teal-400";
+  "inline-flex h-9 w-10 items-center justify-center border-r border-slate-200 text-sm text-slate-700 transition-colors last:border-r-0 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-teal-700 dark:border-slate-800 dark:text-slate-300 dark:hover:text-teal-400 dark:focus-visible:outline-teal-400";
 
 export default function ComposeForm() {
   return (
-    <section className="flex flex-col gap-5">
+    <section className={`${panel} flex flex-col gap-5 p-4 sm:p-6`}>
       <div className="flex items-center gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
-        <h1 className="flex-1 text-xl font-extrabold">Tạo bài viết</h1>
-        <Link
-          href="/"
-          aria-label="Đóng"
-          className="inline-flex h-10 w-10 items-center justify-center border border-slate-200 text-slate-700 hover:border-teal-700 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-teal-700 dark:border-slate-800 dark:text-slate-300 dark:hover:border-teal-400 dark:hover:text-teal-400 dark:focus-visible:outline-teal-400"
-        >
+        <h1 className="flex-1 text-xl font-extrabold tracking-tight">
+          Tạo bài viết
+        </h1>
+        <Link href="/" aria-label="Đóng" className={iconButton}>
           <FiX aria-hidden="true" />
         </Link>
       </div>
@@ -81,31 +89,18 @@ export default function ComposeForm() {
       </label>
 
       <div className="flex flex-col gap-2">
-        <div className="flex w-fit flex-wrap border border-slate-200 dark:border-slate-800">
-          <button type="button" className={toolbarButton}>
-            <FiType aria-hidden="true" />
-            Tiêu đề
-          </button>
-          <button type="button" className={toolbarButton}>
-            <FiMessageSquare aria-hidden="true" />
-            Trích dẫn
-          </button>
-          <button type="button" className={toolbarButton}>
-            <FiList aria-hidden="true" />
-            Danh sách
-          </button>
-          <button type="button" className={toolbarButton}>
-            <FiImage aria-hidden="true" />
-            Ảnh
-          </button>
-          <button type="button" className={toolbarButton}>
-            <FiVideo aria-hidden="true" />
-            Video
-          </button>
-          <button type="button" className={toolbarButton}>
-            <FiMinus aria-hidden="true" />
-            Đường kẻ
-          </button>
+        <div className="flex w-fit flex-wrap overflow-hidden rounded-md border border-slate-200 dark:border-slate-800">
+          {TOOLBAR.map(({ label, icon: Icon }) => (
+            <button
+              key={label}
+              type="button"
+              aria-label={label}
+              title={label}
+              className={toolbarButton}
+            >
+              <Icon aria-hidden="true" />
+            </button>
+          ))}
         </div>
         <textarea
           rows={8}
@@ -127,9 +122,13 @@ export default function ComposeForm() {
         <span className={`${mutedText} flex-1`}>
           Bài nháp chỉ bạn nhìn thấy.
         </span>
-        <button type="button" className={secondaryButton}>
+        <button
+          type="button"
+          aria-label="Lưu nháp"
+          title="Lưu nháp"
+          className={iconButton}
+        >
           <FiSave aria-hidden="true" />
-          Lưu nháp
         </button>
         <button type="button" className={primaryButton}>
           <FiSend aria-hidden="true" />

@@ -31,10 +31,10 @@ export default function RegisterForm() {
           {ACCOUNT_TYPES.map(({ value, label }) => (
             <label
               key={value}
-              className={`flex cursor-pointer items-center gap-2 border p-3 text-sm font-semibold ${
+              className={`flex cursor-pointer items-center gap-2 rounded-md border p-3 text-sm font-semibold transition-colors ${
                 accountType === value
                   ? "border-teal-700 text-teal-700 dark:border-teal-400 dark:text-teal-400"
-                  : "border-slate-200 text-slate-700 dark:border-slate-800 dark:text-slate-300"
+                  : "border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600"
               }`}
             >
               <input

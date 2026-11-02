@@ -14,7 +14,7 @@ export default async function SessionList() {
   const sessions = await getSessions();
   return (
     <div className="flex flex-col gap-4">
-      <ul className="flex flex-col divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+      <ul className="flex flex-col divide-y divide-slate-200 dark:divide-slate-800">
         {sessions.map((session) => (
           <li
             key={session.session_id}
@@ -26,7 +26,7 @@ export default async function SessionList() {
                 <p className="text-sm font-semibold">
                   {describeDevice(session.user_agent)}
                   {session.is_current ? (
-                    <span className="ml-2 border border-teal-700 px-1.5 py-0.5 text-xs text-teal-700 dark:border-teal-400 dark:text-teal-400">
+                    <span className="ml-2 rounded-sm border border-slate-200 px-1.5 py-0.5 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:text-slate-300">
                       Thiết bị này
                     </span>
                   ) : null}

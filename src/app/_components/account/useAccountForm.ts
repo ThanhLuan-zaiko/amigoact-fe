@@ -29,7 +29,9 @@ function validateForm(form: HTMLFormElement): FieldErrors {
     const message = input.validity.valueMissing
       ? FIELD_MESSAGES.required
       : input.validity.typeMismatch
-        ? FIELD_MESSAGES.email
+        ? input.type === "url"
+          ? FIELD_MESSAGES.website
+          : FIELD_MESSAGES.email
         : validateField(input.name, input.value, {
             isNewPassword: input.autocomplete === "new-password",
             passwordToMatch,

@@ -1,12 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { IconType } from "react-icons";
 import {
+  FiCalendar,
   FiCompass,
   FiHome,
   FiMessageSquare,
-  FiPlus,
   FiUser,
 } from "react-icons/fi";
+import { isActivePath } from "./navigation";
 
 type MobileItem = {
   label: string;
@@ -17,37 +21,34 @@ type MobileItem = {
 const mobileItems: MobileItem[] = [
   { label: "Trang chủ", href: "/", icon: FiHome },
   { label: "Khám phá", href: "/explore", icon: FiCompass },
-  { label: "Tạo bài", href: "/compose", icon: FiPlus },
+  { label: "Hoạt động", href: "/activities", icon: FiCalendar },
   { label: "Tin nhắn", href: "/messages", icon: FiMessageSquare },
   { label: "Hồ sơ", href: "/account", icon: FiUser },
 ];
 
-type MobileNavProps = {
-  activeHref: string;
-};
-
-export default function MobileNav({ activeHref }: MobileNavProps) {
+export default function MobileNav() {
+  const pathname = usePathname();
   return (
     <nav
       aria-label="Điều hướng nhanh"
-      className="fixed inset-x-0 bottom-0 z-10 flex h-16 items-center justify-around border-t border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-950"
+      className="fixed inset-x-0 bottom-0 z-10 flex h-14 items-center justify-around border-t border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-950"
     >
       {mobileItems.map(({ label, href, icon: Icon }) => {
-        const active = href === activeHref;
+        const active = isActivePath(pathname, href);
         return (
           <Link
             key={href}
             href={href}
             aria-label={label}
+            title={label}
             aria-current={active ? "page" : undefined}
-            className={`flex flex-col items-center gap-1 px-3 text-xs font-semibold ${
+            className={`flex h-10 w-12 items-center justify-center rounded-md border transition-colors ${
               active
-                ? "text-teal-700 dark:text-teal-400"
-                : "text-slate-500 dark:text-slate-400"
+                ? "border-teal-700 text-teal-700 dark:border-teal-400 dark:text-teal-400"
+                : "border-transparent text-slate-500 dark:text-slate-400"
             }`}
           >
-            <Icon aria-hidden="true" className="text-lg" />
-            {label}
+            <Icon aria-hidden="true" className="text-xl" />
           </Link>
         );
       })}

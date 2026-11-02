@@ -7,7 +7,7 @@ export type ApiResult<T> =
   | { ok: false; status: number; code: string; issues: ValidationIssue[] };
 
 type RequestOptions = {
-  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   token?: string;
 };

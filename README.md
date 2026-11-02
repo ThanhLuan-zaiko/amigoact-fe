@@ -53,7 +53,11 @@ Mặc định frontend gọi `http://127.0.0.1:8100`. Muốn đổi địa chỉ
 
 Tài liệu chi tiết nằm trong thư mục [`docs/`](docs):
 
+- [Lộ trình phát triển](docs/roadmap.md): kế hoạch theo giai đoạn và các quyết định sản phẩm.
 - [Xác thực và tài khoản](docs/authentication.md): luồng đăng nhập, cookie, form và kiểm tra dữ liệu.
+- [Tổ chức và thành viên](docs/organizations.md): các trang, luồng dữ liệu và kiểm tra dữ liệu.
+- [Hoạt động và đăng ký](docs/activities.md): các trang, giờ Việt Nam và thành phần.
+- [Điểm danh và giờ tình nguyện](docs/attendance.md): các trang, mã QR và `APP_URL`.
 
 ## Cấu trúc thư mục
 

@@ -87,6 +87,44 @@ export function TextField({
   );
 }
 
+type TextAreaFieldProps = {
+  label: string;
+  name: string;
+  rows?: number;
+  defaultValue?: string | null;
+  maxLength?: number;
+  hint?: string;
+  errors?: FieldErrors;
+};
+
+export function TextAreaField({
+  label,
+  name,
+  rows = 4,
+  defaultValue,
+  maxLength,
+  hint,
+  errors,
+}: TextAreaFieldProps) {
+  const errorId = useId();
+  const error = errors?.[name];
+  return (
+    <label className="flex flex-col gap-1">
+      <span className={fieldLabel}>{label}</span>
+      <textarea
+        name={name}
+        rows={rows}
+        defaultValue={defaultValue ?? undefined}
+        maxLength={maxLength}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
+        className={`${error ? inputFieldInvalid : inputField} resize-y leading-relaxed`}
+      />
+      <FieldNotes id={errorId} hint={hint} error={error} />
+    </label>
+  );
+}
+
 type PasswordFieldProps = {
   label: string;
   name: string;
@@ -141,7 +179,7 @@ export function PasswordField({
           onClick={onToggle}
           aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
           aria-pressed={visible}
-          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-500 hover:text-teal-700 dark:text-slate-400 dark:hover:text-teal-400"
+          className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-md text-slate-500 transition-colors hover:text-teal-700 dark:text-slate-400 dark:hover:text-teal-400"
         >
           <Icon aria-hidden="true" />
         </button>
@@ -181,7 +219,7 @@ export function FormMessage({ state }: { state: FormState }) {
     return (
       <p
         role="alert"
-        className="flex items-start gap-2 border border-slate-400 p-3 text-sm font-semibold text-red-700 dark:border-slate-500 dark:text-red-400"
+        className="flex items-start gap-2 rounded-md border border-red-200 p-3 text-sm font-semibold text-red-700 dark:border-red-900 dark:text-red-400"
       >
         <FiAlertCircle aria-hidden="true" className="mt-0.5 shrink-0" />
         {state.error}
@@ -190,7 +228,7 @@ export function FormMessage({ state }: { state: FormState }) {
   }
   if (state.success) {
     return (
-      <output className="flex items-start gap-2 border border-teal-700 p-3 text-sm text-teal-700 dark:border-teal-400 dark:text-teal-400">
+      <output className="flex items-start gap-2 rounded-md border border-green-200 p-3 text-sm font-semibold text-green-700 dark:border-green-900 dark:text-green-400">
         <FiCheckCircle aria-hidden="true" className="mt-0.5 shrink-0" />
         {state.success}
       </output>

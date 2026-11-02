@@ -3,7 +3,7 @@
 import { FiSave } from "react-icons/fi";
 import { updateProfile } from "@/app/_actions/account";
 import type { User } from "@/lib/account";
-import { fieldLabel, inputField } from "../ui";
+import { fieldLabel, inputField, panel } from "../ui";
 import { FormMessage, SubmitButton, TextField } from "./FormParts";
 import { useAccountForm } from "./useAccountForm";
 
@@ -21,7 +21,7 @@ export default function ProfileForm({ user }: { user: User }) {
     resetOnSuccess: false,
   });
   return (
-    <form {...formProps} className="flex flex-col gap-4">
+    <form {...formProps} className={`${panel} flex flex-col gap-4 p-4 sm:p-6`}>
       <FormMessage state={state} />
       <TextField
         errors={state.fieldErrors}
@@ -54,7 +54,7 @@ export default function ProfileForm({ user }: { user: User }) {
         <select
           name="gender"
           defaultValue={user.gender ?? ""}
-          className={`${inputField} dark:bg-slate-950`}
+          className={inputField}
         >
           {GENDERS.map(({ value, label }) => (
             <option key={value} value={value}>

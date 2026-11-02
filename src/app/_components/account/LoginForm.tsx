@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FiLogIn } from "react-icons/fi";
 import { login } from "@/app/_actions/auth";
+import { primaryButton } from "../ui";
 import {
   FormMessage,
   PasswordField,
@@ -51,5 +52,4 @@ export default function LoginForm({ next }: { next?: string }) {
   );
 }
 
-const submitClass =
-  "inline-flex h-10 w-full items-center justify-center gap-2 border border-teal-700 bg-teal-700 px-4 text-sm font-semibold text-white hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-teal-700 dark:border-teal-400 dark:bg-teal-400 dark:text-teal-950 dark:hover:bg-teal-300 dark:focus-visible:outline-teal-400";
+const submitClass = `${primaryButton} w-full`;

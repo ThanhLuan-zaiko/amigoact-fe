@@ -4,7 +4,13 @@ import type { TokenPair } from "./lib/account";
 import { ACCESS_COOKIE, REFRESH_COOKIE, tokenCookies } from "./lib/authCookies";
 
 function isProtected(pathname: string): boolean {
-  return pathname === "/account" || pathname.startsWith("/account/");
+  return (
+    pathname === "/account" ||
+    pathname.startsWith("/account/") ||
+    pathname === "/organizations/new" ||
+    pathname === "/activities" ||
+    pathname === "/hours"
+  );
 }
 
 function redirectToLogin(request: NextRequest): NextResponse {

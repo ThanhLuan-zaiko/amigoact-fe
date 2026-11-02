@@ -55,7 +55,7 @@ export async function register(
     return failureState(result.code, result.issues);
   }
   await saveTokens(result.data.tokens);
-  redirect("/account");
+  redirect("/");
 }
 
 export async function forgotPassword(

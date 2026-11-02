@@ -23,13 +23,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Design rules (mandatory)
 
 - Mobile first. Write the base classes for a phone screen (about 375px wide), then add `sm:`, `md:`, and `lg:` classes for wider screens. Never design the desktop layout first and shrink it later.
-- Flat design. Do not use `shadow-*` or `drop-shadow-*`. Do not use gradients (`bg-gradient-*`, `from-*`, `to-*`) or other decorative effects.
-- Use one accent color, teal (`teal-700` in light mode and `teal-400` in dark mode). Use neutral slate colors for everything else. Do not add other accent colors.
+- Flat design. Do not use `shadow-*` or `drop-shadow-*` on page content. The only exception is `shadow-sm` on floating layers (dropdown menus, dialogs, toasts) so they stand apart from the page. Do not use gradients (`bg-gradient-*`, `from-*`, `to-*`) or decorative effects. Transitions and hover, focus, and disabled states are allowed.
+- Primary accent is teal (`teal-700` in light mode and `teal-400` in dark mode) for primary buttons, links, focus rings, and the active navigation item. Use neutral slate colors for text, borders, and page surfaces.
+- Semantic colors carry meaning only: green for success, amber for warning, red for error, and sky for informational notices. Red is for error text, such as validation messages. Use the 700 shade in light mode and the 400 shade in dark mode for text and icons. For a badge background, use the 50 shade in light mode and the 950 shade at 40% opacity in dark mode, for example `bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400`. Use at most one semantic color per component. Do not use color for decoration, and do not use shades 500 and brighter for large areas.
 - Do not use the Inter font. The app uses Be Vietnam Pro, loaded in `src/app/layout.tsx`.
 - Do not nest cards inside cards. Separate sections with borders and dividers.
-- Do not round corners. Icons and their containers use square corners, and the app does not use `rounded-*` classes.
-- Use borders to show emphasis, such as an active item, a pinned post, or a selected option. Do not use fills or shadows for this.
-- Every decorative icon and every icon inside a button comes from `react-icons`. Every `<button>` must have an icon. Add `aria-label` to any button that has no visible text.
+- Use a small, consistent corner radius: `rounded-sm` (2px) or `rounded-md` (6px) on inputs, buttons, and cards. Do not use `rounded-lg` or larger. Use `rounded-full` only for avatars and status dots. Icons and their containers stay square.
+- Use borders or a light tint to show emphasis, such as an active item, a pinned post, or a selected option (for example a teal border with `bg-teal-50 dark:bg-teal-950/40`). Do not use shadows for this.
+- Every decorative icon comes from `react-icons`. Every icon-only `<button>` must have an icon and an `aria-label`. A button with visible text may have an icon but does not need one.
 
 ## Dark mode
 

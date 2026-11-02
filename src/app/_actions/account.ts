@@ -94,25 +94,6 @@ export async function changePassword(
   };
 }
 
-export async function changeEmail(
-  _previous: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const result = await authedFetch("/account/me/email", {
-    body: {
-      new_email: textValue(formData, "new_email"),
-      password: passwordValue(formData, "password"),
-    },
-  });
-  if (!result.ok) {
-    return failure(result);
-  }
-  return {
-    success:
-      "Đã gửi liên kết xác nhận tới email mới. Email chỉ đổi sau khi bạn xác nhận.",
-  };
-}
-
 export async function resendVerification(
   _previous: FormState,
   _formData: FormData,
@@ -141,19 +122,4 @@ export async function logoutAll(): Promise<void> {
   await authedFetch("/auth/logout-all");
   await clearTokens();
   redirect("/login");
-}
-
-export async function deleteAccount(
-  _previous: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const result = await authedFetch("/account/me", {
-    method: "DELETE",
-    body: { password: passwordValue(formData, "password") },
-  });
-  if (!result.ok) {
-    return failure(result);
-  }
-  await clearTokens();
-  redirect("/");
 }

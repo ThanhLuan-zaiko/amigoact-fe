@@ -30,7 +30,7 @@ function FieldNotes({
       {error ? (
         <span
           id={id}
-          className="flex items-start gap-1 text-xs font-semibold text-slate-900 dark:text-slate-100"
+          className="flex items-start gap-1 text-xs font-semibold text-red-700 dark:text-red-400"
         >
           <FiAlertCircle aria-hidden="true" className="mt-0.5 shrink-0" />
           {error}
@@ -181,7 +181,7 @@ export function FormMessage({ state }: { state: FormState }) {
     return (
       <p
         role="alert"
-        className="flex items-start gap-2 border border-slate-400 p-3 text-sm font-semibold text-slate-900 dark:border-slate-500 dark:text-slate-100"
+        className="flex items-start gap-2 border border-slate-400 p-3 text-sm font-semibold text-red-700 dark:border-slate-500 dark:text-red-400"
       >
         <FiAlertCircle aria-hidden="true" className="mt-0.5 shrink-0" />
         {state.error}

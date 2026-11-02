@@ -12,8 +12,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   same_password: "Mật khẩu mới phải khác mật khẩu hiện tại.",
   invalid_or_expired_token: "Liên kết không hợp lệ hoặc đã hết hạn.",
   email_already_verified: "Email này đã được xác minh.",
-  owns_organizations:
-    "Bạn đang sở hữu tổ chức. Hãy chuyển quyền sở hữu trước khi xóa tài khoản.",
   business_fields_required:
     "Tài khoản tổ chức cần có tên đơn vị và mã số thuế.",
   session_not_found: "Không tìm thấy phiên đăng nhập này.",
@@ -42,7 +40,6 @@ const ISSUE_MESSAGES: Record<string, string> = {
 // Used when the issue type is generic, such as a value that is too short.
 const FIELD_FALLBACKS: Record<string, string> = {
   email: FIELD_MESSAGES.email,
-  new_email: FIELD_MESSAGES.email,
   password: PASSWORD_HINT,
   new_password: PASSWORD_HINT,
   full_name: "Họ và tên cần từ 1 đến 120 ký tự.",
@@ -58,7 +55,7 @@ const FIELD_FALLBACKS: Record<string, string> = {
 
 // Backend errors that belong to specific inputs. A form renders only some of them.
 const CODE_FIELDS: Record<string, string[]> = {
-  email_taken: ["email", "new_email"],
+  email_taken: ["email"],
   phone_taken: ["phone"],
   invalid_current_password: ["current_password", "password"],
   same_password: ["new_password"],
@@ -114,7 +111,7 @@ export function textOrNull(formData: FormData, name: string): string | null {
 }
 
 // Only same-site paths are accepted, so a crafted link cannot redirect elsewhere after login.
-export function safeNextPath(value: unknown, fallback = "/account"): string {
+export function safeNextPath(value: unknown, fallback = "/"): string {
   if (
     typeof value !== "string" ||
     !value.startsWith("/") ||

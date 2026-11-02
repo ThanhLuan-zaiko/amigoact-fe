@@ -18,8 +18,8 @@ describe("safeNextPath", () => {
     "/\\evil.example",
     "",
     null,
-  ])("falls back for %p", (value) => {
-    expect(safeNextPath(value)).toBe("/account");
+  ])("falls back to the home page for %p", (value) => {
+    expect(safeNextPath(value)).toBe("/");
   });
 });
 

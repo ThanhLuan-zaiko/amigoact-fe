@@ -2,11 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { requireUser } from "@/lib/auth";
-import {
-  ChangeEmailForm,
-  ChangePasswordForm,
-  DeleteAccountForm,
-} from "../../_components/account/SecurityForms";
+import { ChangePasswordForm } from "../../_components/account/SecurityForms";
 import SessionList from "../../_components/account/SessionList";
 import { mutedText, sectionTitle } from "../../_components/ui";
 
@@ -22,20 +18,14 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 }
 
 async function SecurityContent() {
-  const user = await requireUser("/account/security");
+  await requireUser("/account/security");
   return (
     <>
       <Section title="Đổi mật khẩu">
         <ChangePasswordForm />
       </Section>
-      <Section title="Đổi email">
-        <ChangeEmailForm email={user.email} />
-      </Section>
       <Section title="Thiết bị đang đăng nhập">
         <SessionList />
-      </Section>
-      <Section title="Xóa tài khoản">
-        <DeleteAccountForm />
       </Section>
     </>
   );

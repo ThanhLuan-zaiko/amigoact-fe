@@ -31,13 +31,13 @@ Trình duyệt -> Server Action (src/app/_actions) -> backendFetch (src/lib/back
 
 | Đường dẫn | Chức năng |
 | ---- | ---- |
-| `/login` | Đăng nhập, nhận `?next=` là đường dẫn trong trang |
-| `/register` | Đăng ký tài khoản cá nhân hoặc tổ chức |
+| `/login` | Đăng nhập, nhận `?next=` là đường dẫn trong trang. Không có `next` thì về trang chủ |
+| `/register` | Đăng ký tài khoản cá nhân hoặc tổ chức. Đăng ký xong về trang chủ |
 | `/forgot-password` | Yêu cầu liên kết đặt lại mật khẩu |
 | `/reset-password?token=` | Đặt lại mật khẩu |
 | `/verify-email?token=` | Xác minh email. Phải bấm nút, để trình quét email không làm mất token |
 | `/account` | Xem và sửa thông tin, đăng xuất |
-| `/account/security` | Đổi mật khẩu, đổi email, quản lý thiết bị, xóa tài khoản |
+| `/account/security` | Đổi mật khẩu, quản lý thiết bị |
 
 Trang liên kết qua email dùng `referrer: "same-origin"` để token không lộ sang trang khác. Không dùng `no-referrer`, vì khi đó trình duyệt gửi `Origin: null` và Next.js từ chối Server Action.
 

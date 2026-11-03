@@ -18,6 +18,7 @@ import { RequiredLegend } from "../account/RequiredMarks";
 import { useAccountForm } from "../account/useAccountForm";
 import SelectMenu, { optionsFrom } from "../SelectMenu";
 import { mutedText, panel, sectionTitle } from "../ui";
+import CreateGalleryField from "./CreateGalleryField";
 import OrganizationLegalFields from "./OrganizationLegalFields";
 import PictureField from "./PictureField";
 
@@ -106,6 +107,7 @@ export default function OrganizationForm({
           shape="wide"
           error={errors?.cover}
         />
+        {organization ? null : <CreateGalleryField />}
       </FormSection>
       <FormSection title="Liên hệ">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

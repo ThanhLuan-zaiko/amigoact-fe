@@ -63,11 +63,13 @@ export async function createOrganization(
   if (!cover.ok) {
     return cover.state;
   }
+  // Gallery files were uploaded in the browser and arrive as asset ids.
   const result = await authedFetch<OrganizationDetail>("/organizations", {
     body: {
       ...organizationFields(formData),
       logo_asset_id: logo.assetId,
       cover_asset_id: cover.assetId,
+      gallery_asset_ids: formData.getAll("gallery_asset_id").map(String),
     },
   });
   if (!result.ok) {

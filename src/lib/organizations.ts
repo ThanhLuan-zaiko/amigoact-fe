@@ -13,6 +13,9 @@ export type OrganizationSummary = {
   join_policy: JoinPolicy;
   member_count: number;
   created_at: string;
+  // Served by the frontend at the same path (see app/media), or null.
+  logo_url: string | null;
+  cover_url: string | null;
 };
 
 export type OrganizationPage = {

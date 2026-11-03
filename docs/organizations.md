@@ -39,6 +39,7 @@ Thanh mục trong header chỉ hiện những trang người xem được phép 
 
 - Ảnh không đi thẳng từ trình duyệt tới backend. Form gửi file lên Server Action, action chuyển tiếp lên `POST /media` bằng `readPicture` trong `src/lib/pictures.ts`, rồi gửi `logo_asset_id` hoặc `cover_asset_id` cho backend.
 - `next.config.ts` đặt `serverActions.bodySizeLimit` là 6 MB. Mặc định của Next.js chỉ là 1 MB, nên ảnh 5 MB sẽ bị từ chối nếu thiếu cấu hình này.
+- Thẻ "Tổ chức của tôi" (`OwnedOrganizationCard`) hiện ảnh bìa ở trên và logo bên cạnh tên. Chưa có ảnh thì hiện chữ cái đầu của tên tổ chức.
 - Ảnh hiển thị qua `src/app/media/[id]/file/route.ts`. Route này chỉ nhận ID dạng UUIDv7 và chuyển tiếp tới `GET /media/{id}/file` của backend, nên trình duyệt không gọi backend trực tiếp. Ảnh riêng trả về 404.
 - `src/lib/pictureRules.ts` chứa các quy tắc dùng chung: định dạng JPEG, PNG hoặc WEBP, dung lượng tối đa 5 MB, và kiểm tra ID.
 
@@ -52,7 +53,7 @@ Trình duyệt kiểm tra trước để phản hồi nhanh, backend kiểm tra 
 
 ## Bộ sưu tập
 
-`GalleryManager` ở trang cài đặt nhận kéo thả hoặc chọn nhiều tệp, tải lần lượt từng tệp qua `/media/upload` rồi gắn vào tổ chức. Tệp 50 MB vượt giới hạn của Server Action nên phải đi qua route này. Route chỉ nhận yêu cầu cùng origin và token vẫn nằm trong cookie. `/media/[id]/file` chuyển tiếp header `Range` để tua được video. `OrganizationGallery` hiển thị ở trang giới thiệu. Bộ sưu tập cần tổ chức đã tồn tại nên không có trong form tạo. `PictureField` (logo, ảnh bìa) cũng nhận kéo thả, mỗi ô một ảnh.
+`GalleryManager` ở trang cài đặt nhận kéo thả hoặc chọn nhiều tệp, tải lần lượt từng tệp qua `/media/upload` rồi gắn vào tổ chức. Tệp 50 MB vượt giới hạn của Server Action nên phải đi qua route này. Route chỉ nhận yêu cầu cùng origin và token vẫn nằm trong cookie. `/media/[id]/file` chuyển tiếp header `Range` để tua được video. `OrganizationGallery` hiển thị ở trang giới thiệu. Form tạo cũng có `CreateGalleryField`: chọn ảnh hoặc video tải lên trước, mỗi tệp thành một `<input type="hidden" name="gallery_asset_id">`, và action gửi chúng thành `gallery_asset_ids` cùng lúc với logo và ảnh bìa. Khi đang tải lên, nút tạo tổ chức chưa bị chặn, nên người dùng nên đợi xong rồi mới bấm. `PictureField` (logo, ảnh bìa) cũng nhận kéo thả, mỗi ô một ảnh.
 
 ## Phân trang
 

@@ -17,6 +17,8 @@ import {
   panel,
   primaryButton,
   sectionTitle,
+  splitList,
+  splitRow,
 } from "../../../../_components/ui";
 
 export const metadata: Metadata = { title: "Yêu cầu tham gia | AmigoACT" };
@@ -48,11 +50,11 @@ async function ApplicationList({
   return (
     <section className={`${panel} flex flex-col gap-3 p-4 sm:p-6`}>
       <h2 className={sectionTitle}>Yêu cầu tham gia</h2>
-      <ul className="flex flex-col divide-y divide-slate-200 dark:divide-slate-800">
+      <ul className={splitList}>
         {page.items.map((application) => (
           <li
             key={application.user_id}
-            className="flex flex-wrap items-start gap-3 py-3"
+            className={`flex flex-wrap items-start gap-3 py-3 ${splitRow}`}
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
               {initials(application.full_name)}

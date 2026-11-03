@@ -13,7 +13,7 @@ const ITEMS = [
 export default function AccountNav() {
   const pathname = usePathname();
   return (
-    <nav aria-label="Tài khoản" className={segmentList}>
+    <nav aria-label="Tài khoản" className={`${segmentList} xl:flex-col`}>
       {ITEMS.map(({ href, label, icon: Icon }) => {
         const active = pathname === href;
         return (

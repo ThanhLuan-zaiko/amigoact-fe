@@ -41,11 +41,14 @@ async function EditContent({
           {activity.title}
         </h1>
       </div>
-      <ActivityForm
-        action={updateActivity.bind(null, id)}
-        activity={activity}
-      />
-      <ShiftEditor activityId={id} shifts={activity.shifts} />
+      {/* The form splits itself into two columns on xl. The shifts sit below it. */}
+      <div className="flex w-full flex-col gap-4">
+        <ActivityForm
+          action={updateActivity.bind(null, id)}
+          activity={activity}
+        />
+        <ShiftEditor activityId={id} shifts={activity.shifts} />
+      </div>
     </>
   );
 }
@@ -54,7 +57,7 @@ export default function EditActivityPage({
   params,
 }: PageProps<"/activities/[id]/edit">) {
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
         <EditContent params={params} />
       </Suspense>

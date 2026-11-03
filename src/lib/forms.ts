@@ -29,6 +29,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   organization_forbidden: "Bạn không có quyền thực hiện việc này.",
   email_not_verified: "Hãy xác minh email trước khi tạo tổ chức.",
   organization_limit_reached: "Bạn đã sở hữu số tổ chức tối đa (5 tổ chức).",
+  organization_has_open_activities:
+    "Tổ chức còn hoạt động đang mở. Hãy hủy các hoạt động đó trước khi xóa tổ chức.",
+  slug_taken:
+    "Đường dẫn cũ của tổ chức này đã có tổ chức khác dùng, nên chưa khôi phục được.",
   already_member: "Bạn đã là thành viên của tổ chức này.",
   already_applied: "Bạn đã gửi yêu cầu tham gia tổ chức này.",
   application_cooldown:

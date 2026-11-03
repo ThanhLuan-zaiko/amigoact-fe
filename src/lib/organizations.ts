@@ -50,8 +50,18 @@ export type OrganizationDetail = OrganizationSummary & {
   cover_url: string | null;
   owner_name: string;
   activity_count: number;
+  // Published activities not completed or cancelled yet. A delete is refused while any exist.
+  open_activity_count: number;
   volunteer_hours: number;
   viewer: ViewerMembership;
+};
+
+// An organization in the owner's trash. slug is the one it had before the delete.
+export type DeletedOrganization = {
+  id: string;
+  name: string;
+  slug: string | null;
+  deleted_at: string | null;
 };
 
 export type MyOrganization = OrganizationSummary & {

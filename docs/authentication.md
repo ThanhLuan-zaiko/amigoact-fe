@@ -36,8 +36,8 @@ Trình duyệt -> Server Action (src/app/_actions) -> backendFetch (src/lib/back
 | `/forgot-password` | Yêu cầu liên kết đặt lại mật khẩu |
 | `/reset-password?token=` | Đặt lại mật khẩu |
 | `/verify-email?token=` | Xác minh email. Phải bấm nút, để trình quét email không làm mất token |
-| `/account` | Xem và sửa thông tin, đăng xuất |
-| `/account/security` | Đổi mật khẩu, quản lý thiết bị |
+| `/account` | Xem và sửa thông tin, đăng xuất. Từ xl: danh mục bên trái, nội dung bên phải |
+| `/account/security` | Đổi mật khẩu, quản lý thiết bị. Bố cục như `/account` |
 
 Trang liên kết qua email dùng `referrer: "same-origin"` để token không lộ sang trang khác. Không dùng `no-referrer`, vì khi đó trình duyệt gửi `Origin: null` và Next.js từ chối Server Action.
 

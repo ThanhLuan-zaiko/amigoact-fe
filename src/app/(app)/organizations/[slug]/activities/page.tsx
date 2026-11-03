@@ -47,7 +47,7 @@ async function OrganizationActivities({
           description="Hoạt động của tổ chức sẽ hiện ở đây."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
           {page.items.map((activity) => (
             <ActivityCard key={activity.id} activity={activity} />
           ))}

@@ -10,7 +10,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <AppHeader />
-      <div className="mx-auto flex w-full max-w-[1200px] flex-1 gap-6 p-4 pb-24 sm:p-6 md:pb-6">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-1 gap-6 p-4 pb-24 sm:p-6 md:pb-6">
         <aside className="sticky top-20 hidden w-52 shrink-0 self-start md:block">
           <Suspense fallback={null}>
             <SideNav>

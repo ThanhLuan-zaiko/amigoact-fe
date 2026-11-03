@@ -54,9 +54,13 @@ async function RegistrationList({
   }
   const base = `/activities/${id}/registrations`;
 
+  // The status filter stays on the left as a list on wide screens, and the registrations sit on the right.
   return (
-    <>
-      <nav aria-label="Lọc theo trạng thái" className={segmentList}>
+    <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[14rem_minmax(0,1fr)]">
+      <nav
+        aria-label="Lọc theo trạng thái"
+        className={`${segmentList} xl:sticky xl:top-24 xl:flex-col`}
+      >
         <Link
           href={base}
           aria-current={status === "" ? "page" : undefined}
@@ -75,68 +79,70 @@ async function RegistrationList({
           </Link>
         ))}
       </nav>
-      {page.items.length === 0 ? (
-        <EmptyState
-          title="Chưa có ai"
-          description="Người đăng ký sẽ hiện ở đây."
-        />
-      ) : (
-        <ul
-          className={`${panel} flex flex-col divide-y divide-slate-200 px-4 dark:divide-slate-800`}
-        >
-          {page.items.map((registration) => (
-            <li
-              key={registration.id}
-              className="flex flex-wrap items-center gap-3 py-3"
-            >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
-                {initials(registration.full_name)}
-              </div>
-              <div className="flex min-w-0 flex-1 basis-40 flex-col gap-1">
-                <p className="truncate text-sm font-semibold">
-                  {registration.full_name}
-                </p>
-                <IconStat icon={FiCalendar} label="Ngày đăng ký">
-                  {formatDateTime(registration.registered_at)}
-                  {registration.shift_title
-                    ? ` · ${registration.shift_title}`
-                    : ""}
-                </IconStat>
-                {registration.note ? (
-                  <p className="text-sm break-words whitespace-pre-line text-slate-700 dark:text-slate-300">
-                    {registration.note}
+      <div className="flex min-w-0 flex-col gap-4">
+        {page.items.length === 0 ? (
+          <EmptyState
+            title="Chưa có ai"
+            description="Người đăng ký sẽ hiện ở đây."
+          />
+        ) : (
+          <ul
+            className={`${panel} flex flex-col divide-y divide-slate-200 px-4 dark:divide-slate-800`}
+          >
+            {page.items.map((registration) => (
+              <li
+                key={registration.id}
+                className="flex flex-wrap items-center gap-3 py-3"
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                  {initials(registration.full_name)}
+                </div>
+                <div className="flex min-w-0 flex-1 basis-40 flex-col gap-1">
+                  <p className="truncate text-sm font-semibold">
+                    {registration.full_name}
                   </p>
+                  <IconStat icon={FiCalendar} label="Ngày đăng ký">
+                    {formatDateTime(registration.registered_at)}
+                    {registration.shift_title
+                      ? ` · ${registration.shift_title}`
+                      : ""}
+                  </IconStat>
+                  {registration.note ? (
+                    <p className="text-sm break-words whitespace-pre-line text-slate-700 dark:text-slate-300">
+                      {registration.note}
+                    </p>
+                  ) : null}
+                </div>
+                <RegistrationBadge status={registration.status} />
+                {registration.status === "pending" ? (
+                  <ActionButton
+                    action={approveRegistration.bind(null, registration.id)}
+                    label="Duyệt"
+                    className={primaryButton}
+                  >
+                    <FiCheck aria-hidden="true" />
+                  </ActionButton>
                 ) : null}
-              </div>
-              <RegistrationBadge status={registration.status} />
-              {registration.status === "pending" ? (
-                <ActionButton
-                  action={approveRegistration.bind(null, registration.id)}
-                  label="Duyệt"
-                  className={primaryButton}
-                >
-                  <FiCheck aria-hidden="true" />
-                </ActionButton>
-              ) : null}
-              {ACTIVE.includes(registration.status) ? (
-                <ActionButton
-                  action={rejectRegistration.bind(null, registration.id)}
-                  label="Từ chối"
-                  confirmLabel="Từ chối?"
-                >
-                  <FiX aria-hidden="true" />
-                </ActionButton>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )}
-      <PageLinks
-        path={status ? `${base}?status=${status}` : base}
-        offset={offset}
-        total={page.total}
-      />
-    </>
+                {ACTIVE.includes(registration.status) ? (
+                  <ActionButton
+                    action={rejectRegistration.bind(null, registration.id)}
+                    label="Từ chối"
+                    confirmLabel="Từ chối?"
+                  >
+                    <FiX aria-hidden="true" />
+                  </ActionButton>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+        <PageLinks
+          path={status ? `${base}?status=${status}` : base}
+          offset={offset}
+          total={page.total}
+        />
+      </div>
+    </div>
   );
 }
 

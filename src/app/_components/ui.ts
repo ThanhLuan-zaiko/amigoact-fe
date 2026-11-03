@@ -4,10 +4,13 @@
 const focusRing =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 dark:focus-visible:outline-teal-400";
 
-// Section or card. It has the page background and only a border.
-export const panel = "rounded-md border border-slate-200 dark:border-slate-800";
+// Section or card. A border and a larger radius.
+export const panel = "rounded-lg border border-slate-200 dark:border-slate-800";
 
 export const primaryButton = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-teal-700 bg-teal-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-teal-800 ${focusRing} dark:border-teal-400 dark:bg-teal-400 dark:text-teal-950 dark:hover:bg-teal-300`;
+
+// Red marks an action that cannot be undone, such as deleting an organization.
+export const dangerButton = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-red-700 bg-red-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-red-800 disabled:opacity-50 ${focusRing} dark:border-red-400 dark:bg-red-400 dark:text-red-950 dark:hover:bg-red-300`;
 
 export const secondaryButton = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-teal-700 px-4 text-sm font-semibold text-teal-700 transition-colors hover:text-teal-800 ${focusRing} dark:border-teal-400 dark:text-teal-400 dark:hover:text-teal-300`;
 
@@ -31,6 +34,14 @@ export const segmentActive =
 
 export const segmentIdle =
   "border border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100";
+
+// A list of rows: one column on a phone, two columns on xl. Rows get their own bottom
+// border in the two-column layout, because the dividers only work in one column.
+export const splitList =
+  "flex flex-col divide-y divide-slate-200 dark:divide-slate-800 xl:grid xl:grid-cols-2 xl:gap-x-6 xl:divide-y-0";
+
+export const splitRow =
+  "xl:border-b xl:border-slate-200 dark:xl:border-slate-800";
 
 export const sectionTitle =
   "text-base font-bold text-slate-900 dark:text-slate-100";

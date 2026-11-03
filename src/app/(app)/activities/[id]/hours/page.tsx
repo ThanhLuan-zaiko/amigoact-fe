@@ -9,7 +9,13 @@ import { requireUser } from "@/lib/auth";
 import { initials } from "@/lib/organizations";
 import AdjustHours from "../../../../_components/attendance/AdjustHours";
 import EmptyState from "../../../../_components/EmptyState";
-import { iconButton, mutedText, panel } from "../../../../_components/ui";
+import {
+  iconButton,
+  mutedText,
+  panel,
+  splitList,
+  splitRow,
+} from "../../../../_components/ui";
 
 export const metadata: Metadata = { title: "Giờ của hoạt động | AmigoACT" };
 
@@ -49,13 +55,11 @@ async function ActivityHoursContent({
           description="Giờ được ghi khi hoạt động kết thúc, cho người đã điểm danh."
         />
       ) : (
-        <ul
-          className={`${panel} flex flex-col divide-y divide-slate-200 px-4 dark:divide-slate-800`}
-        >
+        <ul className={`${panel} ${splitList} px-4`}>
           {entries.map((entry) => (
             <li
               key={entry.user_id}
-              className="flex flex-wrap items-center gap-3 py-3"
+              className={`flex flex-wrap items-center gap-3 py-3 ${splitRow}`}
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
                 {initials(entry.full_name)}
@@ -77,7 +81,7 @@ export default function ActivityHoursPage({
   params,
 }: PageProps<"/activities/[id]/hours">) {
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
         <ActivityHoursContent params={params} />
       </Suspense>

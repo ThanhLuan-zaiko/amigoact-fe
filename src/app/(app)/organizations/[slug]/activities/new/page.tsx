@@ -31,7 +31,7 @@ export default function NewActivityPage({
   params,
 }: PageProps<"/organizations/[slug]/activities/new">) {
   return (
-    <div className="w-full max-w-2xl">
+    <div className="w-full">
       <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
         <NewActivityContent params={params} />
       </Suspense>

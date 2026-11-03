@@ -7,12 +7,12 @@ Tài liệu này mô tả giao diện phần điểm danh. Quy tắc nghiệp v�
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
 | `/checkin` | Nhập mã, hoặc xác nhận khi đến từ mã QR (`?token=`) | Đã đăng nhập |
-| `/hours` | Tổng giờ, giờ theo kỳ, các dòng trong sổ | Đã đăng nhập |
+| `/hours` | Tổng giờ, giờ theo kỳ bên trái, các dòng trong sổ bên phải từ xl | Đã đăng nhập |
 | `/activities` | Thêm trạng thái điểm danh và nút khiếu nại | Đã đăng nhập |
-| `/activities/[id]/attendance` | Mở và đóng phiên, hiện mã QR và mã nhập tay | Ban quản trị |
-| `/activities/[id]/attendance/[sessionId]` | Danh sách, xác nhận mã, điểm danh hộ | Ban quản trị |
-| `/activities/[id]/appeals` | Xử lý khiếu nại | Ban quản trị |
-| `/activities/[id]/hours` | Giờ của từng người, điều chỉnh | Ban quản trị |
+| `/activities/[id]/attendance` | Mở và đóng phiên, hiện mã QR và mã nhập tay. Từ xl: mở phiên bên trái, các phiên bên phải | Ban quản trị |
+| `/activities/[id]/attendance/[sessionId]` | Danh sách, xác nhận mã, điểm danh hộ. Từ xl: tổng quan bên trái | Ban quản trị |
+| `/activities/[id]/appeals` | Xử lý khiếu nại. Từ xl: tổng quan bên trái | Ban quản trị |
+| `/activities/[id]/hours` | Giờ của từng người, điều chỉnh. Từ xl hiện hai cột | Ban quản trị |
 
 Quy tắc tính giờ nằm trong trang cài đặt của tổ chức.
 

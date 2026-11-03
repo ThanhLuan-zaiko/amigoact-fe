@@ -9,6 +9,7 @@ import {
   inputField,
   inputFieldInvalid,
   primaryButton,
+  sectionTitle,
 } from "../ui";
 import { RequiredMark } from "./RequiredMarks";
 
@@ -221,6 +222,22 @@ export function SubmitButton({
       <Icon aria-hidden="true" />
       {children}
     </button>
+  );
+}
+
+// Sections are split by a divider, not by cards, so the form stays flat.
+export function FormSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-4 border-t border-slate-200 pt-6 first-of-type:border-t-0 first-of-type:pt-0 dark:border-slate-800">
+      <h2 className={sectionTitle}>{title}</h2>
+      {children}
+    </section>
   );
 }
 

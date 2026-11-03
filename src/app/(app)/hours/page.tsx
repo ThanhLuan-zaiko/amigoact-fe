@@ -20,10 +20,11 @@ async function HoursContent() {
       <p className={mutedText}>Không tải được dữ liệu. Vui lòng thử lại.</p>
     );
   }
+  // The total stays visible on the left while the entries scroll on the right.
   return (
-    <>
+    <div className="grid w-full grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
       <section
-        className={`${panel} flex flex-wrap items-center gap-4 p-4 sm:p-6`}
+        className={`${panel} flex flex-wrap items-center gap-4 p-4 sm:p-6 xl:sticky xl:top-24 xl:flex-col xl:items-start`}
       >
         <p className="flex items-center gap-2 text-3xl font-extrabold tracking-tight">
           <FiClock aria-hidden="true" className="text-slate-500" />
@@ -78,13 +79,13 @@ async function HoursContent() {
           ))}
         </ul>
       )}
-    </>
+    </div>
   );
 }
 
 export default function HoursPage() {
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <h1 className="text-2xl font-extrabold tracking-tight">
         Giờ tình nguyện
       </h1>

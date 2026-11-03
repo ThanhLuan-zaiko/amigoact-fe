@@ -8,6 +8,7 @@ import {
   FiClock,
   FiEdit3,
   FiUserCheck,
+  FiUsers,
   FiX,
 } from "react-icons/fi";
 import {
@@ -29,6 +30,7 @@ import {
   mutedText,
   panel,
   primaryButton,
+  sectionTitle,
   tagChip,
 } from "../../../../../_components/ui";
 
@@ -88,6 +90,10 @@ async function RosterContent({
     return <p className={mutedText}>Chỉ ban quản trị mới xem được.</p>;
   }
   const editable = activity.status === "published";
+  const present = roster.filter((entry) => entry.verified).length;
+  const pending = roster.filter(
+    (entry) => entry.record_id && !entry.verified,
+  ).length;
 
   return (
     <>
@@ -104,55 +110,74 @@ async function RosterContent({
           {activity.title}
         </h1>
       </div>
-      {roster.length === 0 ? (
-        <EmptyState
-          title="Chưa có người đăng ký được duyệt"
-          description="Người đăng ký được duyệt sẽ hiện ở đây."
-        />
-      ) : (
-        <ul
-          className={`${panel} flex flex-col divide-y divide-slate-200 px-4 dark:divide-slate-800`}
+      {/* The summary on the left stays in view, the roster scrolls on the right, on wide screens. */}
+      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <section
+          className={`${panel} flex flex-col gap-3 p-4 sm:p-6 xl:sticky xl:top-24`}
         >
-          {roster.map((entry) => (
-            <li
-              key={entry.registration_id}
-              className="flex flex-wrap items-center gap-3 py-3"
+          <h2 className={sectionTitle}>Tổng quan</h2>
+          <IconStat icon={FiUsers} label="Đã duyệt">
+            {roster.length}
+          </IconStat>
+          <IconStat icon={FiUserCheck} label="Có mặt">
+            {present}
+          </IconStat>
+          <IconStat icon={FiClock} label="Chờ xác nhận">
+            {pending}
+          </IconStat>
+        </section>
+        <div className="flex min-w-0 flex-col gap-4">
+          {roster.length === 0 ? (
+            <EmptyState
+              title="Chưa có người đăng ký được duyệt"
+              description="Người đăng ký được duyệt sẽ hiện ở đây."
+            />
+          ) : (
+            <ul
+              className={`${panel} flex flex-col divide-y divide-slate-200 px-4 dark:divide-slate-800`}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
-                {initials(entry.full_name)}
-              </div>
-              <div className="flex min-w-0 flex-1 basis-32 flex-col gap-1">
-                <p className="truncate text-sm font-semibold">
-                  {entry.full_name}
-                </p>
-                {entry.scanned_at ? (
-                  <IconStat
-                    icon={entry.method === "qr" ? BsQrCode : FiEdit3}
-                    label={entry.method === "qr" ? "Quét QR" : "Nhập tay"}
-                  >
-                    {formatDateTime(entry.scanned_at)}
-                  </IconStat>
-                ) : null}
-              </div>
-              {entry.record_id && !entry.verified ? (
-                <span className={`${tagChip} gap-1`}>
-                  <FiClock aria-hidden="true" />
-                  Chờ xác nhận
-                </span>
-              ) : null}
-              {entry.verified ? (
-                <span className={`${tagChip} gap-1`}>
-                  <FiCheck aria-hidden="true" />
-                  Có mặt
-                </span>
-              ) : null}
-              {editable ? (
-                <RosterActions sessionId={sessionId} entry={entry} />
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      )}
+              {roster.map((entry) => (
+                <li
+                  key={entry.registration_id}
+                  className="flex flex-wrap items-center gap-3 py-3"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                    {initials(entry.full_name)}
+                  </div>
+                  <div className="flex min-w-0 flex-1 basis-32 flex-col gap-1">
+                    <p className="truncate text-sm font-semibold">
+                      {entry.full_name}
+                    </p>
+                    {entry.scanned_at ? (
+                      <IconStat
+                        icon={entry.method === "qr" ? BsQrCode : FiEdit3}
+                        label={entry.method === "qr" ? "Quét QR" : "Nhập tay"}
+                      >
+                        {formatDateTime(entry.scanned_at)}
+                      </IconStat>
+                    ) : null}
+                  </div>
+                  {entry.record_id && !entry.verified ? (
+                    <span className={`${tagChip} gap-1`}>
+                      <FiClock aria-hidden="true" />
+                      Chờ xác nhận
+                    </span>
+                  ) : null}
+                  {entry.verified ? (
+                    <span className={`${tagChip} gap-1`}>
+                      <FiCheck aria-hidden="true" />
+                      Có mặt
+                    </span>
+                  ) : null}
+                  {editable ? (
+                    <RosterActions sessionId={sessionId} entry={entry} />
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </>
   );
 }
@@ -161,7 +186,7 @@ export default function RosterPage({
   params,
 }: PageProps<"/activities/[id]/attendance/[sessionId]">) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
         <RosterContent params={params} />
       </Suspense>

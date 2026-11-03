@@ -26,6 +26,8 @@ import {
   mutedText,
   panel,
   primaryButton,
+  splitList,
+  splitRow,
   tagChip,
 } from "../../_components/ui";
 
@@ -51,13 +53,11 @@ async function MyActivities() {
     );
   }
   return (
-    <ul
-      className={`${panel} flex flex-col divide-y divide-slate-200 px-4 dark:divide-slate-800`}
-    >
+    <ul className={`${panel} ${splitList} px-4`}>
       {registrations.map((registration) => (
         <li
           key={registration.id}
-          className="flex flex-wrap items-center gap-3 py-3"
+          className={`flex flex-wrap items-center gap-3 py-3 ${splitRow}`}
         >
           <div className="flex min-w-0 flex-1 basis-56 flex-col gap-1">
             <Link

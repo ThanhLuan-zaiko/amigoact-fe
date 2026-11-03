@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FiPlus, FiSearch } from "react-icons/fi";
 import {
+  getDeletedOrganizations,
   getMyOrganizations,
   listOtherOrganizations,
 } from "@/lib/organizationApi";
@@ -12,6 +13,7 @@ import {
   type MyOrganization,
   pageOffset,
 } from "@/lib/organizations";
+import DeletedOrganizations from "../../_components/organizations/DeletedOrganizations";
 import OrganizationCard from "../../_components/organizations/OrganizationCard";
 import OwnedOrganizationCard from "../../_components/organizations/OwnedOrganizationCard";
 import PageLinks from "../../_components/organizations/PageLinks";
@@ -37,7 +39,7 @@ function OwnedOrganizations({
   organizations: MyOrganization[];
 }) {
   return (
-    <aside className="flex min-w-0 flex-col gap-3">
+    <section className="flex min-w-0 flex-col gap-3">
       <div className="flex items-baseline gap-2">
         <h2 className={sectionTitle}>Tổ chức của tôi</h2>
         <span className={mutedText}>
@@ -50,7 +52,7 @@ function OwnedOrganizations({
           organization={organization}
         />
       ))}
-    </aside>
+    </section>
   );
 }
 
@@ -62,11 +64,14 @@ async function OrganizationsContent({
   const params = await searchParams;
   const search = firstValue(params.q);
   const offset = pageOffset(params.page);
-  const [page, mine] = await Promise.all([
+  const [page, mine, deleted] = await Promise.all([
     listOtherOrganizations(search, offset),
     getMyOrganizations(),
+    getDeletedOrganizations(),
   ]);
   const owned = mine.filter(({ role }) => role === "owner");
+  // The side column shows when the viewer owns something or has something in the trash.
+  const sideShown = owned.length > 0 || deleted.length > 0;
   const others = page?.items ?? [];
   const path = search
     ? `/organizations?q=${encodeURIComponent(search)}`
@@ -75,12 +80,21 @@ async function OrganizationsContent({
   return (
     <div
       className={
-        owned.length > 0
+        sideShown
           ? "grid grid-cols-1 items-start gap-8 lg:grid-cols-[18rem_minmax(0,1fr)]"
           : "grid grid-cols-1"
       }
     >
-      {owned.length > 0 ? <OwnedOrganizations organizations={owned} /> : null}
+      {sideShown ? (
+        <aside className="flex min-w-0 flex-col gap-8">
+          {owned.length > 0 ? (
+            <OwnedOrganizations organizations={owned} />
+          ) : null}
+          {deleted.length > 0 ? (
+            <DeletedOrganizations organizations={deleted} />
+          ) : null}
+        </aside>
+      ) : null}
       <section className="flex min-w-0 flex-col gap-3">
         <h2 className={sectionTitle}>Khám phá tổ chức</h2>
         {/* Phones have no header input. Wider screens use the one in the header. */}

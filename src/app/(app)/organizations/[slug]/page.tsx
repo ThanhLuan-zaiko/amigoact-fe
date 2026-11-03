@@ -95,8 +95,11 @@ export default function OrganizationPage({
 }: PageProps<"/organizations/[slug]">) {
   return (
     <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
-      <OrganizationAbout params={params} />
-      <GallerySection params={params} />
+      {/* About on the left and the gallery on the right, on wide screens. */}
+      <div className="grid w-full grid-cols-1 items-start gap-4 xl:grid-cols-2">
+        <OrganizationAbout params={params} />
+        <GallerySection params={params} />
+      </div>
     </Suspense>
   );
 }

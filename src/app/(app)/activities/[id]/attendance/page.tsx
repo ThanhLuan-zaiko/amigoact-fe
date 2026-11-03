@@ -125,26 +125,33 @@ async function AttendanceContent({
           {activity.title}
         </h1>
       </div>
-      {activity.status === "published" ? (
-        <OpenSessionForm activityId={id} shifts={activity.shifts} />
-      ) : null}
-      {sessions.length === 0 ? (
-        <EmptyState
-          title="Chưa có phiên điểm danh"
-          description="Mở phiên để có mã QR và mã nhập tay."
-        />
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {sessions.map((session) => (
-            <SessionCard
-              key={session.id}
-              activityId={id}
-              session={session}
-              origin={origin}
+      {/* Opening a session on the left, the sessions already open on the right, on wide screens. */}
+      <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+        <div className="flex min-w-0 flex-col gap-4">
+          {activity.status === "published" ? (
+            <OpenSessionForm activityId={id} shifts={activity.shifts} />
+          ) : null}
+        </div>
+        <div className="flex min-w-0 flex-col gap-4">
+          {sessions.length === 0 ? (
+            <EmptyState
+              title="Chưa có phiên điểm danh"
+              description="Mở phiên để có mã QR và mã nhập tay."
             />
-          ))}
-        </ul>
-      )}
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {sessions.map((session) => (
+                <SessionCard
+                  key={session.id}
+                  activityId={id}
+                  session={session}
+                  origin={origin}
+                />
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </>
   );
 }
@@ -153,7 +160,7 @@ export default function AttendancePage({
   params,
 }: PageProps<"/activities/[id]/attendance">) {
   return (
-    <div className="flex w-full max-w-3xl flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
         <AttendanceContent params={params} />
       </Suspense>

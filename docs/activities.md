@@ -6,13 +6,13 @@ Tài liệu này mô tả giao diện phần hoạt động. Quy tắc nghiệp 
 
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
-| `/explore` | Hoạt động sắp diễn ra, tìm theo tên và thành phố | Mọi người |
-| `/activities` | Hoạt động bạn đã đăng ký | Đã đăng nhập |
-| `/activities/[id]` | Chi tiết, đăng ký hoặc hủy, nút quản lý | Mọi người. Bản nháp chỉ ban quản trị |
-| `/activities/[id]/edit` | Sửa hoạt động và các ca | Ban quản trị |
-| `/activities/[id]/registrations` | Người đăng ký, lọc theo trạng thái, duyệt và từ chối | Ban quản trị |
-| `/organizations/[slug]/activities` | Hoạt động của tổ chức | Mọi người. Ban quản trị thấy thêm bản nháp |
-| `/organizations/[slug]/activities/new` | Tạo bản nháp | Ban quản trị |
+| `/explore` | Hoạt động sắp diễn ra, tìm theo tên và thành phố. Từ 2xl hiện ba cột | Mọi người |
+| `/activities` | Hoạt động bạn đã đăng ký. Từ xl hiện hai cột | Đã đăng nhập |
+| `/activities/[id]` | Chi tiết bên trái, đăng ký và nút quản lý bên phải từ xl | Mọi người. Bản nháp chỉ ban quản trị |
+| `/activities/[id]/edit` | Sửa hoạt động, form hai cột từ xl, các ca nằm bên dưới | Ban quản trị |
+| `/activities/[id]/registrations` | Người đăng ký, lọc theo trạng thái (cột trái từ xl), duyệt và từ chối | Ban quản trị |
+| `/organizations/[slug]/activities` | Hoạt động của tổ chức. Từ 2xl hiện ba cột | Mọi người. Ban quản trị thấy thêm bản nháp |
+| `/organizations/[slug]/activities/new` | Tạo bản nháp, form hai cột từ xl | Ban quản trị |
 
 Ô tìm kiếm trên header dẫn tới `/explore`.
 
@@ -35,7 +35,7 @@ Tài liệu này mô tả giao diện phần hoạt động. Quy tắc nghiệp 
 
 ## Giao diện dùng icon
 
-Những gì ai cũng hiểu dùng icon thay cho chữ: ngày giờ, địa điểm, số chỗ, tìm kiếm, sửa, xóa, đóng, chuyển trang. Mọi icon đứng một mình đều có `aria-label` và `title`. Chữ vẫn giữ cho nhãn form, nút chính của trang, câu xác nhận, và những gì icon không nói rõ được.
+Icon được dùng tự do: trên nút có chữ, tiêu đề và cạnh nhãn khi giúp người dùng lướt nhanh. Icon chỉ lấy từ `react-icons`. Mọi icon đứng một mình đều có `aria-label` và `title`. Nhãn form, câu xác nhận và nút chính của trang vẫn có chữ rõ ràng.
 
 ## Chưa có
 

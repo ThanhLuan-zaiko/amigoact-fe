@@ -91,3 +91,12 @@ describe("organization field checks", () => {
     );
   });
 });
+
+describe("organization delete errors", () => {
+  test("open activities and a taken slug have their own messages", () => {
+    expect(failureState("organization_has_open_activities").error).toContain(
+      "hoạt động",
+    );
+    expect(failureState("slug_taken").error).toContain("Đường dẫn");
+  });
+});

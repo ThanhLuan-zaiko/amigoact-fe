@@ -19,6 +19,8 @@ import {
   mutedText,
   panel,
   sectionTitle,
+  splitList,
+  splitRow,
   tagChip,
 } from "../../../../_components/ui";
 
@@ -99,11 +101,11 @@ async function MemberList({
   return (
     <section className={`${panel} flex flex-col gap-3 p-4 sm:p-6`}>
       <h2 className={sectionTitle}>Thành viên</h2>
-      <ul className="flex flex-col divide-y divide-slate-200 dark:divide-slate-800">
+      <ul className={splitList}>
         {page.items.map((member) => (
           <li
             key={member.user_id}
-            className="flex flex-wrap items-center gap-3 py-3"
+            className={`flex flex-wrap items-center gap-3 py-3 ${splitRow}`}
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
               {initials(member.full_name)}

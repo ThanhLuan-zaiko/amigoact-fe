@@ -143,6 +143,33 @@ export async function joinOrganization(
   );
 }
 
+// The owner deletes from the settings tab. The name typed there is checked in the browser,
+// and the backend checks that the caller owns the organization.
+export async function deleteOrganization(
+  slug: string,
+  _previous: FormState,
+): Promise<FormState> {
+  const result = await authedFetch(organizationPath(slug), {
+    method: "DELETE",
+  });
+  if (!result.ok) {
+    return failureState(result.code, result.issues);
+  }
+  revalidatePath("/", "layout");
+  redirect("/organizations");
+}
+
+export async function restoreOrganization(
+  organizationId: string,
+): Promise<FormState> {
+  return finish(
+    await authedFetch(
+      `/organizations/mine/deleted/${encodeURIComponent(organizationId)}/restore`,
+      { method: "POST" },
+    ),
+  );
+}
+
 export async function leaveOrganization(slug: string): Promise<FormState> {
   return finish(
     await authedFetch(`${organizationPath(slug)}/membership`, {

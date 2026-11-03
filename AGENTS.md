@@ -20,17 +20,20 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Do not use inline style props such as `style={{ ... }}`. Use Tailwind classes instead.
 - CI gate 13 enforces these rules.
 
-## Design rules (mandatory)
+## Design rules
+
+These rules set the defaults for every screen. If one of them gets in the way of a clearly better interface, change the rule in this file, say why in the change, and follow the new rule. Do not work around it silently.
 
 - Mobile first. Write the base classes for a phone screen (about 375px wide), then add `sm:`, `md:`, and `lg:` classes for wider screens. Never design the desktop layout first and shrink it later.
+- Use the width. The app container is up to 1400px wide. On `xl` screens and wider, a page with a main part and secondary parts splits into two columns: the main content on one side, and the secondary panels on the other (a summary, actions, shifts, a gallery, or a section list). Dense lists of cards may use three columns on `2xl`. A list of rows may use two columns on `xl` with the `splitList` and `splitRow` classes from `ui.ts`, so each row keeps its border. Phones and tablets stay in one column, in the same order.
 - Flat design. Do not use `shadow-*` or `drop-shadow-*` on page content. The only exception is `shadow-sm` on floating layers (dropdown menus, dialogs, toasts) so they stand apart from the page. Do not use gradients (`bg-gradient-*`, `from-*`, `to-*`) or decorative effects. Transitions and hover, focus, and disabled states are allowed.
 - Primary accent is teal (`teal-700` in light mode and `teal-400` in dark mode) for primary buttons, links, focus rings, and the active navigation item. Use neutral slate colors for text, borders, and page surfaces.
-- Semantic colors carry meaning only: green for success, amber for warning, red for error, and sky for informational notices. Red is for error text, such as validation messages. Use the 700 shade in light mode and the 400 shade in dark mode for text and icons. For a badge background, use the 50 shade in light mode and the 950 shade at 40% opacity in dark mode, for example `bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400`. Use at most one semantic color per component. Do not use color for decoration, and do not use shades 500 and brighter for large areas.
+- Semantic colors carry meaning only: green for success, amber for warning, red for error, and sky for informational notices. Red is for error text, such as validation messages, and for a destructive button whose action cannot be undone, such as deleting an organization. That button is the only colored element in its section. Use the 700 shade in light mode and the 400 shade in dark mode for text and icons. For a badge background, use the 50 shade in light mode and the 950 shade at 40% opacity in dark mode, for example `bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400`. Use at most one semantic color per component. Do not use color for decoration, and do not use shades 500 and brighter for large areas.
 - Do not use the Inter font. The app uses Be Vietnam Pro, loaded in `src/app/layout.tsx`.
 - Do not nest cards inside cards. Separate sections with borders and dividers.
-- Use a small, consistent corner radius: `rounded-sm` (2px) or `rounded-md` (6px) on inputs, buttons, and cards. Do not use `rounded-lg` or larger. Use `rounded-full` only for avatars and status dots. Icons and their containers stay square.
+- Corner radius: inputs and buttons use `rounded-sm` or `rounded-md`. Cards, panels, images, and dialogs may use `rounded-lg` or `rounded-xl`. Use `rounded-full` for avatars and status dots. Do not go beyond `rounded-xl`.
 - Use borders or a light tint to show emphasis, such as an active item, a pinned post, or a selected option (for example a teal border with `bg-teal-50 dark:bg-teal-950/40`). Do not use shadows for this.
-- Every decorative icon comes from `react-icons`. Every icon-only `<button>` must have an icon and an `aria-label`. A button with visible text may have an icon but does not need one.
+- Icons come from `react-icons` only, so the set stays consistent. Use them freely: on buttons with text, on section headings, and beside labels when they help scanning. Every icon-only `<button>` must have an icon and an `aria-label`.
 - Prefer icons over words for what everyone already understands: dates, places, counts, search, edit, delete, close, paging. Use `IconStat` for an icon with a value, and icon-only buttons with `aria-label` and `title`. Keep visible words for form labels, the main action of a page, confirmation prompts, and anything an icon cannot make clear.
 
 ## Dark mode

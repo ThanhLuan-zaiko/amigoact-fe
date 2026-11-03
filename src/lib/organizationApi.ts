@@ -3,6 +3,7 @@ import { getAccessToken } from "./auth";
 import { backendFetch } from "./backend";
 import type {
   ApplicationPage,
+  DeletedOrganization,
   GalleryItem,
   MemberPage,
   MyOrganization,
@@ -94,6 +95,21 @@ export async function getMyOrganizations(): Promise<MyOrganization[]> {
     method: "GET",
     token,
   });
+  return result.ok ? result.data : [];
+}
+
+// The owner's trash. Visitors get an empty list, because the backend needs a login.
+export async function getDeletedOrganizations(): Promise<
+  DeletedOrganization[]
+> {
+  const token = await getAccessToken();
+  if (!token) {
+    return [];
+  }
+  const result = await backendFetch<DeletedOrganization[]>(
+    "/organizations/mine/deleted",
+    { method: "GET", token },
+  );
   return result.ok ? result.data : [];
 }
 

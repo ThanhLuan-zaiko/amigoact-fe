@@ -3,7 +3,7 @@ import Form from "next/form";
 import { Suspense } from "react";
 import { FiMapPin, FiSearch } from "react-icons/fi";
 import { listPublicActivities } from "@/lib/activityApi";
-import { parseOffset } from "@/lib/organizations";
+import { pageOffset } from "@/lib/organizations";
 import ActivityCard from "../../_components/activities/ActivityCard";
 import EmptyState from "../../_components/EmptyState";
 import PageLinks from "../../_components/organizations/PageLinks";
@@ -25,7 +25,7 @@ async function ActivityResults({
   const params = await searchParams;
   const search = firstValue(params.q);
   const city = firstValue(params.city);
-  const offset = parseOffset(params.offset);
+  const offset = pageOffset(params.page);
   const page = await listPublicActivities(search, city, offset);
   const query = new URLSearchParams();
   if (search) {
@@ -92,11 +92,7 @@ async function ActivityResults({
           ))}
         </div>
       )}
-      <PageLinks
-        path={path}
-        offset={offset}
-        nextOffset={page?.next_offset ?? null}
-      />
+      <PageLinks path={path} offset={offset} total={page?.total ?? 0} />
     </>
   );
 }

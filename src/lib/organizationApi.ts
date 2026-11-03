@@ -3,13 +3,13 @@ import { getAccessToken } from "./auth";
 import { backendFetch } from "./backend";
 import type {
   ApplicationPage,
+  GalleryItem,
   MemberPage,
   MyOrganization,
   OrganizationDetail,
   OrganizationPage,
 } from "./organizations";
-
-const PAGE_SIZE = 20;
+import { PAGE_SIZE } from "./pagination";
 
 function organizationPath(slug: string): string {
   return `/organizations/${encodeURIComponent(slug)}`;
@@ -53,6 +53,36 @@ export async function listOrganizations(
     { method: "GET" },
   );
   return result.ok ? result.data : null;
+}
+
+// The directory without the viewer's own organizations. The backend filters them,
+// so every page stays full.
+export async function listOtherOrganizations(
+  search: string,
+  offset: number,
+): Promise<OrganizationPage | null> {
+  const query = new URLSearchParams({
+    limit: String(PAGE_SIZE),
+    offset: String(offset),
+    exclude_owned: "true",
+  });
+  if (search) {
+    query.set("q", search);
+  }
+  const token = await getAccessToken();
+  const result = await backendFetch<OrganizationPage>(
+    `/organizations?${query}`,
+    token ? { method: "GET", token } : { method: "GET" },
+  );
+  return result.ok ? result.data : null;
+}
+
+export async function getGallery(slug: string): Promise<GalleryItem[]> {
+  const result = await backendFetch<GalleryItem[]>(
+    `${organizationPath(slug)}/gallery`,
+    { method: "GET" },
+  );
+  return result.ok ? result.data : [];
 }
 
 export async function getMyOrganizations(): Promise<MyOrganization[]> {

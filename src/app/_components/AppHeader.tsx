@@ -1,8 +1,8 @@
-import Form from "next/form";
 import Link from "next/link";
 import { Suspense } from "react";
-import { FiBell, FiPlus, FiSearch } from "react-icons/fi";
+import { FiBell, FiPlus } from "react-icons/fi";
 import HeaderAccount from "./account/HeaderAccount";
+import { HeaderSearchForm, HeaderSearchLink } from "./HeaderSearch";
 import ThemeToggle from "./ThemeToggle";
 import { iconButton, primaryButton } from "./ui";
 
@@ -22,30 +22,18 @@ export default function AppHeader() {
         AmigoACT
       </Link>
 
-      <Form
-        action="/explore"
-        className="hidden h-10 max-w-xl flex-1 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm text-slate-500 transition-colors focus-within:border-teal-700 md:flex dark:border-slate-800 dark:focus-within:border-teal-400"
+      <Suspense
+        fallback={
+          <div className="hidden h-10 max-w-xl flex-1 rounded-md border border-slate-200 md:block dark:border-slate-800" />
+        }
       >
-        <FiSearch aria-hidden="true" className="shrink-0" />
-        <input
-          type="search"
-          name="q"
-          maxLength={100}
-          aria-label="Tìm hoạt động"
-          placeholder="Tìm hoạt động"
-          className="w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-500 dark:text-slate-100"
-        />
-      </Form>
+        <HeaderSearchForm />
+      </Suspense>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
-        <Link
-          href="/explore"
-          aria-label="Tìm kiếm"
-          title="Tìm kiếm"
-          className={`${iconButton} md:hidden`}
-        >
-          <FiSearch aria-hidden="true" />
-        </Link>
+        <Suspense fallback={null}>
+          <HeaderSearchLink />
+        </Suspense>
         <Link href="/compose" aria-label="Tạo bài" className={primaryButton}>
           <FiPlus aria-hidden="true" />
           <span className="hidden sm:inline">Tạo bài</span>

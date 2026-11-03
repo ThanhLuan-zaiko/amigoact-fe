@@ -1,6 +1,13 @@
 "use client";
 
-import { type ChangeEvent, useEffect, useId, useState } from "react";
+import {
+  type ChangeEvent,
+  type DragEvent,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { FiAlertCircle, FiImage } from "react-icons/fi";
 import { isPictureTooLarge, PICTURE_ACCEPT } from "@/lib/pictureRules";
 import { fieldLabel, mutedText } from "../ui";
@@ -30,6 +37,8 @@ export default function PictureField({
   error,
 }: PictureFieldProps) {
   const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragging, setDragging] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
   const message = clientError ?? error;
@@ -58,6 +67,21 @@ export default function PictureField({
     setPreview(URL.createObjectURL(file));
   }
 
+  // A dropped file goes into the input, so the form submits it like a chosen one.
+  function onDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    setDragging(false);
+    const input = inputRef.current;
+    const file = event.dataTransfer.files[0];
+    if (!input || !file) {
+      return;
+    }
+    const picked = new DataTransfer();
+    picked.items.add(file);
+    input.files = picked.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
   const shownUrl = preview ?? currentUrl ?? null;
 
   return (
@@ -66,8 +90,20 @@ export default function PictureField({
         {label}
       </label>
       <div className="flex flex-wrap items-center gap-4">
-        <div
-          className={`flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 ${PREVIEW_SIZE[shape]}`}
+        <label
+          htmlFor={inputId}
+          aria-label={`Kéo thả ảnh vào ${label}`}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={onDrop}
+          className={`flex shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-dashed transition-colors ${
+            dragging
+              ? "border-teal-700 bg-teal-50 dark:border-teal-400 dark:bg-teal-950/40"
+              : "border-slate-300 bg-slate-50 hover:border-teal-700 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-teal-400"
+          } ${PREVIEW_SIZE[shape]}`}
         >
           {shownUrl ? (
             // biome-ignore lint/performance/noImgElement: previews are object URLs or same-origin proxy paths.
@@ -79,9 +115,10 @@ export default function PictureField({
           ) : (
             <FiImage aria-hidden="true" className="text-2xl text-slate-400" />
           )}
-        </div>
+        </label>
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <input
+            ref={inputRef}
             id={inputId}
             type="file"
             name={name}
@@ -107,7 +144,7 @@ export default function PictureField({
             </span>
           ) : (
             <span className={`${mutedText} text-xs`}>
-              JPEG, PNG hoặc WEBP, tối đa 5 MB
+              Kéo thả vào khung hoặc chọn tệp. JPEG, PNG, WEBP, tối đa 5 MB
             </span>
           )}
         </div>

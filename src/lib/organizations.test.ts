@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { failureState } from "./forms";
-import { formatDate, initials, parseOffset } from "./organizations";
+import { formatDate, initials } from "./organizations";
 import {
   FIELD_MESSAGES,
   isValidOrganizationName,
@@ -29,18 +29,6 @@ describe("formatDate", () => {
 
   test("returns an empty string without a date", () => {
     expect(formatDate(null)).toBe("");
-  });
-});
-
-describe("parseOffset", () => {
-  test("accepts a positive whole number", () => {
-    expect(parseOffset("20")).toBe(20);
-  });
-
-  test("falls back to the start for anything else", () => {
-    for (const value of [undefined, "", "-5", "1.5", "abc", ["20"]]) {
-      expect(parseOffset(value)).toBe(0);
-    }
   });
 });
 

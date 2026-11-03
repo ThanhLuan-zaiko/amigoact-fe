@@ -7,8 +7,7 @@ import type {
 } from "./activities";
 import { getAccessToken } from "./auth";
 import { backendFetch } from "./backend";
-
-const PAGE_SIZE = 20;
+import { PAGE_SIZE } from "./pagination";
 
 // Read these behind a Suspense boundary, because they use the session or route params.
 export async function getActivity(id: string): Promise<ActivityDetail | null> {

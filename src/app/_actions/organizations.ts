@@ -102,6 +102,29 @@ export async function updateOrganization(
   return result.ok ? { success: "Đã lưu thông tin tổ chức." } : state;
 }
 
+export async function addGalleryItem(
+  slug: string,
+  assetId: string,
+): Promise<FormState> {
+  return finish(
+    await authedFetch(`${organizationPath(slug)}/gallery`, {
+      body: { asset_id: assetId },
+    }),
+  );
+}
+
+export async function removeGalleryItem(
+  slug: string,
+  assetId: string,
+): Promise<FormState> {
+  return finish(
+    await authedFetch(
+      `${organizationPath(slug)}/gallery/${encodeURIComponent(assetId)}`,
+      { method: "DELETE" },
+    ),
+  );
+}
+
 export async function joinOrganization(
   slug: string,
   _previous: FormState,

@@ -1,0 +1,162 @@
+"use client";
+
+import { type DragEvent, useId, useState } from "react";
+import { FiTrash2, FiUploadCloud } from "react-icons/fi";
+import {
+  addGalleryItem,
+  removeGalleryItem,
+} from "@/app/_actions/organizations";
+import { uploadMessage } from "@/lib/forms";
+import type { GalleryItem } from "@/lib/organizations";
+import {
+  GALLERY_ACCEPT,
+  GALLERY_MAX_ITEMS,
+  galleryFileError,
+  isVideo,
+} from "@/lib/pictureRules";
+import { fieldLabel, iconButton, mutedText, panel, sectionTitle } from "../ui";
+
+type Upload = { name: string; error?: string };
+
+async function uploadOne(slug: string, file: File): Promise<string | null> {
+  const body = new FormData();
+  body.set("file", file);
+  const response = await fetch("/media/upload", { method: "POST", body });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    return uploadMessage(data.code ?? "network_error");
+  }
+  const state = await addGalleryItem(slug, data.id);
+  return state.error ?? null;
+}
+
+export default function GalleryManager({
+  slug,
+  items,
+}: {
+  slug: string;
+  items: GalleryItem[];
+}) {
+  const inputId = useId();
+  const [uploads, setUploads] = useState<Upload[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const room = GALLERY_MAX_ITEMS - items.length;
+
+  // One at a time, so a failure is reported per file and the limit stays exact.
+  async function addFiles(files: File[]) {
+    setBusy(true);
+    const results: Upload[] = [];
+    let left = room;
+    for (const file of files) {
+      const invalid =
+        left <= 0
+          ? `Bộ sưu tập tối đa ${GALLERY_MAX_ITEMS} tệp.`
+          : galleryFileError(file);
+      const error = invalid ?? (await uploadOne(slug, file)) ?? undefined;
+      if (!error) {
+        left -= 1;
+      }
+      results.push({ name: file.name, error });
+      setUploads([...results]);
+    }
+    setBusy(false);
+  }
+
+  function onDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    setDragging(false);
+    if (!busy) {
+      addFiles(Array.from(event.dataTransfer.files));
+    }
+  }
+
+  const failed = uploads.filter((upload) => upload.error);
+
+  return (
+    <section className={`${panel} flex flex-col gap-4 p-4 sm:p-6`}>
+      <div className="flex items-baseline gap-2">
+        <h2 className={sectionTitle}>Bộ sưu tập</h2>
+        <span className={mutedText}>
+          {items.length}/{GALLERY_MAX_ITEMS}
+        </span>
+      </div>
+      <label
+        htmlFor={inputId}
+        onDragOver={(event) => {
+          event.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        className={`flex cursor-pointer flex-col items-center gap-1 rounded-md border border-dashed p-6 text-center transition-colors ${
+          dragging
+            ? "border-teal-700 bg-teal-50 dark:border-teal-400 dark:bg-teal-950/40"
+            : "border-slate-300 hover:border-teal-700 dark:border-slate-700 dark:hover:border-teal-400"
+        }`}
+      >
+        <FiUploadCloud aria-hidden="true" className="text-2xl text-slate-500" />
+        <span className={fieldLabel}>
+          {busy ? "Đang tải lên…" : "Kéo thả hoặc bấm để chọn tệp"}
+        </span>
+        <span className={`${mutedText} text-xs`}>
+          Ảnh JPEG, PNG, WEBP tối đa 5 MB. Video MP4, WEBM tối đa 50 MB.
+        </span>
+        <input
+          id={inputId}
+          type="file"
+          multiple
+          accept={GALLERY_ACCEPT}
+          disabled={busy || room <= 0}
+          onChange={(event) => {
+            addFiles(Array.from(event.currentTarget.files ?? []));
+            event.currentTarget.value = "";
+          }}
+          className="sr-only"
+        />
+      </label>
+      {failed.length > 0 ? (
+        <ul className="flex flex-col gap-1 text-xs font-semibold text-red-700 dark:text-red-400">
+          {failed.map((upload) => (
+            <li key={upload.name} className="break-words">
+              {upload.name}: {upload.error}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {items.length > 0 ? (
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {items.map((item) => (
+            <li key={item.id} className="flex flex-col gap-2">
+              {isVideo(item.mime) ? (
+                // biome-ignore lint/a11y/useMediaCaption: uploads come without captions.
+                <video
+                  src={item.url}
+                  controls
+                  preload="metadata"
+                  className="aspect-video w-full rounded-md border border-slate-200 object-cover dark:border-slate-800"
+                />
+              ) : (
+                // biome-ignore lint/performance/noImgElement: same-origin proxy paths.
+                <img
+                  src={item.url}
+                  alt=""
+                  className="aspect-video w-full rounded-md border border-slate-200 object-cover dark:border-slate-800"
+                />
+              )}
+              <button
+                type="button"
+                aria-label="Gỡ khỏi bộ sưu tập"
+                title="Gỡ khỏi bộ sưu tập"
+                onClick={() => removeGalleryItem(slug, item.id)}
+                className={iconButton}
+              >
+                <FiTrash2 aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </section>
+  );
+}

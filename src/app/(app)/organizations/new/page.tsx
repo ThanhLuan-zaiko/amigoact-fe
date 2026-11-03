@@ -8,8 +8,13 @@ import { mutedText } from "../../../_components/ui";
 export const metadata: Metadata = { title: "Tạo tổ chức | AmigoACT" };
 
 async function NewOrganizationContent() {
-  await requireUser("/organizations/new");
-  return <OrganizationForm action={createOrganization} />;
+  const user = await requireUser("/organizations/new");
+  return (
+    <OrganizationForm
+      action={createOrganization}
+      contactDefaults={{ email: user.email, phone: user.phone }}
+    />
+  );
 }
 
 export default function NewOrganizationPage() {

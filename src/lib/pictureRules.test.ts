@@ -1,8 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import {
+  galleryFileError,
   isPictureId,
   isPictureTooLarge,
   PICTURE_MAX_BYTES,
+  VIDEO_MAX_BYTES,
 } from "./pictureRules";
 
 describe("isPictureId", () => {
@@ -24,5 +26,29 @@ describe("isPictureTooLarge", () => {
 
   test("rejects a picture one byte over the limit", () => {
     expect(isPictureTooLarge(PICTURE_MAX_BYTES + 1)).toBe(true);
+  });
+});
+
+describe("galleryFileError", () => {
+  test("accepts pictures and videos within their limits", () => {
+    expect(galleryFileError({ type: "image/png", size: 10 })).toBeNull();
+    expect(
+      galleryFileError({ type: "video/mp4", size: VIDEO_MAX_BYTES }),
+    ).toBeNull();
+  });
+
+  test("applies the limit of each kind", () => {
+    expect(
+      galleryFileError({ type: "image/png", size: PICTURE_MAX_BYTES + 1 }),
+    ).not.toBeNull();
+    expect(
+      galleryFileError({ type: "video/webm", size: VIDEO_MAX_BYTES + 1 }),
+    ).not.toBeNull();
+  });
+
+  test("rejects other file types", () => {
+    expect(
+      galleryFileError({ type: "application/pdf", size: 1 }),
+    ).not.toBeNull();
   });
 });

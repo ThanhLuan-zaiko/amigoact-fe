@@ -7,7 +7,7 @@ import {
 } from "@/app/_actions/organizations";
 import { requireUser } from "@/lib/auth";
 import { getApplications } from "@/lib/organizationApi";
-import { formatDate, initials, parseOffset } from "@/lib/organizations";
+import { formatDate, initials, pageOffset } from "@/lib/organizations";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
@@ -26,7 +26,7 @@ async function ApplicationList({
   searchParams,
 }: PageProps<"/organizations/[slug]/applications">) {
   const { slug } = await params;
-  const offset = parseOffset((await searchParams).offset);
+  const offset = pageOffset((await searchParams).page);
   await requireUser(`/organizations/${slug}/applications`);
   const page = await getApplications(slug, offset);
   if (!page) {
@@ -96,7 +96,7 @@ async function ApplicationList({
       <PageLinks
         path={`/organizations/${slug}/applications`}
         offset={offset}
-        nextOffset={page.next_offset}
+        total={page.total}
       />
     </section>
   );

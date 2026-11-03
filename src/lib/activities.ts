@@ -30,6 +30,7 @@ export type ActivitySummary = {
 export type ActivityPage = {
   items: ActivitySummary[];
   next_offset: number | null;
+  total: number;
 };
 
 export type Shift = {
@@ -99,6 +100,7 @@ export type ActivityRegistration = {
 export type RegistrationPage = {
   items: ActivityRegistration[];
   next_offset: number | null;
+  total: number;
 };
 
 export const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {

@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { FiPlus } from "react-icons/fi";
 import { listOrganizationActivities } from "@/lib/activityApi";
 import { getOrganization } from "@/lib/organizationApi";
-import { parseOffset } from "@/lib/organizations";
+import { pageOffset } from "@/lib/organizations";
 import ActivityCard from "../../../../_components/activities/ActivityCard";
 import EmptyState from "../../../../_components/EmptyState";
 import PageLinks from "../../../../_components/organizations/PageLinks";
@@ -17,7 +17,7 @@ async function OrganizationActivities({
   searchParams,
 }: PageProps<"/organizations/[slug]/activities">) {
   const { slug } = await params;
-  const offset = parseOffset((await searchParams).offset);
+  const offset = pageOffset((await searchParams).page);
   const [organization, page] = await Promise.all([
     getOrganization(slug),
     listOrganizationActivities(slug, offset),
@@ -56,7 +56,7 @@ async function OrganizationActivities({
       <PageLinks
         path={`/organizations/${slug}/activities`}
         offset={offset}
-        nextOffset={page?.next_offset ?? null}
+        total={page?.total ?? 0}
       />
     </div>
   );

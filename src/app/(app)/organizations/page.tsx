@@ -3,10 +3,17 @@ import Form from "next/form";
 import Link from "next/link";
 import { Suspense } from "react";
 import { FiPlus, FiSearch } from "react-icons/fi";
-import { getMyOrganizations, listOrganizations } from "@/lib/organizationApi";
-import { parseOffset, ROLE_LABELS } from "@/lib/organizations";
-import EmptyState from "../../_components/EmptyState";
+import {
+  getMyOrganizations,
+  listOtherOrganizations,
+} from "@/lib/organizationApi";
+import {
+  MAX_OWNED_ORGANIZATIONS,
+  type MyOrganization,
+  pageOffset,
+} from "@/lib/organizations";
 import OrganizationCard from "../../_components/organizations/OrganizationCard";
+import OwnedOrganizationCard from "../../_components/organizations/OwnedOrganizationCard";
 import PageLinks from "../../_components/organizations/PageLinks";
 import {
   iconButton,
@@ -24,89 +31,104 @@ function firstValue(value: string | string[] | undefined): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-async function MyOrganizations() {
-  const organizations = await getMyOrganizations();
-  if (organizations.length === 0) {
-    return null;
-  }
+function OwnedOrganizations({
+  organizations,
+}: {
+  organizations: MyOrganization[];
+}) {
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className={sectionTitle}>Tổ chức của bạn</h2>
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        {organizations.map((organization) => (
-          <OrganizationCard
-            key={organization.id}
-            organization={organization}
-            badge={
-              organization.role ? ROLE_LABELS[organization.role] : "Chờ duyệt"
-            }
-          />
-        ))}
+    <aside className="flex min-w-0 flex-col gap-3">
+      <div className="flex items-baseline gap-2">
+        <h2 className={sectionTitle}>Tổ chức của tôi</h2>
+        <span className={mutedText}>
+          {organizations.length}/{MAX_OWNED_ORGANIZATIONS}
+        </span>
       </div>
-    </section>
+      {organizations.map((organization) => (
+        <OwnedOrganizationCard
+          key={organization.id}
+          organization={organization}
+        />
+      ))}
+    </aside>
   );
 }
 
-async function Directory({ searchParams }: { searchParams: SearchParams }) {
+async function OrganizationsContent({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const params = await searchParams;
   const search = firstValue(params.q);
-  const offset = parseOffset(params.offset);
-  const page = await listOrganizations(search, offset);
+  const offset = pageOffset(params.page);
+  const [page, mine] = await Promise.all([
+    listOtherOrganizations(search, offset),
+    getMyOrganizations(),
+  ]);
+  const owned = mine.filter(({ role }) => role === "owner");
+  const others = page?.items ?? [];
   const path = search
     ? `/organizations?q=${encodeURIComponent(search)}`
     : "/organizations";
 
   return (
-    <section className="flex flex-col gap-3">
-      <h2 className={sectionTitle}>Khám phá tổ chức</h2>
-      <Form action="/organizations" className="flex gap-2">
-        <label className="min-w-0 flex-1">
-          <span className="sr-only">Tìm theo tên tổ chức</span>
-          <input
-            type="search"
-            name="q"
-            defaultValue={search}
-            maxLength={100}
-            placeholder="Tìm theo tên tổ chức"
-            className={inputField}
-          />
-        </label>
-        <button
-          type="submit"
-          aria-label="Tìm"
-          title="Tìm"
-          className={iconButton}
-        >
-          <FiSearch aria-hidden="true" />
-        </button>
-      </Form>
-      {page === null ? (
-        <p className={mutedText}>Không tải được danh sách. Vui lòng thử lại.</p>
-      ) : page.items.length === 0 ? (
-        <EmptyState
-          title="Chưa có tổ chức nào"
-          description={
-            search
-              ? "Không có tổ chức nào khớp với từ khóa này."
-              : "Hãy là người đầu tiên tạo tổ chức."
-          }
-        />
-      ) : (
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-          {page.items.map((organization) => (
-            <OrganizationCard
-              key={organization.id}
-              organization={organization}
+    <div
+      className={
+        owned.length > 0
+          ? "grid grid-cols-1 items-start gap-8 lg:grid-cols-[18rem_minmax(0,1fr)]"
+          : "grid grid-cols-1"
+      }
+    >
+      {owned.length > 0 ? <OwnedOrganizations organizations={owned} /> : null}
+      <section className="flex min-w-0 flex-col gap-3">
+        <h2 className={sectionTitle}>Khám phá tổ chức</h2>
+        {/* Phones have no header input. Wider screens use the one in the header. */}
+        <Form action="/organizations" className="flex gap-2 md:hidden">
+          <label className="min-w-0 flex-1">
+            <span className="sr-only">Tìm tổ chức</span>
+            <input
+              id="org-search"
+              type="search"
+              name="q"
+              defaultValue={search}
+              maxLength={100}
+              placeholder="Tìm tổ chức"
+              className={inputField}
             />
-          ))}
-        </div>
-      )}
-      <PageLinks
-        path={path}
-        offset={offset}
-        nextOffset={page?.next_offset ?? null}
-      />
-    </section>
+          </label>
+          <button
+            type="submit"
+            aria-label="Tìm"
+            title="Tìm"
+            className={iconButton}
+          >
+            <FiSearch aria-hidden="true" />
+          </button>
+        </Form>
+        {page === null ? (
+          <p className={mutedText}>
+            Không tải được danh sách. Vui lòng thử lại.
+          </p>
+        ) : others.length === 0 ? (
+          <p className={`${mutedText} py-4`}>
+            {search
+              ? "Không có tổ chức nào khác khớp với từ khóa này."
+              : "Chưa có tổ chức nào khác."}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+            {others.map((organization) => (
+              <OrganizationCard
+                key={organization.id}
+                organization={organization}
+              />
+            ))}
+          </div>
+        )}
+        <PageLinks path={path} offset={offset} total={page?.total ?? 0} />
+      </section>
+    </div>
   );
 }
 
@@ -127,11 +149,8 @@ export default function OrganizationsPage({
           <span className="hidden sm:inline">Tạo tổ chức</span>
         </Link>
       </div>
-      <Suspense fallback={null}>
-        <MyOrganizations />
-      </Suspense>
       <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
-        <Directory searchParams={searchParams} />
+        <OrganizationsContent searchParams={searchParams} />
       </Suspense>
     </div>
   );

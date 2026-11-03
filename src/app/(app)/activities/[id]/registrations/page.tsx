@@ -13,7 +13,7 @@ import {
 } from "@/lib/activities";
 import { getActivityRegistrations } from "@/lib/activityApi";
 import { requireUser } from "@/lib/auth";
-import { initials, parseOffset } from "@/lib/organizations";
+import { initials, pageOffset } from "@/lib/organizations";
 import RegistrationBadge from "../../../../_components/activities/RegistrationBadge";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
@@ -46,7 +46,7 @@ async function RegistrationList({
     FILTERS.includes(query.status as RegistrationStatus)
       ? query.status
       : "";
-  const offset = parseOffset(query.offset);
+  const offset = pageOffset(query.page);
   await requireUser(`/activities/${id}/registrations`);
   const page = await getActivityRegistrations(id, status, offset);
   if (!page) {
@@ -134,7 +134,7 @@ async function RegistrationList({
       <PageLinks
         path={status ? `${base}?status=${status}` : base}
         offset={offset}
-        nextOffset={page.next_offset}
+        total={page.total}
       />
     </>
   );

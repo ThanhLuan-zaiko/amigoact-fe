@@ -3,8 +3,9 @@ import { Suspense } from "react";
 import { updateOrganization } from "@/app/_actions/organizations";
 import { getHourRule } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
-import { getOrganization } from "@/lib/organizationApi";
+import { getGallery, getOrganization } from "@/lib/organizationApi";
 import HourRuleForm from "../../../../_components/attendance/HourRuleForm";
+import GalleryManager from "../../../../_components/organizations/GalleryManager";
 import OrganizationForm from "../../../../_components/organizations/OrganizationForm";
 import { mutedText } from "../../../../_components/ui";
 
@@ -24,13 +25,17 @@ async function SettingsContent({
   if (!organization.viewer.can_manage) {
     return <p className={mutedText}>Chỉ ban quản trị mới sửa được tổ chức.</p>;
   }
-  const rule = await getHourRule(slug);
+  const [rule, gallery] = await Promise.all([
+    getHourRule(slug),
+    getGallery(slug),
+  ]);
   return (
     <div className="flex w-full max-w-2xl flex-col gap-4">
       <OrganizationForm
         action={updateOrganization.bind(null, slug)}
         organization={organization}
       />
+      <GalleryManager slug={slug} items={gallery} />
       {rule ? <HourRuleForm slug={slug} rule={rule} /> : null}
     </div>
   );

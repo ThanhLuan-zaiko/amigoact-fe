@@ -7,9 +7,10 @@ import {
   FiPhone,
   FiUser,
 } from "react-icons/fi";
-import { getOrganization } from "@/lib/organizationApi";
+import { getGallery, getOrganization } from "@/lib/organizationApi";
 import { formatDate } from "@/lib/organizations";
 import IconStat from "../../../_components/IconStat";
+import OrganizationGallery from "../../../_components/organizations/OrganizationGallery";
 import { mutedText, panel } from "../../../_components/ui";
 
 const linkClass =
@@ -80,12 +81,22 @@ async function OrganizationAbout({
   );
 }
 
+async function GallerySection({
+  params,
+}: {
+  params: PageProps<"/organizations/[slug]">["params"];
+}) {
+  const { slug } = await params;
+  return <OrganizationGallery items={await getGallery(slug)} />;
+}
+
 export default function OrganizationPage({
   params,
 }: PageProps<"/organizations/[slug]">) {
   return (
     <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
       <OrganizationAbout params={params} />
+      <GallerySection params={params} />
     </Suspense>
   );
 }

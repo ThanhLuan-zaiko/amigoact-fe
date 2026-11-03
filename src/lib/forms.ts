@@ -22,9 +22,13 @@ const ERROR_MESSAGES: Record<string, string> = {
   file_empty: "Hãy chọn một ảnh để tải lên.",
   file_too_large: "Ảnh tối đa 5 MB. Hãy chọn ảnh nhỏ hơn.",
   unsupported_media_type: "Ảnh phải là JPEG, PNG hoặc WEBP.",
+  video_too_large: "Video tối đa 50 MB. Hãy chọn video nhỏ hơn.",
+  gallery_full: "Bộ sưu tập tối đa 10 tệp. Hãy gỡ bớt trước khi thêm.",
   media_not_found: "Không tìm thấy ảnh này. Hãy chọn lại ảnh.",
   organization_not_found: "Không tìm thấy tổ chức này.",
   organization_forbidden: "Bạn không có quyền thực hiện việc này.",
+  email_not_verified: "Hãy xác minh email trước khi tạo tổ chức.",
+  organization_limit_reached: "Bạn đã sở hữu số tổ chức tối đa (5 tổ chức).",
   already_member: "Bạn đã là thành viên của tổ chức này.",
   already_applied: "Bạn đã gửi yêu cầu tham gia tổ chức này.",
   application_cooldown:
@@ -80,6 +84,9 @@ const PASSWORD_PERSONAL =
 
 const ISSUE_MESSAGES: Record<string, string> = {
   required: FIELD_MESSAGES.required,
+  missing: FIELD_MESSAGES.required,
+  // A required field left empty reaches the backend as null.
+  string_type: FIELD_MESSAGES.required,
   phone_invalid: FIELD_MESSAGES.phone,
   tax_code_invalid: FIELD_MESSAGES.taxCode,
   legal_id_invalid: FIELD_MESSAGES.legalId,
@@ -158,6 +165,11 @@ export type ValidationIssue = {
   field: string;
   type: string;
 };
+
+// Reads an upload error in the browser, where no form state is involved.
+export function uploadMessage(code: string): string {
+  return errorMessage(code);
+}
 
 function errorMessage(code: string): string {
   return ERROR_MESSAGES[code] ?? "Đã có lỗi xảy ra. Vui lòng thử lại.";

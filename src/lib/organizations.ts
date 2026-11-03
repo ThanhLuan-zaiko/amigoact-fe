@@ -18,6 +18,7 @@ export type OrganizationSummary = {
 export type OrganizationPage = {
   items: OrganizationSummary[];
   next_offset: number | null;
+  total: number;
 };
 
 export type ViewerMembership = {
@@ -65,6 +66,7 @@ export type MemberInfo = {
 export type MemberPage = {
   items: MemberInfo[];
   next_offset: number | null;
+  total: number;
 };
 
 export type ApplicationInfo = {
@@ -77,6 +79,7 @@ export type ApplicationInfo = {
 export type ApplicationPage = {
   items: ApplicationInfo[];
   next_offset: number | null;
+  total: number;
 };
 
 export const ORG_TYPE_LABELS: Record<OrgType, string> = {
@@ -123,8 +126,12 @@ export function initials(name: string): string {
     .toUpperCase();
 }
 
-// Offset from a page's search params. Anything that is not a whole number means the start.
-export function parseOffset(value: unknown): number {
-  const offset = typeof value === "string" ? Number(value) : 0;
-  return Number.isInteger(offset) && offset > 0 ? offset : 0;
-}
+export { pageOffset } from "./pagination";
+
+export const MAX_OWNED_ORGANIZATIONS = 5;
+
+export type GalleryItem = {
+  id: string;
+  url: string;
+  mime: string;
+};

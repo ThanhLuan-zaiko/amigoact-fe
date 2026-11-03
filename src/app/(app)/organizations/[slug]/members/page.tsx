@@ -9,7 +9,7 @@ import {
   initials,
   type MemberInfo,
   type OrganizationDetail,
-  parseOffset,
+  pageOffset,
   ROLE_LABELS,
 } from "@/lib/organizations";
 import IconStat from "../../../../_components/IconStat";
@@ -81,7 +81,7 @@ async function MemberList({
   searchParams,
 }: PageProps<"/organizations/[slug]/members">) {
   const { slug } = await params;
-  const offset = parseOffset((await searchParams).offset);
+  const offset = pageOffset((await searchParams).page);
   const user = await requireUser(`/organizations/${slug}/members`);
   const [organization, page] = await Promise.all([
     getOrganization(slug),
@@ -128,7 +128,7 @@ async function MemberList({
       <PageLinks
         path={`/organizations/${slug}/members`}
         offset={offset}
-        nextOffset={page.next_offset}
+        total={page.total}
       />
     </section>
   );

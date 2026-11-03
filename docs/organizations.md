@@ -8,7 +8,7 @@ Các trang nằm trong `src/app/(app)/organizations/`.
 
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
-| `/organizations` | Tổ chức của bạn và danh bạ có tìm kiếm | Mọi người |
+| `/organizations` | Hai cột: tổ chức của tôi (chỉ tổ chức sở hữu) và danh bạ. Danh bạ gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ. Không sở hữu tổ chức nào thì chỉ còn một cột | Mọi người |
 | `/organizations/new` | Form tạo tổ chức | Đã đăng nhập |
 | `/organizations/[slug]` | Giới thiệu và liên hệ | Mọi người |
 | `/organizations/[slug]/members` | Thành viên, đổi vai trò, xóa thành viên | Thành viên |
@@ -27,7 +27,8 @@ Thanh mục trong header chỉ hiện những trang người xem được phép 
 
 - `ActionButton` chạy một Server Action và hiện lỗi ngay cạnh nút. Truyền `confirmLabel` để yêu cầu bấm xác nhận lần hai.
 - `MembershipAction` chọn nút theo trạng thái của người xem: tham gia, xin tham gia, rút yêu cầu, rời tổ chức.
-- `OrganizationForm` dùng cho cả tạo và sửa. Form chia bốn mục: thông tin chung, ảnh, liên hệ, pháp lý. Lúc tạo và lúc sửa đều có đủ các mục, chỉ khác là khi sửa form điền sẵn giá trị đã lưu.
+- `HeaderSearch` đổi theo trang: ở `/organizations` thanh tìm kiếm trên header tìm tổ chức, các trang khác tìm hoạt động. Điện thoại không có ô trên header, nên nút kính lúp nhảy đến ô tìm trong trang.
+- `OrganizationForm` dùng cho cả tạo và sửa. Form chia bốn mục: thông tin chung, ảnh, liên hệ, pháp lý. Lúc tạo và lúc sửa đều có đủ các mục. Khi sửa, form điền sẵn giá trị đã lưu. Khi tạo, email và số điện thoại được điền sẵn từ tài khoản qua `contactDefaults`, kèm một dòng nhắc rằng chúng sẽ hiển thị công khai. Đây chỉ là bản sao: sửa được trước khi tạo và không đổi theo tài khoản về sau.
 - `PictureField` là ô chọn ảnh: xem trước ảnh, kiểm tra dung lượng 5 MB ngay trên trình duyệt, và có ô "Gỡ ảnh hiện tại" khi đã có ảnh.
 - `OrganizationLegalFields` là các trường pháp lý. Form không bao giờ gửi `legal_status`, vì trạng thái này do quản trị nền tảng đặt.
 - `OrgHeader` hiển thị logo, ảnh bìa và trạng thái pháp lý. Chỉ trạng thái "Đã xác minh" có màu xanh.
@@ -48,6 +49,20 @@ Trình duyệt kiểm tra trước để phản hồi nhanh, backend kiểm tra 
 - `src/lib/validation.ts` kiểm tra tên tổ chức và website. Các trường khác dùng lại quy tắc của tài khoản.
 - `src/lib/forms.ts` dịch mã lỗi của backend sang tiếng Việt và gắn lỗi vào đúng trường.
 - Khi thêm mã lỗi mới ở backend, hãy thêm bản dịch vào `ERROR_MESSAGES` hoặc `ISSUE_MESSAGES`.
+
+## Bộ sưu tập
+
+`GalleryManager` ở trang cài đặt nhận kéo thả hoặc chọn nhiều tệp, tải lần lượt từng tệp qua `/media/upload` rồi gắn vào tổ chức. Tệp 50 MB vượt giới hạn của Server Action nên phải đi qua route này. Route chỉ nhận yêu cầu cùng origin và token vẫn nằm trong cookie. `/media/[id]/file` chuyển tiếp header `Range` để tua được video. `OrganizationGallery` hiển thị ở trang giới thiệu. Bộ sưu tập cần tổ chức đã tồn tại nên không có trong form tạo. `PictureField` (logo, ảnh bìa) cũng nhận kéo thả, mỗi ô một ảnh.
+
+## Phân trang
+
+Mỗi trang có URL riêng dạng `?page=N`, trang đầu không có tham số. `PageLinks` hiện nút trang trước và sau, các số trang (trang đầu, trang cuối, các trang quanh trang hiện tại) và ô nhập để đi tới trang bất kỳ. Số trang tính từ `total` trong phản hồi của backend. Hàm thuần nằm trong `src/lib/pagination.ts`.
+
+## Giới hạn tạo tổ chức
+
+Trường bắt buộc khi tạo và sửa: tên, giới thiệu, email, số điện thoại, thành phố. Dấu `*` có màu đỏ.
+
+Backend quyết định các giới hạn này, form chỉ hiện lỗi đã dịch: cần xác minh email (`email_not_verified`), tối đa 3 lần thử mỗi ngày (`rate_limited`), và sở hữu tối đa 5 tổ chức (`organization_limit_reached`).
 
 ## Chưa có
 

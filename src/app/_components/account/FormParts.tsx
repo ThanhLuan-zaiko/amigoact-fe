@@ -95,6 +95,7 @@ type TextAreaFieldProps = {
   label: string;
   name: string;
   rows?: number;
+  required?: boolean;
   defaultValue?: string | null;
   maxLength?: number;
   hint?: string;
@@ -105,6 +106,7 @@ export function TextAreaField({
   label,
   name,
   rows = 4,
+  required = false,
   defaultValue,
   maxLength,
   hint,
@@ -114,9 +116,13 @@ export function TextAreaField({
   const error = errors?.[name];
   return (
     <label className="flex flex-col gap-1">
-      <span className={fieldLabel}>{label}</span>
+      <span className={fieldLabel}>
+        {label}
+        {required ? <RequiredMark /> : null}
+      </span>
       <textarea
         name={name}
+        required={required}
         rows={rows}
         defaultValue={defaultValue ?? undefined}
         maxLength={maxLength}

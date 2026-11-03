@@ -17,7 +17,7 @@ import {
 import { RequiredLegend } from "../account/RequiredMarks";
 import { useAccountForm } from "../account/useAccountForm";
 import SelectMenu, { optionsFrom } from "../SelectMenu";
-import { panel, sectionTitle } from "../ui";
+import { mutedText, panel, sectionTitle } from "../ui";
 import OrganizationLegalFields from "./OrganizationLegalFields";
 import PictureField from "./PictureField";
 
@@ -25,6 +25,8 @@ type OrganizationFormProps = {
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
   // Editing starts from the saved values. Creating starts empty.
   organization?: OrganizationDetail;
+  // Creating starts from the account's contact. The values are copied, not linked.
+  contactDefaults?: { email: string; phone: string | null };
 };
 
 // Sections are split by a divider, not by cards, so the form stays flat.
@@ -46,6 +48,7 @@ function FormSection({
 export default function OrganizationForm({
   action,
   organization,
+  contactDefaults,
 }: OrganizationFormProps) {
   const { state, pending, formProps } = useAccountForm(action, {
     resetOnSuccess: false,
@@ -71,6 +74,7 @@ export default function OrganizationForm({
           defaultValue={organization?.description}
           maxLength={2000}
           errors={errors}
+          required
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <SelectMenu
@@ -109,17 +113,25 @@ export default function OrganizationForm({
             label="Email liên hệ"
             name="email"
             type="email"
-            defaultValue={organization?.email}
+            defaultValue={organization?.email ?? contactDefaults?.email}
             errors={errors}
+            required
           />
           <TextField
             label="Số điện thoại"
             name="phone"
             type="tel"
-            defaultValue={organization?.phone}
+            defaultValue={organization?.phone ?? contactDefaults?.phone}
             errors={errors}
+            required
           />
         </div>
+        {contactDefaults ? (
+          <p className={mutedText}>
+            Đã điền sẵn từ tài khoản của bạn. Thông tin này sẽ hiển thị công
+            khai, bạn có thể đổi sang liên hệ riêng của tổ chức.
+          </p>
+        ) : null}
         <TextField
           label="Website"
           name="website"
@@ -143,6 +155,7 @@ export default function OrganizationForm({
             defaultValue={organization?.city}
             maxLength={120}
             errors={errors}
+            required
           />
         </div>
       </FormSection>

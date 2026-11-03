@@ -17,3 +17,25 @@ export function isPictureId(value: string): boolean {
 export function isPictureTooLarge(size: number): boolean {
   return size > PICTURE_MAX_BYTES;
 }
+
+export const VIDEO_MAX_BYTES = 50 * 1024 * 1024;
+export const GALLERY_MAX_ITEMS = 10;
+export const GALLERY_ACCEPT = `${PICTURE_ACCEPT},video/mp4,video/webm`;
+
+export function isVideo(mime: string): boolean {
+  return mime.startsWith("video/");
+}
+
+// Checked in the browser first. The backend checks the real file type again.
+export function galleryFileError(file: {
+  type: string;
+  size: number;
+}): string | null {
+  if (!GALLERY_ACCEPT.split(",").includes(file.type)) {
+    return "Chỉ nhận ảnh JPEG, PNG, WEBP hoặc video MP4, WEBM.";
+  }
+  if (isVideo(file.type)) {
+    return file.size > VIDEO_MAX_BYTES ? "Video tối đa 50 MB." : null;
+  }
+  return isPictureTooLarge(file.size) ? "Ảnh tối đa 5 MB." : null;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { type DragEvent, useId, useState } from "react";
+import { type DragEvent, useId, useState, useTransition } from "react";
 import { FiTrash2, FiUploadCloud } from "react-icons/fi";
 import {
   addGalleryItem,
@@ -14,6 +14,7 @@ import {
   galleryFileError,
   isVideo,
 } from "@/lib/pictureRules";
+import ConfirmDialog from "../ConfirmDialog";
 import { fieldLabel, iconButton, mutedText, panel, sectionTitle } from "../ui";
 
 type Upload = { name: string; error?: string };
@@ -41,7 +42,31 @@ export default function GalleryManager({
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [removing, setRemoving] = useState<GalleryItem | null>(null);
+  const [removeError, setRemoveError] = useState<string | undefined>();
+  const [pendingRemove, startRemove] = useTransition();
   const room = GALLERY_MAX_ITEMS - items.length;
+
+  function closeRemove() {
+    setRemoving(null);
+    setRemoveError(undefined);
+  }
+
+  // Removing a photo cannot be undone from the page, so the dialog asks first.
+  function confirmRemove() {
+    const item = removing;
+    if (!item) {
+      return;
+    }
+    startRemove(async () => {
+      const state = await removeGalleryItem(slug, item.id);
+      if (state.error) {
+        setRemoveError(state.error);
+        return;
+      }
+      closeRemove();
+    });
+  }
 
   // One at a time, so a failure is reported per file and the limit stays exact.
   async function addFiles(files: File[]) {
@@ -146,9 +171,9 @@ export default function GalleryManager({
               )}
               <button
                 type="button"
-                aria-label="Gỡ khỏi bộ sưu tập"
-                title="Gỡ khỏi bộ sưu tập"
-                onClick={() => removeGalleryItem(slug, item.id)}
+                aria-label="Xóa khỏi bộ sưu tập"
+                title="Xóa khỏi bộ sưu tập"
+                onClick={() => setRemoving(item)}
                 className={iconButton}
               >
                 <FiTrash2 aria-hidden="true" />
@@ -157,6 +182,21 @@ export default function GalleryManager({
           ))}
         </ul>
       ) : null}
+      <ConfirmDialog
+        open={removing !== null}
+        title={`Xóa ${removing && isVideo(removing.mime) ? "video" : "ảnh"} khỏi bộ sưu tập?`}
+        confirmLabel="Xóa"
+        confirmIcon={<FiTrash2 aria-hidden="true" />}
+        pending={pendingRemove}
+        error={removeError}
+        onConfirm={confirmRemove}
+        onClose={closeRemove}
+      >
+        <p>
+          Thao tác này không thể hoàn tác. Tệp sẽ không còn hiện trong bộ sưu
+          tập, và muốn đưa lại bạn phải tải lên lại.
+        </p>
+      </ConfirmDialog>
     </section>
   );
 }

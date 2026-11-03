@@ -3,8 +3,10 @@ import { restoreOrganization } from "@/app/_actions/organizations";
 import { type DeletedOrganization, formatDate } from "@/lib/organizations";
 import { mutedText, panel, secondaryButton, sectionTitle } from "../ui";
 import ActionButton from "./ActionButton";
+import PurgeOrganizationButton from "./PurgeOrganizationButton";
 
-// The owner's trash. A deleted organization has no public page, so it is restored from here.
+// The owner's trash. A deleted organization has no public page, so it is restored from here,
+// or deleted for good from here.
 export default function DeletedOrganizations({
   organizations,
 }: {
@@ -27,14 +29,20 @@ export default function DeletedOrganizations({
               Xóa ngày {formatDate(organization.deleted_at)}
             </p>
           </div>
-          <ActionButton
-            action={restoreOrganization.bind(null, organization.id)}
-            label={`Khôi phục ${organization.name}`}
-            className={secondaryButton}
-          >
-            <FiRotateCcw aria-hidden="true" />
-            Khôi phục
-          </ActionButton>
+          <div className="flex flex-wrap gap-2">
+            <ActionButton
+              action={restoreOrganization.bind(null, organization.id)}
+              label={`Khôi phục ${organization.name}`}
+              className={secondaryButton}
+            >
+              <FiRotateCcw aria-hidden="true" />
+              Khôi phục
+            </ActionButton>
+            <PurgeOrganizationButton
+              organizationId={organization.id}
+              name={organization.name}
+            />
+          </div>
         </div>
       ))}
     </section>

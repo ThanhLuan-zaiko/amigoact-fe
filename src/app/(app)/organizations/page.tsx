@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FiPlus, FiSearch } from "react-icons/fi";
 import {
-  getDeletedOrganizations,
   getMyOrganizations,
   listOtherOrganizations,
 } from "@/lib/organizationApi";
@@ -13,7 +12,6 @@ import {
   type MyOrganization,
   pageOffset,
 } from "@/lib/organizations";
-import DeletedOrganizations from "../../_components/organizations/DeletedOrganizations";
 import OrganizationCard from "../../_components/organizations/OrganizationCard";
 import OwnedOrganizationCard from "../../_components/organizations/OwnedOrganizationCard";
 import PageLinks from "../../_components/organizations/PageLinks";
@@ -64,14 +62,13 @@ async function OrganizationsContent({
   const params = await searchParams;
   const search = firstValue(params.q);
   const offset = pageOffset(params.page);
-  const [page, mine, deleted] = await Promise.all([
+  const [page, mine] = await Promise.all([
     listOtherOrganizations(search, offset),
     getMyOrganizations(),
-    getDeletedOrganizations(),
   ]);
   const owned = mine.filter(({ role }) => role === "owner");
-  // The side column shows when the viewer owns something or has something in the trash.
-  const sideShown = owned.length > 0 || deleted.length > 0;
+  // The side column shows when the viewer owns something. The trash lives on /trash.
+  const sideShown = owned.length > 0;
   const others = page?.items ?? [];
   const path = search
     ? `/organizations?q=${encodeURIComponent(search)}`
@@ -87,12 +84,7 @@ async function OrganizationsContent({
     >
       {sideShown ? (
         <aside className="flex min-w-0 flex-col gap-8">
-          {owned.length > 0 ? (
-            <OwnedOrganizations organizations={owned} />
-          ) : null}
-          {deleted.length > 0 ? (
-            <DeletedOrganizations organizations={deleted} />
-          ) : null}
+          <OwnedOrganizations organizations={owned} />
         </aside>
       ) : null}
       <section className="flex min-w-0 flex-col gap-3">

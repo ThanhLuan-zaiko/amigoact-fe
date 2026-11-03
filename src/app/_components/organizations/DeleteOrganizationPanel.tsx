@@ -6,10 +6,10 @@ import { deleteOrganization } from "@/app/_actions/organizations";
 import type { FormState } from "@/lib/account";
 import { FormMessage } from "../account/FormParts";
 import {
-  dangerButton,
   fieldLabel,
   inputField,
   mutedText,
+  neutralButton,
   panel,
   secondaryButton,
   sectionTitle,
@@ -21,8 +21,9 @@ type DeleteOrganizationPanelProps = {
   openActivityCount: number;
 };
 
-// Only the owner sees this panel. The button stays off until the name is typed, and a
-// published activity blocks the delete, so the owner cancels those first.
+// Only the owner sees this panel. The action is a soft delete: the organization goes to the
+// trash and can be restored there. The button stays off until the name is typed, and a
+// published activity blocks it, so the owner cancels those first.
 export default function DeleteOrganizationPanel({
   slug,
   name,
@@ -49,18 +50,19 @@ export default function DeleteOrganizationPanel({
     >
       <div className="flex flex-col gap-1">
         <h2 id="delete-organization-title" className={sectionTitle}>
-          Xóa tổ chức
+          Đưa tổ chức vào thùng rác
         </h2>
         <p className={mutedText}>
-          Tổ chức sẽ ẩn với mọi người và đường dẫn cũ được nhả ra. Thành viên,
-          hoạt động và ảnh vẫn được giữ lại. Bạn có thể khôi phục tổ chức trong
-          mục Tổ chức của tôi.
+          Đây là xóa mềm, không phải xóa vĩnh viễn. Tổ chức sẽ ẩn với mọi người
+          và đường dẫn cũ được nhả ra. Thành viên, hoạt động và ảnh vẫn được giữ
+          lại. Bạn có thể khôi phục tổ chức trong Thùng rác, ở mục Tổ chức của
+          tôi.
         </p>
       </div>
       {blocked ? (
         <p className={mutedText}>
           Còn {openActivityCount} hoạt động đang mở. Hãy hủy các hoạt động đó
-          trước khi xóa tổ chức.
+          trước khi đưa tổ chức vào thùng rác.
         </p>
       ) : null}
       {confirming ? (
@@ -80,10 +82,10 @@ export default function DeleteOrganizationPanel({
             <button
               type="submit"
               disabled={!nameMatches || pending || blocked}
-              className={dangerButton}
+              className={neutralButton}
             >
               <FiTrash2 aria-hidden="true" />
-              Xóa tổ chức
+              Đưa vào thùng rác
             </button>
             <button type="button" onClick={cancel} className={secondaryButton}>
               Hủy
@@ -95,10 +97,10 @@ export default function DeleteOrganizationPanel({
           type="button"
           disabled={blocked}
           onClick={() => setConfirming(true)}
-          className={`${dangerButton} self-start`}
+          className={`${neutralButton} self-start`}
         >
           <FiTrash2 aria-hidden="true" />
-          Xóa tổ chức
+          Đưa vào thùng rác
         </button>
       )}
     </section>

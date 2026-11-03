@@ -9,10 +9,13 @@ export const panel = "rounded-lg border border-slate-200 dark:border-slate-800";
 
 export const primaryButton = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-teal-700 bg-teal-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-teal-800 ${focusRing} dark:border-teal-400 dark:bg-teal-400 dark:text-teal-950 dark:hover:bg-teal-300`;
 
-// Red marks an action that cannot be undone, such as deleting an organization.
+// Red marks an action that cannot be undone, such as removing a photo from a gallery.
 export const dangerButton = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-red-700 bg-red-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-red-800 disabled:opacity-50 ${focusRing} dark:border-red-400 dark:bg-red-400 dark:text-red-950 dark:hover:bg-red-300`;
 
 export const secondaryButton = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-teal-700 px-4 text-sm font-semibold text-teal-700 transition-colors hover:text-teal-800 ${focusRing} dark:border-teal-400 dark:text-teal-400 dark:hover:text-teal-300`;
+
+// Neutral slate for a reversible action that needs a button, such as moving an organization to the trash.
+export const neutralButton = `inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-slate-300 px-4 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-500 hover:text-slate-900 disabled:opacity-50 ${focusRing} dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:text-slate-100`;
 
 export const iconButton = `inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-200 text-slate-700 transition-colors hover:border-teal-700 hover:text-teal-700 ${focusRing} dark:border-slate-800 dark:text-slate-300 dark:hover:border-teal-400 dark:hover:text-teal-400`;
 

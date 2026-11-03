@@ -170,6 +170,18 @@ export async function restoreOrganization(
   );
 }
 
+// Permanent delete. The backend refuses while certificates or pending hours still exist.
+export async function purgeOrganization(
+  organizationId: string,
+): Promise<FormState> {
+  return finish(
+    await authedFetch(
+      `/organizations/mine/deleted/${encodeURIComponent(organizationId)}`,
+      { method: "DELETE" },
+    ),
+  );
+}
+
 export async function leaveOrganization(slug: string): Promise<FormState> {
   return finish(
     await authedFetch(`${organizationPath(slug)}/membership`, {

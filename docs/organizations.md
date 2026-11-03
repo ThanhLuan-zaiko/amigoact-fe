@@ -8,12 +8,13 @@ Các trang nằm trong `src/app/(app)/organizations/`.
 
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
-| `/organizations` | Hai cột: tổ chức của tôi (chỉ tổ chức sở hữu) và thùng rác (tổ chức đã xóa, có nút khôi phục), cùng một cột bên. Danh bạ gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ. Không sở hữu và không có gì trong thùng rác thì chỉ còn một cột | Mọi người (thùng rác: chủ sở hữu) |
+| `/organizations` | Hai cột: tổ chức của tôi (chỉ tổ chức sở hữu) ở cột bên, danh bạ ở cột chính. Danh bạ gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ. Không sở hữu tổ chức nào thì chỉ còn một cột. Tổ chức đã xóa không hiện ở đây | Mọi người |
 | `/organizations/new` | Form tạo tổ chức, hai cột từ xl | Đã đăng nhập |
 | `/organizations/[slug]` | Giới thiệu và liên hệ bên trái, bộ sưu tập bên phải từ xl | Mọi người |
 | `/organizations/[slug]/members` | Thành viên, đổi vai trò, xóa thành viên. Từ xl hiện hai cột | Thành viên |
+| `/trash` | Thùng rác của chính mình, có nút khôi phục và xóa vĩnh viễn. Mục "Thùng rác" trong thanh bên trái trỏ tới đây. Trang trống hiện "Thùng rác trống" | Đã đăng nhập |
 | `/organizations/[slug]/applications` | Duyệt yêu cầu tham gia. Từ xl hiện hai cột | Ban quản trị |
-| `/organizations/[slug]/settings` | Sửa hồ sơ tổ chức. Form hồ sơ chia hai cột từ `xl`, ảnh và quy tắc giờ nằm cạnh nhau bên dưới. Chủ sở hữu còn thấy mục "Xóa tổ chức" ở cuối, rộng cả hai cột | Ban quản trị (xóa: chủ sở hữu) |
+| `/organizations/[slug]/settings` | Sửa hồ sơ tổ chức. Form hồ sơ chia hai cột từ `xl`, ảnh và quy tắc giờ nằm cạnh nhau bên dưới. Chủ sở hữu còn thấy mục "Đưa tổ chức vào thùng rác" ở cuối, rộng cả hai cột | Ban quản trị (xóa: chủ sở hữu) |
 
 Thanh mục trong header chỉ hiện những trang người xem được phép mở. Backend vẫn là nơi kiểm tra quyền thật.
 
@@ -55,16 +56,20 @@ Trình duyệt kiểm tra trước để phản hồi nhanh, backend kiểm tra 
 
 `GalleryManager` ở trang cài đặt nhận kéo thả hoặc chọn nhiều tệp, tải lần lượt từng tệp qua `/media/upload` rồi gắn vào tổ chức. Tệp 50 MB vượt giới hạn của Server Action nên phải đi qua route này. Route chỉ nhận yêu cầu cùng origin và token vẫn nằm trong cookie. `/media/[id]/file` chuyển tiếp header `Range` để tua được video. `OrganizationGallery` hiển thị ở trang giới thiệu. Form tạo cũng có `CreateGalleryField`: chọn ảnh hoặc video tải lên trước, mỗi tệp thành một `<input type="hidden" name="gallery_asset_id">`, và action gửi chúng thành `gallery_asset_ids` cùng lúc với logo và ảnh bìa. Khi đang tải lên, nút tạo tổ chức chưa bị chặn, nên người dùng nên đợi xong rồi mới bấm. `PictureField` (logo, ảnh bìa) cũng nhận kéo thả, mỗi ô một ảnh.
 
+Nút xóa một ảnh trong bộ sưu tập mở hộp thoại xác nhận, vì gỡ khỏi bộ sưu tập không hoàn tác được trên giao diện. Tệp vẫn còn trong kho cho đến khi script dọn dẹp chạy, nhưng không có nút nào để đưa lại. Hộp thoại là `ConfirmDialog` trong `src/app/_components/ConfirmDialog.tsx`, dùng thẻ `<dialog>` gốc của trình duyệt. Nút xác nhận màu đỏ, chỉ dùng cho thao tác không hoàn tác được.
+
 ## Xóa và khôi phục
 
-Mục "Xóa tổ chức" nằm ở cuối trang cài đặt, chỉ chủ sở hữu thấy. Code nằm trong `DeleteOrganizationPanel.tsx`.
+Mục "Đưa tổ chức vào thùng rác" nằm ở cuối trang cài đặt, chỉ chủ sở hữu thấy. Code nằm trong `DeleteOrganizationPanel.tsx`. Đây là xóa mềm: backend chỉ đặt `deleted_at`, và chủ sở hữu khôi phục được trong thùng rác. Nhãn không dùng chữ "Xóa" một mình để người dùng không hiểu nhầm là xóa vĩnh viễn.
 
-- Nút xóa chỉ bật sau khi gõ đúng tên tổ chức. Đây là xác nhận trên giao diện. Quyền xóa thật do backend kiểm tra.
-- Khi còn hoạt động ở trạng thái `published`, panel hiện số hoạt động còn mở và tắt nút xóa. `open_activity_count` trong chi tiết tổ chức cung cấp con số này. Backend vẫn trả 409 `organization_has_open_activities` nếu có ai bấm được khi dữ liệu đã cũ.
-- Nút xóa dùng màu đỏ, vì đây là thao tác không hoàn tác được. Quy tắc màu trong `AGENTS.md` cho phép điều này cho các nút xóa không hoàn tác được.
+- Nút chỉ bật sau khi gõ đúng tên tổ chức. Đây là xác nhận trên giao diện. Quyền xóa thật do backend kiểm tra.
+- Khi còn hoạt động ở trạng thái `published`, panel hiện số hoạt động còn mở và tắt nút. `open_activity_count` trong chi tiết tổ chức cung cấp con số này. Backend vẫn trả 409 `organization_has_open_activities` nếu có ai bấm được khi dữ liệu đã cũ.
+- Nút dùng màu trung tính (`neutralButton` trong `ui.ts`), không dùng đỏ, vì thao tác khôi phục được từ thùng rác. Quy tắc trong `AGENTS.md` chỉ dành màu đỏ cho nút không hoàn tác được, ví dụ xóa ảnh khỏi bộ sưu tập. Trước đây nút này đỏ theo ví dụ "xóa tổ chức" trong quy tắc cũ, nhưng ví dụ đó không đúng sau khi xóa trở thành xóa mềm.
 - Sau khi xóa, action chuyển về `/organizations`. Địa chỉ cũ của tổ chức trả về 404, nên không có trang nào để khôi phục từ đó.
 
-Khôi phục nằm ở mục "Thùng rác" trên trang `/organizations`, không nằm trong cài đặt. `DeletedOrganizations.tsx` gọi `getDeletedOrganizations()` và action `restoreOrganization`. Khôi phục có thể bị từ chối với `slug_taken` (đường dẫn cũ đã có người dùng) hoặc `organization_limit_reached` (đã đủ 5 tổ chức). Thông báo nằm trong `src/lib/forms.ts`.
+Thùng rác chỉ hiện ở trang `/trash`, có mục "Thùng rác" trong thanh bên trái (`SideNav.tsx`). Tổ chức đã xóa không hiện ở `/organizations`, nên thùng rác là nơi duy nhất để khôi phục. Khôi phục không nằm trong cài đặt. Thanh dưới trên điện thoại (`MobileNav.tsx`) chưa có mục này.
+
+Xóa vĩnh viễn nằm ngay cạnh nút khôi phục, trong thùng rác. `PurgeOrganizationButton.tsx` mở `ConfirmDialog` với ô nhập tên tổ chức. Nút đỏ "Xóa vĩnh viễn" chỉ bật khi tên khớp, và gọi `purgeOrganization` trong `src/app/_actions/organizations.ts`, tức `DELETE /organizations/mine/deleted/{org_id}` ở backend. Backend có thể từ chối với `organization_has_certificates` hoặc `organization_has_pending_hours`. Lỗi được hiện ngay trong hộp thoại, và tổ chức vẫn còn trong thùng rác. Chi tiết quy tắc nằm trong `amigoact-be/docs/organizations.md`, mục "Xóa vĩnh viễn". `DeletedOrganizations.tsx` gọi `getDeletedOrganizations()` và action `restoreOrganization`. Khôi phục có thể bị từ chối với `slug_taken` (đường dẫn cũ đã có người dùng) hoặc `organization_limit_reached` (đã đủ 5 tổ chức). Thông báo nằm trong `src/lib/forms.ts`.
 
 ## Phân trang
 
@@ -78,6 +83,5 @@ Backend quyết định các giới hạn này, form chỉ hiện lỗi đã d�
 
 ## Chưa có
 
-- Xóa vĩnh viễn tổ chức từ giao diện. Backend cũng chưa có API này.
 - Quy trình xác minh pháp lý của quản trị nền tảng. Hiện mọi tổ chức đều ở trạng thái "Chưa xác minh", và chưa có giao diện nào để đổi trạng thái đó.
 - Ảnh đại diện của người dùng và ảnh bìa của hoạt động. Hai phần này dùng cùng luồng tải ảnh nhưng chưa làm trên giao diện.

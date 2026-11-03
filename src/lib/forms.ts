@@ -31,6 +31,10 @@ const ERROR_MESSAGES: Record<string, string> = {
   organization_limit_reached: "Bạn đã sở hữu số tổ chức tối đa (5 tổ chức).",
   organization_has_open_activities:
     "Tổ chức còn hoạt động đang mở. Hãy hủy các hoạt động đó trước khi xóa tổ chức.",
+  organization_has_certificates:
+    "Tổ chức đã cấp chứng nhận cho sinh viên nên không thể xóa vĩnh viễn. Chứng nhận là bằng chứng của sinh viên.",
+  organization_has_pending_hours:
+    "Tổ chức còn giờ tình nguyện đang chờ duyệt. Hãy duyệt hoặc từ chối các giờ đó trước khi xóa vĩnh viễn.",
   slug_taken:
     "Đường dẫn cũ của tổ chức này đã có tổ chức khác dùng, nên chưa khôi phục được.",
   already_member: "Bạn đã là thành viên của tổ chức này.",

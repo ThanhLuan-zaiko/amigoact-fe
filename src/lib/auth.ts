@@ -48,6 +48,7 @@ export async function requireUser(next: string): Promise<User> {
 type AuthedOptions = {
   method?: "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
+  form?: FormData;
 };
 
 // For Server Actions. Every action authorizes itself: the backend checks the token on each call.

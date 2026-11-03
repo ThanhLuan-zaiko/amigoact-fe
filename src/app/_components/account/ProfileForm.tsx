@@ -3,8 +3,10 @@
 import { FiSave } from "react-icons/fi";
 import { updateProfile } from "@/app/_actions/account";
 import type { User } from "@/lib/account";
-import { fieldLabel, inputField, panel } from "../ui";
+import SelectMenu from "../SelectMenu";
+import { panel } from "../ui";
 import { FormMessage, SubmitButton, TextField } from "./FormParts";
+import { RequiredLegend } from "./RequiredMarks";
 import { useAccountForm } from "./useAccountForm";
 
 const GENDERS = [
@@ -23,6 +25,7 @@ export default function ProfileForm({ user }: { user: User }) {
   return (
     <form {...formProps} className={`${panel} flex flex-col gap-4 p-4 sm:p-6`}>
       <FormMessage state={state} />
+      <RequiredLegend />
       <TextField
         errors={state.fieldErrors}
         label="Họ và tên"
@@ -49,20 +52,12 @@ export default function ProfileForm({ user }: { user: User }) {
           defaultValue={user.date_of_birth}
         />
       </div>
-      <label className="flex flex-col gap-1">
-        <span className={fieldLabel}>Giới tính</span>
-        <select
-          name="gender"
-          defaultValue={user.gender ?? ""}
-          className={inputField}
-        >
-          {GENDERS.map(({ value, label }) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <SelectMenu
+        label="Giới tính"
+        name="gender"
+        defaultValue={user.gender ?? ""}
+        options={GENDERS}
+      />
       <TextField
         errors={state.fieldErrors}
         label="Địa chỉ"

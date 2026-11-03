@@ -6,7 +6,8 @@ import type { Shift } from "@/lib/activities";
 import { SESSION_MINUTES } from "@/lib/attendance";
 import { FormMessage, SubmitButton } from "../account/FormParts";
 import { useAccountForm } from "../account/useAccountForm";
-import { fieldLabel, inputField, panel } from "../ui";
+import SelectMenu from "../SelectMenu";
+import { panel } from "../ui";
 
 type OpenSessionFormProps = {
   activityId: string;
@@ -25,27 +26,27 @@ export default function OpenSessionForm({
       <FormMessage state={state} />
       <div className="flex flex-wrap items-end gap-3">
         {shifts.length > 0 ? (
-          <label className="flex min-w-0 flex-1 basis-40 flex-col gap-1">
-            <span className={fieldLabel}>Ca</span>
-            <select name="shift_id" className={inputField}>
-              {shifts.map((shift) => (
-                <option key={shift.id} value={shift.id}>
-                  {shift.title}
-                </option>
-              ))}
-            </select>
-          </label>
+          <SelectMenu
+            label="Ca"
+            name="shift_id"
+            defaultValue={shifts[0].id}
+            options={shifts.map((shift) => ({
+              value: shift.id,
+              label: shift.title ?? "",
+            }))}
+            className="flex-1 basis-40"
+          />
         ) : null}
-        <label className="flex min-w-0 flex-1 basis-32 flex-col gap-1">
-          <span className={fieldLabel}>Thời lượng</span>
-          <select name="minutes" defaultValue="120" className={inputField}>
-            {SESSION_MINUTES.map((minutes) => (
-              <option key={minutes} value={minutes}>
-                {minutes} phút
-              </option>
-            ))}
-          </select>
-        </label>
+        <SelectMenu
+          label="Thời lượng"
+          name="minutes"
+          defaultValue="120"
+          options={SESSION_MINUTES.map((minutes) => ({
+            value: String(minutes),
+            label: `${minutes} phút`,
+          }))}
+          className="flex-1 basis-32"
+        />
         <SubmitButton pending={pending} icon={BsQrCode}>
           Mở điểm danh
         </SubmitButton>

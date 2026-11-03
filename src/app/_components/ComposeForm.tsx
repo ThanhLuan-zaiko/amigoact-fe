@@ -12,6 +12,7 @@ import {
   FiVideo,
   FiX,
 } from "react-icons/fi";
+import SelectMenu from "./SelectMenu";
 import {
   chipButton,
   chipPressed,
@@ -48,21 +49,19 @@ export default function ComposeForm() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-2">
-          <span className={fieldLabel}>Đăng dưới</span>
-          <select className={inputField} defaultValue="">
-            <option value="" disabled>
-              Chọn tổ chức
-            </option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-2">
-          <span className={fieldLabel}>Hiển thị</span>
-          <select className={inputField} defaultValue="public">
-            <option value="public">Công khai</option>
-            <option value="members">Chỉ thành viên</option>
-          </select>
-        </label>
+        <SelectMenu
+          label="Đăng dưới"
+          defaultValue=""
+          options={[{ value: "", label: "Chọn tổ chức", disabled: true }]}
+        />
+        <SelectMenu
+          label="Hiển thị"
+          defaultValue="public"
+          options={[
+            { value: "public", label: "Công khai" },
+            { value: "members", label: "Chỉ thành viên" },
+          ]}
+        />
       </div>
 
       <div className="flex flex-col gap-2">

@@ -10,6 +10,7 @@ import {
   inputFieldInvalid,
   primaryButton,
 } from "../ui";
+import { RequiredMark } from "./RequiredMarks";
 
 function FieldNotes({
   id,
@@ -69,7 +70,10 @@ export function TextField({
   const error = errors?.[name];
   return (
     <label className="flex flex-col gap-1">
-      <span className={fieldLabel}>{label}</span>
+      <span className={fieldLabel}>
+        {label}
+        {required ? <RequiredMark /> : null}
+      </span>
       <input
         name={name}
         type={type}

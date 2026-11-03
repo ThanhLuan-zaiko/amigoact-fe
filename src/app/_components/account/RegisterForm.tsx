@@ -12,6 +12,7 @@ import {
   SubmitButton,
   TextField,
 } from "./FormParts";
+import { RequiredLegend } from "./RequiredMarks";
 import { useAccountForm } from "./useAccountForm";
 
 const ACCOUNT_TYPES = [
@@ -108,6 +109,7 @@ export default function RegisterForm() {
         required
       />
       <FormMessage state={state} />
+      <RequiredLegend />
       <SubmitButton pending={pending} icon={FiUserPlus}>
         Tạo tài khoản
       </SubmitButton>

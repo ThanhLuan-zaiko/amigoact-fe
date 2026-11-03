@@ -27,12 +27,23 @@ export type ViewerMembership = {
   reapply_after: string | null;
 };
 
+export type LegalStatus = "none" | "pending" | "verified";
+
 export type OrganizationDetail = OrganizationSummary & {
   email: string | null;
   phone: string | null;
   website: string | null;
   address: string | null;
   city: string | null;
+  legal_name: string | null;
+  tax_code: string | null;
+  license_number: string | null;
+  legal_rep_name: string | null;
+  legal_rep_position: string | null;
+  legal_status: LegalStatus;
+  // Served by the frontend at the same path (see app/media), or null.
+  logo_url: string | null;
+  cover_url: string | null;
   owner_name: string;
   activity_count: number;
   volunteer_hours: number;
@@ -78,6 +89,12 @@ export const ORG_TYPE_LABELS: Record<OrgType, string> = {
 export const JOIN_POLICY_LABELS: Record<JoinPolicy, string> = {
   open: "Mở tham gia",
   invite: "Cần duyệt",
+};
+
+export const LEGAL_STATUS_LABELS: Record<LegalStatus, string> = {
+  none: "Chưa xác minh",
+  pending: "Đang chờ xác minh",
+  verified: "Đã xác minh",
 };
 
 export const ROLE_LABELS: Record<OrgRole, string> = {

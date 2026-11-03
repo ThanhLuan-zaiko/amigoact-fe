@@ -7,6 +7,7 @@ import { authedFetch, getAccessToken } from "@/lib/auth";
 import type { ApiResult } from "@/lib/backend";
 import { failureState, textOrNull, textValue } from "@/lib/forms";
 import type { OrganizationDetail } from "@/lib/organizations";
+import { readPicture } from "@/lib/pictures";
 
 function organizationPath(slug: string): string {
   return `/organizations/${encodeURIComponent(slug)}`;
@@ -29,16 +30,44 @@ function finish(result: ApiResult<unknown>): FormState {
   return {};
 }
 
+// Text fields of the create and update forms. Empty optional fields are sent as null.
+function organizationFields(formData: FormData) {
+  return {
+    name: textValue(formData, "name"),
+    description: textOrNull(formData, "description"),
+    org_type: textValue(formData, "org_type"),
+    join_policy: textValue(formData, "join_policy"),
+    email: textOrNull(formData, "email"),
+    phone: textOrNull(formData, "phone"),
+    website: textOrNull(formData, "website"),
+    address: textOrNull(formData, "address"),
+    city: textOrNull(formData, "city"),
+    legal_name: textOrNull(formData, "legal_name"),
+    tax_code: textOrNull(formData, "tax_code"),
+    license_number: textOrNull(formData, "license_number"),
+    legal_rep_name: textOrNull(formData, "legal_rep_name"),
+    legal_rep_position: textOrNull(formData, "legal_rep_position"),
+  };
+}
+
 export async function createOrganization(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  // Pictures are uploaded first. If one fails, no organization is created.
+  const logo = await readPicture(formData, "logo");
+  if (!logo.ok) {
+    return logo.state;
+  }
+  const cover = await readPicture(formData, "cover");
+  if (!cover.ok) {
+    return cover.state;
+  }
   const result = await authedFetch<OrganizationDetail>("/organizations", {
     body: {
-      name: textValue(formData, "name"),
-      description: textOrNull(formData, "description"),
-      org_type: textValue(formData, "org_type"),
-      join_policy: textValue(formData, "join_policy"),
+      ...organizationFields(formData),
+      logo_asset_id: logo.assetId,
+      cover_asset_id: cover.assetId,
     },
   });
   if (!result.ok) {
@@ -53,18 +82,20 @@ export async function updateOrganization(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const logo = await readPicture(formData, "logo");
+  if (!logo.ok) {
+    return logo.state;
+  }
+  const cover = await readPicture(formData, "cover");
+  if (!cover.ok) {
+    return cover.state;
+  }
   const result = await authedFetch(organizationPath(slug), {
     method: "PATCH",
     body: {
-      name: textValue(formData, "name"),
-      description: textOrNull(formData, "description"),
-      org_type: textValue(formData, "org_type"),
-      join_policy: textValue(formData, "join_policy"),
-      email: textOrNull(formData, "email"),
-      phone: textOrNull(formData, "phone"),
-      website: textOrNull(formData, "website"),
-      address: textOrNull(formData, "address"),
-      city: textOrNull(formData, "city"),
+      ...organizationFields(formData),
+      logo_asset_id: logo.assetId,
+      cover_asset_id: cover.assetId,
     },
   });
   const state = finish(result);

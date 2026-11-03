@@ -9,6 +9,7 @@ import {
   TextAreaField,
   TextField,
 } from "../account/FormParts";
+import { RequiredLegend } from "../account/RequiredMarks";
 import { useAccountForm } from "../account/useAccountForm";
 import { fieldLabel, panel } from "../ui";
 
@@ -48,6 +49,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
   return (
     <form {...formProps} className={`${panel} flex flex-col gap-4 p-4 sm:p-6`}>
       <FormMessage state={state} />
+      <RequiredLegend />
       <TextField
         label="Tên hoạt động"
         name="title"

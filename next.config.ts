@@ -6,10 +6,6 @@ const nextConfig: NextConfig = {
     agentFeedback: true,
     // A gallery video is at most 50 MB. The proxy buffers the body of /media/upload.
     proxyClientMaxBodySize: "55mb",
-    // Pictures are at most 5 MB, plus the rest of the form. The default is 1 MB.
-    serverActions: {
-      bodySizeLimit: "6mb",
-    },
   },
   cacheComponents: true,
   partialPrefetching: true,

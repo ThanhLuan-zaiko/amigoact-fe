@@ -54,21 +54,12 @@ export async function createOrganization(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  // Pictures are uploaded first. If one fails, no organization is created.
-  const logo = await readPicture(formData, "logo");
-  if (!logo.ok) {
-    return logo.state;
-  }
-  const cover = await readPicture(formData, "cover");
-  if (!cover.ok) {
-    return cover.state;
-  }
-  // Gallery files were uploaded in the browser and arrive as asset ids.
+  // Pictures and gallery files were uploaded in the browser and arrive as asset ids.
   const result = await authedFetch<OrganizationDetail>("/organizations", {
     body: {
       ...organizationFields(formData),
-      logo_asset_id: logo.assetId,
-      cover_asset_id: cover.assetId,
+      logo_asset_id: readPicture(formData, "logo"),
+      cover_asset_id: readPicture(formData, "cover"),
       gallery_asset_ids: formData.getAll("gallery_asset_id").map(String),
     },
   });
@@ -84,20 +75,12 @@ export async function updateOrganization(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const logo = await readPicture(formData, "logo");
-  if (!logo.ok) {
-    return logo.state;
-  }
-  const cover = await readPicture(formData, "cover");
-  if (!cover.ok) {
-    return cover.state;
-  }
   const result = await authedFetch(organizationPath(slug), {
     method: "PATCH",
     body: {
       ...organizationFields(formData),
-      logo_asset_id: logo.assetId,
-      cover_asset_id: cover.assetId,
+      logo_asset_id: readPicture(formData, "logo"),
+      cover_asset_id: readPicture(formData, "cover"),
     },
   });
   const state = finish(result);

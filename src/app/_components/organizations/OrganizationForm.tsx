@@ -20,7 +20,7 @@ import SelectMenu, { optionsFrom } from "../SelectMenu";
 import { mutedText, panel } from "../ui";
 import CreateGalleryField from "./CreateGalleryField";
 import OrganizationLegalFields from "./OrganizationLegalFields";
-import PictureField from "./PictureField";
+import PicturePicker from "./PicturePicker";
 
 type OrganizationFormProps = {
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
@@ -80,19 +80,10 @@ export default function OrganizationForm({
             </div>
           </FormSection>
           <FormSection title="Ảnh">
-            <PictureField
-              label="Logo"
-              name="logo"
-              currentUrl={organization?.logo_url}
-              shape="square"
-              error={errors?.logo}
-            />
-            <PictureField
-              label="Ảnh bìa"
-              name="cover"
-              currentUrl={organization?.cover_url}
-              shape="wide"
-              error={errors?.cover}
+            <PicturePicker
+              currentLogoUrl={organization?.logo_url}
+              currentCoverUrl={organization?.cover_url}
+              error={{ logo: errors?.logo, cover: errors?.cover }}
             />
             {organization ? null : <CreateGalleryField />}
           </FormSection>

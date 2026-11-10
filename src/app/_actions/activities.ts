@@ -52,12 +52,24 @@ export async function createActivity(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  const body = activityBody(formData);
+  const publishNow = formData.get("intent") === "publish";
+  // Checked before creating, so a refused publish does not leave a stray draft behind.
+  if (publishNow && body.start_at && new Date(body.start_at) <= new Date()) {
+    return failureState("validation_error", [
+      { field: "start_at", type: "start_in_past" },
+    ]);
+  }
   const result = await authedFetch<ActivityDetail>(
     `/organizations/${encodeURIComponent(slug)}/activities`,
-    { body: activityBody(formData) },
+    { body },
   );
   if (!result.ok) {
     return failureState(result.code, result.issues);
+  }
+  if (publishNow) {
+    // If this fails, the activity stays a draft and its page offers the publish button.
+    await authedFetch(`${activityPath(result.data.id)}/publish`);
   }
   revalidatePath("/", "layout");
   redirect(activityPath(result.data.id));

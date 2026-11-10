@@ -1,8 +1,10 @@
 "use client";
 
-import { FiPlus, FiSave } from "react-icons/fi";
-import type { FormState } from "@/lib/account";
+import { useState } from "react";
+import { FiSave, FiSend } from "react-icons/fi";
+import type { FieldErrors, FormState } from "@/lib/account";
 import { type ActivityDetail, toLocalInput } from "@/lib/activities";
+import { FIELD_MESSAGES } from "@/lib/validation";
 import {
   FormMessage,
   FormSection,
@@ -12,7 +14,7 @@ import {
 } from "../account/FormParts";
 import { RequiredLegend } from "../account/RequiredMarks";
 import { useAccountForm } from "../account/useAccountForm";
-import { fieldLabel, panel } from "../ui";
+import { fieldLabel, panel, secondaryButton } from "../ui";
 
 type ActivityFormProps = {
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
@@ -23,10 +25,12 @@ function CheckField({
   label,
   name,
   defaultChecked,
+  onChange,
 }: {
   label: string;
   name: string;
   defaultChecked: boolean;
+  onChange?: (checked: boolean) => void;
 }) {
   return (
     <label className={`${fieldLabel} flex items-center gap-2`}>
@@ -34,6 +38,7 @@ function CheckField({
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
+        onChange={(event) => onChange?.(event.currentTarget.checked)}
         className="h-4 w-4 accent-teal-700 dark:accent-teal-400"
       />
       {label}
@@ -41,10 +46,22 @@ function CheckField({
   );
 }
 
+// Textareas are not covered by the generic checks, so the description is checked here.
+function validateExtra(form: HTMLFormElement): FieldErrors {
+  const description = form.elements.namedItem("description");
+  const empty =
+    description instanceof HTMLTextAreaElement &&
+    description.value.trim() === "";
+  return empty ? { description: FIELD_MESSAGES.required } : {};
+}
+
 export default function ActivityForm({ action, activity }: ActivityFormProps) {
   const { state, pending, formProps } = useAccountForm(action, {
     resetOnSuccess: false,
+    validate: validateExtra,
   });
+  // A remote activity has no place, so the place is required only for the others.
+  const [remote, setRemote] = useState(activity?.is_remote ?? false);
   const errors = state.fieldErrors;
 
   return (
@@ -70,6 +87,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
               rows={5}
               maxLength={5000}
               errors={errors}
+              required
             />
           </FormSection>
           <FormSection title="Thời gian">
@@ -80,6 +98,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
                 type="datetime-local"
                 defaultValue={toLocalInput(activity?.start_at ?? null)}
                 errors={errors}
+                required
               />
               <TextField
                 label="Kết thúc"
@@ -87,6 +106,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
                 type="datetime-local"
                 defaultValue={toLocalInput(activity?.end_at ?? null)}
                 errors={errors}
+                required
               />
               <TextField
                 label="Hạn đăng ký"
@@ -102,6 +122,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
                 name="hours_awarded"
                 defaultValue={activity?.hours_awarded?.toString()}
                 errors={errors}
+                required
               />
             </div>
           </FormSection>
@@ -112,6 +133,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
               label="Trực tuyến"
               name="is_remote"
               defaultChecked={activity?.is_remote ?? false}
+              onChange={setRemote}
             />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField
@@ -120,6 +142,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
                 defaultValue={activity?.location}
                 maxLength={200}
                 errors={errors}
+                required={!remote}
               />
               <TextField
                 label="Thành phố"
@@ -127,6 +150,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
                 defaultValue={activity?.city}
                 maxLength={120}
                 errors={errors}
+                required
               />
             </div>
             <TextField
@@ -153,10 +177,32 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
           </FormSection>
         </div>
       </div>
-      <div>
-        <SubmitButton pending={pending} icon={activity ? FiSave : FiPlus}>
-          {activity ? "Lưu" : "Tạo bản nháp"}
-        </SubmitButton>
+      <div className="flex flex-wrap gap-3">
+        {activity ? (
+          <SubmitButton pending={pending} icon={FiSave}>
+            Lưu
+          </SubmitButton>
+        ) : (
+          <>
+            <SubmitButton
+              pending={pending}
+              icon={FiSend}
+              name="intent"
+              value="publish"
+            >
+              Đăng ngay
+            </SubmitButton>
+            <SubmitButton
+              pending={pending}
+              icon={FiSave}
+              name="intent"
+              value="draft"
+              className={secondaryButton}
+            >
+              Lưu nháp
+            </SubmitButton>
+          </>
+        )}
       </div>
     </form>
   );

@@ -8,6 +8,8 @@ function isProtected(pathname: string): boolean {
     pathname === "/account" ||
     pathname.startsWith("/account/") ||
     pathname === "/organizations/new" ||
+    pathname === "/compose" ||
+    pathname === "/drafts" ||
     pathname === "/activities" ||
     pathname === "/hours"
   );

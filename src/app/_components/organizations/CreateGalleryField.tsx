@@ -107,7 +107,7 @@ export default function CreateGalleryField() {
             : "Kéo thả hoặc bấm để chọn ảnh hoặc video"}
         </span>
         <span className={`${mutedText} text-xs`}>
-          Ảnh JPEG, PNG, WEBP tối đa 5 MB. Video MP4, WEBM tối đa 50 MB.
+          Ảnh JPEG, PNG, WEBP tối đa 20 MB. Video MP4, WEBM tối đa 50 MB.
         </span>
         <input
           id={inputId}

@@ -30,7 +30,7 @@ Thanh mục trong header chỉ hiện những trang người xem được phép 
 - `MembershipAction` chọn nút theo trạng thái của người xem: tham gia, xin tham gia, rút yêu cầu, rời tổ chức.
 - `HeaderSearch` đổi theo trang: ở `/organizations` thanh tìm kiếm trên header tìm tổ chức, các trang khác tìm hoạt động. Điện thoại không có ô trên header, nên nút kính lúp nhảy đến ô tìm trong trang.
 - `OrganizationForm` dùng cho cả tạo và sửa. Form chia bốn mục: thông tin chung, ảnh, liên hệ, pháp lý. Lúc tạo và lúc sửa đều có đủ các mục. Khi sửa, form điền sẵn giá trị đã lưu. Khi tạo, email và số điện thoại được điền sẵn từ tài khoản qua `contactDefaults`, kèm một dòng nhắc rằng chúng sẽ hiển thị công khai. Đây chỉ là bản sao: sửa được trước khi tạo và không đổi theo tài khoản về sau.
-- `PictureField` là ô chọn ảnh: xem trước ảnh, kiểm tra dung lượng 5 MB ngay trên trình duyệt, và có ô "Gỡ ảnh hiện tại" khi đã có ảnh.
+- `PicturePicker` là một ô tải ảnh chung cho logo và ảnh bìa: người dùng kéo thả hoặc chọn nhiều ảnh, mỗi ảnh tải ngay qua `/media/upload`, rồi bấm nút "Logo" hoặc "Ảnh bìa" dưới từng ảnh để chọn vai trò. Lựa chọn đi cùng form dưới dạng `logo_asset_id` và `cover_asset_id`. Khi đã có ảnh, có ô "Gỡ" (`remove_logo`, `remove_cover`). Ảnh tối đa 20 MB, kiểm tra ngay trên trình duyệt.
 - `OrganizationLegalFields` là các trường pháp lý. Form không bao giờ gửi `legal_status`, vì trạng thái này do quản trị nền tảng đặt.
 - `OrgHeader` hiển thị logo, ảnh bìa và trạng thái pháp lý. Chỉ trạng thái "Đã xác minh" có màu xanh.
 - `SelectMenu` thay cho thẻ `<select>` mặc định. Menu hiện bằng hiệu ứng mờ dần và trượt nhẹ, tắt khi người dùng bật "giảm chuyển động". Bàn phím: mũi tên lên xuống để chọn, Enter hoặc Space để xác nhận, Escape để đóng. Giá trị gửi đi qua một input ẩn có cùng `name`.
@@ -39,10 +39,10 @@ Thanh mục trong header chỉ hiện những trang người xem được phép 
 ## Ảnh
 
 - Ảnh không đi thẳng từ trình duyệt tới backend. Form gửi file lên Server Action, action chuyển tiếp lên `POST /media` bằng `readPicture` trong `src/lib/pictures.ts`, rồi gửi `logo_asset_id` hoặc `cover_asset_id` cho backend.
-- `next.config.ts` đặt `serverActions.bodySizeLimit` là 6 MB. Mặc định của Next.js chỉ là 1 MB, nên ảnh 5 MB sẽ bị từ chối nếu thiếu cấu hình này.
+- Form chỉ gửi asset ID nên Server Action không còn mang tệp ảnh, và không cần nâng `serverActions.bodySizeLimit`.
 - Thẻ "Tổ chức của tôi" (`OwnedOrganizationCard`) hiện ảnh bìa ở trên và logo bên cạnh tên. Chưa có ảnh thì hiện chữ cái đầu của tên tổ chức.
 - Ảnh hiển thị qua `src/app/media/[id]/file/route.ts`. Route này chỉ nhận ID dạng UUIDv7 và chuyển tiếp tới `GET /media/{id}/file` của backend, nên trình duyệt không gọi backend trực tiếp. Ảnh riêng trả về 404.
-- `src/lib/pictureRules.ts` chứa các quy tắc dùng chung: định dạng JPEG, PNG hoặc WEBP, dung lượng tối đa 5 MB, và kiểm tra ID.
+- `src/lib/pictureRules.ts` chứa các quy tắc dùng chung: định dạng JPEG, PNG hoặc WEBP, dung lượng tối đa 20 MB, và kiểm tra ID.
 
 ## Kiểm tra dữ liệu
 
@@ -54,7 +54,7 @@ Trình duyệt kiểm tra trước để phản hồi nhanh, backend kiểm tra 
 
 ## Bộ sưu tập
 
-`GalleryManager` ở trang cài đặt nhận kéo thả hoặc chọn nhiều tệp, tải lần lượt từng tệp qua `/media/upload` rồi gắn vào tổ chức. Tệp 50 MB vượt giới hạn của Server Action nên phải đi qua route này. Route chỉ nhận yêu cầu cùng origin và token vẫn nằm trong cookie. `/media/[id]/file` chuyển tiếp header `Range` để tua được video. `OrganizationGallery` hiển thị ở trang giới thiệu. Form tạo cũng có `CreateGalleryField`: chọn ảnh hoặc video tải lên trước, mỗi tệp thành một `<input type="hidden" name="gallery_asset_id">`, và action gửi chúng thành `gallery_asset_ids` cùng lúc với logo và ảnh bìa. Khi đang tải lên, nút tạo tổ chức chưa bị chặn, nên người dùng nên đợi xong rồi mới bấm. `PictureField` (logo, ảnh bìa) cũng nhận kéo thả, mỗi ô một ảnh.
+`GalleryManager` ở trang cài đặt nhận kéo thả hoặc chọn nhiều tệp, tải lần lượt từng tệp qua `/media/upload` rồi gắn vào tổ chức. Tệp 50 MB vượt giới hạn của Server Action nên phải đi qua route này. Route chỉ nhận yêu cầu cùng origin và token vẫn nằm trong cookie. `/media/[id]/file` chuyển tiếp header `Range` để tua được video. `OrganizationGallery` hiển thị ở trang giới thiệu. Form tạo cũng có `CreateGalleryField`: chọn ảnh hoặc video tải lên trước, mỗi tệp thành một `<input type="hidden" name="gallery_asset_id">`, và action gửi chúng thành `gallery_asset_ids` cùng lúc với logo và ảnh bìa. Khi đang tải lên, nút tạo tổ chức chưa bị chặn, nên người dùng nên đợi xong rồi mới bấm. `PicturePicker` (logo, ảnh bìa) cũng nhận kéo thả nhiều ảnh.
 
 Nút xóa một ảnh trong bộ sưu tập mở hộp thoại xác nhận, vì gỡ khỏi bộ sưu tập không hoàn tác được trên giao diện. Tệp vẫn còn trong kho cho đến khi script dọn dẹp chạy, nhưng không có nút nào để đưa lại. Hộp thoại là `ConfirmDialog` trong `src/app/_components/ConfirmDialog.tsx`, dùng thẻ `<dialog>` gốc của trình duyệt. Nút xác nhận màu đỏ, chỉ dùng cho thao tác không hoàn tác được.
 

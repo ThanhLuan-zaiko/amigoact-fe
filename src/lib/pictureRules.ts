@@ -1,7 +1,8 @@
 // Rules for uploaded pictures. Shared by the form (client) and the picture route (server).
-// They mirror the backend: JPEG, PNG or WEBP, at most 5 MB, sent as a UUIDv7 asset id.
+// They mirror the backend: JPEG, PNG or WEBP, at most 20 MB, sent as a UUIDv7 asset id.
 
-export const PICTURE_MAX_BYTES = 5 * 1024 * 1024;
+export const PICTURE_MAX_MB = 20;
+export const PICTURE_MAX_BYTES = PICTURE_MAX_MB * 1024 * 1024;
 
 export const PICTURE_ACCEPT = "image/jpeg,image/png,image/webp";
 
@@ -37,5 +38,7 @@ export function galleryFileError(file: {
   if (isVideo(file.type)) {
     return file.size > VIDEO_MAX_BYTES ? "Video tối đa 50 MB." : null;
   }
-  return isPictureTooLarge(file.size) ? "Ảnh tối đa 5 MB." : null;
+  return isPictureTooLarge(file.size)
+    ? `Ảnh tối đa ${PICTURE_MAX_MB} MB.`
+    : null;
 }

@@ -12,7 +12,7 @@ Tài liệu này mô tả giao diện phần hoạt động. Quy tắc nghiệp 
 | `/activities/[id]/edit` | Sửa hoạt động, form hai cột từ xl, các ca nằm bên dưới | Ban quản trị |
 | `/activities/[id]/registrations` | Người đăng ký, lọc theo trạng thái (cột trái từ xl), duyệt và từ chối | Ban quản trị |
 | `/organizations/[slug]/activities` | Hoạt động của tổ chức. Từ 2xl hiện ba cột | Mọi người. Ban quản trị thấy thêm bản nháp |
-| `/organizations/[slug]/activities/new` | Tạo bản nháp, form hai cột từ xl | Ban quản trị |
+| `/organizations/[slug]/activities/new` | Tạo hoạt động, form hai cột từ xl. "Đăng ngay" tạo rồi đăng luôn, "Lưu nháp" chỉ lưu. Bắt buộc: tên, mô tả, bắt đầu, kết thúc, giờ tình nguyện, thành phố, và địa điểm nếu không trực tuyến | Ban quản trị |
 
 Ô tìm kiếm trên header dẫn tới `/explore`.
 

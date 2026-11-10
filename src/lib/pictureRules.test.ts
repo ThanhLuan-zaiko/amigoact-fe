@@ -20,7 +20,7 @@ describe("isPictureId", () => {
 });
 
 describe("isPictureTooLarge", () => {
-  test("allows a picture of exactly 5 MB", () => {
+  test("allows a picture of exactly 20 MB", () => {
     expect(isPictureTooLarge(PICTURE_MAX_BYTES)).toBe(false);
   });
 

@@ -60,6 +60,10 @@ These rules set the defaults for every screen. If one of them gets in the way of
 - `authedFetch` in `src/lib/auth.ts` is the only way Server Actions call the backend with a token.
 - Activities are described in `docs/activities.md`. `datetime-local` inputs mean Vietnam time: convert them with `toLocalInput` and `fromLocalInput` from `src/lib/activities.ts`.
 
+## Posts
+
+- Details are in `docs/posts.md`. `/compose` is a protected route. Its form fields are named `post_title`, `post_body`, and `post_tags`.
+
 ## Attendance
 
 - Details are in `docs/attendance.md`. The QR is drawn on the server with `qrcode`. Set `APP_URL` so the QR opens on a phone.

@@ -1,6 +1,11 @@
+import type { ReactNode } from "react";
 import { FiGlobe, FiLock, FiMessageCircle } from "react-icons/fi";
+import PostBody from "./PostBody";
 import type { Post } from "./types";
 import { mutedText, panel, tagChip } from "./ui";
+
+const MEDIA =
+  "aspect-video w-full rounded-md border border-slate-200 object-cover dark:border-slate-800";
 
 const kindLabel: Record<Post["kind"], string> = {
   announcement: "Thông báo",
@@ -14,9 +19,11 @@ const visibilityLabel: Record<Post["visibility"], string> = {
 
 type PostCardProps = {
   post: Post;
+  // Extra controls under the post, such as publishing a draft.
+  actions?: ReactNode;
 };
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, actions }: PostCardProps) {
   const isAnnouncement = post.kind === "announcement";
   const VisibilityIcon = post.visibility === "public" ? FiGlobe : FiLock;
 
@@ -50,9 +57,27 @@ export default function PostCard({ post }: PostCardProps) {
       </header>
 
       <h2 className="text-lg leading-snug font-bold">{post.title}</h2>
-      <p className="text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">
-        {post.body}
-      </p>
+      <PostBody body={post.body} />
+      {post.media && post.media.length > 0 ? (
+        <ul className="grid grid-cols-2 gap-2">
+          {post.media.map(({ src, isVideo }) => (
+            <li key={src}>
+              {isVideo ? (
+                // biome-ignore lint/a11y/useMediaCaption: uploads come without captions.
+                <video
+                  src={src}
+                  controls
+                  preload="metadata"
+                  className={MEDIA}
+                />
+              ) : (
+                // biome-ignore lint/performance/noImgElement: served by the media route.
+                <img src={src} alt="" loading="lazy" className={MEDIA} />
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       <footer className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
         {post.tags.map((tag) => (
@@ -65,6 +90,7 @@ export default function PostCard({ post }: PostCardProps) {
           {post.commentCount} bình luận
         </span>
       </footer>
+      {actions}
     </article>
   );
 }

@@ -48,7 +48,14 @@ function validateForm(form: HTMLFormElement): FieldErrors {
 // The action prop stays so the form still works before JavaScript loads.
 export function useAccountForm(
   serverAction: ServerAction,
-  { resetOnSuccess = true } = {},
+  {
+    resetOnSuccess = true,
+    validate,
+  }: {
+    resetOnSuccess?: boolean;
+    // Extra checks for fields the generic rules do not know, such as textareas.
+    validate?: (form: HTMLFormElement) => FieldErrors;
+  } = {},
 ) {
   const [serverState, action, pending] = useActionState(serverAction, {});
   const ref = useRef<HTMLFormElement>(null);
@@ -79,13 +86,18 @@ export function useAccountForm(
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const errors = validateForm(form);
+    const errors = { ...validateForm(form), ...validate?.(form) };
     if (Object.keys(errors).length > 0) {
       setClientErrors(errors);
       return;
     }
     setClientErrors(null);
-    const formData = new FormData(form);
+    // The submitter carries which button was pressed, such as save draft or publish.
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const formData = new FormData(
+      form,
+      submitter instanceof HTMLElement ? submitter : undefined,
+    );
     startTransition(() => action(formData));
   }
 

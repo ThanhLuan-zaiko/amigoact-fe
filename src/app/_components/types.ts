@@ -16,4 +16,5 @@ export type Post = {
   tags: string[];
   commentCount: number;
   pinned?: boolean;
+  media?: { src: string; isVideo: boolean }[];
 };

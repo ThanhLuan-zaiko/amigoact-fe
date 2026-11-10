@@ -20,7 +20,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   password_personal:
     "Mật khẩu không được chứa tên hoặc phần tên trong email của bạn.",
   file_empty: "Hãy chọn một ảnh để tải lên.",
-  file_too_large: "Ảnh tối đa 5 MB. Hãy chọn ảnh nhỏ hơn.",
+  file_too_large: "Ảnh tối đa 20 MB. Hãy chọn ảnh nhỏ hơn.",
   unsupported_media_type: "Ảnh phải là JPEG, PNG hoặc WEBP.",
   video_too_large: "Video tối đa 50 MB. Hãy chọn video nhỏ hơn.",
   gallery_full: "Bộ sưu tập tối đa 10 tệp. Hãy gỡ bớt trước khi thêm.",
@@ -83,6 +83,9 @@ const ERROR_MESSAGES: Record<string, string> = {
   appeal_already_pending: "Bạn đã có một khiếu nại đang chờ xử lý.",
   appeal_not_found: "Không tìm thấy khiếu nại này.",
   appeal_not_pending: "Khiếu nại này đã được xử lý.",
+  post_forbidden: "Bạn không có quyền đăng loại bài này trong tổ chức đã chọn.",
+  post_not_found: "Không tìm thấy bài viết này.",
+  post_not_draft: "Bài này đã được đăng rồi.",
 };
 
 const PASSWORD_COMMON =
@@ -117,6 +120,10 @@ const ISSUE_MESSAGES: Record<string, string> = {
   delta_zero: FIELD_MESSAGES.deltaHours,
   checkin_input_required: FIELD_MESSAGES.checkInCode,
   registration_required: "Hãy chọn ca cần xác nhận.",
+  too_many_tags: "Mỗi bài có tối đa 3 thẻ.",
+  tag_invalid: "Thẻ cần có ít nhất một chữ hoặc số.",
+  members_post_has_no_media:
+    "Bài chỉ dành cho thành viên không có ảnh hoặc video.",
 };
 
 // Used when the issue type is generic, such as a value that is too short.
@@ -156,6 +163,10 @@ const FIELD_FALLBACKS: Record<string, string> = {
   delta_hours: FIELD_MESSAGES.deltaHours,
   multiplier: FIELD_MESSAGES.multiplier,
   cap_hours: FIELD_MESSAGES.capHours,
+  org_slug: "Hãy chọn tổ chức để đăng bài.",
+  post_title: "Tiêu đề cần từ 1 đến 160 ký tự.",
+  post_body: "Nội dung cần từ 1 đến 5000 ký tự.",
+  post_tags: "Mỗi thẻ tối đa 40 ký tự.",
   minutes: "Thời lượng từ 5 đến 1440 phút.",
 };
 

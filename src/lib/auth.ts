@@ -46,7 +46,8 @@ export async function requireUser(next: string): Promise<User> {
 }
 
 type AuthedOptions = {
-  method?: "POST" | "PUT" | "PATCH" | "DELETE";
+  // GET is for Server Actions that read, such as the chat polling fallback.
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   form?: FormData;
 };

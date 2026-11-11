@@ -86,6 +86,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   post_forbidden: "Bạn không có quyền đăng loại bài này trong tổ chức đã chọn.",
   post_not_found: "Không tìm thấy bài viết này.",
   post_not_draft: "Bài này đã được đăng rồi.",
+  post_not_published: "Bài này chưa được đăng.",
+  post_not_in_trash: "Bài này không còn trong thùng rác.",
+  comment_forbidden: "Bạn không có quyền với bình luận này.",
+  comment_not_found: "Không tìm thấy bình luận này.",
+  comment_edit_expired: "Chỉ sửa được bình luận trong 15 phút sau khi viết.",
+  comment_not_deleted: "Bình luận này chưa bị xóa.",
 };
 
 const PASSWORD_COMMON =
@@ -124,7 +130,12 @@ const ISSUE_MESSAGES: Record<string, string> = {
   tag_invalid: "Thẻ cần có ít nhất một chữ hoặc số.",
   members_post_has_no_media:
     "Bài chỉ dành cho thành viên không có ảnh hoặc video.",
+  text_needs_letter: FIELD_MESSAGES.needsLetter,
+  bool_type: "Giá trị không hợp lệ. Vui lòng chọn lại.",
 };
+
+// A number of the wrong shape. The field message says the range, so it wins when present.
+const NUMBER_ISSUES = new Set(["int_type", "float_type", "number_invalid"]);
 
 // Used when the issue type is generic, such as a value that is too short.
 const FIELD_FALLBACKS: Record<string, string> = {
@@ -208,7 +219,9 @@ export function failureState(
   }
   const fieldErrors: FieldErrors = {};
   for (const { field, type } of issues) {
-    const message = ISSUE_MESSAGES[type] ?? FIELD_FALLBACKS[field];
+    const message = NUMBER_ISSUES.has(type)
+      ? (FIELD_FALLBACKS[field] ?? FIELD_MESSAGES.number)
+      : (ISSUE_MESSAGES[type] ?? FIELD_FALLBACKS[field]);
     if (!message) {
       return { error: errorMessage(code) };
     }

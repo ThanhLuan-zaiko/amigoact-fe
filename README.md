@@ -58,6 +58,8 @@ Tài liệu chi tiết nằm trong thư mục [`docs/`](docs):
 - [Tổ chức và thành viên](docs/organizations.md): các trang, luồng dữ liệu và kiểm tra dữ liệu.
 - [Hoạt động và đăng ký](docs/activities.md): các trang, giờ Việt Nam và thành phần.
 - [Điểm danh và giờ tình nguyện](docs/attendance.md): các trang, mã QR và `APP_URL`.
+- [Chứng nhận](docs/certificates.md): mẫu, cấp và thu hồi, xác minh công khai.
+- [Chat](docs/chat.md): phòng, tin nhắn, vé WebSocket và polling dự phòng.
 
 ## Cấu trúc thư mục
 

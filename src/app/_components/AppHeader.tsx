@@ -3,12 +3,13 @@ import { Suspense } from "react";
 import { FiBell, FiPlus } from "react-icons/fi";
 import HeaderAccount from "./account/HeaderAccount";
 import { HeaderSearchForm, HeaderSearchLink } from "./HeaderSearch";
+import ComposeMenu from "./posts/ComposeMenu";
 import ThemeToggle from "./ThemeToggle";
 import { iconButton, primaryButton } from "./ui";
 
 export default function AppHeader() {
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-4 sm:px-6 md:gap-6 dark:border-slate-800 dark:bg-slate-950">
+    <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-4 sm:px-6 md:gap-6 dark:border-slate-800 dark:bg-slate-950 print:hidden">
       <Link
         href="/"
         className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100"
@@ -34,10 +35,20 @@ export default function AppHeader() {
         <Suspense fallback={null}>
           <HeaderSearchLink />
         </Suspense>
-        <Link href="/compose" aria-label="Tạo bài" className={primaryButton}>
-          <FiPlus aria-hidden="true" />
-          <span className="hidden sm:inline">Tạo bài</span>
-        </Link>
+        <Suspense
+          fallback={
+            <Link
+              href="/compose"
+              aria-label="Tạo bài"
+              className={primaryButton}
+            >
+              <FiPlus aria-hidden="true" />
+              <span className="hidden sm:inline">Tạo bài</span>
+            </Link>
+          }
+        >
+          <ComposeMenu />
+        </Suspense>
         <ThemeToggle />
         <div className="hidden sm:block">
           <button type="button" aria-label="Thông báo" className={iconButton}>

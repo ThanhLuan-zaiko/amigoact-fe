@@ -25,6 +25,7 @@ export default function HourRuleForm({ slug, rule }: HourRuleFormProps) {
         <TextField
           label="Hệ số"
           name="multiplier"
+          numeric="decimal"
           defaultValue={String(rule.multiplier)}
           hint="Nhân với số giờ của mỗi hoạt động"
           errors={state.fieldErrors}
@@ -33,6 +34,7 @@ export default function HourRuleForm({ slug, rule }: HourRuleFormProps) {
         <TextField
           label="Giới hạn giờ mỗi kỳ"
           name="cap_hours"
+          numeric="decimal"
           defaultValue={rule.cap_hours?.toString()}
           hint="Mỗi người, mỗi nửa năm. Bỏ trống nếu không giới hạn"
           errors={state.fieldErrors}

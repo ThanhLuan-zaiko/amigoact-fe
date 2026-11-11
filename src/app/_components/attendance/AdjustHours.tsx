@@ -30,6 +30,7 @@ function AdjustForm({
       <TextField
         label="Số giờ thay đổi"
         name="delta_hours"
+        numeric="signed-decimal"
         hint="Ví dụ 1.5 hoặc -2"
         errors={state.fieldErrors}
         required

@@ -57,6 +57,7 @@ function ShiftForm({
         <TextField
           label="Số chỗ"
           name="capacity"
+          numeric="integer"
           defaultValue={shift?.capacity?.toString()}
           errors={errors}
           required

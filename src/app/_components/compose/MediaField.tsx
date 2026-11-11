@@ -49,8 +49,17 @@ function fileError(file: File): string | null {
 
 // Each file uploads at once and travels with the form as a hidden asset id.
 // The inputs are opened from the toolbar, so they have no visible control.
-export default function MediaField({ error }: { error?: string }) {
-  const [items, setItems] = useState<Item[]>([]);
+// The edit form passes the files a post already has. They are served by the media route.
+export default function MediaField({
+  error,
+  initial = [],
+}: {
+  error?: string;
+  initial?: { id: string; mime: string }[];
+}) {
+  const [items, setItems] = useState<Item[]>(() =>
+    initial.map(({ id, mime }) => ({ id, mime, preview: `/media/${id}/file` })),
+  );
   const [busy, setBusy] = useState(false);
   const [failures, setFailures] = useState<string[]>([]);
   const full = items.length >= POST_MEDIA_LIMIT;
@@ -80,7 +89,9 @@ export default function MediaField({ error }: { error?: string }) {
   }
 
   function remove(item: Item) {
-    URL.revokeObjectURL(item.preview);
+    if (item.preview.startsWith("blob:")) {
+      URL.revokeObjectURL(item.preview);
+    }
     setItems((current) => current.filter((entry) => entry.id !== item.id));
   }
 

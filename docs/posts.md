@@ -1,29 +1,65 @@
-# Đăng bài
+# Bài viết
 
-Trang `/compose` cho người đăng nhập tạo bài viết hoặc lưu nháp. Backend mô tả ở `amigoact-be/docs/posts.md`.
+Bài viết nằm trong từng tổ chức, giống hoạt động. Backend mô tả ở `amigoact-be/docs/posts.md`.
 
-## Quyền vào trang
+## Các trang
 
-- `src/proxy.ts` chuyển khách chưa đăng nhập sang `/login?next=/compose`.
-- `src/app/(app)/compose/page.tsx` gọi `requireUser("/compose")` sau Suspense, nên trang vẫn an toàn khi proxy bị bỏ qua.
+Các trang nằm trong `src/app/(app)/organizations/[slug]/posts/`.
 
-## Form
+| Đường dẫn | Nội dung | Ai xem được |
+| ---- | ---- | ---- |
+| `/organizations/[slug]/posts` | Bảng tin của tổ chức, lọc Tất cả, Thông báo, Thảo luận, Đã ghim (`?filter=`), trang tiếp bằng `?before=`. Từ xl hiện hai cột | Mọi người, theo quyền xem |
+| `/organizations/[slug]/posts/new` | Tạo bài, thay cho `/compose` cũ | Thành viên đang hoạt động |
+| `/organizations/[slug]/posts/[postId]` | Chi tiết bài, nút sửa, ghim, xóa và bình luận | Theo quyền xem |
+| `/organizations/[slug]/posts/[postId]/edit` | Sửa bài hoặc bản nháp | Tác giả |
+| `/organizations/[slug]/posts/drafts` | Bản nháp của tôi trong tổ chức này | Đã đăng nhập |
+| `/organizations/[slug]/posts/trash` | Thùng rác bài viết | Ban quản trị |
+| `/drafts` | Bản nháp ở mọi tổ chức | Đã đăng nhập |
+| `/compose` | Chỉ chuyển hướng: có đúng một tổ chức đăng được thì mở form của tổ chức đó, còn lại về `/organizations` | Đã đăng nhập |
 
-- `ComposeForm` là client component dùng `useAccountForm`, nên nội dung đã gõ không mất khi server từ chối.
-- Ô "Đăng dưới" chỉ liệt kê tổ chức mà người dùng là thành viên đang hoạt động. Với loại "Thông báo", chỉ còn tổ chức mà họ là chủ sở hữu hoặc quản trị viên (`postableOrganizations` trong `src/lib/posts.ts`).
-- Tên ô nhập là `post_title`, `post_body`, `post_tags`, vì `title` đã có quy tắc riêng của hoạt động. `renameIssueField` đổi tên trường lỗi từ backend về các tên này.
-- Thẻ nhập cách nhau bằng dấu phẩy, tối đa 3 thẻ, mỗi thẻ tối đa 40 ký tự.
-- Hai nút gửi cùng form: `intent=draft` (lưu nháp) và `intent=publish` (đăng bài).
+- Tab "Bảng tin" nằm ngay sau "Giới thiệu" trong `OrgNav`.
+- Nút "Tạo bài" trên header (`ComposeMenu`) liệt kê các tổ chức bạn đăng bài được. Chỉ có một thì mở thẳng form, chưa có thì dẫn tới `/organizations`.
+- `src/lib/protectedPaths.ts` liệt kê các trang cần đăng nhập. `proxy.ts` dùng nó để chuyển khách sang `/login`. Bảng tin và bài công khai vẫn mở cho khách. Mỗi trang vẫn tự gọi `requireUser`.
+- Trang chi tiết kiểm tra `postId` là UUIDv7 (`isPostId`) và bài thuộc đúng tổ chức trên đường dẫn, sai thì trả 404.
 
-## Lỗi
+## Form bài viết
 
-- Trình duyệt kiểm tra trước bằng `validatePost`, hiện chữ đỏ dưới từng ô.
-- Backend kiểm tra lại. Mã lỗi `too_many_tags`, `tag_invalid`, `members_post_has_no_media`, `post_forbidden` được dịch trong `src/lib/forms.ts`.
+- `PostForm` (`src/app/_components/posts/PostForm.tsx`) dùng cho cả tạo và sửa. Tổ chức lấy từ đường dẫn: action được gắn sẵn bằng `createPost.bind(null, slug)`, nên form không còn ô "Đăng dưới".
+- Chip "Thông báo" chỉ hiện với ban quản trị (`postKinds`). Khi sửa, loại bài bị khóa vì backend không cho đổi.
+- Tên ô nhập là `post_title`, `post_body`, `post_tags`. `renameIssueField` đổi tên trường lỗi từ backend về các tên này.
+- Tạo bài có hai nút: lưu nháp (`intent=draft`) và đăng (`intent=publish`). Sửa bản nháp cũng có hai nút đó. Sửa bài đã đăng chỉ có "Lưu thay đổi".
+- Đăng xong thì chuyển tới trang chi tiết của bài.
 
-## Sau khi gửi
+## Xóa mềm và xóa cứng
 
-- Đăng bài: chuyển về trang chủ.
-- Lưu nháp: ở lại trang, hiện thông báo thành công và xóa form.
+| Đối tượng | Nút | Kết quả |
+| ---- | ---- | ---- |
+| Bản nháp | Thùng rác trên bản nháp, có hộp xác nhận | Xóa cứng, không khôi phục được |
+| Bài đã đăng | Thùng rác trên trang chi tiết, có hộp xác nhận | Vào thùng rác 30 ngày |
+| Bài trong thùng rác | "Khôi phục" | Quay lại bảng tin |
+| Bài trong thùng rác | "Xóa vĩnh viễn", chỉ chủ sở hữu thấy | Hộp xác nhận khóa nút cho tới khi gõ lại đúng tiêu đề (`purgeConfirmed`) |
+| Bình luận | Thùng rác, bấm xác nhận lần hai | Xóa mềm: hiện "Bình luận đã bị xóa." |
+| Bình luận đã xóa | "Khôi phục", chỉ ban quản trị thấy | Hiện lại nội dung |
+
+`ConfirmAction` là nút icon mở `ConfirmDialog` rồi chạy Server Action. Truyền `typeToConfirm` để bắt gõ lại một chuỗi trước khi mở khóa nút.
+
+## Bình luận
+
+- `CommentSection` đọc bình luận trên server. `CommentItem` hiện từng bình luận với nút sửa, xóa, khôi phục theo cờ `can_edit`, `can_delete`, `can_restore` của backend.
+- Sửa bình luận ngay tại chỗ bằng `CommentForm`. Backend chỉ cho sửa trong 15 phút sau khi viết.
+- Ô nhập tên là `comment_body`, 1 đến 1000 ký tự (`validateComment`).
+- Server Action nằm trong `src/app/_actions/comments.ts`.
+
+## Kiểm tra dữ liệu
+
+- Trình duyệt kiểm tra trước bằng `validatePost`: tiêu đề 1 đến 160 ký tự và phải có ít nhất một chữ cái (`hasLetter`), nên "2024" bị từ chối. Nội dung tối đa 5000 ký tự, tối đa 3 thẻ.
+- Backend kiểm tra lại. Các mã `text_needs_letter`, `bool_type`, `post_not_in_trash`, `comment_edit_expired`, `comment_not_deleted` được dịch trong `src/lib/forms.ts`.
+
+## Trang chủ
+
+- `/` đọc `GET /feed` (tab "Dành cho bạn") hoặc `GET /feed/public` (tab "Công khai") theo `?tab=`. Khách luôn thấy tab công khai.
+- Mục "Thẻ phổ biến" lấy từ `GET /feed/popular-tags`.
+- Tiêu đề bài trên thẻ dẫn tới trang chi tiết. Tên tổ chức dẫn tới trang tổ chức.
 
 ## Định dạng nội dung
 
@@ -41,16 +77,11 @@ Bấm lại nút lên các dòng đã có dấu thì gỡ dấu. Code ở `src/l
 ## Ảnh và video
 
 - Nút "Ảnh" và "Video" mở hộp chọn tệp. Mỗi tệp tải lên ngay qua `/media/upload` và đi kèm form dưới dạng `media_id`. Ảnh JPEG, PNG, WEBP tối đa 20 MB, video MP4, WEBM tối đa 50 MB, tổng cộng tối đa 10 tệp mỗi bài.
+- Khi sửa bài, `MediaField` hiện sẵn các tệp bài đang có. Gỡ một tệp rồi lưu thì backend thay cả danh sách.
 - Backend không cho bài chỉ dành cho thành viên có ảnh hoặc video. Thảo luận mặc định là chỉ thành viên, nên muốn có tệp phải chọn "Công khai". Form báo lỗi đỏ trước khi gửi (`effectiveVisibility`).
 - Tệp của bản nháp còn riêng tư. `/media/[id]/file` gửi kèm token của người xem, nên tác giả xem được tệp nháp của mình, người khác nhận 404. Route chuyển tiếp cả `Range` để video tua được.
-- `PostCard` hiển thị ảnh bằng `<img>` và video bằng `<video controls>`.
-
-## Bản nháp
-
-- `/drafts` (cần đăng nhập) liệt kê bản nháp của bạn ở mọi tổ chức bạn là thành viên đang hoạt động, mới nhất trước (`getMyDrafts`).
-- Nút "Đăng bài" trên mỗi bản nháp gọi `POST /posts/{id}/publish` rồi chuyển về trang chủ. Mục "Bản nháp" nằm ở thanh bên.
 
 ## Chưa làm
 
-- Sửa và xóa bản nháp, vì giao diện chưa có.
-- Bảng tin trang chủ vẫn chưa nối backend, nên bài đã đăng chưa hiện ở đó.
+- Tab "Đang theo dõi" ở trang chủ, vì backend chưa có việc theo dõi tổ chức.
+- Lọc bảng tin theo thẻ.

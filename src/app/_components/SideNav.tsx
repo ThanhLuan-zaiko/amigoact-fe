@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import type { IconType } from "react-icons";
 import {
+  FiAward,
   FiCalendar,
   FiClock,
   FiCompass,
@@ -28,6 +29,7 @@ const navItems: NavItem[] = [
   { label: "Khám phá", href: "/explore", icon: FiCompass },
   { label: "Hoạt động", href: "/activities", icon: FiCalendar },
   { label: "Giờ tình nguyện", href: "/hours", icon: FiClock },
+  { label: "Chứng nhận", href: "/certificates", icon: FiAward },
   { label: "Tổ chức của tôi", href: "/organizations", icon: FiUsers },
   { label: "Tin nhắn", href: "/messages", icon: FiMessageSquare },
   { label: "Bản nháp", href: "/drafts", icon: FiFileText },

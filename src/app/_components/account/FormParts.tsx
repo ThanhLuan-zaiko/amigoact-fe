@@ -35,10 +35,20 @@ export function FieldNotes({
   );
 }
 
+// Number inputs refuse letters as they are typed. The form and the backend check again.
+export type NumericKind = "integer" | "decimal" | "signed-decimal";
+
+const NUMERIC_INPUT: Record<NumericKind, RegExp> = {
+  integer: /^[0-9]+$/,
+  decimal: /^[0-9.]+$/,
+  "signed-decimal": /^[0-9.-]+$/,
+};
+
 type TextFieldProps = {
   label: string;
   name: string;
   type?: string;
+  numeric?: NumericKind;
   required?: boolean;
   defaultValue?: string | null;
   autoComplete?: string;
@@ -59,9 +69,11 @@ export function TextField({
   maxLength,
   hint,
   errors,
+  numeric,
 }: TextFieldProps) {
   const errorId = useId();
   const error = errors?.[name];
+  const allowed = numeric ? NUMERIC_INPUT[numeric] : null;
   return (
     <label className="flex flex-col gap-1">
       <span className={fieldLabel}>
@@ -76,6 +88,19 @@ export function TextField({
         autoComplete={autoComplete}
         minLength={minLength}
         maxLength={maxLength}
+        inputMode={
+          numeric === "integer" ? "numeric" : numeric ? "decimal" : undefined
+        }
+        onBeforeInput={
+          allowed
+            ? (event) => {
+                const typed = (event.nativeEvent as InputEvent).data;
+                if (typed && !allowed.test(typed)) {
+                  event.preventDefault();
+                }
+              }
+            : undefined
+        }
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         className={error ? inputFieldInvalid : inputField}

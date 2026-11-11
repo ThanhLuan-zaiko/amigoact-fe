@@ -21,7 +21,7 @@ async function DraftsContent() {
       />
     );
   }
-  return <DraftList posts={drafts} />;
+  return <DraftList posts={drafts} back="/drafts" />;
 }
 
 export default function DraftsPage() {

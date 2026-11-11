@@ -2,18 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import type { TokenPair } from "./lib/account";
 import { ACCESS_COOKIE, REFRESH_COOKIE, tokenCookies } from "./lib/authCookies";
-
-function isProtected(pathname: string): boolean {
-  return (
-    pathname === "/account" ||
-    pathname.startsWith("/account/") ||
-    pathname === "/organizations/new" ||
-    pathname === "/compose" ||
-    pathname === "/drafts" ||
-    pathname === "/activities" ||
-    pathname === "/hours"
-  );
-}
+import { isProtected } from "./lib/protectedPaths";
 
 function redirectToLogin(request: NextRequest): NextResponse {
   const url = new URL("/login", request.url);

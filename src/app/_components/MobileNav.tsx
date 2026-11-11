@@ -31,7 +31,7 @@ export default function MobileNav() {
   return (
     <nav
       aria-label="Điều hướng nhanh"
-      className="fixed inset-x-0 bottom-0 z-10 flex h-14 items-center justify-around border-t border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-950"
+      className="fixed inset-x-0 bottom-0 z-10 flex h-14 items-center justify-around border-t border-slate-200 bg-white md:hidden dark:border-slate-800 dark:bg-slate-950 print:hidden"
     >
       {mobileItems.map(({ label, href, icon: Icon }) => {
         const active = isActivePath(pathname, href);

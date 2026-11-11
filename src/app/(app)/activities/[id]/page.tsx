@@ -18,6 +18,7 @@ import {
 import { getActivity } from "@/lib/activityApi";
 import ManageActions from "../../../_components/activities/ManageActions";
 import RegisterControls from "../../../_components/activities/RegisterControls";
+import CertificatePanel from "../../../_components/certificates/CertificatePanel";
 import IconStat from "../../../_components/IconStat";
 import { mutedText, panel, tagChip } from "../../../_components/ui";
 
@@ -102,6 +103,14 @@ async function ActivityContent({
         <RegisterControls activity={activity} />
         {activity.viewer.can_manage ? (
           <ManageActions activity={activity} />
+        ) : null}
+        {activity.viewer.can_manage && activity.status === "completed" ? (
+          <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
+            <CertificatePanel
+              activityId={activity.id}
+              organizationSlug={activity.organization_slug}
+            />
+          </Suspense>
         ) : null}
       </div>
     </div>

@@ -27,7 +27,13 @@ const FORMATS: { label: string; icon: IconType; action: FormatAction }[] = [
 const toolbarButton =
   "inline-flex h-9 w-10 items-center justify-center border-r border-slate-200 text-sm text-slate-700 transition-colors last:border-r-0 hover:text-teal-700 focus-visible:outline-2 focus-visible:outline-teal-700 disabled:opacity-50 disabled:hover:text-slate-700 dark:border-slate-800 dark:text-slate-300 dark:hover:text-teal-400 dark:focus-visible:outline-teal-400";
 
-export default function BodyField({ error }: { error?: string }) {
+export default function BodyField({
+  error,
+  defaultValue,
+}: {
+  error?: string;
+  defaultValue?: string;
+}) {
   const errorId = useId();
   const areaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -93,6 +99,7 @@ export default function BodyField({ error }: { error?: string }) {
       <textarea
         ref={areaRef}
         name="post_body"
+        defaultValue={defaultValue}
         rows={8}
         maxLength={5000}
         placeholder="Nội dung bài viết…"

@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  FiAward,
   FiCalendar,
   FiInbox,
   FiInfo,
+  FiMessageCircle,
+  FiMessageSquare,
   FiSettings,
   FiUsers,
 } from "react-icons/fi";
@@ -23,10 +26,22 @@ export default function OrgNav({ slug, viewer }: OrgNavProps) {
   const items = [
     { href: base, label: "Giới thiệu", icon: FiInfo, visible: true },
     {
+      href: `${base}/posts`,
+      label: "Bảng tin",
+      icon: FiMessageSquare,
+      visible: true,
+    },
+    {
       href: `${base}/activities`,
       label: "Hoạt động",
       icon: FiCalendar,
       visible: true,
+    },
+    {
+      href: `${base}/chat`,
+      label: "Chat",
+      icon: FiMessageCircle,
+      visible: viewer.status === "active",
     },
     {
       href: `${base}/members`,
@@ -38,6 +53,12 @@ export default function OrgNav({ slug, viewer }: OrgNavProps) {
       href: `${base}/applications`,
       label: "Yêu cầu",
       icon: FiInbox,
+      visible: viewer.can_manage,
+    },
+    {
+      href: `${base}/certificates`,
+      label: "Chứng nhận",
+      icon: FiAward,
       visible: viewer.can_manage,
     },
     {

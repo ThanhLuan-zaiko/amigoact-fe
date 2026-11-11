@@ -61,16 +61,30 @@ export function isValidOrganizationName(value: string): boolean {
   return name.length >= 2 && name.length <= 120 && /[\p{L}\p{N}]/u.test(name);
 }
 
+// Digits only: no sign, no dot, no exponent, no spaces. "1e3" and " 5" are refused.
+export function isPlainInteger(value: string): boolean {
+  return /^[0-9]+$/.test(value);
+}
+
+// A plain decimal such as 2 or 2.5. The backend refuses "1e3", "NaN" and ".5" too.
+export function isPlainDecimal(value: string): boolean {
+  return /^-?[0-9]+(\.[0-9]+)?$/.test(value);
+}
+
+// Titles need a real letter, so "2024" or "!!!" is not a title. Same rule as the backend.
+export function hasLetter(value: string): boolean {
+  return /\p{L}/u.test(value);
+}
+
 function isValidActivityTitle(value: string): boolean {
   const title = value.trim();
-  return (
-    title.length >= 3 && title.length <= 200 && /[\p{L}\p{N}]/u.test(title)
-  );
+  return title.length >= 3 && title.length <= 200 && hasLetter(title);
 }
 
 function isValidCapacity(value: string): boolean {
-  const capacity = Number(value);
-  return Number.isInteger(capacity) && capacity >= 1 && capacity <= 100000;
+  const text = value.trim();
+  const capacity = Number(text);
+  return isPlainInteger(text) && capacity >= 1 && capacity <= 100000;
 }
 
 function isValidHours(value: string): boolean {
@@ -106,12 +120,16 @@ export const FIELD_MESSAGES = {
   deltaHours: "Số giờ thay đổi khác 0, từ -1000 đến 1000, tối đa 2 số lẻ.",
   multiplier: "Hệ số từ 0.1 đến 10, tối đa 3 số lẻ.",
   capHours: "Giới hạn giờ lớn hơn 0 và tối đa 9999.",
-  activityTitle: "Tên hoạt động cần từ 3 đến 200 ký tự, có chữ hoặc số.",
-  capacity: "Số chỗ là số nguyên từ 1 đến 100000.",
+  activityTitle:
+    "Tên hoạt động cần từ 3 đến 200 ký tự, có ít nhất một chữ cái.",
+  capacity: "Số chỗ chỉ gồm chữ số, từ 1 đến 100000.",
   hours: "Số giờ từ 0 đến 1000, tối đa 2 chữ số thập phân.",
   organizationName: "Tên tổ chức cần từ 2 đến 120 ký tự, có chữ hoặc số.",
   website: "Website cần có dạng https://ten-mien.vn.",
   required: "Vui lòng nhập thông tin này.",
+  number:
+    "Chỉ nhập số, ví dụ 12 hoặc 2.5. Không có chữ, dấu cách hay ký hiệu khác.",
+  needsLetter: "Cần có ít nhất một chữ cái, không chỉ gồm số hay ký hiệu.",
   email: "Email không đúng định dạng.",
   phone: "Số điện thoại không hợp lệ. Ví dụ: 0912345678 hoặc +84912345678.",
   taxCode: "Mã số thuế gồm 10 chữ số, hoặc 13 chữ số với chi nhánh.",

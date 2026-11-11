@@ -10,7 +10,8 @@ Các trang nằm trong `src/app/(app)/organizations/`.
 | ---- | ---- | ---- |
 | `/organizations` | Hai cột: tổ chức của tôi (chỉ tổ chức sở hữu) ở cột bên, danh bạ ở cột chính. Danh bạ gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ. Không sở hữu tổ chức nào thì chỉ còn một cột. Tổ chức đã xóa không hiện ở đây | Mọi người |
 | `/organizations/new` | Form tạo tổ chức, hai cột từ xl | Đã đăng nhập |
-| `/organizations/[slug]` | Giới thiệu và liên hệ bên trái, bộ sưu tập bên phải từ xl | Mọi người |
+| `/organizations/[slug]` | Tổng quan. Cột chính: giới thiệu, liên hệ và bài ghim (chưa ghim thì bài mới nhất). Cột phụ từ xl: hoạt động gần đây và bộ sưu tập (`OrgHighlights`) | Mọi người |
+| `/organizations/[slug]/posts` | Bảng tin của tổ chức, xem `posts.md` | Mọi người, theo quyền xem |
 | `/organizations/[slug]/members` | Thành viên, đổi vai trò, xóa thành viên. Từ xl hiện hai cột | Thành viên |
 | `/trash` | Thùng rác của chính mình, có nút khôi phục và xóa vĩnh viễn. Mục "Thùng rác" trong thanh bên trái trỏ tới đây. Trang trống hiện "Thùng rác trống" | Đã đăng nhập |
 | `/organizations/[slug]/applications` | Duyệt yêu cầu tham gia. Từ xl hiện hai cột | Ban quản trị |
@@ -49,6 +50,9 @@ Thanh mục trong header chỉ hiện những trang người xem được phép 
 Trình duyệt kiểm tra trước để phản hồi nhanh, backend kiểm tra lại toàn bộ.
 
 - `src/lib/validation.ts` kiểm tra tên tổ chức và website. Các trường khác dùng lại quy tắc của tài khoản.
+- Ô số dùng `TextField` với `numeric="integer"`, `"decimal"` hoặc `"signed-decimal"`: bàn phím điện thoại hiện bàn phím số, và ô chặn ngay ký tự không phải số khi gõ. Trước khi gửi, `isPlainInteger` và `isPlainDecimal` từ chối `1e3`, ` 5`, `0x10`.
+- `numberOrNull` chỉ đổi chuỗi số thường thành số. Chuỗi khác được gửi nguyên văn để backend từ chối rõ ràng (`int_type`, `number_invalid`), thay vì bị đọc sai thành một số khác.
+- Lỗi sai kiểu số hiện thông báo về khoảng giá trị của trường, nếu có, hoặc câu chung "Chỉ nhập số".
 - `src/lib/forms.ts` dịch mã lỗi của backend sang tiếng Việt và gắn lỗi vào đúng trường.
 - Khi thêm mã lỗi mới ở backend, hãy thêm bản dịch vào `ERROR_MESSAGES` hoặc `ISSUE_MESSAGES`.
 

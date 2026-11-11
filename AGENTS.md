@@ -62,11 +62,20 @@ These rules set the defaults for every screen. If one of them gets in the way of
 
 ## Posts
 
-- Details are in `docs/posts.md`. `/compose` is a protected route. Its form fields are named `post_title`, `post_body`, and `post_tags`.
+- Details are in `docs/posts.md`. Posts live inside an organization at `/organizations/[slug]/posts`, like activities. `/compose` only redirects there. Protected post pages are listed in `src/lib/protectedPaths.ts`.
+- The post form fields are named `post_title`, `post_body`, and `post_tags`. The comment field is `comment_body`.
+- A draft is deleted for good. A published post goes to the trash for 30 days. Only the owner purges, after typing the title again (`ConfirmAction` with `typeToConfirm`).
+- Number inputs use `TextField` with `numeric`, and `numberOrNull` sends anything but a plain number as typed, so the backend refuses it.
 
 ## Attendance
 
 - Details are in `docs/attendance.md`. The QR is drawn on the server with `qrcode`. Set `APP_URL` so the QR opens on a phone.
+
+## Chat
+
+- Details are in `docs/chat.md`. Chat lives at `/organizations/[slug]/chat` for active members.
+- The chat WebSocket is the one place the browser talks to the backend, because Next.js cannot proxy a socket. The browser gets a one-time ticket from the `getSocketTicket` Server Action and connects to `CHAT_WS_URL`. Never send the access token to the client for this.
+- Wrap chat Server Action calls from client code in `attempt`, so a dropped connection becomes a message instead of the error page.
 
 ## Language
 

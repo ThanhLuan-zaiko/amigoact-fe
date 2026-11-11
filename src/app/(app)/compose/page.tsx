@@ -1,23 +1,29 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { requireUser } from "@/lib/auth";
 import { getMyOrganizations } from "@/lib/organizationApi";
-import ComposeForm from "../../_components/ComposeForm";
+import { postableOrganizations } from "@/lib/posts";
 import { mutedText } from "../../_components/ui";
 
-export const metadata: Metadata = { title: "Tạo bài viết | AmigoACT" };
-
-async function ComposeContent() {
+// Posts are written inside an organization now, at /organizations/{slug}/posts/new.
+// Old links land here: with one organization to post in, go straight to its form,
+// otherwise go to the organization list to pick one.
+async function ComposeRedirect(): Promise<null> {
   await requireUser("/compose");
-  return <ComposeForm organizations={await getMyOrganizations()} />;
+  const choices = postableOrganizations(
+    await getMyOrganizations(),
+    "discussion",
+  );
+  if (choices.length === 1) {
+    redirect(`/organizations/${choices[0].slug}/posts/new`);
+  }
+  redirect("/organizations");
 }
 
 export default function ComposePage() {
   return (
-    <div className="w-full max-w-2xl">
-      <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
-        <ComposeContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<p className={mutedText}>Đang chuyển hướng…</p>}>
+      <ComposeRedirect />
+    </Suspense>
   );
 }

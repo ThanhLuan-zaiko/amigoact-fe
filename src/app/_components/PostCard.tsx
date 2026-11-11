@@ -1,5 +1,7 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
-import { FiGlobe, FiLock, FiMessageCircle } from "react-icons/fi";
+import { FiEdit3, FiGlobe, FiLock, FiMessageCircle } from "react-icons/fi";
+import { postPath } from "@/lib/posts";
 import PostBody from "./PostBody";
 import type { Post } from "./types";
 import { mutedText, panel, tagChip } from "./ui";
@@ -21,9 +23,20 @@ type PostCardProps = {
   post: Post;
   // Extra controls under the post, such as publishing a draft.
   actions?: ReactNode;
+  // On the post page itself the title is not a link.
+  linked?: boolean;
 };
 
-export default function PostCard({ post, actions }: PostCardProps) {
+export default function PostCard({
+  post,
+  actions,
+  linked = true,
+}: PostCardProps) {
+  // A draft opens its edit form. A published post opens its own page.
+  const href =
+    post.status === "draft"
+      ? `${postPath(post.slug, post.id)}/edit`
+      : postPath(post.slug, post.id);
   const isAnnouncement = post.kind === "announcement";
   const VisibilityIcon = post.visibility === "public" ? FiGlobe : FiLock;
 
@@ -38,11 +51,22 @@ export default function PostCard({ post, actions }: PostCardProps) {
           {post.organizationInitials}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{post.organizationName}</p>
+          <Link
+            href={`/organizations/${post.slug}`}
+            className="block truncate font-semibold hover:text-teal-700 dark:hover:text-teal-400"
+          >
+            {post.organizationName}
+          </Link>
           <p className={`${mutedText} flex items-center gap-2`}>
             {post.publishedAt}
             <VisibilityIcon aria-hidden="true" />
             {visibilityLabel[post.visibility]}
+            {post.edited ? (
+              <span className="inline-flex items-center gap-1" title="Đã sửa">
+                <FiEdit3 aria-hidden="true" />
+                <span className="sr-only">Đã sửa</span>
+              </span>
+            ) : null}
           </p>
         </div>
         <span
@@ -56,7 +80,18 @@ export default function PostCard({ post, actions }: PostCardProps) {
         </span>
       </header>
 
-      <h2 className="text-lg leading-snug font-bold">{post.title}</h2>
+      <h2 className="text-lg leading-snug font-bold break-words">
+        {linked ? (
+          <Link
+            href={href}
+            className="hover:text-teal-700 dark:hover:text-teal-400"
+          >
+            {post.title}
+          </Link>
+        ) : (
+          post.title
+        )}
+      </h2>
       <PostBody body={post.body} />
       {post.media && post.media.length > 0 ? (
         <ul className="grid grid-cols-2 gap-2">
@@ -85,9 +120,13 @@ export default function PostCard({ post, actions }: PostCardProps) {
             #{tag}
           </span>
         ))}
-        <span className={`${mutedText} ml-auto flex items-center gap-2`}>
+        <span
+          className={`${mutedText} ml-auto flex items-center gap-2`}
+          title="Bình luận"
+        >
           <FiMessageCircle aria-hidden="true" />
-          {post.commentCount} bình luận
+          {post.commentCount}
+          <span className="sr-only">bình luận</span>
         </span>
       </footer>
       {actions}

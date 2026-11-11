@@ -120,6 +120,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
               <TextField
                 label="Giờ tình nguyện"
                 name="hours_awarded"
+                numeric="decimal"
                 defaultValue={activity?.hours_awarded?.toString()}
                 errors={errors}
                 required
@@ -165,6 +166,7 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
             <TextField
               label="Số chỗ"
               name="max_participants"
+              numeric="integer"
               defaultValue={activity?.max_participants?.toString()}
               hint="Bỏ trống nếu không giới hạn. Khi có ca, số chỗ tính theo từng ca."
               errors={errors}

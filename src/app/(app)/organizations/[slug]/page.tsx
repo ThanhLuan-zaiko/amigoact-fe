@@ -11,6 +11,10 @@ import { getGallery, getOrganization } from "@/lib/organizationApi";
 import { formatDate } from "@/lib/organizations";
 import IconStat from "../../../_components/IconStat";
 import OrganizationGallery from "../../../_components/organizations/OrganizationGallery";
+import {
+  PinnedPosts,
+  RecentActivities,
+} from "../../../_components/organizations/OrgHighlights";
 import { mutedText, panel } from "../../../_components/ui";
 
 const linkClass =
@@ -90,16 +94,46 @@ async function GallerySection({
   return <OrganizationGallery items={await getGallery(slug)} />;
 }
 
+async function Highlights({
+  params,
+  part,
+}: {
+  params: PageProps<"/organizations/[slug]">["params"];
+  part: "posts" | "activities";
+}) {
+  const { slug } = await params;
+  return part === "posts" ? (
+    <PinnedPosts slug={slug} />
+  ) : (
+    <RecentActivities slug={slug} />
+  );
+}
+
+const loading = <p className={mutedText}>Đang tải…</p>;
+
 export default function OrganizationPage({
   params,
 }: PageProps<"/organizations/[slug]">) {
+  // Main column: about and the posts. Side column: activities and the gallery.
+  // Phones and tablets stack them in this order.
   return (
-    <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
-      {/* About on the left and the gallery on the right, on wide screens. */}
-      <div className="grid w-full grid-cols-1 items-start gap-4 xl:grid-cols-2">
-        <OrganizationAbout params={params} />
-        <GallerySection params={params} />
+    <div className="grid w-full grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div className="flex min-w-0 flex-col gap-4">
+        <Suspense fallback={loading}>
+          <OrganizationAbout params={params} />
+        </Suspense>
+        <Suspense fallback={loading}>
+          <Highlights params={params} part="posts" />
+        </Suspense>
       </div>
-    </Suspense>
+      <div className="flex min-w-0 flex-col gap-4">
+        <Suspense fallback={loading}>
+          <Highlights params={params} part="activities" />
+        </Suspense>
+        <Suspense fallback={loading}>
+          <GallerySection params={params} />
+        </Suspense>
+      </div>
+    </div>
   );
 }

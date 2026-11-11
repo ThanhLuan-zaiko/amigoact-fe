@@ -150,10 +150,11 @@ export function seatsText(taken: number, capacity: number | null): string {
 }
 
 // An empty input means null. Anything else goes to the backend, which rejects bad numbers.
+// Only a plain number becomes a number. Anything else, such as "1e3" or "5 cho", is sent
+// as typed, so the backend refuses it with a clear error instead of reading it wrongly.
 export function numberOrNull(value: string): number | string | null {
   if (!value) {
     return null;
   }
-  const parsed = Number(value);
-  return Number.isNaN(parsed) ? value : parsed;
+  return /^-?[0-9]+(\.[0-9]+)?$/.test(value) ? Number(value) : value;
 }

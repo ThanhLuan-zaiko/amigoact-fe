@@ -11,12 +11,23 @@ export type ReactionCount = { emoji: string; count: number; mine: boolean };
 
 export type ReplyPreview = { id: string; author_name: string; body: string };
 
+// A picture or video sent with a message. The url is served by the media route.
+export type ChatAttachment = {
+  id: string;
+  url: string;
+  kind: "image" | "video";
+  mime: string;
+  size_bytes: number;
+  name: string | null;
+};
+
 export type ChatMessage = {
   id: string;
   room_id: string;
   author_id: string;
   author_name: string;
   body: string;
+  attachments: ChatAttachment[];
   reply_to: ReplyPreview | null;
   reactions: ReactionCount[];
   pinned: boolean;
@@ -26,31 +37,47 @@ export type ChatMessage = {
 
 export type MessagePage = { items: ChatMessage[]; next_before: string | null };
 
-export type ChatChannel = {
+export type RoomKind = "org" | "channel" | "dm";
+
+export type ChatOrg = {
   id: string;
+  slug: string;
   name: string;
-  topic: string | null;
-  visibility: string;
-  archived: boolean;
+  logo_url: string | null;
+};
+
+export type LastMessage = {
+  id: string;
+  author_id: string;
+  author_name: string;
+  preview: string;
+  attachment_kind: "image" | "video" | "mixed" | null;
+  attachment_count: number;
   created_at: string;
 };
 
-export type ChatDm = { room_id: string; peer_id: string; peer_name: string };
-
-export type UnreadItem = { room_id: string; count: number };
-
-export type RoomKind = "org" | "channel" | "dm";
-
+// One conversation of the inbox, as GET /chat/inbox returns it.
 export type ChatRoom = {
-  id: string;
+  room_id: string;
   kind: RoomKind;
   name: string;
   topic: string | null;
-  archived: boolean;
   restricted: boolean;
+  org: ChatOrg;
+  avatar_url: string | null;
+  peer_id: string | null;
+  can_manage: boolean;
+  unread: number;
+  last_message: LastMessage | null;
 };
 
-export type ChatViewer = { userId: string; canManage: boolean };
+export type ChatContact = {
+  user_id: string;
+  full_name: string;
+  avatar_url: string | null;
+  org: ChatOrg;
+  room_id: string | null;
+};
 
 export type MessageRights = {
   reply: boolean;
@@ -67,100 +94,36 @@ export function isRoomId(value: unknown): value is string {
   return typeof value === "string" && UUID_PATTERN.test(value);
 }
 
-export function chatPath(slug: string, roomId?: string | null): string {
-  const base = `/org/${encodeURIComponent(slug)}/chat`;
-  return roomId ? `${base}?room=${encodeURIComponent(roomId)}` : base;
-}
-
-// The general room first, then open channels before restricted ones, archived channels last,
-// then direct messages by the other person's name.
-export function buildRooms(
-  general: { id: string; name: string },
-  channels: ChatChannel[],
-  dms: ChatDm[],
-): ChatRoom[] {
-  const channelRooms = channels
-    .map(
-      (channel): ChatRoom => ({
-        id: channel.id,
-        kind: "channel",
-        name: channel.name,
-        topic: channel.topic,
-        archived: channel.archived,
-        restricted: channel.visibility === "restricted",
-      }),
-    )
-    .sort(
-      (a, b) =>
-        Number(a.archived) - Number(b.archived) ||
-        Number(a.restricted) - Number(b.restricted) ||
-        a.name.localeCompare(b.name, "vi"),
-    );
-  const dmRooms = [...dms]
-    .sort((a, b) => a.peer_name.localeCompare(b.peer_name, "vi"))
-    .map(
-      (dm): ChatRoom => ({
-        id: dm.room_id,
-        kind: "dm",
-        name: dm.peer_name,
-        topic: null,
-        archived: false,
-        restricted: false,
-      }),
-    );
-  const generalRoom: ChatRoom = {
-    id: general.id,
-    kind: "org",
-    name: general.name,
-    topic: null,
-    archived: false,
-    restricted: false,
-  };
-  return [generalRoom, ...channelRooms, ...dmRooms];
-}
-
-// Unknown or missing rooms fall back to the general room, which is always first.
-export function pickRoom(rooms: ChatRoom[], wanted: unknown): ChatRoom {
-  return rooms.find((room) => room.id === wanted) ?? rooms[0];
-}
-
-export function unreadMap(items: UnreadItem[]): Record<string, number> {
-  return Object.fromEntries(items.map((item) => [item.room_id, item.count]));
-}
-
-export function unreadTotal(
-  unread: Record<string, number>,
-  roomIds: string[],
-): number {
-  return roomIds.reduce((total, id) => total + (unread[id] ?? 0), 0);
+export function messengerPath(roomId?: string | null): string {
+  return roomId ? `/messages?room=${encodeURIComponent(roomId)}` : "/messages";
 }
 
 export function badgeText(count: number): string {
   return count > 99 ? "99+" : String(count);
 }
 
-// Mirrors the backend rules in amigoact-be/src/chat: only the author edits, nothing is written
-// to an archived channel, managers moderate org rooms, and in a direct message only the author
-// deletes while either person pins.
+// Mirrors the backend rules in amigoact-be/src/chat: only the author edits, managers moderate
+// org rooms and channels, and in a direct message only the author deletes while either pins.
 export function messageRights(
   message: ChatMessage,
-  room: ChatRoom,
-  viewer: ChatViewer,
+  room: Pick<ChatRoom, "kind" | "can_manage">,
+  viewerId: string,
 ): MessageRights {
-  const mine = message.author_id === viewer.userId;
-  const writable = !room.archived;
-  const moderator = room.kind === "dm" ? false : viewer.canManage;
+  const mine = message.author_id === viewerId;
+  const moderator = room.kind === "dm" ? false : room.can_manage;
   return {
-    reply: writable,
-    react: writable,
-    edit: mine && writable,
+    reply: true,
+    react: true,
+    edit: mine,
     delete: mine || moderator,
-    pin: room.kind === "dm" ? true : viewer.canManage,
+    pin: room.kind === "dm" ? true : room.can_manage,
   };
 }
 
+export const ATTACHMENT_MAX = 10;
+
 export const CHAT_MESSAGES = {
-  empty: "Hãy nhập nội dung tin nhắn.",
+  empty: "Hãy nhập nội dung hoặc chọn ảnh, video.",
   tooLong: `Tin nhắn tối đa ${MESSAGE_MAX} ký tự.`,
   invalid: "Tin nhắn có ký tự không hợp lệ.",
   archived: "Kênh đã lưu trữ, chỉ đọc được.",
@@ -176,10 +139,11 @@ export function textLength(value: string): number {
   return [...value].length;
 }
 
-export function validateMessage(body: string): string | null {
+// A message needs text or at least one file. An edit passes the files the message already has.
+export function validateMessage(body: string, files = 0): string | null {
   const text = body.trim();
   if (!text) {
-    return CHAT_MESSAGES.empty;
+    return files > 0 ? null : CHAT_MESSAGES.empty;
   }
   if (CONTROL_PATTERN.test(text)) {
     return CHAT_MESSAGES.invalid;
@@ -202,6 +166,10 @@ const ERROR_TEXT: Record<string, string> = {
   string_too_long: CHAT_MESSAGES.tooLong,
   string_too_short: CHAT_MESSAGES.empty,
   text_invalid: CHAT_MESSAGES.invalid,
+  attachment_in_use: "Tệp này đã được gửi. Hãy chọn lại tệp.",
+  attachment_duplicate: "Một tệp được chọn hai lần.",
+  media_not_found: "Không tìm thấy tệp đính kèm. Hãy tải lên lại.",
+  too_long: `Mỗi tin gửi tối đa ${ATTACHMENT_MAX} ảnh hoặc video.`,
 };
 
 export function chatError(code: string, issues: { type: string }[] = []) {

@@ -14,7 +14,7 @@ Tài liệu này mô tả giao diện phần tổ chức. Quy tắc nghiệp v�
   - chủ sở hữu ở `/organizations/<slug>/...` thì được rewrite nội bộ sang trang `/org/...`, thanh địa chỉ giữ nguyên.
 - Chuyển hướng là tạm thời (307), vì kết quả tùy người xem. Query được giữ. Backend lỗi thì coi như không phải chủ sở hữu.
 - Link chia sẻ của chủ sở hữu vẫn mở được với người khác, chỉ đổi sang `/org/...`.
-- Link biết vai trò thì trỏ thẳng đúng địa chỉ: `OwnedOrganizationCard`, danh sách "Tổ chức đã tham gia", `OrgNav` và action tạo tổ chức. Link không biết vai trò (thẻ bài viết, danh bạ…) trỏ `/org/...`, chủ sở hữu đi qua một lần chuyển hướng. Code phía trình duyệt dựng đường dẫn `/org/...` thì qua `keepAddress` để giữ địa chỉ chủ sở hữu đang thấy (ví dụ đổi phòng chat, nút quay lại ở `OrgHeaderFrame`).
+- Link biết vai trò thì trỏ thẳng đúng địa chỉ: `OwnedOrganizationCard`, danh sách "Tổ chức đã tham gia", `OrgNav` và action tạo tổ chức. Link không biết vai trò (thẻ bài viết, danh bạ…) trỏ `/org/...`, chủ sở hữu đi qua một lần chuyển hướng. Code phía trình duyệt dựng đường dẫn `/org/...` thì qua `keepAddress` để giữ địa chỉ chủ sở hữu đang thấy (ví dụ nút quay lại ở `OrgHeaderFrame`).
 - Quy tắc trang cần đăng nhập (`protectedPaths.ts`) viết theo `/org/...`. `proxy.ts` đổi địa chỉ chủ sở hữu về `/org/...` bằng `pagePath` trước khi kiểm tra.
 - API backend vẫn là `/organizations/{slug}/...`. Chỉ đường dẫn trang của frontend khác.
 

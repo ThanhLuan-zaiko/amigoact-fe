@@ -68,6 +68,10 @@ export class TopicCounts {
     this.counts.delete(topic);
   }
 
+  has(topic: string): boolean {
+    return this.counts.has(topic);
+  }
+
   // Topics the socket subscribes to; ME is joined by the backend on connect.
   remote(): string[] {
     return [...this.counts.keys()].filter((topic) => topic !== ME);

@@ -2,6 +2,7 @@
 
 import { type KeyboardEvent, useId, useRef, useState } from "react";
 import { FiTag, FiX } from "react-icons/fi";
+import type { TagSource } from "@/app/_actions/postTags";
 import { TAG_LIMIT, TAG_NAME_MAX } from "@/lib/posts";
 import {
   addTag,
@@ -11,7 +12,6 @@ import {
 } from "@/lib/tagInput";
 import { fieldLabel, mutedText } from "../ui";
 import TagSuggestionList, { optionId } from "./TagSuggestionList";
-import type { TagSource } from "@/app/_actions/postTags";
 import { useTagSuggestions } from "./useTagSuggestions";
 
 type TagInputProps = {

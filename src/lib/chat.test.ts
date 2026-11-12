@@ -2,21 +2,17 @@ import { describe, expect, test } from "bun:test";
 import {
   attempt,
   badgeText,
-  buildRooms,
   CHAT_MESSAGES,
   type ChatMessage,
   type ChatRoom,
   chatError,
-  chatPath,
   continuesGroup,
   isRoomId,
   MESSAGE_MAX,
   messageRights,
-  pickRoom,
+  messengerPath,
   reconnectDelay,
   textLength,
-  unreadMap,
-  unreadTotal,
   validateMessage,
 } from "./chat";
 
@@ -31,6 +27,7 @@ function message(overrides: Partial<ChatMessage> = {}): ChatMessage {
     author_id: ME,
     author_name: "Lan",
     body: "Xin chào",
+    attachments: [],
     reply_to: null,
     reactions: [],
     pinned: false,
@@ -42,106 +39,46 @@ function message(overrides: Partial<ChatMessage> = {}): ChatMessage {
 
 function room(overrides: Partial<ChatRoom> = {}): ChatRoom {
   return {
-    id: GENERAL,
+    room_id: GENERAL,
     kind: "org",
-    name: "Phòng chung",
+    name: "Đội A",
     topic: null,
-    archived: false,
     restricted: false,
+    org: { id: GENERAL, slug: "doi-a", name: "Đội A", logo_url: null },
+    avatar_url: null,
+    peer_id: null,
+    can_manage: false,
+    unread: 0,
+    last_message: null,
     ...overrides,
   };
 }
 
-describe("buildRooms", () => {
-  const channel = (name: string, extra: object = {}) => ({
-    id: `id-${name}`,
-    name,
-    topic: null,
-    visibility: "open",
-    archived: false,
-    created_at: "2026-11-01T00:00:00Z",
-    ...extra,
-  });
-
-  test("puts the general room first, then channels, then direct messages", () => {
-    const rooms = buildRooms(
-      { id: GENERAL, name: "Phòng chung" },
-      [channel("Hậu cần")],
-      [{ room_id: "dm-1", peer_id: OTHER, peer_name: "Bình" }],
-    );
-    expect(rooms.map((r) => r.kind)).toEqual(["org", "channel", "dm"]);
-    expect(rooms[2].name).toBe("Bình");
-  });
-
-  test("orders open channels before restricted ones and archived ones last", () => {
-    const rooms = buildRooms(
-      { id: GENERAL, name: "Phòng chung" },
-      [
-        channel("Cũ", { archived: true }),
-        channel("Ban điều hành", { visibility: "restricted" }),
-        channel("Truyền thông"),
-        channel("Âm thanh"),
-      ],
-      [],
-    );
-    expect(rooms.slice(1).map((r) => r.name)).toEqual([
-      "Âm thanh",
-      "Truyền thông",
-      "Ban điều hành",
-      "Cũ",
-    ]);
-    expect(rooms[3].restricted).toBe(true);
-    expect(rooms[4].archived).toBe(true);
-  });
-
-  test("pickRoom falls back to the general room for an unknown ID", () => {
-    const rooms = buildRooms({ id: GENERAL, name: "Phòng chung" }, [], []);
-    expect(pickRoom(rooms, "nope").id).toBe(GENERAL);
-    expect(pickRoom(rooms, null).id).toBe(GENERAL);
-  });
-});
-
 describe("messageRights", () => {
-  const member = { userId: ME, canManage: false };
-  const manager = { userId: ME, canManage: true };
+  const managed = room({ can_manage: true });
 
   test("the author edits and deletes their own message", () => {
-    const rights = messageRights(message(), room(), member);
+    const rights = messageRights(message(), room(), ME);
     expect(rights.edit).toBe(true);
     expect(rights.delete).toBe(true);
     expect(rights.pin).toBe(false);
   });
 
   test("a member cannot edit or delete another person's message", () => {
-    const rights = messageRights(message({ author_id: OTHER }), room(), member);
+    const rights = messageRights(message({ author_id: OTHER }), room(), ME);
     expect(rights).toMatchObject({ edit: false, delete: false, reply: true });
   });
 
   test("a manager deletes and pins in org rooms but never edits others", () => {
-    const rights = messageRights(
-      message({ author_id: OTHER }),
-      room(),
-      manager,
-    );
+    const rights = messageRights(message({ author_id: OTHER }), managed, ME);
     expect(rights).toMatchObject({ edit: false, delete: true, pin: true });
   });
 
   test("in a direct message only the author deletes, and either person pins", () => {
-    const dm = room({ kind: "dm" });
-    const theirs = messageRights(message({ author_id: OTHER }), dm, manager);
+    const dm = room({ kind: "dm", can_manage: true });
+    const theirs = messageRights(message({ author_id: OTHER }), dm, ME);
     expect(theirs).toMatchObject({ delete: false, pin: true, edit: false });
-    expect(messageRights(message(), dm, member).delete).toBe(true);
-  });
-
-  test("an archived channel can be read but not written to", () => {
-    const archived = room({ kind: "channel", archived: true });
-    const rights = messageRights(message(), archived, manager);
-    expect(rights).toMatchObject({
-      edit: false,
-      reply: false,
-      react: false,
-      delete: true,
-    });
+    expect(messageRights(message(), dm, ME).delete).toBe(true);
   });
 });
 
@@ -185,21 +122,16 @@ describe("small helpers", () => {
     ]);
   });
 
-  test("unread counts add up and the badge caps at 99+", () => {
-    const unread = unreadMap([
-      { room_id: "a", count: 3 },
-      { room_id: "b", count: 120 },
-    ]);
-    expect(unreadTotal(unread, ["a", "b", "c"])).toBe(123);
+  test("the badge caps at 99+", () => {
     expect(badgeText(120)).toBe("99+");
     expect(badgeText(7)).toBe("7");
   });
 
-  test("isRoomId and chatPath", () => {
+  test("isRoomId and messengerPath", () => {
     expect(isRoomId(GENERAL)).toBe(true);
     expect(isRoomId("../etc")).toBe(false);
-    expect(chatPath("doi-a", GENERAL)).toBe(`/org/doi-a/chat?room=${GENERAL}`);
-    expect(chatPath("doi-a", null)).toBe("/org/doi-a/chat");
+    expect(messengerPath(GENERAL)).toBe(`/messages?room=${GENERAL}`);
+    expect(messengerPath(null)).toBe("/messages");
   });
 
   test("continuesGroup joins close messages of one author only", () => {

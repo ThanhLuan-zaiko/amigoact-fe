@@ -63,6 +63,14 @@ export class RealtimeClient {
     };
   }
 
+  // Tells a subscribed room that the viewer is typing. Nothing is sent while offline or
+  // for a topic nobody here listens to, because the backend accepts it only after subscribe.
+  typing(topic: string): void {
+    if (this.counts.has(topic)) {
+      this.send({ op: "typing", topic });
+    }
+  }
+
   onOpen(listener: OpenListener): () => void {
     this.openListeners.add(listener);
     return () => this.openListeners.delete(listener);

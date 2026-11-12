@@ -7,6 +7,8 @@ import { iconButton, inputField } from "../ui";
 
 type MessageEditorProps = {
   initial: string;
+  // How many files the message has. With files, the caption may be cleared.
+  files?: number;
   onSave: (body: string) => Promise<boolean>;
   onCancel: () => void;
 };
@@ -14,6 +16,7 @@ type MessageEditorProps = {
 // Edits a message in place. Enter saves, Shift+Enter adds a line, Escape cancels.
 export default function MessageEditor({
   initial,
+  files = 0,
   onSave,
   onCancel,
 }: MessageEditorProps) {
@@ -22,7 +25,7 @@ export default function MessageEditor({
   const [pending, startTransition] = useTransition();
 
   function save() {
-    const issue = validateMessage(body);
+    const issue = validateMessage(body, files);
     setProblem(issue);
     if (issue) {
       return;

@@ -10,8 +10,8 @@ import {
   orgActivitiesPath,
 } from "@/lib/activityList";
 import { getOrganization } from "@/lib/organizationApi";
-import { readTag, tagLabel } from "@/lib/tagLinks";
 import { pageOffset } from "@/lib/organizations";
+import { readTag, tagLabel } from "@/lib/tagLinks";
 import ActivityCard from "../../../../_components/activities/ActivityCard";
 import ActivityFilters from "../../../../_components/activities/ActivityFilters";
 import EmptyState from "../../../../_components/EmptyState";

@@ -3,16 +3,17 @@
 import { authedFetch } from "@/lib/auth";
 import type { ApiResult } from "@/lib/backend";
 import {
-  type ChatDm,
+  ATTACHMENT_MAX,
+  type ChatContact,
   type ChatMessage,
   type ChatResult,
+  type ChatRoom,
   chatError,
   isRoomId,
   type MessagePage,
-  type UnreadItem,
   validateMessage,
 } from "@/lib/chat";
-import { type ChatStart, messagesPath } from "@/lib/chatApi";
+import { messagesPath } from "@/lib/chatApi";
 
 // Every chat call from the browser goes through these actions, so the access token stays in its
 // httpOnly cookie. Arguments come from the browser and are checked before they reach a path.
@@ -31,10 +32,6 @@ function idsValid(...ids: unknown[]): boolean {
   return ids.every(isRoomId);
 }
 
-function chatBase(slug: string): string {
-  return `/organizations/${encodeURIComponent(slug)}/chat`;
-}
-
 export async function loadMessages(
   roomId: string,
   before: string | null,
@@ -49,72 +46,59 @@ export async function loadMessages(
   );
 }
 
-// The polling fallback: the newest page of the open room and every unread count, in one round trip.
-export async function pollChat(
-  slug: string,
-  roomId: string,
-): Promise<ChatResult<{ page: MessagePage; unread: UnreadItem[] }>> {
-  if (!idsValid(roomId)) {
-    return fail("room_not_found");
-  }
-  const [page, unread] = await Promise.all([
-    authedFetch<MessagePage>(messagesPath(roomId), { method: "GET" }),
-    authedFetch<{ items: UnreadItem[] }>(`${chatBase(slug)}/unread`, {
-      method: "GET",
-    }),
-  ]);
-  if (!page.ok) {
-    return done(page);
-  }
-  if (!unread.ok) {
-    return done(unread);
-  }
-  return { ok: true, data: { page: page.data, unread: unread.data.items } };
+export async function loadInbox(): Promise<ChatResult<ChatRoom[]>> {
+  const result = await authedFetch<{ items: ChatRoom[] }>("/chat/inbox", {
+    method: "GET",
+  });
+  return result.ok ? { ok: true, data: result.data.items } : done(result);
 }
 
-// Channels and direct messages again, after a room was revoked or a new direct message arrived.
-export async function loadRooms(slug: string): Promise<ChatResult<ChatStart>> {
-  const [channels, dms, unread] = await Promise.all([
-    authedFetch<{ items: ChatStart["channels"] }>(
-      `${chatBase(slug)}/channels`,
-      {
-        method: "GET",
-      },
-    ),
-    authedFetch<{ items: ChatDm[] }>(`${chatBase(slug)}/dms`, {
-      method: "GET",
-    }),
-    authedFetch<{ items: UnreadItem[] }>(`${chatBase(slug)}/unread`, {
-      method: "GET",
-    }),
+// The polling fallback: the inbox and the newest page of the open room, in one round trip.
+// Next.js runs the Server Actions of a page one at a time, so they share one call.
+export async function pollMessenger(
+  roomId: string | null,
+): Promise<ChatResult<{ rooms: ChatRoom[]; page: MessagePage | null }>> {
+  if (roomId !== null && !idsValid(roomId)) {
+    return fail("room_not_found");
+  }
+  const [inbox, page] = await Promise.all([
+    authedFetch<{ items: ChatRoom[] }>("/chat/inbox", { method: "GET" }),
+    roomId
+      ? authedFetch<MessagePage>(messagesPath(roomId), { method: "GET" })
+      : null,
   ]);
-  if (!channels.ok) {
-    return done(channels);
+  if (!inbox.ok) {
+    return done(inbox);
   }
-  if (!dms.ok) {
-    return done(dms);
-  }
-  if (!unread.ok) {
-    return done(unread);
+  if (page && !page.ok) {
+    return done(page);
   }
   return {
     ok: true,
-    data: {
-      channels: channels.data.items,
-      dms: dms.data.items,
-      unread: unread.data.items,
-    },
+    data: { rooms: inbox.data.items, page: page ? page.data : null },
   };
 }
 
+export async function loadContacts(): Promise<ChatResult<ChatContact[]>> {
+  const result = await authedFetch<{ items: ChatContact[] }>("/chat/contacts", {
+    method: "GET",
+  });
+  return result.ok ? { ok: true, data: result.data.items } : done(result);
+}
+
+// Files are uploaded through /media/upload first; only their ids travel here.
 export async function sendChatMessage(
   roomId: string,
   body: string,
   replyToId: string | null,
+  attachmentIds: string[] = [],
 ): Promise<ChatResult<ChatMessage>> {
-  const problem = validateMessage(body);
+  const problem = validateMessage(body, attachmentIds.length);
   if (problem) {
     return fail("validation_error", problem);
+  }
+  if (attachmentIds.length > ATTACHMENT_MAX || !idsValid(...attachmentIds)) {
+    return fail("media_not_found");
   }
   if (!idsValid(roomId) || (replyToId !== null && !isRoomId(replyToId))) {
     return fail("room_not_found");
@@ -123,9 +107,13 @@ export async function sendChatMessage(
     await authedFetch<ChatMessage>(
       `/rooms/${encodeURIComponent(roomId)}/messages`,
       {
-        body: replyToId
-          ? { body: body.trim(), reply_to_id: replyToId }
-          : { body: body.trim() },
+        body: {
+          body: body.trim(),
+          ...(replyToId ? { reply_to_id: replyToId } : {}),
+          ...(attachmentIds.length > 0
+            ? { attachment_ids: attachmentIds }
+            : {}),
+        },
       },
     ),
   );
@@ -134,8 +122,9 @@ export async function sendChatMessage(
 export async function editChatMessage(
   messageId: string,
   body: string,
+  files = 0,
 ): Promise<ChatResult<ChatMessage>> {
-  const problem = validateMessage(body);
+  const problem = validateMessage(body, files);
   if (problem) {
     return fail("validation_error", problem);
   }
@@ -227,16 +216,20 @@ export async function markRoomRead(
   return result.ok ? { ok: true, data: null } : done(result);
 }
 
+const SLUG = /^[A-Za-z0-9-]{1,80}$/;
+
+// Opens (or finds) the direct message with a member of one organization.
 export async function openDirectMessage(
   slug: string,
   userId: string,
-): Promise<ChatResult<ChatDm>> {
-  if (!idsValid(userId)) {
+): Promise<ChatResult<{ room_id: string }>> {
+  if (!idsValid(userId) || !SLUG.test(slug)) {
     return fail("not_a_member");
   }
   return done(
-    await authedFetch<ChatDm>(`${chatBase(slug)}/dms`, {
-      body: { user_id: userId },
-    }),
+    await authedFetch<{ room_id: string }>(
+      `/organizations/${encodeURIComponent(slug)}/chat/dms`,
+      { body: { user_id: userId } },
+    ),
   );
 }

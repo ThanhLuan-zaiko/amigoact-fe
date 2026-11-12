@@ -77,6 +77,18 @@ async function connected(): Promise<FakeSocket> {
 }
 
 describe("RealtimeClient", () => {
+  test("sends typing only for a room it listens to", async () => {
+    const client = new RealtimeClient(ticket);
+    client.listen("room:a", () => {});
+    const socket = await connected();
+    client.typing("room:a");
+    client.typing("room:b");
+    expect(socket.sent).toEqual([
+      { op: "subscribe", topic: "room:a" },
+      { op: "typing", topic: "room:a" },
+    ]);
+  });
+
   test("stays closed until something listens", () => {
     const client = new RealtimeClient(ticket);
     expect(client.getStatus()).toBe("idle");

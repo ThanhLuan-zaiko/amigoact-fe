@@ -59,7 +59,7 @@ Tài liệu chi tiết nằm trong thư mục [`docs/`](docs):
 - [Hoạt động và đăng ký](docs/activities.md): các trang, giờ Việt Nam và thành phần.
 - [Điểm danh và giờ tình nguyện](docs/attendance.md): các trang, mã QR và `APP_URL`.
 - [Chứng nhận](docs/certificates.md): mẫu, cấp và thu hồi, xác minh công khai.
-- [Chat](docs/chat.md): phòng, tin nhắn, vé WebSocket và polling dự phòng.
+- [Chat](docs/chat.md): trang nhắn tin `/messages`, ảnh và video, WebSocket và polling dự phòng.
 - [Thông báo](docs/notifications.md): chuông trên header và các loại thông báo.
 - [Thời gian thực](docs/realtime.md): socket chung, `useTopics`, `LiveRefresh`, địa chỉ socket.
 

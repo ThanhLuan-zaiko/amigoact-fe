@@ -7,7 +7,6 @@ import {
   FiCalendar,
   FiInbox,
   FiInfo,
-  FiMessageCircle,
   FiMessageSquare,
   FiSettings,
   FiUsers,
@@ -38,12 +37,6 @@ export default function OrgNav({ slug, viewer }: OrgNavProps) {
       label: "Hoạt động",
       icon: FiCalendar,
       visible: true,
-    },
-    {
-      href: `${base}/chat`,
-      label: "Chat",
-      icon: FiMessageCircle,
-      visible: viewer.status === "active",
     },
     {
       href: `${base}/members`,

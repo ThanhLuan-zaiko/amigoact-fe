@@ -60,7 +60,7 @@ export default function PinsPanel({ roomId }: PinsPanelProps) {
                 {messageTime(message.created_at)}
               </p>
               <p className="line-clamp-3 text-sm break-words whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                {message.body}
+                {message.body || "Ảnh hoặc video"}
               </p>
             </li>
           ))}

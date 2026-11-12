@@ -5,8 +5,6 @@
 // Reading the feed and a public post does not.
 const PROTECTED_POST_PAGES = [
   /^\/org\/[^/]+\/posts\/(new|drafts|trash)$/,
-  // Chat is for members only.
-  /^\/org\/[^/]+\/chat$/,
   /^\/org\/[^/]+\/posts\/[^/]+\/edit$/,
   // Creating activities, their drafts and their trash are for managers.
   /^\/org\/[^/]+\/activities\/(new|drafts|trash)$/,

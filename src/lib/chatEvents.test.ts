@@ -29,6 +29,7 @@ function message(n: number, overrides: Partial<ChatMessage> = {}): ChatMessage {
     author_id: OTHER,
     author_name: "Bình",
     body: `tin ${n}`,
+    attachments: [],
     reply_to: null,
     reactions: [],
     pinned: false,

@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChatFrame, readFrame } from "@/lib/chatEvents";
-import { ME, orgTopic, roomTopic, wantsRefresh } from "@/lib/realtime";
+import { ME, orgTopic, roomTopic } from "@/lib/realtime";
 import {
   useRealtimeOpen,
   useRealtimeStatus,
@@ -11,20 +11,21 @@ import {
 export type SocketStatus = "connecting" | "live" | "offline";
 
 type SocketOptions = {
-  orgId: string;
+  orgIds: string[];
   roomIds: string[];
   onFrame: (frame: ChatFrame) => void;
   // Called after every (re)connect, and when an event was too large to forward,
   // so the page can fetch what it missed.
   onOpen: () => void;
-  // A channel or direct message was added or archived.
+  // A channel or direct message was added or archived in one of the organizations.
   onRoomsChanged: () => void;
 };
 
-// The chat's view of the app's one realtime socket: every room in the list as a topic, plus the
-// organization and own topics for changes to the room list. See docs/realtime.md.
+// The messenger's view of the app's one realtime socket: every conversation of the inbox as a
+// topic, plus each organization and the viewer's own topic for changes to the list.
+// See docs/realtime.md.
 export function useChatSocket({
-  orgId,
+  orgIds,
   roomIds,
   onFrame,
   onOpen,
@@ -41,8 +42,8 @@ export function useChatSocket({
       onFrame(frame);
     }
   });
-  useTopics([orgTopic(orgId), ME], ({ data }) => {
-    if (wantsRefresh(data, ["rooms.changed"], orgId)) {
+  useTopics([...orgIds.map(orgTopic), ME], ({ data }) => {
+    if (data.type === "resync" || data.type === "rooms.changed") {
       onRoomsChanged();
     }
   });

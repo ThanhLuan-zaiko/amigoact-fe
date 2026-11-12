@@ -56,23 +56,23 @@ test("a non-owner on the public address and other pages pass", () => {
 });
 
 test("pagePath maps both addresses to the page address", () => {
-  expect(pagePath("/organizations/xanh/chat")).toBe("/org/xanh/chat");
-  expect(pagePath("/org/xanh/chat")).toBe("/org/xanh/chat");
+  expect(pagePath("/organizations/xanh/posts")).toBe("/org/xanh/posts");
+  expect(pagePath("/org/xanh/posts")).toBe("/org/xanh/posts");
   expect(pagePath("/organizations/new")).toBe("/organizations/new");
 });
 
 test("keepAddress keeps the owner address the viewer is on", () => {
-  expect(keepAddress("/organizations/xanh/chat", "/org/xanh/chat?room=1")).toBe(
-    "/organizations/xanh/chat?room=1",
-  );
+  expect(
+    keepAddress("/organizations/xanh/posts", "/org/xanh/posts?tag=1"),
+  ).toBe("/organizations/xanh/posts?tag=1");
   expect(keepAddress("/organizations/xanh", "/org/xanh/posts#top")).toBe(
     "/organizations/xanh/posts#top",
   );
 });
 
 test("keepAddress leaves other links alone", () => {
-  expect(keepAddress("/org/xanh/chat", "/org/xanh/chat?room=1")).toBe(
-    "/org/xanh/chat?room=1",
+  expect(keepAddress("/org/xanh/posts", "/org/xanh/posts?tag=1")).toBe(
+    "/org/xanh/posts?tag=1",
   );
   expect(keepAddress("/organizations/xanh", "/org/khac")).toBe("/org/khac");
   expect(keepAddress("/organizations/xanh", "/explore")).toBe("/explore");

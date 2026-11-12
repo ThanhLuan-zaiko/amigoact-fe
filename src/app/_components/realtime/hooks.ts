@@ -55,6 +55,12 @@ export function useTopics(
   }, [client, key]);
 }
 
+// Sends the "typing" signal for a room topic over the shared socket.
+export function useRealtimeTyping(): (topic: string) => void {
+  const client = useContext(RealtimeContext);
+  return (topic) => client?.typing(topic);
+}
+
 // Called after every (re)connect, with first true for the first one since the page loaded.
 export function useRealtimeOpen(handler: (first: boolean) => void): void {
   const client = useContext(RealtimeContext);

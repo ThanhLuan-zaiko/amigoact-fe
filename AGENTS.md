@@ -25,7 +25,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 These rules set the defaults for every screen. If one of them gets in the way of a clearly better interface, change the rule in this file, say why in the change, and follow the new rule. Do not work around it silently.
 
 - Mobile first. Write the base classes for a phone screen (about 375px wide), then add `sm:`, `md:`, and `lg:` classes for wider screens. Never design the desktop layout first and shrink it later.
-- Use the width. The app container is up to 1400px wide. On `xl` screens and wider, a page with a main part and secondary parts splits into two columns: the main content on one side, and the secondary panels on the other (a summary, actions, shifts, a gallery, or a section list). Dense lists of cards may use three columns on `2xl`. A list of rows may use two columns on `xl` with the `splitList` and `splitRow` classes from `ui.ts`, so each row keeps its border. Phones and tablets stay in one column, in the same order.
+- Use the width. The app container is up to 1400px wide. On `xl` screens and wider, a page with a main part and secondary parts splits into two columns: the main content on one side, and the secondary panels on the other (a summary, actions, shifts, a gallery, or a section list). Dense lists of cards may use three columns on `2xl`. A list of rows may use two columns on `xl` with the `splitList` and `splitRow` classes from `ui.ts`, so each row keeps its border. Phones and tablets stay in one column, in the same order. The messenger at `/messages` splits into its list and conversation from `lg`, because the list is narrow and a messenger is used with both in view.
 - Flat design. Do not use `shadow-*` or `drop-shadow-*` on page content. The only exception is `shadow-sm` on floating layers (dropdown menus, dialogs, toasts) so they stand apart from the page. Do not use gradients (`bg-gradient-*`, `from-*`, `to-*`) or decorative effects. Transitions and hover, focus, and disabled states are allowed.
 - Primary accent is teal (`teal-700` in light mode and `teal-400` in dark mode) for primary buttons, links, focus rings, and the active navigation item. Use neutral slate colors for text, borders, and page surfaces.
 - Semantic colors carry meaning only: green for success, amber for warning, red for error, and sky for informational notices. Red is for error text, such as validation messages, and for a destructive button whose action cannot be undone, such as removing a photo from a gallery. That button is the only colored element in its section. Use the 700 shade in light mode and the 400 shade in dark mode for text and icons. For a badge background, use the 50 shade in light mode and the 950 shade at 40% opacity in dark mode, for example `bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-400`. Use at most one semantic color per component. Do not use color for decoration, and do not use shades 500 and brighter for large areas.
@@ -81,7 +81,8 @@ These rules set the defaults for every screen. If one of them gets in the way of
 
 ## Chat
 
-- Details are in `docs/chat.md`. Chat lives at `/org/[slug]/chat` for active members and uses the realtime socket through `useChatSocket`.
+- Details are in `docs/chat.md`. Every conversation lives in one messenger at `/messages` (there is no per-organization chat page). It reads `GET /chat/inbox` and uses the realtime socket through `useChatSocket`.
+- Chat pictures and videos upload through `/media/upload` first; only their asset ids go with the message.
 - Wrap chat Server Action calls from client code in `attempt`, so a dropped connection becomes a message instead of the error page.
 
 ## Language

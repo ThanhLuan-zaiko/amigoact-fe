@@ -5,6 +5,7 @@ export type ChatFrame =
   | { kind: "created" | "updated"; roomId: string; message: ChatMessage }
   | { kind: "deleted"; roomId: string; messageId: string }
   | { kind: "revoked"; roomId: string }
+  | { kind: "typing"; roomId: string; userId: string; name: string }
   | { kind: "subscribed"; roomId: string }
   | { kind: "error"; code: string }
   | { kind: "pong" };
@@ -48,6 +49,16 @@ export function readFrame(data: unknown): ChatFrame | null {
     }
     const kind = frame.type === "message.created" ? "created" : "updated";
     return { kind, roomId, message: frame.message };
+  }
+  if (frame.type === "typing") {
+    return roomId && typeof frame.user_id === "string"
+      ? {
+          kind: "typing",
+          roomId,
+          userId: frame.user_id,
+          name: typeof frame.name === "string" ? frame.name : "",
+        }
+      : null;
   }
   if (frame.type === "message.deleted") {
     return roomId && typeof frame.message_id === "string"

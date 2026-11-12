@@ -18,11 +18,15 @@ import CurrentPictures, {
   type PictureRole,
   ROLE_LABEL,
 } from "./CurrentPictures";
+import PictureInputs from "./PictureInputs";
 import { uploadFile } from "./pictureUpload";
+import SwapPictures from "./SwapPictures";
 
 type Item = { id: string; preview: string };
 
 type PicturePickerProps = {
+  // Set on the settings page, where the saved pictures can be swapped at once.
+  slug?: string;
   currentLogoUrl?: string | null;
   currentCoverUrl?: string | null;
   error?: { logo?: string; cover?: string };
@@ -39,6 +43,7 @@ const chooseOff =
 // picture is the logo and which is the cover. The marks travel with the form as
 // hidden asset ids, so the server never has to guess.
 export default function PicturePicker({
+  slug,
   currentLogoUrl,
   currentCoverUrl,
   error,
@@ -49,10 +54,6 @@ export default function PicturePicker({
   const [picked, setPicked] = useState<Record<PictureRole, string | null>>({
     logo: null,
     cover: null,
-  });
-  const [removed, setRemoved] = useState<Record<PictureRole, boolean>>({
-    logo: false,
-    cover: false,
   });
   const [busy, setBusy] = useState(false);
   const [failures, setFailures] = useState<string[]>([]);
@@ -147,7 +148,8 @@ export default function PicturePicker({
         </span>
         <span className={`${mutedText} text-xs`}>
           JPEG, PNG, WEBP, tối đa {PICTURE_MAX_MB} MB mỗi ảnh. Sau khi tải lên,
-          hãy chọn ảnh nào là logo, ảnh nào là ảnh bìa.
+          hãy chọn ảnh nào là logo, ảnh nào là ảnh bìa. Các ảnh còn lại sẽ vào
+          bộ sưu tập.
         </span>
         <input
           id={inputId}
@@ -186,11 +188,14 @@ export default function PicturePicker({
       <CurrentPictures
         urls={current}
         replaced={{ logo: picked.logo !== null, cover: picked.cover !== null }}
-        removed={removed}
-        onRemoveChange={(role, checked) =>
-          setRemoved((state) => ({ ...state, [role]: checked }))
-        }
       />
+      {slug ? (
+        <SwapPictures
+          slug={slug}
+          logoUrl={current.logo}
+          coverUrl={current.cover}
+        />
+      ) : null}
       {items.length > 0 ? (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {items.map((item) => (
@@ -233,18 +238,7 @@ export default function PicturePicker({
           ))}
         </ul>
       ) : null}
-      {picked.logo ? (
-        <input type="hidden" name="logo_asset_id" value={picked.logo} />
-      ) : null}
-      {picked.cover ? (
-        <input type="hidden" name="cover_asset_id" value={picked.cover} />
-      ) : null}
-      {removed.logo ? (
-        <input type="hidden" name="remove_logo" value="on" />
-      ) : null}
-      {removed.cover ? (
-        <input type="hidden" name="remove_cover" value="on" />
-      ) : null}
+      <PictureInputs ids={items.map((item) => item.id)} picked={picked} />
     </div>
   );
 }

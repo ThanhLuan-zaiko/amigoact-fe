@@ -1,13 +1,20 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { FiEdit3, FiGlobe, FiLock, FiMessageCircle } from "react-icons/fi";
+import {
+  FiEdit3,
+  FiEyeOff,
+  FiGlobe,
+  FiLock,
+  FiMessageCircle,
+} from "react-icons/fi";
+import { placedMediaIds } from "@/lib/postMedia";
 import { postPath } from "@/lib/posts";
 import PostBody from "./PostBody";
+import PostMediaView from "./PostMediaView";
+import PostPreview from "./PostPreview";
+import PostActions from "./posts/PostActions";
 import type { Post } from "./types";
 import { mutedText, panel, tagChip } from "./ui";
-
-const MEDIA =
-  "aspect-video w-full rounded-md border border-slate-200 object-cover dark:border-slate-800";
 
 const kindLabel: Record<Post["kind"], string> = {
   announcement: "Thông báo",
@@ -39,6 +46,9 @@ export default function PostCard({
       : postPath(post.slug, post.id);
   const isAnnouncement = post.kind === "announcement";
   const VisibilityIcon = post.visibility === "public" ? FiGlobe : FiLock;
+  // Files placed inside the body show there. The rest form a gallery after it.
+  const placed = placedMediaIds(post.body);
+  const gallery = (post.media ?? []).filter((item) => !placed.has(item.id));
 
   return (
     <article
@@ -69,6 +79,15 @@ export default function PostCard({
             ) : null}
           </p>
         </div>
+        {post.hidden ? (
+          <span
+            className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+            title="Chỉ ban quản trị thấy bài này"
+          >
+            <FiEyeOff aria-hidden="true" />
+            Đã ẩn
+          </span>
+        ) : null}
         <span
           className={`shrink-0 rounded-sm px-2 py-0.5 text-xs font-semibold ${
             isAnnouncement
@@ -92,23 +111,25 @@ export default function PostCard({
           post.title
         )}
       </h2>
-      <PostBody body={post.body} />
-      {post.media && post.media.length > 0 ? (
+      {linked ? (
+        <PostPreview
+          body={post.body}
+          href={href}
+          media={[
+            ...[...placed].flatMap(
+              (id) => post.media?.find((item) => item.id === id) ?? [],
+            ),
+            ...gallery,
+          ]}
+        />
+      ) : (
+        <PostBody body={post.body} media={post.media} />
+      )}
+      {!linked && gallery.length > 0 ? (
         <ul className="grid grid-cols-2 gap-2">
-          {post.media.map(({ src, isVideo }) => (
-            <li key={src}>
-              {isVideo ? (
-                // biome-ignore lint/a11y/useMediaCaption: uploads come without captions.
-                <video
-                  src={src}
-                  controls
-                  preload="metadata"
-                  className={MEDIA}
-                />
-              ) : (
-                // biome-ignore lint/performance/noImgElement: served by the media route.
-                <img src={src} alt="" loading="lazy" className={MEDIA} />
-              )}
+          {gallery.map((item) => (
+            <li key={item.id}>
+              <PostMediaView item={item} tile />
             </li>
           ))}
         </ul>
@@ -128,6 +149,7 @@ export default function PostCard({
           {post.commentCount}
           <span className="sr-only">bình luận</span>
         </span>
+        {linked && !actions ? <PostActions post={post} inline /> : null}
       </footer>
       {actions}
     </article>

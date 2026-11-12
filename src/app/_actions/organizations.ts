@@ -6,6 +6,7 @@ import type { FormState } from "@/lib/account";
 import { authedFetch, getAccessToken } from "@/lib/auth";
 import type { ApiResult } from "@/lib/backend";
 import { failureState, textOrNull, textValue } from "@/lib/forms";
+import { galleryIds } from "@/lib/galleryIds";
 import type { OrganizationDetail } from "@/lib/organizations";
 import { readPicture } from "@/lib/pictures";
 
@@ -60,7 +61,7 @@ export async function createOrganization(
       ...organizationFields(formData),
       logo_asset_id: readPicture(formData, "logo"),
       cover_asset_id: readPicture(formData, "cover"),
-      gallery_asset_ids: formData.getAll("gallery_asset_id").map(String),
+      gallery_asset_ids: galleryIds(formData),
     },
   });
   if (!result.ok) {
@@ -84,7 +85,20 @@ export async function updateOrganization(
     },
   });
   const state = finish(result);
-  return result.ok ? { success: "Đã lưu thông tin tổ chức." } : state;
+  if (!result.ok) {
+    return state;
+  }
+  // Pictures not marked as logo or cover join the gallery. Adding is idempotent,
+  // so saving the form again does not add them twice.
+  for (const assetId of galleryIds(formData)) {
+    const added = await authedFetch(`${organizationPath(slug)}/gallery`, {
+      body: { asset_id: assetId },
+    });
+    if (!added.ok) {
+      return failureState(added.code, added.issues);
+    }
+  }
+  return { success: "Đã lưu thông tin tổ chức." };
 }
 
 export async function addGalleryItem(
@@ -94,6 +108,27 @@ export async function addGalleryItem(
   return finish(
     await authedFetch(`${organizationPath(slug)}/gallery`, {
       body: { asset_id: assetId },
+    }),
+  );
+}
+
+// Sets the logo, the cover, or both in one request. A role left out stays as it is,
+// so swapping them or promoting a gallery picture is a single click.
+export async function chooseOrgPictures(
+  slug: string,
+  choice: { logo?: string | null; cover?: string | null },
+): Promise<FormState> {
+  const body: Record<string, string | null> = {};
+  if (choice.logo !== undefined) {
+    body.logo_asset_id = choice.logo;
+  }
+  if (choice.cover !== undefined) {
+    body.cover_asset_id = choice.cover;
+  }
+  return finish(
+    await authedFetch(`${organizationPath(slug)}/pictures`, {
+      method: "PUT",
+      body,
     }),
   );
 }

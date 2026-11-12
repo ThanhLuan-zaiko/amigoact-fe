@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { FiArrowLeft } from "react-icons/fi";
 import { getAccessToken } from "@/lib/auth";
 import { getPost } from "@/lib/postApi";
-import { isPostId, postPath } from "@/lib/posts";
+import { isPostId } from "@/lib/posts";
 import PostCard from "../../../../../_components/PostCard";
 import CommentSection from "../../../../../_components/posts/CommentSection";
 import PostActions from "../../../../../_components/posts/PostActions";
@@ -51,28 +49,10 @@ async function PostContent({ params }: { params: Params }) {
   );
 }
 
-async function BackLink({ params }: { params: Params }) {
-  const { slug } = await params;
-  return (
-    <Link
-      href={postPath(slug)}
-      className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-teal-700 hover:underline dark:text-teal-400"
-    >
-      <FiArrowLeft aria-hidden="true" />
-      Bảng tin
-    </Link>
-  );
-}
-
 export default function PostPage({ params }: { params: Params }) {
   return (
-    <div className="flex flex-col gap-3">
-      <Suspense fallback={null}>
-        <BackLink params={params} />
-      </Suspense>
-      <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
-        <PostContent params={params} />
-      </Suspense>
-    </div>
+    <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
+      <PostContent params={params} />
+    </Suspense>
   );
 }

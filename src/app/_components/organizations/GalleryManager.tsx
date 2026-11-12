@@ -9,6 +9,7 @@ import {
 import { uploadMessage } from "@/lib/forms";
 import type { GalleryItem } from "@/lib/organizations";
 import {
+  assetIdFromUrl,
   GALLERY_ACCEPT,
   GALLERY_MAX_ITEMS,
   galleryFileError,
@@ -16,6 +17,7 @@ import {
 } from "@/lib/pictureRules";
 import ConfirmDialog from "../ConfirmDialog";
 import { fieldLabel, iconButton, mutedText, panel, sectionTitle } from "../ui";
+import GalleryRoleButtons from "./GalleryRoleButtons";
 
 type Upload = { name: string; error?: string };
 
@@ -34,9 +36,14 @@ async function uploadOne(slug: string, file: File): Promise<string | null> {
 export default function GalleryManager({
   slug,
   items,
+  logoUrl = null,
+  coverUrl = null,
 }: {
   slug: string;
   items: GalleryItem[];
+  // The saved logo and cover, so their gallery tiles show the role they hold.
+  logoUrl?: string | null;
+  coverUrl?: string | null;
 }) {
   const inputId = useId();
   const [uploads, setUploads] = useState<Upload[]>([]);
@@ -169,15 +176,25 @@ export default function GalleryManager({
                   className="aspect-video w-full rounded-md border border-slate-200 object-cover dark:border-slate-800"
                 />
               )}
-              <button
-                type="button"
-                aria-label="Xóa khỏi bộ sưu tập"
-                title="Xóa khỏi bộ sưu tập"
-                onClick={() => setRemoving(item)}
-                className={iconButton}
-              >
-                <FiTrash2 aria-hidden="true" />
-              </button>
+              <div className="flex items-start gap-2">
+                {isVideo(item.mime) ? null : (
+                  <GalleryRoleButtons
+                    slug={slug}
+                    assetId={item.id}
+                    isLogo={assetIdFromUrl(logoUrl) === item.id}
+                    isCover={assetIdFromUrl(coverUrl) === item.id}
+                  />
+                )}
+                <button
+                  type="button"
+                  aria-label="Xóa khỏi bộ sưu tập"
+                  title="Xóa khỏi bộ sưu tập"
+                  onClick={() => setRemoving(item)}
+                  className={`${iconButton} ml-auto`}
+                >
+                  <FiTrash2 aria-hidden="true" />
+                </button>
+              </div>
             </li>
           ))}
         </ul>

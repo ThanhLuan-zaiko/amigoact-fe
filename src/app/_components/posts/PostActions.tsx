@@ -1,27 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiEdit2, FiEye, FiEyeOff, FiTrash2 } from "react-icons/fi";
 import { TbPin, TbPinnedOff } from "react-icons/tb";
-import { deletePost, setPinned } from "@/app/_actions/posts";
+import { deletePost, setHidden, setPinned } from "@/app/_actions/posts";
 import { postPath } from "@/lib/posts";
 import ActionButton from "../organizations/ActionButton";
 import type { Post } from "../types";
 import { iconButton } from "../ui";
 import ConfirmAction from "./ConfirmAction";
 
-// The controls under a post on its own page. Each one shows only when the backend
-// says this viewer may use it.
-export default function PostActions({ post }: { post: Post }) {
+// The controls of a post. Each one shows only when the backend says this viewer
+// may use it. `inline` sits in the footer of a list card instead of its own row.
+export default function PostActions({
+  post,
+  inline = false,
+}: {
+  post: Post;
+  inline?: boolean;
+}) {
   const { viewer } = post;
   const isDraft = post.status === "draft";
-  if (!viewer.can_edit && !viewer.can_delete && !viewer.can_pin) {
+  if (
+    !viewer.can_edit &&
+    !viewer.can_delete &&
+    !viewer.can_pin &&
+    !viewer.can_hide
+  ) {
     return null;
   }
   const back = isDraft ? `${postPath(post.slug)}/drafts` : postPath(post.slug);
 
   return (
-    <div className="flex flex-wrap items-start gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
+    <div
+      className={
+        inline
+          ? "flex items-center gap-1"
+          : "flex flex-wrap items-start gap-2 border-t border-slate-200 pt-3 dark:border-slate-800"
+      }
+    >
       {viewer.can_edit ? (
         <Link
           href={`${postPath(post.slug, post.id)}/edit`}
@@ -41,6 +58,18 @@ export default function PostActions({ post }: { post: Post }) {
             <TbPinnedOff aria-hidden="true" />
           ) : (
             <TbPin aria-hidden="true" />
+          )}
+        </ActionButton>
+      ) : null}
+      {viewer.can_hide ? (
+        <ActionButton
+          action={setHidden.bind(null, post.slug, post.id, !post.hidden)}
+          label={post.hidden ? "Hiện lại bài" : "Ẩn khỏi bảng tin"}
+        >
+          {post.hidden ? (
+            <FiEye aria-hidden="true" />
+          ) : (
+            <FiEyeOff aria-hidden="true" />
           )}
         </ActionButton>
       ) : null}

@@ -1,6 +1,9 @@
 // A small, safe markup for post bodies, stored as plain text in the backend.
 //   "## " heading, "> " quote, "- " list item, a line of "---" divider.
+// "[media:<id>]" alone on a line places an attached picture or video (postMedia.ts).
 // The toolbar inserts it and PostBody renders it. Nothing here produces HTML.
+
+import { matchMediaToken } from "./postMedia";
 
 export type FormatAction = "heading" | "quote" | "list" | "rule";
 
@@ -53,6 +56,7 @@ export type BodyBlock =
   | { type: "quote"; lines: string[] }
   | { type: "list"; items: string[] }
   | { type: "rule" }
+  | { type: "media"; id: string }
   | { type: "paragraph"; text: string };
 
 export function parseBody(body: string): BodyBlock[] {
@@ -69,8 +73,12 @@ export function parseBody(body: string): BodyBlock[] {
   for (const raw of body.replace(/\r\n?/g, "\n").split("\n")) {
     const line = raw.trimEnd();
     const last = blocks.at(-1);
+    const mediaId = matchMediaToken(line);
     if (line.trim() === "") {
       flush();
+    } else if (mediaId) {
+      flush();
+      blocks.push({ type: "media", id: mediaId });
     } else if (line === "---") {
       flush();
       blocks.push({ type: "rule" });
@@ -97,4 +105,23 @@ export function parseBody(body: string): BodyBlock[] {
   }
   flush();
   return blocks;
+}
+
+// Plain text of a body for a short preview: markup and placed files dropped.
+export function bodyExcerpt(body: string): string {
+  return parseBody(body)
+    .flatMap((block) => {
+      switch (block.type) {
+        case "heading":
+        case "paragraph":
+          return [block.text];
+        case "quote":
+          return [block.lines.join(" ")];
+        case "list":
+          return [block.items.join(" · ")];
+        default:
+          return [];
+      }
+    })
+    .join("\n");
 }

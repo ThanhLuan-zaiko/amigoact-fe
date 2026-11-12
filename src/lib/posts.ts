@@ -158,6 +158,7 @@ export type PostViewerApi = {
   can_edit: boolean;
   can_delete: boolean;
   can_pin: boolean;
+  can_hide?: boolean;
   can_comment: boolean;
 };
 
@@ -172,6 +173,7 @@ export type PostApi = {
   tags: string[];
   media: { id: string; url: string; mime: string }[];
   pinned: boolean;
+  hidden?: boolean;
   comment_count: number;
   org: { slug: string; name: string };
   viewer?: PostViewerApi;
@@ -237,7 +239,9 @@ export function toPost(post: PostApi, formatDate: (value: string) => string) {
     tags: post.tags,
     commentCount: post.comment_count,
     pinned: post.pinned,
+    hidden: post.hidden ?? false,
     media: post.media.map((item) => ({
+      id: item.id.toLowerCase(),
       src: `/media/${item.id}/file`,
       isVideo: item.mime.startsWith("video/"),
     })),

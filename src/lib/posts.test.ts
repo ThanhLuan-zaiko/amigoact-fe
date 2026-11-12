@@ -163,8 +163,8 @@ describe("toPost", () => {
       (value) => `d:${value}`,
     );
     expect(post.media).toEqual([
-      { src: "/media/m1/file", isVideo: false },
-      { src: "/media/m2/file", isVideo: true },
+      { id: "m1", src: "/media/m1/file", isVideo: false },
+      { id: "m2", src: "/media/m2/file", isVideo: true },
     ]);
     expect(post.publishedAt).toBe("d:2026-01-01T00:00:00Z");
     expect(post.organizationInitials).toBe("CL");

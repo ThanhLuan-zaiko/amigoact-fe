@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  assetIdFromUrl,
   galleryFileError,
   isPictureId,
   isPictureTooLarge,
@@ -50,5 +51,22 @@ describe("galleryFileError", () => {
     expect(
       galleryFileError({ type: "application/pdf", size: 1 }),
     ).not.toBeNull();
+  });
+});
+
+describe("assetIdFromUrl", () => {
+  test("reads the id of a media URL", () => {
+    const id = "01a1ce62-7b87-712e-801d-6c95e8c976f7";
+    expect(assetIdFromUrl(`/media/${id}/file`)).toBe(id);
+  });
+
+  test("anything else has no id", () => {
+    expect(assetIdFromUrl(null)).toBeNull();
+    expect(assetIdFromUrl("/media/abc/file")).toBeNull();
+    expect(
+      assetIdFromUrl(
+        "https://x.test/media/01a1ce62-7b87-712e-801d-6c95e8c976f7/file",
+      ),
+    ).toBeNull();
   });
 });

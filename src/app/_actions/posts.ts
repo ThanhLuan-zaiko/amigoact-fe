@@ -141,6 +141,22 @@ export async function setPinned(
   return { success: pinned ? "Đã ghim bài." : "Đã bỏ ghim." };
 }
 
+export async function setHidden(
+  slug: string,
+  postId: string,
+  hidden: boolean,
+): Promise<FormState> {
+  const verb = hidden ? "hide" : "unhide";
+  const result = await authedFetch(
+    `/posts/${encodeURIComponent(postId)}/${verb}`,
+  );
+  if (!result.ok) {
+    return failureState(result.code, result.issues);
+  }
+  refresh(slug);
+  return { success: hidden ? "Đã ẩn bài khỏi bảng tin." : "Đã hiện lại bài." };
+}
+
 export async function restorePost(
   slug: string,
   postId: string,

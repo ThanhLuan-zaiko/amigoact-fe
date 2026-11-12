@@ -13,6 +13,7 @@ export type Post = {
     can_edit: boolean;
     can_delete: boolean;
     can_pin: boolean;
+    can_hide?: boolean;
     can_comment: boolean;
   };
   edited: boolean;
@@ -26,5 +27,9 @@ export type Post = {
   tags: string[];
   commentCount: number;
   pinned?: boolean;
-  media?: { src: string; isVideo: boolean }[];
+  // Hidden from the feed by a manager. Only managers still get it.
+  hidden?: boolean;
+  media?: PostMedia[];
 };
+
+export type PostMedia = { id: string; src: string; isVideo: boolean };

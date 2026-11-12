@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import type { IconType } from "react-icons";
 import {
   FiImage,
@@ -11,6 +11,12 @@ import {
   FiVideo,
 } from "react-icons/fi";
 import { applyFormat, type FormatAction } from "@/lib/postFormat";
+import {
+  insertMediaToken,
+  MEDIA_INSERT_EVENT,
+  MEDIA_REMOVE_EVENT,
+  removeMediaToken,
+} from "@/lib/postMedia";
 import { FieldNotes } from "../account/FormParts";
 import { inputField, inputFieldInvalid } from "../ui";
 
@@ -36,6 +42,35 @@ export default function BodyField({
 }) {
   const errorId = useId();
   const areaRef = useRef<HTMLTextAreaElement>(null);
+
+  // MediaField asks to place a file at the cursor, or to drop it when removed.
+  // A blurred textarea keeps its selection, so the cursor is where the writer left it.
+  useEffect(() => {
+    function onInsert(event: Event) {
+      const area = areaRef.current;
+      const id = (event as CustomEvent<string>).detail;
+      if (!area || !id) {
+        return;
+      }
+      const result = insertMediaToken(area.value, area.selectionEnd, id);
+      area.value = result.text;
+      area.focus();
+      area.setSelectionRange(result.cursor, result.cursor);
+    }
+    function onRemove(event: Event) {
+      const area = areaRef.current;
+      const id = (event as CustomEvent<string>).detail;
+      if (area && id) {
+        area.value = removeMediaToken(area.value, id);
+      }
+    }
+    window.addEventListener(MEDIA_INSERT_EVENT, onInsert);
+    window.addEventListener(MEDIA_REMOVE_EVENT, onRemove);
+    return () => {
+      window.removeEventListener(MEDIA_INSERT_EVENT, onInsert);
+      window.removeEventListener(MEDIA_REMOVE_EVENT, onRemove);
+    };
+  }, []);
 
   function format(action: FormatAction) {
     const area = areaRef.current;
@@ -106,7 +141,7 @@ export default function BodyField({
         aria-label="Nội dung bài viết"
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
-        className={`${error ? inputFieldInvalid : inputField} resize-y leading-relaxed`}
+        className={`${error ? inputFieldInvalid : inputField} field-sizing-content min-h-48 resize-y leading-relaxed`}
       />
       <FieldNotes id={errorId} error={error} />
     </div>

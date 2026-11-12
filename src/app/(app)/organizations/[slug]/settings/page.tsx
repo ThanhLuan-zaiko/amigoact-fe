@@ -41,7 +41,12 @@ async function SettingsContent({
         organization={organization}
       />
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-2">
-        <GalleryManager slug={slug} items={gallery} />
+        <GalleryManager
+          slug={slug}
+          items={gallery}
+          logoUrl={organization.logo_url}
+          coverUrl={organization.cover_url}
+        />
         {rule ? <HourRuleForm slug={slug} rule={rule} /> : null}
       </div>
       {organization.viewer.role === "owner" ? (

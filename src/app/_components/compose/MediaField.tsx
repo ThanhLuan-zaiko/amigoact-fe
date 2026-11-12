@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FiTrash2 } from "react-icons/fi";
+import { FiCornerDownLeft, FiTrash2 } from "react-icons/fi";
 import { uploadMessage } from "@/lib/forms";
 import {
   isPictureTooLarge,
@@ -9,12 +9,17 @@ import {
   PICTURE_ACCEPT,
   VIDEO_MAX_BYTES,
 } from "@/lib/pictureRules";
+import { MEDIA_INSERT_EVENT, MEDIA_REMOVE_EVENT } from "@/lib/postMedia";
 import { POST_MEDIA_LIMIT } from "@/lib/posts";
 import { FieldNotes } from "../account/FormParts";
 import { iconButton, mutedText } from "../ui";
 import { IMAGE_INPUT_ID, VIDEO_INPUT_ID } from "./BodyField";
 
 type Item = { id: string; mime: string; preview: string };
+
+function tellBody(event: string, id: string) {
+  window.dispatchEvent(new CustomEvent(event, { detail: id.toLowerCase() }));
+}
 
 const VIDEO_ACCEPT = "video/mp4,video/webm";
 const MEDIA_CLASS =
@@ -80,6 +85,8 @@ export default function MediaField({
         room -= 1;
         const preview = URL.createObjectURL(file);
         setItems((current) => [...current, { id, mime: file.type, preview }]);
+        // A new file lands where the cursor is, like a picture in an article.
+        tellBody(MEDIA_INSERT_EVENT, id);
       } else {
         errors.push(`${file.name}: ${failure}`);
       }
@@ -93,6 +100,7 @@ export default function MediaField({
       URL.revokeObjectURL(item.preview);
     }
     setItems((current) => current.filter((entry) => entry.id !== item.id));
+    tellBody(MEDIA_REMOVE_EVENT, item.id);
   }
 
   function picker(id: string, accept: string, label: string) {
@@ -142,15 +150,26 @@ export default function MediaField({
                 // biome-ignore lint/performance/noImgElement: local preview of the chosen file.
                 <img src={item.preview} alt="" className={MEDIA_CLASS} />
               )}
-              <button
-                type="button"
-                aria-label="Gỡ tệp"
-                title="Gỡ tệp"
-                onClick={() => remove(item)}
-                className={iconButton}
-              >
-                <FiTrash2 aria-hidden="true" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  aria-label="Chèn vào vị trí con trỏ"
+                  title="Chèn vào vị trí con trỏ"
+                  onClick={() => tellBody(MEDIA_INSERT_EVENT, item.id)}
+                  className={iconButton}
+                >
+                  <FiCornerDownLeft aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Gỡ tệp"
+                  title="Gỡ tệp"
+                  onClick={() => remove(item)}
+                  className={iconButton}
+                >
+                  <FiTrash2 aria-hidden="true" />
+                </button>
+              </div>
               <input type="hidden" name="media_id" value={item.id} />
             </li>
           ))}
@@ -161,7 +180,7 @@ export default function MediaField({
         error={error}
         hint={
           items.length > 0
-            ? `${items.length}/${POST_MEDIA_LIMIT} tệp. Chỉ bài công khai có ảnh hoặc video.`
+            ? `${items.length}/${POST_MEDIA_LIMIT} tệp. Dòng [media:…] trong nội dung là chỗ đặt tệp, tệp chưa đặt sẽ hiện cuối bài. Chỉ bài công khai có ảnh hoặc video.`
             : undefined
         }
       />

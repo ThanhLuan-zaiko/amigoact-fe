@@ -43,6 +43,12 @@ Các trang nằm trong `src/app/(app)/organizations/[slug]/posts/`.
 
 `ConfirmAction` là nút icon mở `ConfirmDialog` rồi chạy Server Action. Truyền `typeToConfirm` để bắt gõ lại một chuỗi trước khi mở khóa nút.
 
+## Ẩn bài
+
+- Ban quản trị thấy nút con mắt gạch (`can_hide`) trên thẻ bài và trang chi tiết. Bấm để ẩn bài khỏi bảng tin, bấm lại để hiện. Không cần xác nhận vì làm lại được ngay.
+- Bài ẩn chỉ ban quản trị thấy, có nhãn vàng "Đã ẩn" ở đầu thẻ. Người khác không thấy bài và mở link nhận 404.
+- Action là `setHidden` trong `src/app/_actions/posts.ts`. Chi tiết quy tắc ở `docs/posts.md` của backend.
+
 ## Bình luận
 
 - `CommentSection` đọc bình luận trên server. `CommentItem` hiện từng bình luận với nút sửa, xóa, khôi phục theo cờ `can_edit`, `can_delete`, `can_restore` của backend.
@@ -71,12 +77,15 @@ Nội dung lưu dạng văn bản thuần. Thanh công cụ chèn các dấu sau
 | Trích dẫn | `> ` đầu dòng | Khối trích dẫn |
 | Danh sách | `- ` đầu dòng | Danh sách chấm |
 | Đường kẻ | dòng `---` | Đường phân cách |
+| Ảnh, Video | dòng `[media:<id>]` | Ảnh hoặc video đặt đúng chỗ đó |
 
 Bấm lại nút lên các dòng đã có dấu thì gỡ dấu. Code ở `src/lib/postFormat.ts`.
 
 ## Ảnh và video
 
 - Nút "Ảnh" và "Video" mở hộp chọn tệp. Mỗi tệp tải lên ngay qua `/media/upload` và đi kèm form dưới dạng `media_id`. Ảnh JPEG, PNG, WEBP tối đa 20 MB, video MP4, WEBM tối đa 50 MB, tổng cộng tối đa 10 tệp mỗi bài.
+- Tệp vừa tải lên được chèn ngay vào vị trí con trỏ trong nội dung, thành một dòng `[media:<id>]`, giống chèn ảnh khi viết báo. Nút "Chèn vào vị trí con trỏ" dưới mỗi tệp chèn lại tệp đó ở chỗ khác. Gỡ tệp thì các dòng đặt tệp đó cũng bị xóa. Code ở `src/lib/postMedia.ts`.
+- Khi hiển thị, tệp được đặt trong nội dung hiện tại chỗ đó (giữ tỉ lệ gốc). Tệp đính kèm mà nội dung không đặt thì hiện thành lưới ở cuối bài, nên bài cũ vẫn hiện như trước. Dòng đặt một tệp mà bài không còn đính kèm thì không hiện gì. Backend không cần đổi: dấu đặt tệp chỉ là văn bản, và tệp vẫn đi qua `media_ids`.
 - Khi sửa bài, `MediaField` hiện sẵn các tệp bài đang có. Gỡ một tệp rồi lưu thì backend thay cả danh sách.
 - Backend không cho bài chỉ dành cho thành viên có ảnh hoặc video. Thảo luận mặc định là chỉ thành viên, nên muốn có tệp phải chọn "Công khai". Form báo lỗi đỏ trước khi gửi (`effectiveVisibility`).
 - Tệp của bản nháp còn riêng tư. `/media/[id]/file` gửi kèm token của người xem, nên tác giả xem được tệp nháp của mình, người khác nhận 404. Route chuyển tiếp cả `Range` để video tua được.

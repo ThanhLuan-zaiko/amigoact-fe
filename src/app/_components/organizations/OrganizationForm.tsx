@@ -81,6 +81,7 @@ export default function OrganizationForm({
           </FormSection>
           <FormSection title="Ảnh">
             <PicturePicker
+              slug={organization?.slug}
               currentLogoUrl={organization?.logo_url}
               currentCoverUrl={organization?.cover_url}
               error={{ logo: errors?.logo, cover: errors?.cover }}

@@ -42,3 +42,10 @@ export function galleryFileError(file: {
     ? `Ảnh tối đa ${PICTURE_MAX_MB} MB.`
     : null;
 }
+
+// The backend serves a picture at "/media/{id}/file". Picture fields carry only
+// that URL, so the asset id is read back from it.
+export function assetIdFromUrl(url: string | null | undefined): string | null {
+  const found = url ? /^\/media\/([0-9a-f-]{36})\/file$/i.exec(url) : null;
+  return found ? found[1] : null;
+}

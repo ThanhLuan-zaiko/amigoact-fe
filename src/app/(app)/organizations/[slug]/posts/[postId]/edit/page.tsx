@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { updatePost } from "@/app/_actions/posts";
+import { getLinkableActivities } from "@/lib/activityApi";
 import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
 import { getPostForEdit } from "@/lib/postApi";
+import { activityOptions } from "@/lib/postActivity";
 import { isPostId, postPath } from "@/lib/posts";
 import PostForm from "../../../../../../_components/posts/PostForm";
 import { mutedText } from "../../../../../../_components/ui";
@@ -19,9 +21,10 @@ async function EditPostContent({ params }: { params: Params }) {
     notFound();
   }
   await requireUser(`/organizations/${slug}/posts/${postId}/edit`);
-  const [post, organization] = await Promise.all([
+  const [post, organization, activities] = await Promise.all([
     getPostForEdit(postId),
     getOrganization(slug),
+    getLinkableActivities(slug),
   ]);
   if (!post || !organization || post.org.slug !== slug) {
     notFound();
@@ -33,6 +36,8 @@ async function EditPostContent({ params }: { params: Params }) {
 
   return (
     <PostForm
+      orgSlug={slug}
+      activities={activityOptions(activities, post.activity ?? null)}
       action={updatePost.bind(null, slug, postId, isDraft)}
       kinds={[post.kind]}
       organizationName={organization.name}
@@ -45,6 +50,7 @@ async function EditPostContent({ params }: { params: Params }) {
         body: post.body,
         tags: post.tags,
         media: post.media.map(({ id, mime }) => ({ id, mime })),
+        activityId: post.activity?.id ?? null,
         isDraft,
       }}
     />

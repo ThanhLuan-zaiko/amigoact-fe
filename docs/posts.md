@@ -27,6 +27,9 @@ Các trang nằm trong `src/app/(app)/organizations/[slug]/posts/`.
 - `PostForm` (`src/app/_components/posts/PostForm.tsx`) dùng cho cả tạo và sửa. Tổ chức lấy từ đường dẫn: action được gắn sẵn bằng `createPost.bind(null, slug)`, nên form không còn ô "Đăng dưới".
 - Chip "Thông báo" chỉ hiện với ban quản trị (`postKinds`). Khi sửa, loại bài bị khóa vì backend không cho đổi.
 - Tên ô nhập là `post_title`, `post_body`, `post_tags`. `renameIssueField` đổi tên trường lỗi từ backend về các tên này.
+- Thẻ dùng `TagInput` (`src/app/_components/compose/TagInput.tsx`) dạng chip. Enter hoặc dấu phẩy biến chữ thành chip, Backspace khi ô trống bỏ chip cuối, dán `a, b, c` thì tách thành ba chip. Đủ 5 thẻ thì ô chỉ còn đọc. Hai tên cùng slug (`tagSlug` trong `src/lib/tagInput.ts`, giống backend) chỉ giữ một.
+- Form gửi ô ẩn `post_tags`, nối các chip bằng dấu phẩy, kèm cả chữ còn đang gõ dở, nên Server Action và `parseTags` không đổi.
+- Gợi ý lấy từ Server Action `searchPostTags` (`src/app/_actions/postTags.ts`), gọi `GET /organizations/{slug}/post-tags`. `useTagSuggestions` chờ 200ms sau khi gõ, nhớ kết quả theo slug và bỏ câu trả lời đến muộn. Khi chữ đang gõ chưa có trong tổ chức, hàng đầu tiên là "Tạo thẻ". Lỗi mạng chỉ làm mất gợi ý, không chặn việc gõ.
 - Tạo bài có hai nút: lưu nháp (`intent=draft`) và đăng (`intent=publish`). Sửa bản nháp cũng có hai nút đó. Sửa bài đã đăng chỉ có "Lưu thay đổi".
 - Đăng xong thì chuyển tới trang chi tiết của bài.
 
@@ -58,14 +61,28 @@ Các trang nằm trong `src/app/(app)/organizations/[slug]/posts/`.
 
 ## Kiểm tra dữ liệu
 
-- Trình duyệt kiểm tra trước bằng `validatePost`: tiêu đề 1 đến 160 ký tự và phải có ít nhất một chữ cái (`hasLetter`), nên "2024" bị từ chối. Nội dung tối đa 5000 ký tự, tối đa 3 thẻ.
+- Trình duyệt kiểm tra trước bằng `validatePost`: tiêu đề 1 đến 160 ký tự và phải có ít nhất một chữ cái (`hasLetter`), nên "2024" bị từ chối. Nội dung tối đa 5000 ký tự, tối đa 5 thẻ.
 - Backend kiểm tra lại. Các mã `text_needs_letter`, `bool_type`, `post_not_in_trash`, `comment_edit_expired`, `comment_not_deleted` được dịch trong `src/lib/forms.ts`.
 
 ## Trang chủ
 
 - `/` đọc `GET /feed` (tab "Dành cho bạn") hoặc `GET /feed/public` (tab "Công khai") theo `?tab=`. Khách luôn thấy tab công khai.
-- Mục "Thẻ phổ biến" lấy từ `GET /feed/popular-tags`.
+- Mục "Thẻ phổ biến" lấy từ `GET /feed/popular-tags`. Mỗi thẻ dẫn tới `/?tab=public&tag=<slug>`.
+
+## Lọc theo thẻ
+
+- Thẻ trên `PostCard` dẫn tới `/organizations/[slug]/posts?tag=<slug>` (`orgTagHref` trong `src/lib/tagLinks.ts`). Slug tính bằng `tagSlug`, giống backend.
+- Trang bài của tổ chức và trang chủ đọc `?tag=` bằng `readTag` rồi gửi cho backend. Lọc loại bài, đổi tab và "Xem bài cũ hơn" đều giữ thẻ (`listQuery`).
+- Khi đang lọc, `TagFilterBar` hiện thẻ ở đầu danh sách, kèm nút × để bỏ lọc. Tên hiện là tên mà bài trên trang dùng (`tagLabel`), không có bài nào thì hiện slug. Danh sách trống thì báo "Chưa có bài với thẻ này".
 - Tiêu đề bài trên thẻ dẫn tới trang chi tiết. Tên tổ chức dẫn tới trang tổ chức.
+
+## Gắn bài với hoạt động
+
+- Form bài có ô "Hoạt động liên quan" (`SelectMenu`, trường `activity_id`). Danh sách lấy từ `getLinkableActivities` trong `src/lib/activityApi.ts`: hoạt động đã đăng hoặc đã kết thúc của tổ chức, mới nhất trước. Tổ chức chưa có hoạt động nào như vậy thì ô này ẩn đi.
+- Khi sửa bài, hoạt động đang gắn luôn có trong danh sách, kể cả khi đã bị hủy (`activityOptions` trong `src/lib/postActivity.ts`). Chọn "Không gắn hoạt động" thì gửi `null` và bỏ gắn.
+- Bài có hoạt động hiện `PostActivityRow` ở cuối bài: tên hoạt động (link tới `/activities/[id]`), giờ, địa điểm, số chỗ. Đây là một phần của bài, ngăn bằng đường kẻ, không phải thẻ lồng trong thẻ.
+- Nút "Đăng ký" (hoặc "Vào hàng chờ" khi hết chỗ) chỉ hiện khi hoạt động đã đăng và chưa qua hạn đăng ký (`canSignUp`). Nút dẫn tới trang hoạt động, nơi kiểm tra mọi quy tắc đăng ký. Hết hạn thì hiện "Đã đóng đăng ký", hoạt động đã kết thúc hoặc đã hủy thì hiện trạng thái.
+- Mã lỗi `activity_not_linkable` hiện màu đỏ dưới ô chọn hoạt động.
 
 ## Định dạng nội dung
 
@@ -93,4 +110,3 @@ Bấm lại nút lên các dòng đã có dấu thì gỡ dấu. Code ở `src/l
 ## Chưa làm
 
 - Tab "Đang theo dõi" ở trang chủ, vì backend chưa có việc theo dõi tổ chức.
-- Lọc bảng tin theo thẻ.

@@ -24,7 +24,9 @@ async function NewActivityContent({
       <p className={mutedText}>Chỉ ban quản trị mới tạo được hoạt động.</p>
     );
   }
-  return <ActivityForm action={createActivity.bind(null, slug)} />;
+  return (
+    <ActivityForm action={createActivity.bind(null, slug)} orgSlug={slug} />
+  );
 }
 
 export default function NewActivityPage({

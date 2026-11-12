@@ -45,8 +45,12 @@ export async function getOrgPosts(
   filter: FeedFilter,
   before: string | null,
   limit = 20,
+  tag: string | null = null,
 ): Promise<PostListPage | null> {
   const query = new URLSearchParams({ limit: String(limit) });
+  if (tag) {
+    query.set("tag", tag);
+  }
   if (filter === "announcement" || filter === "discussion") {
     query.set("kind", filter);
   }
@@ -98,8 +102,12 @@ export async function getPostTrash(slug: string, before: string | null) {
 export async function getFeed(
   tab: "mine" | "public",
   before: string | null,
+  tag: string | null = null,
 ): Promise<PostListPage | null> {
   const query = new URLSearchParams({ limit: "20" });
+  if (tag) {
+    query.set("tag", tag);
+  }
   if (before) {
     query.set("before", before);
   }

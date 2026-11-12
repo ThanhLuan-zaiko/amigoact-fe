@@ -1,14 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { FiPlus } from "react-icons/fi";
+import { FiFileText, FiPlus, FiTrash2 } from "react-icons/fi";
 import { listOrganizationActivities } from "@/lib/activityApi";
+import {
+  activityFilter,
+  activityFilterHref,
+  EMPTY_MESSAGES,
+  orgActivitiesPath,
+} from "@/lib/activityList";
 import { getOrganization } from "@/lib/organizationApi";
+import { readTag, tagLabel } from "@/lib/tagLinks";
 import { pageOffset } from "@/lib/organizations";
 import ActivityCard from "../../../../_components/activities/ActivityCard";
+import ActivityFilters from "../../../../_components/activities/ActivityFilters";
 import EmptyState from "../../../../_components/EmptyState";
 import PageLinks from "../../../../_components/organizations/PageLinks";
-import { mutedText, primaryButton } from "../../../../_components/ui";
+import TagFilterBar from "../../../../_components/posts/TagFilterBar";
+import {
+  iconButton,
+  mutedText,
+  primaryButton,
+} from "../../../../_components/ui";
 
 export const metadata: Metadata = { title: "Hoạt động của tổ chức | AmigoACT" };
 
@@ -17,35 +30,70 @@ async function OrganizationActivities({
   searchParams,
 }: PageProps<"/organizations/[slug]/activities">) {
   const { slug } = await params;
-  const offset = pageOffset((await searchParams).page);
+  const query = await searchParams;
+  const filter = activityFilter(query.filter);
+  const offset = pageOffset(query.page);
+  const tag = readTag(query.tag);
   const [organization, page] = await Promise.all([
     getOrganization(slug),
-    listOrganizationActivities(slug, offset),
+    listOrganizationActivities(slug, offset, filter, tag),
   ]);
   if (!organization) {
     return null;
   }
+  const base = orgActivitiesPath(slug);
+  const canManage = organization.viewer.can_manage;
+  const empty = tag
+    ? {
+        title: "Chưa có hoạt động với thẻ này",
+        description: "Bỏ lọc thẻ để xem mọi hoạt động của tổ chức.",
+      }
+    : EMPTY_MESSAGES[filter];
 
   return (
-    <div className="flex flex-col gap-3">
-      {organization.viewer.can_manage ? (
-        <div>
-          <Link
-            href={`/organizations/${slug}/activities/new`}
-            className={primaryButton}
-          >
-            <FiPlus aria-hidden="true" />
-            Tạo hoạt động
-          </Link>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <ActivityFilters slug={slug} current={filter} tag={tag} />
         </div>
+        {canManage ? (
+          <>
+            <Link
+              href={`${base}/drafts`}
+              aria-label="Hoạt động nháp"
+              title="Hoạt động nháp"
+              className={iconButton}
+            >
+              <FiFileText aria-hidden="true" />
+            </Link>
+            <Link
+              href={`${base}/trash`}
+              aria-label="Thùng rác hoạt động"
+              title="Thùng rác hoạt động"
+              className={iconButton}
+            >
+              <FiTrash2 aria-hidden="true" />
+            </Link>
+            <Link href={`${base}/new`} className={primaryButton}>
+              <FiPlus aria-hidden="true" />
+              Tạo hoạt động
+            </Link>
+          </>
+        ) : null}
+      </div>
+      {tag ? (
+        <TagFilterBar
+          label={tagLabel(
+            tag,
+            page?.items.map((item) => ({ tags: item.tags ?? [] })) ?? [],
+          )}
+          clearHref={activityFilterHref(slug, filter)}
+        />
       ) : null}
       {page === null ? (
         <p className={mutedText}>Không tải được danh sách. Vui lòng thử lại.</p>
       ) : page.items.length === 0 ? (
-        <EmptyState
-          title="Chưa có hoạt động"
-          description="Hoạt động của tổ chức sẽ hiện ở đây."
-        />
+        <EmptyState title={empty.title} description={empty.description} />
       ) : (
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
           {page.items.map((activity) => (
@@ -54,7 +102,7 @@ async function OrganizationActivities({
         </div>
       )}
       <PageLinks
-        path={`/organizations/${slug}/activities`}
+        path={activityFilterHref(slug, filter, tag)}
         offset={offset}
         total={page?.total ?? 0}
       />

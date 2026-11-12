@@ -26,6 +26,9 @@ export const chipPressed = `inline-flex items-center gap-2 rounded-md border bor
 export const tagChip =
   "inline-flex items-center rounded-sm border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 dark:border-slate-800 dark:text-slate-300";
 
+// A tag chip that leads to the posts with that tag.
+export const tagLink = `inline-flex items-center rounded-sm border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition-colors hover:border-teal-700 hover:text-teal-700 ${focusRing} dark:border-slate-800 dark:text-slate-300 dark:hover:border-teal-400 dark:hover:text-teal-400`;
+
 // Segmented control used for tabs and sub-navigation.
 export const segmentList =
   "flex gap-1 overflow-x-auto rounded-md border border-slate-200 p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden dark:border-slate-800";

@@ -45,6 +45,7 @@ async function EditContent({
       <div className="flex w-full flex-col gap-4">
         <ActivityForm
           action={updateActivity.bind(null, id)}
+          orgSlug={activity.organization_slug}
           activity={activity}
         />
         <ShiftEditor activityId={id} shifts={activity.shifts} />

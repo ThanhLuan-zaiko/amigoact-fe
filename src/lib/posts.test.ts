@@ -6,6 +6,7 @@ import {
   parseTags,
   postableOrganizations,
   renameIssueField,
+  tagListError,
   toPost,
   validatePost,
 } from "./posts";
@@ -65,13 +66,20 @@ describe("validatePost", () => {
     expect(validatePost({ ...valid, title: "x".repeat(161) }).post_title).toBe(
       "Vui lòng nhập tiêu đề (tối đa 160 ký tự).",
     );
-    expect(validatePost({ ...valid, tags: "a,b,c,d" }).post_tags).toBe(
-      "Mỗi bài có tối đa 3 thẻ.",
+    expect(validatePost({ ...valid, tags: "a,b,c,d,e,f" }).post_tags).toBe(
+      "Mỗi bài có tối đa 5 thẻ.",
     );
     expect(validatePost({ ...valid, tags: "!!!" }).post_tags).toBe(
       "Thẻ cần có ít nhất một chữ hoặc số.",
     );
   });
+});
+
+test("tagListError checks the shared tag rules", () => {
+  expect(tagListError("")).toBeUndefined();
+  expect(tagListError("a, b")).toBeUndefined();
+  expect(tagListError("a,b,c,d,e,f")).toBe("Mỗi bài có tối đa 5 thẻ.");
+  expect(tagListError("!!!")).toBe("Thẻ cần có ít nhất một chữ hoặc số.");
 });
 
 describe("backend issues", () => {
@@ -85,7 +93,23 @@ describe("backend issues", () => {
       failureState("validation_error", [
         { field: renameIssueField("tags"), type: "too_many_tags" },
       ]),
-    ).toEqual({ fieldErrors: { post_tags: "Mỗi bài có tối đa 3 thẻ." } });
+    ).toEqual({ fieldErrors: { post_tags: "Mỗi bài có tối đa 5 thẻ." } });
+  });
+
+  test("an activity that cannot be linked shows under the activity menu", () => {
+    expect(
+      failureState("validation_error", [
+        {
+          field: renameIssueField("activity_id"),
+          type: "activity_not_linkable",
+        },
+      ]),
+    ).toEqual({
+      fieldErrors: {
+        activity_id:
+          "Không gắn được hoạt động này. Hãy chọn hoạt động đã đăng của tổ chức.",
+      },
+    });
   });
 
   test("an empty title from the backend uses the post message", () => {

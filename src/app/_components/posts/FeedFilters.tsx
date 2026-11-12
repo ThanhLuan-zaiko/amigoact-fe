@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { IconType } from "react-icons";
 import { FiBell, FiBookmark, FiList, FiMessageCircle } from "react-icons/fi";
 import type { FeedFilter } from "@/lib/posts";
+import { listQuery } from "@/lib/tagLinks";
 import { segmentActive, segmentIdle, segmentItem, segmentList } from "../ui";
 
 const FILTERS: { value: FeedFilter; label: string; icon: IconType }[] = [
@@ -12,12 +13,15 @@ const FILTERS: { value: FeedFilter; label: string; icon: IconType }[] = [
 ];
 
 // Links, not buttons, so a filter is a shareable address and works without JavaScript.
+// A tag filter stays on when the kind changes.
 export default function FeedFilters({
   path,
   current,
+  tag = null,
 }: {
   path: string;
   current: FeedFilter;
+  tag?: string | null;
 }) {
   return (
     <nav aria-label="Lọc bài viết" className={segmentList}>
@@ -26,7 +30,7 @@ export default function FeedFilters({
         return (
           <Link
             key={value}
-            href={value === "all" ? path : `${path}?filter=${value}`}
+            href={`${path}${listQuery({ filter: value === "all" ? null : value, tag })}`}
             aria-label={label}
             title={label}
             aria-current={active ? "page" : undefined}

@@ -50,6 +50,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   owner_cannot_be_removed: "Không thể xóa chủ sở hữu khỏi tổ chức.",
   cannot_remove_self: "Bạn không thể tự xóa mình. Hãy chọn rời tổ chức.",
   activity_not_found: "Không tìm thấy hoạt động này.",
+  activity_not_in_trash: "Hoạt động này không nằm trong thùng rác.",
   activity_not_editable: "Hoạt động ở trạng thái này không sửa được nữa.",
   activity_not_draft: "Chỉ xóa được bản nháp. Hoạt động đã đăng thì hãy hủy.",
   activity_not_started: "Hoạt động chưa bắt đầu nên chưa thể kết thúc.",
@@ -126,8 +127,10 @@ const ISSUE_MESSAGES: Record<string, string> = {
   delta_zero: FIELD_MESSAGES.deltaHours,
   checkin_input_required: FIELD_MESSAGES.checkInCode,
   registration_required: "Hãy chọn ca cần xác nhận.",
-  too_many_tags: "Mỗi bài có tối đa 3 thẻ.",
+  too_many_tags: "Mỗi bài có tối đa 5 thẻ.",
   tag_invalid: "Thẻ cần có ít nhất một chữ hoặc số.",
+  activity_not_linkable:
+    "Không gắn được hoạt động này. Hãy chọn hoạt động đã đăng của tổ chức.",
   members_post_has_no_media:
     "Bài chỉ dành cho thành viên không có ảnh hoặc video.",
   text_needs_letter: FIELD_MESSAGES.needsLetter,

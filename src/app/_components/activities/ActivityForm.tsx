@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FiSave, FiSend } from "react-icons/fi";
 import type { FieldErrors, FormState } from "@/lib/account";
 import { type ActivityDetail, toLocalInput } from "@/lib/activities";
+import { tagListError } from "@/lib/posts";
 import { FIELD_MESSAGES } from "@/lib/validation";
 import {
   FormMessage,
@@ -14,10 +15,13 @@ import {
 } from "../account/FormParts";
 import { RequiredLegend } from "../account/RequiredMarks";
 import { useAccountForm } from "../account/useAccountForm";
+import TagInput from "../compose/TagInput";
 import { fieldLabel, panel, secondaryButton } from "../ui";
 
 type ActivityFormProps = {
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
+  // The organization's address, for the tag suggestions.
+  orgSlug: string;
   activity?: ActivityDetail;
 };
 
@@ -52,10 +56,23 @@ function validateExtra(form: HTMLFormElement): FieldErrors {
   const empty =
     description instanceof HTMLTextAreaElement &&
     description.value.trim() === "";
-  return empty ? { description: FIELD_MESSAGES.required } : {};
+  const errors: FieldErrors = empty
+    ? { description: FIELD_MESSAGES.required }
+    : {};
+  const tags = form.elements.namedItem("tags");
+  const tagError =
+    tags instanceof HTMLInputElement ? tagListError(tags.value) : undefined;
+  if (tagError) {
+    errors.tags = tagError;
+  }
+  return errors;
 }
 
-export default function ActivityForm({ action, activity }: ActivityFormProps) {
+export default function ActivityForm({
+  action,
+  orgSlug,
+  activity,
+}: ActivityFormProps) {
   const { state, pending, formProps } = useAccountForm(action, {
     resetOnSuccess: false,
     validate: validateExtra,
@@ -88,6 +105,13 @@ export default function ActivityForm({ action, activity }: ActivityFormProps) {
               maxLength={5000}
               errors={errors}
               required
+            />
+            <TagInput
+              orgSlug={orgSlug}
+              source="activity"
+              name="tags"
+              initial={activity?.tags}
+              error={errors?.tags}
             />
           </FormSection>
           <FormSection title="Thời gian">

@@ -25,6 +25,7 @@ export type ActivitySummary = {
   seats_taken: number;
   organization_name: string;
   organization_slug: string;
+  tags?: string[];
 };
 
 export type ActivityPage = {

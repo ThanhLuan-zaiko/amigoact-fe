@@ -9,12 +9,14 @@ import {
 } from "react-icons/fi";
 import { placedMediaIds } from "@/lib/postMedia";
 import { postPath } from "@/lib/posts";
+import { orgTagHref } from "@/lib/tagLinks";
 import PostBody from "./PostBody";
 import PostMediaView from "./PostMediaView";
 import PostPreview from "./PostPreview";
 import PostActions from "./posts/PostActions";
+import PostActivityRow from "./posts/PostActivityRow";
 import type { Post } from "./types";
-import { mutedText, panel, tagChip } from "./ui";
+import { mutedText, panel, tagLink } from "./ui";
 
 const kindLabel: Record<Post["kind"], string> = {
   announcement: "Thông báo",
@@ -135,11 +137,18 @@ export default function PostCard({
         </ul>
       ) : null}
 
+      {post.activity ? <PostActivityRow activity={post.activity} /> : null}
+
       <footer className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
         {post.tags.map((tag) => (
-          <span key={tag} className={tagChip}>
+          <Link
+            key={tag}
+            href={orgTagHref(post.slug, tag)}
+            title="Xem bài cùng thẻ"
+            className={tagLink}
+          >
             #{tag}
-          </span>
+          </Link>
         ))}
         <span
           className={`${mutedText} ml-auto flex items-center gap-2`}

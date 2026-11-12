@@ -1,10 +1,14 @@
 // View models for the UI, filled from the API by toPost in src/lib/posts.ts.
 
+import type { ActivitySummary } from "@/lib/activities";
+
 export type PostKind = "announcement" | "discussion";
 
 export type PostVisibility = "public" | "members";
 
 export type Post = {
+  // The activity the post is about, if any.
+  activity?: ActivitySummary | null;
   id: string;
   // The organization slug, for links to the post and its organization.
   slug: string;

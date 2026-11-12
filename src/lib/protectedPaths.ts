@@ -8,6 +8,8 @@ const PROTECTED_POST_PAGES = [
   // Chat is for members only.
   /^\/organizations\/[^/]+\/chat$/,
   /^\/organizations\/[^/]+\/posts\/[^/]+\/edit$/,
+  // Creating activities, their drafts and their trash are for managers.
+  /^\/organizations\/[^/]+\/activities\/(new|drafts|trash)$/,
 ];
 
 // Certificate templates are for managers. The public verify page stays open.

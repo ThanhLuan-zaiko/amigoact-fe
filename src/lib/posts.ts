@@ -1,9 +1,10 @@
 // Pure helpers for posts and their forms. The backend repeats every rule.
 import type { FieldErrors } from "./account";
+import type { ActivitySummary } from "./activities";
 import { initials, type MyOrganization } from "./organizations";
 import { hasLetter } from "./validation";
 
-export const TAG_LIMIT = 3;
+export const TAG_LIMIT = 5;
 export const TAG_NAME_MAX = 40;
 export const TITLE_MAX = 160;
 export const BODY_MAX = 5000;
@@ -16,7 +17,7 @@ export const POST_MESSAGES = {
     "Tiêu đề cần có ít nhất một chữ cái, không chỉ gồm số hay ký hiệu.",
   comment: "Bình luận cần từ 1 đến 1000 ký tự.",
   body: "Vui lòng nhập nội dung (tối đa 5000 ký tự).",
-  tagCount: "Mỗi bài có tối đa 3 thẻ.",
+  tagCount: "Mỗi bài có tối đa 5 thẻ.",
   tagLength: "Mỗi thẻ tối đa 40 ký tự.",
   tagContent: "Thẻ cần có ít nhất một chữ hoặc số.",
   membersMedia:
@@ -58,6 +59,21 @@ export function postableOrganizations(
   );
 }
 
+// The tag rules shared by posts and activities. Undefined when the list is fine.
+export function tagListError(value: string): string | undefined {
+  const tags = parseTags(value);
+  if (tags.length > TAG_LIMIT) {
+    return POST_MESSAGES.tagCount;
+  }
+  if (tags.some((tag) => tag.length > TAG_NAME_MAX)) {
+    return POST_MESSAGES.tagLength;
+  }
+  if (tags.some((tag) => !/[\p{L}\p{N}]/u.test(tag))) {
+    return POST_MESSAGES.tagContent;
+  }
+  return undefined;
+}
+
 export function validatePost(values: {
   // Empty when the organization comes from the page address instead of a field.
   org?: string;
@@ -82,13 +98,9 @@ export function validatePost(values: {
   if (!body || body.length > BODY_MAX) {
     errors.post_body = POST_MESSAGES.body;
   }
-  const tags = parseTags(values.tags);
-  if (tags.length > TAG_LIMIT) {
-    errors.post_tags = POST_MESSAGES.tagCount;
-  } else if (tags.some((tag) => tag.length > TAG_NAME_MAX)) {
-    errors.post_tags = POST_MESSAGES.tagLength;
-  } else if (tags.some((tag) => !/[\p{L}\p{N}]/u.test(tag))) {
-    errors.post_tags = POST_MESSAGES.tagContent;
+  const tagError = tagListError(values.tags);
+  if (tagError) {
+    errors.post_tags = tagError;
   }
   if (
     (values.mediaCount ?? 0) > 0 &&
@@ -176,6 +188,8 @@ export type PostApi = {
   hidden?: boolean;
   comment_count: number;
   org: { slug: string; name: string };
+  // The activity the post is about, if any.
+  activity?: ActivitySummary | null;
   viewer?: PostViewerApi;
   created_at: string;
   published_at: string | null;
@@ -240,6 +254,7 @@ export function toPost(post: PostApi, formatDate: (value: string) => string) {
     commentCount: post.comment_count,
     pinned: post.pinned,
     hidden: post.hidden ?? false,
+    activity: post.activity ?? null,
     media: post.media.map((item) => ({
       id: item.id.toLowerCase(),
       src: `/media/${item.id}/file`,

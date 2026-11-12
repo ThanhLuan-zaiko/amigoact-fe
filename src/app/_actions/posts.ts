@@ -30,6 +30,8 @@ function postFields(formData: FormData) {
     body: textValue(formData, "post_body"),
     tags: parseTags(textValue(formData, "post_tags")),
     media_ids: formData.getAll("media_id").map(String),
+    // Empty means no activity. On an edit this removes the link.
+    activity_id: textValue(formData, "activity_id") || null,
   };
 }
 

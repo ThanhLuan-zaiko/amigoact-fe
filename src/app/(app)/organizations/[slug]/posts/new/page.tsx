@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { createPost } from "@/app/_actions/posts";
+import { getLinkableActivities } from "@/lib/activityApi";
 import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
+import { activityOptions } from "@/lib/postActivity";
 import { postKinds, postPath } from "@/lib/posts";
 import PostForm from "../../../../../_components/posts/PostForm";
 import { mutedText } from "../../../../../_components/ui";
@@ -16,7 +18,10 @@ async function NewPostContent({
 }) {
   const { slug } = await params;
   await requireUser(`/organizations/${slug}/posts/new`);
-  const organization = await getOrganization(slug);
+  const [organization, activities] = await Promise.all([
+    getOrganization(slug),
+    getLinkableActivities(slug),
+  ]);
   if (!organization) {
     return null;
   }
@@ -30,6 +35,8 @@ async function NewPostContent({
   }
   return (
     <PostForm
+      orgSlug={slug}
+      activities={activityOptions(activities)}
       action={createPost.bind(null, slug)}
       kinds={postKinds(organization.viewer.can_manage)}
       organizationName={organization.name}

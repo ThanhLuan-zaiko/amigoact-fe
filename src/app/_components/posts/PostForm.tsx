@@ -16,6 +16,7 @@ import { FormMessage, TextField } from "../account/FormParts";
 import { useAccountForm } from "../account/useAccountForm";
 import BodyField from "../compose/BodyField";
 import MediaField from "../compose/MediaField";
+import TagInput from "../compose/TagInput";
 import SelectMenu from "../SelectMenu";
 import {
   chipButton,
@@ -37,11 +38,16 @@ export type PostFormInitial = {
   body: string;
   tags: string[];
   media: { id: string; mime: string }[];
+  activityId: string | null;
   isDraft: boolean;
 };
 
 type PostFormProps = {
   action: Action;
+  // The organization's address, for the tag suggestions.
+  orgSlug: string;
+  // Activities the post may point at, as menu options.
+  activities: { value: string; label: string }[];
   // The kinds this user may post here. Only managers announce.
   kinds: PostKind[];
   organizationName: string;
@@ -71,6 +77,8 @@ function readValues(form: HTMLFormElement) {
 
 export default function PostForm({
   action,
+  orgSlug,
+  activities,
   kinds,
   organizationName,
   cancelHref,
@@ -172,12 +180,30 @@ export default function PostForm({
         initial={initial?.media}
       />
 
-      <TextField
-        label="Thẻ (tối đa 3)"
-        name="post_tags"
-        defaultValue={initial?.tags.join(", ")}
-        hint="Cách nhau bằng dấu phẩy."
-        errors={errors}
+      {activities.length > 0 ? (
+        <div className="flex flex-col gap-1">
+          <SelectMenu
+            label="Hoạt động liên quan"
+            name="activity_id"
+            defaultValue={initial?.activityId ?? ""}
+            options={[
+              { value: "", label: "Không gắn hoạt động" },
+              ...activities,
+            ]}
+          />
+          {errors?.activity_id ? (
+            <p className="text-sm text-red-700 dark:text-red-400">
+              {errors.activity_id}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      <TagInput
+        key={editing ? "tags" : (state.success ?? "tags")}
+        orgSlug={orgSlug}
+        initial={initial?.tags}
+        error={errors?.post_tags}
       />
 
       <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4 dark:border-slate-800">

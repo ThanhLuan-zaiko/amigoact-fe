@@ -3,9 +3,11 @@ import { Suspense } from "react";
 import { FiGlobe, FiStar } from "react-icons/fi";
 import { getAccessToken } from "@/lib/auth";
 import { getFeed, getPopularTags } from "@/lib/postApi";
+import { listQuery, readTag, tagLabel } from "@/lib/tagLinks";
 import Composer from "../_components/Composer";
 import FeedList from "../_components/FeedList";
 import { MoreLink } from "../_components/posts/FeedFilters";
+import TagFilterBar from "../_components/posts/TagFilterBar";
 import RightRail from "../_components/RightRail";
 import {
   mutedText,
@@ -17,19 +19,20 @@ import {
 
 type Tab = "mine" | "public";
 
-function FeedTabs({ current }: { current: Tab }) {
+// Switching tabs keeps the tag filter.
+function FeedTabs({ current, tag }: { current: Tab; tag: string | null }) {
   const tabs = [
     {
       value: "mine" as const,
       label: "Dành cho bạn",
       icon: FiStar,
-      href: "/?tab=mine",
+      href: `/${listQuery({ tab: "mine", tag })}`,
     },
     {
       value: "public" as const,
       label: "Công khai",
       icon: FiGlobe,
-      href: "/?tab=public",
+      href: `/${listQuery({ tab: "public", tag })}`,
     },
   ];
   return (
@@ -59,18 +62,25 @@ async function HomeFeed({ searchParams }: PageProps<"/">) {
   const signedIn = Boolean(await getAccessToken());
   const tab: Tab = query.tab === "public" || !signedIn ? "public" : "mine";
   const before = typeof query.before === "string" ? query.before : null;
-  const page = await getFeed(tab, before);
+  const tag = readTag(query.tag);
+  const page = await getFeed(tab, before, tag);
   const more = page?.nextBefore
-    ? `/?tab=${tab}&before=${page.nextBefore}`
+    ? `/${listQuery({ tab, tag, before: page.nextBefore })}`
     : null;
 
   return (
     <>
-      {signedIn ? <FeedTabs current={tab} /> : null}
+      {signedIn ? <FeedTabs current={tab} tag={tag} /> : null}
+      {tag ? (
+        <TagFilterBar
+          label={tagLabel(tag, page?.posts ?? [])}
+          clearHref={`/${listQuery({ tab })}`}
+        />
+      ) : null}
       {page === null ? (
         <p className={mutedText}>Không tải được bảng tin. Vui lòng thử lại.</p>
       ) : (
-        <FeedList posts={page.posts} />
+        <FeedList posts={page.posts} filtered={tag !== null} />
       )}
       <MoreLink href={more} />
     </>

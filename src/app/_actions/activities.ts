@@ -11,6 +11,7 @@ import {
 import { authedFetch, getAccessToken } from "@/lib/auth";
 import type { ApiResult } from "@/lib/backend";
 import { failureState, textOrNull, textValue } from "@/lib/forms";
+import { parseTags } from "@/lib/posts";
 
 function activityPath(id: string): string {
   return `/activities/${encodeURIComponent(id)}`;
@@ -44,6 +45,7 @@ function activityBody(formData: FormData) {
     max_participants: numberOrNull(textValue(formData, "max_participants")),
     hours_awarded: textOrNull(formData, "hours_awarded"),
     requires_approval: formData.get("requires_approval") === "on",
+    tags: parseTags(textValue(formData, "tags")),
   };
 }
 
@@ -113,7 +115,42 @@ export async function deleteActivity(
     return failureState(result.code, result.issues);
   }
   revalidatePath("/", "layout");
-  redirect(`/organizations/${encodeURIComponent(slug)}/activities`);
+  // Only drafts can be deleted, so the drafts list is where the manager was working.
+  redirect(`/organizations/${encodeURIComponent(slug)}/activities/drafts`);
+}
+
+// A deleted draft comes back as a draft. Owners and admins may do it.
+export async function restoreActivity(
+  slug: string,
+  id: string,
+): Promise<FormState> {
+  const result = await authedFetch(`${activityPath(id)}/restore`);
+  if (!result.ok) {
+    return failureState(result.code, result.issues);
+  }
+  revalidatePath(
+    `/organizations/${encodeURIComponent(slug)}/activities`,
+    "layout",
+  );
+  return { success: "Đã khôi phục hoạt động về bản nháp." };
+}
+
+// The dialog already asked for the title. The backend allows it only for the owner.
+export async function purgeActivity(
+  slug: string,
+  id: string,
+): Promise<FormState> {
+  const result = await authedFetch(`${activityPath(id)}/purge`, {
+    method: "DELETE",
+  });
+  if (!result.ok) {
+    return failureState(result.code, result.issues);
+  }
+  revalidatePath(
+    `/organizations/${encodeURIComponent(slug)}/activities`,
+    "layout",
+  );
+  return { success: "Đã xóa vĩnh viễn hoạt động." };
 }
 
 function shiftBody(formData: FormData) {

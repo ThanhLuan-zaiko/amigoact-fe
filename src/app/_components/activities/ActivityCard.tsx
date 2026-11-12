@@ -6,25 +6,32 @@ import {
   formatDateTime,
   seatsText,
 } from "@/lib/activities";
+import { activityTagHref } from "@/lib/activityList";
 import IconStat from "../IconStat";
-import { mutedText, panel, tagChip } from "../ui";
+import { mutedText, panel, tagChip, tagLink } from "../ui";
 
 type ActivityCardProps = {
   activity: ActivitySummary;
 };
 
+// The title link covers the whole card, so the card opens the activity. Tag chips
+// sit above that cover and lead to the activities with the same tag, because a
+// link inside a link is not valid HTML.
 export default function ActivityCard({ activity }: ActivityCardProps) {
   const place = [activity.location, activity.city].filter(Boolean).join(", ");
+  const tags = activity.tags ?? [];
 
   return (
-    <Link
-      href={`/activities/${activity.id}`}
-      className={`${panel} flex min-w-0 flex-col gap-2 p-4 transition-colors hover:border-teal-700 dark:hover:border-teal-400`}
+    <article
+      className={`${panel} relative flex min-w-0 flex-col gap-2 p-4 transition-colors focus-within:border-teal-700 hover:border-teal-700 dark:focus-within:border-teal-400 dark:hover:border-teal-400`}
     >
       <div className="flex items-start gap-2">
-        <p className="min-w-0 flex-1 font-semibold break-words">
+        <Link
+          href={`/activities/${activity.id}`}
+          className="min-w-0 flex-1 font-semibold break-words outline-none after:absolute after:inset-0 after:rounded-lg"
+        >
           {activity.title}
-        </p>
+        </Link>
         {activity.status !== "published" ? (
           <span className={`${tagChip} shrink-0`}>
             {ACTIVITY_STATUS_LABELS[activity.status]}
@@ -56,6 +63,20 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
           </IconStat>
         ) : null}
       </div>
-    </Link>
+      {tags.length > 0 ? (
+        <div className="relative z-10 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <Link
+              key={tag}
+              href={activityTagHref(activity.organization_slug, tag)}
+              title="Xem hoạt động cùng thẻ"
+              className={tagLink}
+            >
+              #{tag}
+            </Link>
+          ))}
+        </div>
+      ) : null}
+    </article>
   );
 }

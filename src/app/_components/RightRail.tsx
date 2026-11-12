@@ -3,7 +3,8 @@ import { Suspense } from "react";
 import { FiChevronRight } from "react-icons/fi";
 import UpcomingActivities from "./activities/UpcomingActivities";
 import SuggestedOrganizations from "./organizations/SuggestedOrganizations";
-import { mutedText, panel, sectionTitle, tagChip } from "./ui";
+import { feedTagHref } from "@/lib/tagLinks";
+import { mutedText, panel, sectionTitle, tagLink } from "./ui";
 
 type RightRailProps = {
   popularTags: string[];
@@ -52,8 +53,10 @@ export default function RightRail({ popularTags }: RightRailProps) {
         ) : (
           <ul className="flex flex-wrap gap-2">
             {popularTags.map((tag) => (
-              <li key={tag} className={tagChip}>
-                #{tag}
+              <li key={tag}>
+                <Link href={feedTagHref(tag, "public")} className={tagLink}>
+                  #{tag}
+                </Link>
               </li>
             ))}
           </ul>

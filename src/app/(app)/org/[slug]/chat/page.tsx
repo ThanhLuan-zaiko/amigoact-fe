@@ -2,12 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { requireUser } from "@/lib/auth";
 import { buildRooms, isRoomId } from "@/lib/chat";
-import {
-  getChatPeople,
-  getChatSocketUrl,
-  getChatStart,
-  getRoomMessages,
-} from "@/lib/chatApi";
+import { getChatPeople, getChatStart, getRoomMessages } from "@/lib/chatApi";
 import { getOrganization } from "@/lib/organizationApi";
 import ChatShell from "../../../../_components/chat/ChatShell";
 import EmptyState from "../../../../_components/EmptyState";
@@ -60,7 +55,6 @@ async function OrganizationChat({
       initialRoomId={wanted?.id ?? null}
       initialPage={page}
       people={people}
-      socketUrl={getChatSocketUrl()}
     />
   );
 }

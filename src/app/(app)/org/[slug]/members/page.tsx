@@ -12,9 +12,11 @@ import {
   pageOffset,
   ROLE_LABELS,
 } from "@/lib/organizations";
+import { orgTopic } from "@/lib/realtime";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
 import PageLinks from "../../../../_components/organizations/PageLinks";
+import LiveRefresh from "../../../../_components/realtime/LiveRefresh";
 import {
   mutedText,
   panel,
@@ -25,6 +27,9 @@ import {
 } from "../../../../_components/ui";
 
 export const metadata: Metadata = { title: "Thành viên | AmigoACT" };
+
+// Someone joined, left, was removed, or changed role.
+const MEMBER_EVENTS = ["members.changed"] as const;
 
 function MemberActions({
   organization,
@@ -100,6 +105,7 @@ async function MemberList({
 
   return (
     <section className={`${panel} flex flex-col gap-3 p-4 sm:p-6`}>
+      <LiveRefresh topic={orgTopic(organization.id)} types={MEMBER_EVENTS} />
       <h2 className={sectionTitle}>Thành viên</h2>
       <ul className={splitList}>
         {page.items.map((member) => (

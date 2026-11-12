@@ -9,7 +9,6 @@ import { type ChatStateOptions, useChatState } from "./useChatState";
 import { useInterval } from "./useInterval";
 
 type ChatShellProps = Omit<ChatStateOptions, "wide"> & {
-  socketUrl: string | null;
   people: Person[];
 };
 
@@ -31,18 +30,15 @@ function useWide(): boolean {
 }
 
 // A phone shows the room list or the open room. From xl the two sit side by side.
-export default function ChatShell({
-  socketUrl,
-  people,
-  ...options
-}: ChatShellProps) {
+export default function ChatShell({ people, ...options }: ChatShellProps) {
   const wide = useWide();
   const chat = useChatState({ ...options, wide });
   const status = useChatSocket({
-    url: socketUrl,
+    orgId: options.general.id,
     roomIds: chat.rooms.map((room) => room.id),
     onFrame: chat.handleFrame,
     onOpen: chat.handleOpen,
+    onRoomsChanged: chat.refreshRooms,
   });
   // Polling covers the time the socket is down or not configured.
   useInterval(chat.poll, status === "live" ? null : POLL_INTERVAL_MS);

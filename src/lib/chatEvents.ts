@@ -28,12 +28,15 @@ function isMessage(value: unknown): value is ChatMessage {
 
 // Unknown or malformed frames give null and are ignored, so a newer backend cannot break the page.
 export function parseFrame(text: string): ChatFrame | null {
-  let data: unknown;
   try {
-    data = JSON.parse(text);
+    return readFrame(JSON.parse(text));
   } catch {
     return null;
   }
+}
+
+// The same, for a frame the realtime client already parsed.
+export function readFrame(data: unknown): ChatFrame | null {
   if (!data || typeof data !== "object") {
     return null;
   }

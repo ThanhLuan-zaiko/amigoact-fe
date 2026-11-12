@@ -4,7 +4,6 @@ import { backendFetch } from "./backend";
 import {
   type ChatChannel,
   type ChatDm,
-  chatSocketUrl,
   type MessagePage,
   PAGE_SIZE,
   type UnreadItem,
@@ -70,11 +69,6 @@ export async function getChatPeople(
   return (page?.items ?? [])
     .filter((member) => member.user_id !== viewerId)
     .map(({ user_id, full_name }) => ({ user_id, full_name }));
-}
-
-// Read at request time, so one build serves any deployment.
-export function getChatSocketUrl(): string | null {
-  return chatSocketUrl(process.env.BACKEND_URL, process.env.CHAT_WS_URL);
 }
 
 // The unread total of one organization, for the list of chats. Null when it cannot be read.

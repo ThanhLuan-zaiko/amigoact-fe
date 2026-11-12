@@ -8,7 +8,6 @@ import {
   type ChatRoom,
   chatError,
   chatPath,
-  chatSocketUrl,
   continuesGroup,
   isRoomId,
   MESSAGE_MAX,
@@ -176,25 +175,6 @@ describe("chatError", () => {
 
   test("falls back to a general message", () => {
     expect(chatError("something_new")).toContain("Đã có lỗi");
-  });
-});
-
-describe("chatSocketUrl", () => {
-  test("uses CHAT_WS_URL when it is a ws or wss address", () => {
-    expect(chatSocketUrl("http://api", "wss://chat.example/ws/chat")).toBe(
-      "wss://chat.example/ws/chat",
-    );
-    expect(chatSocketUrl("http://api", "http://wrong")).toBeNull();
-  });
-
-  test("derives the socket from BACKEND_URL otherwise", () => {
-    expect(chatSocketUrl("http://localhost:8100/", undefined)).toBe(
-      "ws://localhost:8100/ws/chat",
-    );
-    expect(chatSocketUrl("https://api.example", "")).toBe(
-      "wss://api.example/ws/chat",
-    );
-    expect(chatSocketUrl(undefined, undefined)).toBeNull();
   });
 });
 

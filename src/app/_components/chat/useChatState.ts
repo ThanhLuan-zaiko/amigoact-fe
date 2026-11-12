@@ -149,7 +149,7 @@ export function useChatState(options: ChatStateOptions) {
     attempt(() => markRoomRead(roomId, newestId));
   }, [roomId, newestId, paneVisible]);
 
-  // New channels and direct messages from other people have no socket event, so look again now and then.
+  // rooms.changed reloads the list at once; this catches anything a dropped socket missed.
   useInterval(refreshRooms, ROOMS_REFRESH_MS);
 
   function handleFrame(frame: ChatFrame) {
@@ -311,6 +311,7 @@ export function useChatState(options: ChatStateOptions) {
     retry: () => refreshRoom(roomId),
     handleFrame,
     handleOpen,
+    refreshRooms,
     poll,
     loadOlder,
     send,

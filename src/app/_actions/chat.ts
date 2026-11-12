@@ -35,13 +35,6 @@ function chatBase(slug: string): string {
   return `/organizations/${encodeURIComponent(slug)}/chat`;
 }
 
-// A one-time ticket for the socket. It lasts five minutes and carries no token, so the browser
-// may hold it. See docs/chat.md.
-export async function getSocketTicket(): Promise<ChatResult<string>> {
-  const result = await authedFetch<{ ticket: string }>("/chat/tickets");
-  return result.ok ? { ok: true, data: result.data.ticket } : done(result);
-}
-
 export async function loadMessages(
   roomId: string,
   before: string | null,

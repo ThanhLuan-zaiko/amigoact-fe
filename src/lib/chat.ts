@@ -214,23 +214,6 @@ export function chatError(code: string, issues: { type: string }[] = []) {
   return ERROR_TEXT[code] ?? "Đã có lỗi xảy ra. Vui lòng thử lại.";
 }
 
-// The browser opens the socket itself, so it needs an address it can reach. CHAT_WS_URL wins;
-// otherwise the socket sits next to BACKEND_URL, which only works when the browser can reach it.
-export function chatSocketUrl(
-  backendUrl: string | undefined,
-  override: string | undefined,
-): string | null {
-  const explicit = override?.trim();
-  if (explicit) {
-    return /^wss?:\/\//.test(explicit) ? explicit : null;
-  }
-  const base = backendUrl?.trim().replace(/\/+$/, "");
-  if (!base || !/^https?:\/\//.test(base)) {
-    return null;
-  }
-  return `${base.replace(/^http/, "ws")}/ws/chat`;
-}
-
 // 1 s, 2 s, 4 s ... up to 30 s between reconnect attempts.
 export function reconnectDelay(attempt: number): number {
   return Math.min(30_000, 1000 * 2 ** Math.max(0, attempt));

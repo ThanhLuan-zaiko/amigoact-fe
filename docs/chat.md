@@ -52,28 +52,20 @@ Chat nằm trong từng tổ chức, tại tab "Chat" của `OrgNav`. Backend m�
 
 ## Kết nối thời gian thực
 
-Trình duyệt không gọi thẳng backend, và token chỉ nằm trong cookie httpOnly. WebSocket là ngoại lệ duy nhất, vì Next.js không chuyển tiếp được WebSocket: Route Handler đóng kết nối khi trả lời xong (xem `node_modules/next/dist/docs/01-app/02-guides/backend-for-frontend.md`). Cách làm:
+Chat dùng socket chung của app, xem `docs/realtime.md`. `useChatSocket` (`src/app/_components/chat/useChatSocket.ts`) chỉ là lớp mỏng trên đó:
 
-1. Client gọi Server Action `getSocketTicket` (`src/app/_actions/chat.ts`). Action dùng token trong cookie gọi `POST /chat/tickets` và chỉ trả về vé.
-2. Client mở `WebSocket` tới `CHAT_WS_URL?ticket=<vé>`. Vé dùng một lần, hạn 5 phút, không mở được API nào khác, nên trình duyệt giữ vé không làm lộ phiên đăng nhập. Token không bao giờ tới trình duyệt.
-3. Mở xong thì đăng ký mọi phòng trong danh sách (`subscribe`), nên số chưa đọc của phòng khác cũng cập nhật ngay. Phòng thêm hoặc bớt thì đăng ký hoặc hủy theo.
-4. Mỗi 25 giây gửi `ping`. Mất kết nối thì lấy vé mới và nối lại sau 1, 2, 4… tối đa 30 giây. Đóng với mã 4408 (hết 30 phút) thì nối lại ngay. Socket chưa mở sau 10 giây thì bỏ và thử lại. Có mạng trở lại hoặc quay lại tab thì thử ngay.
-5. Sau mỗi lần nối lại, trang tải lại trang tin mới nhất của phòng đang mở và danh sách phòng, để bù sự kiện đã lỡ.
-6. Sự kiện `revoked` bỏ phòng khỏi danh sách. Nếu đang mở phòng đó thì về danh sách kèm thông báo.
+1. Nghe `room:<id>` của mọi phòng trong danh sách, nên số chưa đọc của phòng khác cũng cập nhật ngay. Phòng thêm hoặc bớt thì topic thêm hoặc bớt theo.
+2. Nghe `org:<id>` và topic của chính mình. `rooms.changed` (kênh mới, kênh lưu trữ, được thêm vào kênh, tin nhắn riêng mới) tải lại danh sách phòng ngay.
+3. Sau mỗi lần nối lại, và khi nhận `resync`, trang tải lại trang tin mới nhất của phòng đang mở và danh sách phòng, để bù sự kiện đã lỡ.
+4. Sự kiện `revoked` bỏ phòng khỏi danh sách. Nếu đang mở phòng đó thì về danh sách kèm thông báo.
 
 Sự kiện từ socket không có cờ `mine` của cảm xúc. `keepMyReactions` giữ cờ của người xem từ bản đang có.
-
-### Địa chỉ socket
-
-- `CHAT_WS_URL` (đọc lúc chạy, phía server) là địa chỉ đầy đủ mà trình duyệt kết nối được, ví dụ `wss://api.example.com/ws/chat`. Production phải đặt biến này.
-- Không đặt thì dùng `BACKEND_URL` đổi `http` thành `ws` và thêm `/ws/chat`. Chỉ đúng khi trình duyệt cũng tới được `BACKEND_URL`, như lúc phát triển trên máy.
-- Không có địa chỉ hợp lệ nào thì trang chỉ dùng polling.
 
 ### Polling dự phòng
 
 - Khi socket chưa sống (đang nối, mất kết nối, hoặc không cấu hình), mỗi 10 giây trang gọi `pollChat`: một Server Action lấy trang tin mới nhất của phòng đang mở và số chưa đọc của mọi phòng.
 - Trang tin mới nhất thay các tin trong khoảng của nó (`mergeNewestPage`), nên tin bị xóa lúc mất kết nối cũng biến mất. Tin cũ đã tải vẫn giữ.
-- Dù socket sống, danh sách phòng vẫn được tải lại mỗi 60 giây, vì tin nhắn riêng mới do người khác mở không có sự kiện.
+- Dù socket sống, danh sách phòng vẫn được tải lại mỗi 60 giây, để bù sự kiện `rooms.changed` lỡ lúc mất kết nối.
 - Tab bị ẩn thì bỏ qua lượt polling.
 - Đầu phòng có chấm trạng thái: xanh lá là trực tiếp, xám là đang kết nối, vàng là đang polling.
 

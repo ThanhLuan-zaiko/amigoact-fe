@@ -6,12 +6,14 @@ import {
   rejectApplication,
 } from "@/app/_actions/organizations";
 import { requireUser } from "@/lib/auth";
-import { getApplications } from "@/lib/organizationApi";
+import { getApplications, getOrganization } from "@/lib/organizationApi";
 import { formatDate, initials, pageOffset } from "@/lib/organizations";
+import { managersTopic } from "@/lib/realtime";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
 import PageLinks from "../../../../_components/organizations/PageLinks";
+import LiveRefresh from "../../../../_components/realtime/LiveRefresh";
 import {
   mutedText,
   panel,
@@ -23,6 +25,9 @@ import {
 
 export const metadata: Metadata = { title: "Yêu cầu tham gia | AmigoACT" };
 
+// An application arrived, was withdrawn, or was decided by another manager.
+const REVIEW_EVENTS = ["applications.changed"] as const;
+
 async function ApplicationList({
   params,
   searchParams,
@@ -30,8 +35,11 @@ async function ApplicationList({
   const { slug } = await params;
   const offset = pageOffset((await searchParams).page);
   await requireUser(`/org/${slug}/applications`);
-  const page = await getApplications(slug, offset);
-  if (!page) {
+  const [organization, page] = await Promise.all([
+    getOrganization(slug),
+    getApplications(slug, offset),
+  ]);
+  if (!page || !organization) {
     return (
       <p className={mutedText}>
         Chỉ ban quản trị mới xem được các yêu cầu này.
@@ -40,15 +48,25 @@ async function ApplicationList({
   }
   if (page.items.length === 0 && offset === 0) {
     return (
-      <EmptyState
-        title="Không có yêu cầu nào"
-        description="Yêu cầu tham gia mới sẽ hiện ở đây."
-      />
+      <>
+        <LiveRefresh
+          topic={managersTopic(organization.id)}
+          types={REVIEW_EVENTS}
+        />
+        <EmptyState
+          title="Không có yêu cầu nào"
+          description="Yêu cầu tham gia mới sẽ hiện ở đây."
+        />
+      </>
     );
   }
 
   return (
     <section className={`${panel} flex flex-col gap-3 p-4 sm:p-6`}>
+      <LiveRefresh
+        topic={managersTopic(organization.id)}
+        types={REVIEW_EVENTS}
+      />
       <h2 className={sectionTitle}>Yêu cầu tham gia</h2>
       <ul className={splitList}>
         {page.items.map((application) => (

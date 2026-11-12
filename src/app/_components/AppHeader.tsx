@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { FiBell, FiPlus } from "react-icons/fi";
+import { FiPlus } from "react-icons/fi";
 import HeaderAccount from "./account/HeaderAccount";
 import { HeaderSearchForm, HeaderSearchLink } from "./HeaderSearch";
+import HeaderBell from "./notifications/HeaderBell";
 import ComposeMenu from "./posts/ComposeMenu";
 import ThemeToggle from "./ThemeToggle";
-import { iconButton, primaryButton } from "./ui";
+import { primaryButton } from "./ui";
 
 export default function AppHeader() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-4 sm:px-6 md:gap-6 dark:border-slate-800 dark:bg-slate-950 print:hidden">
       <Link
         href="/"
+        aria-label="AmigoACT"
         className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100"
       >
         <span
@@ -20,7 +22,8 @@ export default function AppHeader() {
         >
           A
         </span>
-        AmigoACT
+        {/* The mark alone on a phone, so the bell fits beside the other header buttons. */}
+        <span className="hidden sm:inline">AmigoACT</span>
       </Link>
 
       <Suspense
@@ -50,11 +53,9 @@ export default function AppHeader() {
           <ComposeMenu />
         </Suspense>
         <ThemeToggle />
-        <div className="hidden sm:block">
-          <button type="button" aria-label="Thông báo" className={iconButton}>
-            <FiBell aria-hidden="true" />
-          </button>
-        </div>
+        <Suspense fallback={null}>
+          <HeaderBell />
+        </Suspense>
         <Suspense
           fallback={
             <div className="h-10 w-10 shrink-0 rounded-md border border-slate-200 dark:border-slate-800" />

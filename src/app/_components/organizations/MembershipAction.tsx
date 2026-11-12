@@ -7,8 +7,10 @@ import {
   leaveOrganization,
 } from "@/app/_actions/organizations";
 import { formatDate, type OrganizationDetail } from "@/lib/organizations";
+import { ME } from "@/lib/realtime";
 import { FormMessage, SubmitButton, TextAreaField } from "../account/FormParts";
 import { useAccountForm } from "../account/useAccountForm";
+import LiveRefresh from "../realtime/LiveRefresh";
 import { mutedText, primaryButton, secondaryButton, tagChip } from "../ui";
 import ActionButton from "./ActionButton";
 
@@ -47,6 +49,9 @@ function JoinForm({
   );
 }
 
+// The viewer's own standing in an organization changed, from any tab or any manager.
+const OWN_EVENTS = ["membership.changed"] as const;
+
 type MembershipActionProps = {
   organization: OrganizationDetail;
 };
@@ -64,18 +69,24 @@ export default function MembershipAction({
   }
   if (viewer.status === "active") {
     return (
-      <ActionButton
-        action={leaveOrganization.bind(null, slug)}
-        label="Rời tổ chức"
-        confirmLabel="Rời tổ chức?"
-      >
-        <FiLogOut aria-hidden="true" />
-      </ActionButton>
+      <>
+        {/* A manager removing this member reloads the view at once. */}
+        <LiveRefresh topic={ME} types={OWN_EVENTS} orgId={organization.id} />
+        <ActionButton
+          action={leaveOrganization.bind(null, slug)}
+          label="Rời tổ chức"
+          confirmLabel="Rời tổ chức?"
+        >
+          <FiLogOut aria-hidden="true" />
+        </ActionButton>
+      </>
     );
   }
   if (viewer.status === "applied") {
     return (
       <div className="flex items-center gap-2">
+        {/* Approval or rejection reloads this view at once. */}
+        <LiveRefresh topic={ME} types={OWN_EVENTS} orgId={organization.id} />
         <span className={`${tagChip} gap-1`}>
           <FiClock aria-hidden="true" />
           Chờ duyệt

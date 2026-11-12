@@ -73,10 +73,15 @@ These rules set the defaults for every screen. If one of them gets in the way of
 
 - Details are in `docs/attendance.md`. The QR is drawn on the server with `qrcode`. Set `APP_URL` so the QR opens on a phone.
 
+## Realtime
+
+- Details are in `docs/realtime.md`. The app has one socket, held by `RealtimeProvider` in the `(app)` layout. Do not open another `WebSocket`.
+- The socket is the one place the browser talks to the backend, because Next.js cannot proxy a socket. The browser gets a one-time ticket and the address from the `getRealtimeTicket` Server Action. Never send the access token to the client for this.
+- Listen with `useTopics`, or reload a server-rendered page with `LiveRefresh` / `useLiveRefresh`. Use `ME` for the viewer's own topic.
+
 ## Chat
 
-- Details are in `docs/chat.md`. Chat lives at `/org/[slug]/chat` for active members.
-- The chat WebSocket is the one place the browser talks to the backend, because Next.js cannot proxy a socket. The browser gets a one-time ticket from the `getSocketTicket` Server Action and connects to `CHAT_WS_URL`. Never send the access token to the client for this.
+- Details are in `docs/chat.md`. Chat lives at `/org/[slug]/chat` for active members and uses the realtime socket through `useChatSocket`.
 - Wrap chat Server Action calls from client code in `attempt`, so a dropped connection becomes a message instead of the error page.
 
 ## Language

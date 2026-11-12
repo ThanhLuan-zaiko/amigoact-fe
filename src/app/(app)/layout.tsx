@@ -2,13 +2,15 @@ import { type ReactNode, Suspense } from "react";
 import AppHeader from "../_components/AppHeader";
 import MobileNav from "../_components/MobileNav";
 import JoinedOrganizations from "../_components/organizations/JoinedOrganizations";
+import RealtimeProvider from "../_components/realtime/RealtimeProvider";
 import SideNav from "../_components/SideNav";
 
 // Shell for every page: header, side navigation and mobile navigation.
 // The navigation reads the current path, so each one sits behind a Suspense boundary.
 export default function AppLayout({ children }: { children: ReactNode }) {
+  // One realtime socket serves every page; it opens only when something listens.
   return (
-    <>
+    <RealtimeProvider>
       <AppHeader />
       <div className="mx-auto flex w-full max-w-[1400px] flex-1 gap-6 p-4 pb-24 sm:p-6 md:pb-6 print:p-0">
         <aside className="sticky top-20 hidden w-52 shrink-0 self-start md:block print:hidden">
@@ -25,6 +27,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <Suspense fallback={null}>
         <MobileNav />
       </Suspense>
-    </>
+    </RealtimeProvider>
   );
 }

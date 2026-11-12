@@ -26,7 +26,7 @@ export default function FeedList({ posts, filtered = false }: FeedListProps) {
   return (
     <div className="flex flex-col gap-3">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostCard key={post.id} post={post} manageable={false} />
       ))}
     </div>
   );

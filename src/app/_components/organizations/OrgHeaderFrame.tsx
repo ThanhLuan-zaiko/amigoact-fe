@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 import { initials } from "@/lib/organizations";
 import { feedBackHref } from "@/lib/orgBack";
+import { keepAddress, pagePath } from "@/lib/orgRoutes";
 import { iconButton, panel } from "../ui";
 
 type OrgHeaderFrameProps = {
@@ -24,10 +25,14 @@ export default function OrgHeaderFrame({
   logoUrl,
   children,
 }: OrgHeaderFrameProps) {
-  const back = feedBackHref(usePathname(), slug);
-  if (back === null) {
+  // The owner sees /organizations/..., but the pages are built at /org/... .
+  const pathname = usePathname();
+  const found = feedBackHref(pagePath(pathname), slug);
+  if (found === null) {
     return children;
   }
+  const back = keepAddress(pathname, found);
+  const home = keepAddress(pathname, `/org/${slug}`);
   return (
     <section className={`${panel} flex items-center gap-3 p-2 sm:p-3`}>
       <Link
@@ -39,7 +44,7 @@ export default function OrgHeaderFrame({
         <FiArrowLeft aria-hidden="true" />
       </Link>
       <Link
-        href={`/organizations/${slug}`}
+        href={home}
         className="flex min-w-0 items-center gap-3 hover:text-teal-700 dark:hover:text-teal-400"
       >
         {logoUrl ? (

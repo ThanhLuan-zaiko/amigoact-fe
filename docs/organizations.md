@@ -4,18 +4,31 @@ Tài liệu này mô tả giao diện phần tổ chức. Quy tắc nghiệp v�
 
 ## Các trang
 
-Các trang nằm trong `src/app/(app)/organizations/`.
+Địa chỉ trang tổ chức tùy người xem:
+
+- `/organizations` và `/organizations/new` (`src/app/(app)/organizations/`) là của riêng người xem: danh sách tổ chức mình sở hữu và form tạo.
+- Chủ sở hữu thấy trang tổ chức của mình ở `/organizations/<slug>/...`. Người khác (thành viên, khách) thấy `/org/<slug>/...`.
+- Các trang chỉ có một bản, trong `src/app/(app)/org/[slug]/`. `proxy.ts` hỏi backend `GET /organizations/mine` (`ownsOrganization` trong `src/lib/ownedOrganizations.ts`) rồi theo `orgDecision` (`src/lib/orgRoutes.ts`):
+  - chủ sở hữu mở `/org/<slug>/...` thì chuyển hướng sang `/organizations/<slug>/...`;
+  - người khác mở `/organizations/<slug>/...` thì chuyển hướng sang `/org/<slug>/...`;
+  - chủ sở hữu ở `/organizations/<slug>/...` thì được rewrite nội bộ sang trang `/org/...`, thanh địa chỉ giữ nguyên.
+- Chuyển hướng là tạm thời (307), vì kết quả tùy người xem. Query được giữ. Backend lỗi thì coi như không phải chủ sở hữu.
+- Link chia sẻ của chủ sở hữu vẫn mở được với người khác, chỉ đổi sang `/org/...`.
+- Link biết vai trò thì trỏ thẳng đúng địa chỉ: `OwnedOrganizationCard`, danh sách "Tổ chức đã tham gia", `OrgNav` và action tạo tổ chức. Link không biết vai trò (thẻ bài viết, danh bạ…) trỏ `/org/...`, chủ sở hữu đi qua một lần chuyển hướng. Code phía trình duyệt dựng đường dẫn `/org/...` thì qua `keepAddress` để giữ địa chỉ chủ sở hữu đang thấy (ví dụ đổi phòng chat, nút quay lại ở `OrgHeaderFrame`).
+- Quy tắc trang cần đăng nhập (`protectedPaths.ts`) viết theo `/org/...`. `proxy.ts` đổi địa chỉ chủ sở hữu về `/org/...` bằng `pagePath` trước khi kiểm tra.
+- API backend vẫn là `/organizations/{slug}/...`. Chỉ đường dẫn trang của frontend khác.
 
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
-| `/organizations` | Hai cột: tổ chức của tôi (chỉ tổ chức sở hữu) ở cột bên, danh bạ ở cột chính. Danh bạ gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ. Không sở hữu tổ chức nào thì chỉ còn một cột. Tổ chức đã xóa không hiện ở đây | Mọi người |
+| `/organizations` | "Tổ chức của tôi": chỉ liệt kê tổ chức thuộc quyền sở hữu của tài khoản (hai cột từ xl). Không có tìm kiếm hay danh bạ ở đây, việc khám phá tổ chức do trang chủ đảm nhiệm (nút "Khám phá" dẫn tới `/?tab=orgs`). Tổ chức đã xóa không hiện ở đây | Đã đăng nhập |
+| `/?tab=orgs` | Tab "Tổ chức" của trang chủ: danh bạ tổ chức công khai, có tìm kiếm và phân trang. Gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ (`OrganizationDirectory`) | Mọi người |
 | `/organizations/new` | Form tạo tổ chức, hai cột từ xl | Đã đăng nhập |
-| `/organizations/[slug]` | Tổng quan. Cột chính: giới thiệu, liên hệ và bài ghim (chưa ghim thì bài mới nhất). Cột phụ từ xl: hoạt động gần đây và bộ sưu tập (`OrgHighlights`) | Mọi người |
-| `/organizations/[slug]/posts` | Bảng tin của tổ chức, xem `posts.md` | Mọi người, theo quyền xem |
-| `/organizations/[slug]/members` | Thành viên, đổi vai trò, xóa thành viên. Từ xl hiện hai cột | Thành viên |
+| `/org/[slug]` | Tổng quan. Cột chính: giới thiệu, liên hệ và bài ghim (chưa ghim thì bài mới nhất). Cột phụ từ xl: hoạt động gần đây và bộ sưu tập (`OrgHighlights`) | Mọi người |
+| `/org/[slug]/posts` | Bảng tin của tổ chức, xem `posts.md` | Mọi người, theo quyền xem |
+| `/org/[slug]/members` | Thành viên, đổi vai trò, xóa thành viên. Từ xl hiện hai cột | Thành viên |
 | `/trash` | Thùng rác của chính mình, có nút khôi phục và xóa vĩnh viễn. Mục "Thùng rác" trong thanh bên trái trỏ tới đây. Trang trống hiện "Thùng rác trống" | Đã đăng nhập |
-| `/organizations/[slug]/applications` | Duyệt yêu cầu tham gia. Từ xl hiện hai cột | Ban quản trị |
-| `/organizations/[slug]/settings` | Sửa hồ sơ tổ chức. Form hồ sơ chia hai cột từ `xl`, ảnh và quy tắc giờ nằm cạnh nhau bên dưới. Chủ sở hữu còn thấy mục "Đưa tổ chức vào thùng rác" ở cuối, rộng cả hai cột | Ban quản trị (xóa: chủ sở hữu) |
+| `/org/[slug]/applications` | Duyệt yêu cầu tham gia. Từ xl hiện hai cột | Ban quản trị |
+| `/org/[slug]/settings` | Sửa hồ sơ tổ chức. Form hồ sơ chia hai cột từ `xl`, ảnh và quy tắc giờ nằm cạnh nhau bên dưới. Chủ sở hữu còn thấy mục "Đưa tổ chức vào thùng rác" ở cuối, rộng cả hai cột | Ban quản trị (xóa: chủ sở hữu) |
 
 Thanh mục trong header chỉ hiện những trang người xem được phép mở. Backend vẫn là nơi kiểm tra quyền thật.
 
@@ -29,7 +42,7 @@ Thanh mục trong header chỉ hiện những trang người xem được phép 
 
 - `ActionButton` chạy một Server Action và hiện lỗi ngay cạnh nút. Truyền `confirmLabel` để yêu cầu bấm xác nhận lần hai.
 - `MembershipAction` chọn nút theo trạng thái của người xem: tham gia, xin tham gia, rút yêu cầu, rời tổ chức.
-- `HeaderSearch` đổi theo trang: ở `/organizations` thanh tìm kiếm trên header tìm tổ chức, các trang khác tìm hoạt động. Điện thoại không có ô trên header, nên nút kính lúp nhảy đến ô tìm trong trang.
+- `HeaderSearch` đổi theo trang: ở tab "Tổ chức" của trang chủ (`/?tab=orgs`) thanh tìm kiếm trên header tìm tổ chức, các trang khác tìm hoạt động. Điện thoại không có ô trên header, nên nút kính lúp nhảy đến ô tìm trong trang.
 - `OrganizationForm` dùng cho cả tạo và sửa. Form chia bốn mục: thông tin chung, ảnh, liên hệ, pháp lý. Lúc tạo và lúc sửa đều có đủ các mục. Khi sửa, form điền sẵn giá trị đã lưu. Khi tạo, email và số điện thoại được điền sẵn từ tài khoản qua `contactDefaults`, kèm một dòng nhắc rằng chúng sẽ hiển thị công khai. Đây chỉ là bản sao: sửa được trước khi tạo và không đổi theo tài khoản về sau.
 - `PicturePicker` là một ô tải ảnh chung cho logo và ảnh bìa: người dùng kéo thả hoặc chọn nhiều ảnh, mỗi ảnh tải ngay qua `/media/upload`, rồi bấm nút "Logo" hoặc "Ảnh bìa" dưới từng ảnh để chọn vai trò. Lựa chọn đi cùng form dưới dạng `logo_asset_id` và `cover_asset_id`. Logo và ảnh bìa đang dùng hiện kèm nhãn "Logo" hoặc "Ảnh bìa" (`CurrentPictures`), không còn ô "Gỡ": muốn đổi thì bấm "Đổi chỗ logo và ảnh bìa" hoặc chọn một ảnh trong bộ sưu tập. Ảnh tối đa 20 MB, kiểm tra ngay trên trình duyệt.
 - `OrganizationLegalFields` là các trường pháp lý. Form không bao giờ gửi `legal_status`, vì trạng thái này do quản trị nền tảng đặt.
@@ -42,6 +55,7 @@ Thanh mục trong header chỉ hiện những trang người xem được phép 
 
 - Ảnh không đi thẳng từ trình duyệt tới backend. Form gửi file lên Server Action, action chuyển tiếp lên `POST /media` bằng `readPicture` trong `src/lib/pictures.ts`, rồi gửi `logo_asset_id` hoặc `cover_asset_id` cho backend.
 - Form chỉ gửi asset ID nên Server Action không còn mang tệp ảnh, và không cần nâng `serverActions.bodySizeLimit`.
+- Mục "Tổ chức của tôi" trong thanh bên trái sáng ở mọi địa chỉ bắt đầu bằng `/organizations`, nên sáng ở trang tổ chức của chính mình. Trang `/org/...` của tổ chức người khác không làm mục này sáng (`isActivePath` trong `src/app/_components/navigation.ts`).
 - Thẻ "Tổ chức của tôi" (`OwnedOrganizationCard`) hiện ảnh bìa ở trên và logo bên cạnh tên. Chưa có ảnh thì hiện chữ cái đầu của tên tổ chức.
 - Ảnh hiển thị qua `src/app/media/[id]/file/route.ts`. Route này chỉ nhận ID dạng UUIDv7 và chuyển tiếp tới `GET /media/{id}/file` của backend, nên trình duyệt không gọi backend trực tiếp. Ảnh riêng trả về 404.
 - `src/lib/pictureRules.ts` chứa các quy tắc dùng chung: định dạng JPEG, PNG hoặc WEBP, dung lượng tối đa 20 MB, và kiểm tra ID.

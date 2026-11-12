@@ -68,7 +68,7 @@ export function isRoomId(value: unknown): value is string {
 }
 
 export function chatPath(slug: string, roomId?: string | null): string {
-  const base = `/organizations/${encodeURIComponent(slug)}/chat`;
+  const base = `/org/${encodeURIComponent(slug)}/chat`;
   return roomId ? `${base}?room=${encodeURIComponent(roomId)}` : base;
 }
 

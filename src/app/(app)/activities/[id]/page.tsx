@@ -50,7 +50,7 @@ async function ActivityContent({
             </span>
           </div>
           <Link
-            href={`/organizations/${activity.organization_slug}`}
+            href={`/org/${activity.organization_slug}`}
             className="w-fit text-sm font-semibold text-teal-700 hover:underline dark:text-teal-400"
           >
             {activity.organization_name}

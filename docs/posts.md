@@ -4,16 +4,16 @@ Bài viết nằm trong từng tổ chức, giống hoạt động. Backend mô 
 
 ## Các trang
 
-Các trang nằm trong `src/app/(app)/organizations/[slug]/posts/`.
+Các trang nằm trong `src/app/(app)/org/[slug]/posts/`.
 
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
-| `/organizations/[slug]/posts` | Bảng tin của tổ chức, lọc Tất cả, Thông báo, Thảo luận, Đã ghim (`?filter=`), trang tiếp bằng `?before=`. Từ xl hiện hai cột | Mọi người, theo quyền xem |
-| `/organizations/[slug]/posts/new` | Tạo bài, thay cho `/compose` cũ | Thành viên đang hoạt động |
-| `/organizations/[slug]/posts/[postId]` | Chi tiết bài, nút sửa, ghim, xóa và bình luận | Theo quyền xem |
-| `/organizations/[slug]/posts/[postId]/edit` | Sửa bài hoặc bản nháp | Tác giả |
-| `/organizations/[slug]/posts/drafts` | Bản nháp của tôi trong tổ chức này | Đã đăng nhập |
-| `/organizations/[slug]/posts/trash` | Thùng rác bài viết | Ban quản trị |
+| `/org/[slug]/posts` | Bảng tin của tổ chức, lọc Tất cả, Thông báo, Thảo luận, Đã ghim (`?filter=`), trang tiếp bằng `?before=`. Từ xl hiện hai cột | Mọi người, theo quyền xem |
+| `/org/[slug]/posts/new` | Tạo bài, thay cho `/compose` cũ | Thành viên đang hoạt động |
+| `/org/[slug]/posts/[postId]` | Chi tiết bài, nút sửa, ghim, xóa và bình luận | Theo quyền xem |
+| `/org/[slug]/posts/[postId]/edit` | Sửa bài hoặc bản nháp | Tác giả |
+| `/org/[slug]/posts/drafts` | Bản nháp của tôi trong tổ chức này | Đã đăng nhập |
+| `/org/[slug]/posts/trash` | Thùng rác bài viết | Ban quản trị |
 | `/drafts` | Bản nháp ở mọi tổ chức | Đã đăng nhập |
 | `/compose` | Chỉ chuyển hướng: có đúng một tổ chức đăng được thì mở form của tổ chức đó, còn lại về `/organizations` | Đã đăng nhập |
 
@@ -67,11 +67,12 @@ Các trang nằm trong `src/app/(app)/organizations/[slug]/posts/`.
 ## Trang chủ
 
 - `/` đọc `GET /feed` (tab "Dành cho bạn") hoặc `GET /feed/public` (tab "Công khai") theo `?tab=`. Khách luôn thấy tab công khai.
+- Bài trên trang chủ chỉ để đọc: không hiện nút sửa, ghim, ẩn, xóa (`FeedList` truyền `manageable={false}` cho `PostCard`). Các nút này chỉ có ở trang bài của tổ chức (`/org/[slug]/posts` và trang chi tiết bài).
 - Mục "Thẻ phổ biến" lấy từ `GET /feed/popular-tags`. Mỗi thẻ dẫn tới `/?tab=public&tag=<slug>`.
 
 ## Lọc theo thẻ
 
-- Thẻ trên `PostCard` dẫn tới `/organizations/[slug]/posts?tag=<slug>` (`orgTagHref` trong `src/lib/tagLinks.ts`). Slug tính bằng `tagSlug`, giống backend.
+- Thẻ trên `PostCard` dẫn tới `/org/[slug]/posts?tag=<slug>` (`orgTagHref` trong `src/lib/tagLinks.ts`). Slug tính bằng `tagSlug`, giống backend.
 - Trang bài của tổ chức và trang chủ đọc `?tag=` bằng `readTag` rồi gửi cho backend. Lọc loại bài, đổi tab và "Xem bài cũ hơn" đều giữ thẻ (`listQuery`).
 - Khi đang lọc, `TagFilterBar` hiện thẻ ở đầu danh sách, kèm nút × để bỏ lọc. Tên hiện là tên mà bài trên trang dùng (`tagLabel`), không có bài nào thì hiện slug. Danh sách trống thì báo "Chưa có bài với thẻ này".
 - Tiêu đề bài trên thẻ dẫn tới trang chi tiết. Tên tổ chức dẫn tới trang tổ chức.

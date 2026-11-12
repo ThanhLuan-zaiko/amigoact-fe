@@ -116,7 +116,7 @@ export async function deleteActivity(
   }
   revalidatePath("/", "layout");
   // Only drafts can be deleted, so the drafts list is where the manager was working.
-  redirect(`/organizations/${encodeURIComponent(slug)}/activities/drafts`);
+  redirect(`/org/${encodeURIComponent(slug)}/activities/drafts`);
 }
 
 // A deleted draft comes back as a draft. Owners and admins may do it.
@@ -128,10 +128,7 @@ export async function restoreActivity(
   if (!result.ok) {
     return failureState(result.code, result.issues);
   }
-  revalidatePath(
-    `/organizations/${encodeURIComponent(slug)}/activities`,
-    "layout",
-  );
+  revalidatePath(`/org/${encodeURIComponent(slug)}/activities`, "layout");
   return { success: "Đã khôi phục hoạt động về bản nháp." };
 }
 
@@ -146,10 +143,7 @@ export async function purgeActivity(
   if (!result.ok) {
     return failureState(result.code, result.issues);
   }
-  revalidatePath(
-    `/organizations/${encodeURIComponent(slug)}/activities`,
-    "layout",
-  );
+  revalidatePath(`/org/${encodeURIComponent(slug)}/activities`, "layout");
   return { success: "Đã xóa vĩnh viễn hoạt động." };
 }
 

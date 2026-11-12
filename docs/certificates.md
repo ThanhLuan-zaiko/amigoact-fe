@@ -6,9 +6,9 @@ Tài liệu này mô tả giao diện phần chứng nhận. Quy tắc nghiệp 
 
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
-| `/organizations/[slug]/certificates` | Danh sách mẫu, xem trước, sửa, tắt hoặc bật lại mẫu. Thẻ mẫu chia hai cột từ `sm`, ba cột từ `2xl` | Ban quản trị |
-| `/organizations/[slug]/certificates/new` | Tạo mẫu | Ban quản trị |
-| `/organizations/[slug]/certificates/[templateId]` | Sửa mẫu, đọc bằng `GET /certificate-templates/{id}` | Ban quản trị |
+| `/org/[slug]/certificates` | Danh sách mẫu, xem trước, sửa, tắt hoặc bật lại mẫu. Thẻ mẫu chia hai cột từ `sm`, ba cột từ `2xl` | Ban quản trị |
+| `/org/[slug]/certificates/new` | Tạo mẫu | Ban quản trị |
+| `/org/[slug]/certificates/[templateId]` | Sửa mẫu, đọc bằng `GET /certificate-templates/{id}` | Ban quản trị |
 | `/activities/[id]` | Khung "Chứng nhận" ở cột phải khi hoạt động đã kết thúc: cấp, danh sách, thu hồi, hoàn tác | Ban quản trị |
 | `/certificates` | Chứng nhận của tôi, có liên kết tới trang xác minh để xem và in | Đã đăng nhập |
 | `/certificates/verify` | Ô nhập số serial (form GET, chạy được khi chưa có JavaScript) | Công khai |
@@ -17,7 +17,7 @@ Tài liệu này mô tả giao diện phần chứng nhận. Quy tắc nghiệp 
 
 Thẻ "Chứng nhận" trong `OrgNav` chỉ hiện với ban quản trị. Mục "Chứng nhận" trong thanh bên trái dẫn tới `/certificates`.
 
-`src/lib/protectedPaths.ts` đưa `/certificates` và mọi trang dưới `/organizations/[slug]/certificates` vào danh sách cần đăng nhập. Hai trang xác minh không nằm trong danh sách, và gọi backend không kèm token, nên ai cũng thấy cùng một nội dung.
+`src/lib/protectedPaths.ts` đưa `/certificates` và mọi trang dưới `/org/[slug]/certificates` vào danh sách cần đăng nhập. Hai trang xác minh không nằm trong danh sách, và gọi backend không kèm token, nên ai cũng thấy cùng một nội dung.
 
 ## Mẫu chứng nhận
 

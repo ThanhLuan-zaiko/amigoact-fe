@@ -160,7 +160,7 @@ export function purgeConfirmed(title: string, typed: string): boolean {
 }
 
 export function postPath(slug: string, id?: string): string {
-  const base = `/organizations/${encodeURIComponent(slug)}/posts`;
+  const base = `/org/${encodeURIComponent(slug)}/posts`;
   return id ? `${base}/${encodeURIComponent(id)}` : base;
 }
 

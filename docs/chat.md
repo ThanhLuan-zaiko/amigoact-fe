@@ -6,7 +6,7 @@ Chat nằm trong từng tổ chức, tại tab "Chat" của `OrgNav`. Backend m�
 
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
-| `/organizations/[slug]/chat` | Danh sách phòng và phòng đang mở. `?room=<mã phòng>` chọn phòng | Thành viên đang hoạt động |
+| `/org/[slug]/chat` | Danh sách phòng và phòng đang mở. `?room=<mã phòng>` chọn phòng | Thành viên đang hoạt động |
 | `/messages` | Mục "Tin nhắn" của menu: danh sách tổ chức bạn chat được, kèm tổng số chưa đọc | Đã đăng nhập |
 
 - Tab "Chat" chỉ hiện với thành viên đang hoạt động (`viewer.status === "active"`). Người khác mở thẳng đường dẫn thì thấy thông báo "Chỉ dành cho thành viên".

@@ -1,4 +1,5 @@
 import { getAccessToken } from "@/lib/auth";
+import { internalKeyHeaders } from "@/lib/internalKey";
 import { isPictureId } from "@/lib/pictureRules";
 
 // Serves organization pictures from the backend, so the browser never talks to it.
@@ -21,6 +22,7 @@ export async function GET(
       cache: "no-store",
       // Video players ask for byte ranges in order to seek.
       headers: {
+        ...internalKeyHeaders(),
         ...(range ? { range } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },

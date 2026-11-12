@@ -1,4 +1,6 @@
 // Runs once when the Next.js server starts and logs whether the backend API answers.
+import { internalKeyHeaders } from "./lib/internalKey";
+
 const BACKEND_URL = process.env.BACKEND_URL;
 const HEALTH_PATH = "/openapi.json";
 const TIMEOUT_MS = 3000;
@@ -26,10 +28,15 @@ export async function register(): Promise<void> {
   try {
     const response = await fetch(`${BACKEND_URL}${HEALTH_PATH}`, {
       signal: AbortSignal.timeout(TIMEOUT_MS),
+      headers: internalKeyHeaders(),
     });
     if (response.ok) {
       console.info(
         `${timestamp()} INFO  Backend API connected: ${BACKEND_URL}`,
+      );
+    } else if (response.status === 401) {
+      console.error(
+        `${timestamp()} ERROR Backend API refused the internal key: set the same INTERNAL_API_KEY in both .env files`,
       );
     } else {
       console.error(

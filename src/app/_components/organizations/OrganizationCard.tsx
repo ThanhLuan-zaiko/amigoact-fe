@@ -22,7 +22,7 @@ export default function OrganizationCard({
 }: OrganizationCardProps) {
   return (
     <Link
-      href={`/organizations/${organization.slug}`}
+      href={`/org/${organization.slug}`}
       className={`${panel} flex min-w-0 flex-col overflow-hidden transition-colors hover:border-teal-700 dark:hover:border-teal-400`}
     >
       {organization.cover_url ? (

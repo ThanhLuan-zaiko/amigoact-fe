@@ -6,6 +6,7 @@ import {
   type MyOrganization,
   ORG_TYPE_LABELS,
 } from "@/lib/organizations";
+import { orgBase } from "@/lib/orgRoutes";
 import IconStat from "../IconStat";
 import { mutedText, panel, secondaryButton } from "../ui";
 
@@ -15,7 +16,7 @@ export default function OwnedOrganizationCard({
 }: {
   organization: MyOrganization;
 }) {
-  const href = `/organizations/${organization.slug}`;
+  const href = orgBase(organization.slug, true);
   return (
     <div className={`${panel} flex min-w-0 flex-col overflow-hidden`}>
       {organization.cover_url ? (

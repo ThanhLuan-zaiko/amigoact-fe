@@ -87,7 +87,7 @@ export async function RecentActivities({ slug }: { slug: string }) {
       <Heading
         icon={FiCalendar}
         title="Hoạt động"
-        href={`/organizations/${slug}/activities`}
+        href={`/org/${slug}/activities`}
         linkLabel="Xem tất cả hoạt động"
       />
       {activities.length === 0 ? (

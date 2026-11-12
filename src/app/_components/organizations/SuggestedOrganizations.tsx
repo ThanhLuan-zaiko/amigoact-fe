@@ -28,7 +28,7 @@ export default async function SuggestedOrganizations() {
       {suggestions.map((organization) => (
         <li key={organization.id} className="flex min-w-0 flex-col gap-1">
           <Link
-            href={`/organizations/${organization.slug}`}
+            href={`/org/${organization.slug}`}
             className="block truncate font-semibold transition-colors hover:text-teal-700 dark:hover:text-teal-400"
           >
             {organization.name}

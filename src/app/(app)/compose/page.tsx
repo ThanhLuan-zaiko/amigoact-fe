@@ -5,7 +5,7 @@ import { getMyOrganizations } from "@/lib/organizationApi";
 import { postableOrganizations } from "@/lib/posts";
 import { mutedText } from "../../_components/ui";
 
-// Posts are written inside an organization now, at /organizations/{slug}/posts/new.
+// Posts are written inside an organization now, at /org/{slug}/posts/new.
 // Old links land here: with one organization to post in, go straight to its form,
 // otherwise go to the organization list to pick one.
 async function ComposeRedirect(): Promise<null> {
@@ -15,7 +15,7 @@ async function ComposeRedirect(): Promise<null> {
     "discussion",
   );
   if (choices.length === 1) {
-    redirect(`/organizations/${choices[0].slug}/posts/new`);
+    redirect(`/org/${choices[0].slug}/posts/new`);
   }
   redirect("/organizations");
 }

@@ -13,6 +13,7 @@ import {
   FiUsers,
 } from "react-icons/fi";
 import type { ViewerMembership } from "@/lib/organizations";
+import { orgBase } from "@/lib/orgRoutes";
 import { segmentActive, segmentIdle, segmentItem, segmentList } from "../ui";
 
 type OrgNavProps = {
@@ -22,7 +23,8 @@ type OrgNavProps = {
 
 export default function OrgNav({ slug, viewer }: OrgNavProps) {
   const pathname = usePathname();
-  const base = `/organizations/${slug}`;
+  // The owner works under /organizations, everyone else under /org.
+  const base = orgBase(slug, viewer.role === "owner");
   const items = [
     { href: base, label: "Giới thiệu", icon: FiInfo, visible: true },
     {

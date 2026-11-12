@@ -3,7 +3,7 @@
 
 // Returns where the back button leads, or null when the full header belongs here.
 export function feedBackHref(pathname: string, slug: string): string | null {
-  const feed = `/organizations/${slug}/posts`;
+  const feed = `/org/${slug}/posts`;
   if (!pathname.startsWith(`${feed}/`)) {
     return null;
   }

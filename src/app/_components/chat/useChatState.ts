@@ -40,6 +40,7 @@ import {
   withNewestPage,
   withOlderPage,
 } from "@/lib/chatEvents";
+import { keepAddress } from "@/lib/orgRoutes";
 import { useInterval } from "./useInterval";
 
 export type ChatStateOptions = {
@@ -96,7 +97,11 @@ export function useChatState(options: ChatStateOptions) {
     setSelectedId(roomId);
     setNotice(null);
     setLoadError(null);
-    window.history.replaceState(null, "", chatPath(slug, roomId));
+    window.history.replaceState(
+      null,
+      "",
+      keepAddress(window.location.pathname, chatPath(slug, roomId)),
+    );
   }
 
   async function refreshRooms() {

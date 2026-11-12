@@ -73,8 +73,8 @@ describe("purgeConfirmed", () => {
 
 describe("postPath", () => {
   test("builds feed and post addresses with escaped parts", () => {
-    expect(postPath("clb-a")).toBe("/organizations/clb-a/posts");
-    expect(postPath("clb-a", "id 1")).toBe("/organizations/clb-a/posts/id%201");
+    expect(postPath("clb-a")).toBe("/org/clb-a/posts");
+    expect(postPath("clb-a", "id 1")).toBe("/org/clb-a/posts/id%201");
   });
 });
 

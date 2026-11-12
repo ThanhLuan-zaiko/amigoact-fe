@@ -23,7 +23,7 @@ export default async function ComposeMenu() {
   );
   if (choices.length <= 1) {
     const href = choices[0]
-      ? `/organizations/${choices[0].slug}/posts/new`
+      ? `/org/${choices[0].slug}/posts/new`
       : "/organizations";
     return (
       <Link
@@ -53,7 +53,7 @@ export default async function ComposeMenu() {
         {choices.map((org) => (
           <Link
             key={org.id}
-            href={`/organizations/${org.slug}/posts/new`}
+            href={`/org/${org.slug}/posts/new`}
             className="truncate px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-teal-50 hover:text-teal-700 dark:text-slate-300 dark:hover:bg-teal-950/40 dark:hover:text-teal-400"
           >
             {org.name}

@@ -34,12 +34,16 @@ type PostCardProps = {
   actions?: ReactNode;
   // On the post page itself the title is not a link.
   linked?: boolean;
+  // Edit, pin, hide and delete buttons. The home feed only reads posts, so it
+  // turns them off; managers use the organization's own pages.
+  manageable?: boolean;
 };
 
 export default function PostCard({
   post,
   actions,
   linked = true,
+  manageable = true,
 }: PostCardProps) {
   // A draft opens its edit form. A published post opens its own page.
   const href =
@@ -64,7 +68,7 @@ export default function PostCard({
         </div>
         <div className="min-w-0 flex-1">
           <Link
-            href={`/organizations/${post.slug}`}
+            href={`/org/${post.slug}`}
             className="block truncate font-semibold hover:text-teal-700 dark:hover:text-teal-400"
           >
             {post.organizationName}
@@ -158,7 +162,9 @@ export default function PostCard({
           {post.commentCount}
           <span className="sr-only">bình luận</span>
         </span>
-        {linked && !actions ? <PostActions post={post} inline /> : null}
+        {linked && manageable && !actions ? (
+          <PostActions post={post} inline />
+        ) : null}
       </footer>
       {actions}
     </article>

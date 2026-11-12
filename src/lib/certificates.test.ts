@@ -199,8 +199,8 @@ describe("issuedMessage", () => {
 describe("certificate pages and login", () => {
   test("templates and my certificates need a login", () => {
     expect(isProtected("/certificates")).toBe(true);
-    expect(isProtected("/organizations/abc/certificates")).toBe(true);
-    expect(isProtected("/organizations/abc/certificates/new")).toBe(true);
+    expect(isProtected("/org/abc/certificates")).toBe(true);
+    expect(isProtected("/org/abc/certificates/new")).toBe(true);
   });
 
   test("the verify pages stay public", () => {

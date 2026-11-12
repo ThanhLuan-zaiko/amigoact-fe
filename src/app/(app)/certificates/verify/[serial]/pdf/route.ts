@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { isSerialShape, normalizeSerial } from "@/lib/certificates";
+import { internalKeyHeaders } from "@/lib/internalKey";
 
 // Streams the certificate PDF from the backend, so the browser never talks to it.
 // Public like the verify page. The client address is forwarded, because the backend
@@ -21,7 +22,10 @@ export async function GET(
       `${process.env.BACKEND_URL}/certificates/verify/${encodeURIComponent(typed)}/pdf`,
       {
         cache: "no-store",
-        headers: forwarded ? { "x-forwarded-for": forwarded } : {},
+        headers: {
+          ...internalKeyHeaders(),
+          ...(forwarded ? { "x-forwarded-for": forwarded } : {}),
+        },
       },
     );
   } catch {

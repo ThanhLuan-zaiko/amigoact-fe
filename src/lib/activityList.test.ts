@@ -20,26 +20,22 @@ describe("activityFilter", () => {
 });
 
 test("tab links keep only the filter", () => {
-  expect(orgActivitiesPath("clb xanh")).toBe(
-    "/organizations/clb%20xanh/activities",
-  );
-  expect(activityFilterHref("clb", "all")).toBe(
-    "/organizations/clb/activities",
-  );
+  expect(orgActivitiesPath("clb xanh")).toBe("/org/clb%20xanh/activities");
+  expect(activityFilterHref("clb", "all")).toBe("/org/clb/activities");
   expect(activityFilterHref("clb", "completed")).toBe(
-    "/organizations/clb/activities?filter=completed",
+    "/org/clb/activities?filter=completed",
   );
 });
 
 test("tab links keep a tag filter and tag chips lead to it", () => {
   expect(activityFilterHref("clb", "upcoming", "moi-truong")).toBe(
-    "/organizations/clb/activities?filter=upcoming&tag=moi-truong",
+    "/org/clb/activities?filter=upcoming&tag=moi-truong",
   );
   expect(activityFilterHref("clb", "all", "moi-truong")).toBe(
-    "/organizations/clb/activities?tag=moi-truong",
+    "/org/clb/activities?tag=moi-truong",
   );
   expect(activityTagHref("clb", "Môi trường")).toBe(
-    "/organizations/clb/activities?tag=moi-truong",
+    "/org/clb/activities?tag=moi-truong",
   );
 });
 
@@ -59,8 +55,8 @@ test("every tab has its own empty message", () => {
 });
 
 test("drafts, trash and new activity pages need a login", () => {
-  expect(isProtected("/organizations/clb/activities/drafts")).toBe(true);
-  expect(isProtected("/organizations/clb/activities/trash")).toBe(true);
-  expect(isProtected("/organizations/clb/activities/new")).toBe(true);
-  expect(isProtected("/organizations/clb/activities")).toBe(false);
+  expect(isProtected("/org/clb/activities/drafts")).toBe(true);
+  expect(isProtected("/org/clb/activities/trash")).toBe(true);
+  expect(isProtected("/org/clb/activities/new")).toBe(true);
+  expect(isProtected("/org/clb/activities")).toBe(false);
 });

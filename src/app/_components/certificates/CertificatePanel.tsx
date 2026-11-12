@@ -64,7 +64,7 @@ export default async function CertificatePanel({
         <p className={mutedText}>
           Chưa có mẫu đang dùng.{" "}
           <Link
-            href={`/organizations/${organizationSlug}/certificates/new`}
+            href={`/org/${organizationSlug}/certificates/new`}
             className="font-semibold text-teal-700 hover:underline dark:text-teal-400"
           >
             Tạo mẫu chứng nhận

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { FiChevronRight } from "react-icons/fi";
+import { feedTagHref } from "@/lib/tagLinks";
 import UpcomingActivities from "./activities/UpcomingActivities";
 import SuggestedOrganizations from "./organizations/SuggestedOrganizations";
-import { feedTagHref } from "@/lib/tagLinks";
 import { mutedText, panel, sectionTitle, tagLink } from "./ui";
 
 type RightRailProps = {
@@ -39,7 +39,7 @@ export default function RightRail({ popularTags }: RightRailProps) {
       <section className={`${panel} flex flex-col gap-3 p-4`}>
         <div className="flex items-center justify-between gap-2">
           <h2 className={sectionTitle}>Tổ chức gợi ý</h2>
-          <SectionLink href="/organizations" label="Xem tất cả tổ chức" />
+          <SectionLink href="/?tab=orgs" label="Xem tất cả tổ chức" />
         </div>
         <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
           <SuggestedOrganizations />

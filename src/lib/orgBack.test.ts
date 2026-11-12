@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import { feedBackHref } from "./orgBack";
 
-const feed = "/organizations/club/posts";
+const feed = "/org/club/posts";
 
 describe("feedBackHref", () => {
   test("the feed and other org pages keep the full header", () => {
     expect(feedBackHref(feed, "club")).toBeNull();
     expect(feedBackHref(`${feed}/`, "club")).toBeNull();
-    expect(feedBackHref("/organizations/club", "club")).toBeNull();
-    expect(feedBackHref("/organizations/club/activities", "club")).toBeNull();
+    expect(feedBackHref("/org/club", "club")).toBeNull();
+    expect(feedBackHref("/org/club/activities", "club")).toBeNull();
   });
 
   test("feed sub pages go back to the feed", () => {

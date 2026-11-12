@@ -19,7 +19,7 @@ export function activityFilter(value: unknown): ActivityFilter {
 }
 
 export function orgActivitiesPath(slug: string): string {
-  return `/organizations/${encodeURIComponent(slug)}/activities`;
+  return `/org/${encodeURIComponent(slug)}/activities`;
 }
 
 // The list address for a tab. A tag filter stays on when the tab changes.

@@ -68,6 +68,7 @@ export async function createOrganization(
     return failureState(result.code, result.issues);
   }
   revalidatePath("/", "layout");
+  // The creator owns it, so it opens at the owner address.
   redirect(`/organizations/${encodeURIComponent(result.data.slug)}`);
 }
 
@@ -152,7 +153,7 @@ export async function joinOrganization(
 ): Promise<FormState> {
   // Visitors see the join button too, so they log in first and come back here.
   if (!(await getAccessToken())) {
-    redirect(`/login?next=${encodeURIComponent(`/organizations/${slug}`)}`);
+    redirect(`/login?next=${encodeURIComponent(`/org/${slug}`)}`);
   }
   return finish(
     await authedFetch(`${organizationPath(slug)}/join`, {

@@ -218,10 +218,8 @@ describe("small helpers", () => {
   test("isRoomId and chatPath", () => {
     expect(isRoomId(GENERAL)).toBe(true);
     expect(isRoomId("../etc")).toBe(false);
-    expect(chatPath("doi-a", GENERAL)).toBe(
-      `/organizations/doi-a/chat?room=${GENERAL}`,
-    );
-    expect(chatPath("doi-a", null)).toBe("/organizations/doi-a/chat");
+    expect(chatPath("doi-a", GENERAL)).toBe(`/org/doi-a/chat?room=${GENERAL}`);
+    expect(chatPath("doi-a", null)).toBe("/org/doi-a/chat");
   });
 
   test("continuesGroup joins close messages of one author only", () => {

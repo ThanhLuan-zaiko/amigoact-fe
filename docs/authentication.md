@@ -21,6 +21,14 @@ Trình duyệt -> Server Action (src/app/_actions) -> backendFetch (src/lib/back
 | `src/app/_actions/` | Server Actions của các form |
 | `src/app/_components/account/` | Form và ô nhập |
 
+## Khóa nội bộ
+
+- Backend từ chối mọi request HTTP không có header `X-Internal-Key` (xem `amigoact-be/docs/security.md`).
+- Frontend đọc `INTERNAL_API_KEY` trong `.env.local`, cùng giá trị với `.env` của backend, và gửi qua `internalKeyHeaders()` (`src/lib/internalKey.ts`). Mọi chỗ gọi `BACKEND_URL` đều dùng hàm này: `backendFetch`, `proxy.ts`, `instrumentation.ts`, route ảnh `/media/[id]/file` và route PDF chứng nhận.
+- Khóa chỉ nằm trên server. Không đưa vào client component, biến `NEXT_PUBLIC_*` hay `localStorage`.
+- Khi server khởi động, `instrumentation.ts` báo lỗi riêng nếu backend trả 401 vì sai khóa.
+- Socket chat không dùng khóa này, vì trình duyệt mở trực tiếp bằng vé. Địa chỉ frontend phải nằm trong `CORS_ORIGINS` của backend, nếu không socket bị đóng với mã `4403`.
+
 ## Token
 
 - Token chỉ nằm trong cookie `httpOnly`, `sameSite=lax`, và `secure` ở production. Không đưa token vào client component hay `localStorage`.

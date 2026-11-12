@@ -120,20 +120,20 @@ describe("failureState for type errors", () => {
 
 describe("isProtected", () => {
   test.each([
-    "/organizations/clb-a/posts/new",
-    "/organizations/clb-a/posts/drafts",
-    "/organizations/clb-a/posts/trash",
-    "/organizations/clb-a/posts/0190a1b2-0000-7000-8000-000000000000/edit",
+    "/org/clb-a/posts/new",
+    "/org/clb-a/posts/drafts",
+    "/org/clb-a/posts/trash",
+    "/org/clb-a/posts/0190a1b2-0000-7000-8000-000000000000/edit",
     "/compose",
   ])("sends %p to the login page", (path) => {
     expect(isProtected(path)).toBe(true);
   });
 
   test.each([
-    "/organizations/clb-a/posts",
-    "/organizations/clb-a/posts/0190a1b2-0000-7000-8000-000000000000",
-    "/organizations/clb-a",
-    "/organizations/clb-a/posts/new/extra",
+    "/org/clb-a/posts",
+    "/org/clb-a/posts/0190a1b2-0000-7000-8000-000000000000",
+    "/org/clb-a",
+    "/org/clb-a/posts/new/extra",
   ])("leaves %p open to visitors", (path) => {
     expect(isProtected(path)).toBe(false);
   });

@@ -47,6 +47,7 @@ These rules set the defaults for every screen. If one of them gets in the way of
 
 - Details are in `docs/authentication.md`.
 - The browser never talks to the backend. Server Actions in `src/app/_actions/` and helpers in `src/lib/` call it with `BACKEND_URL`.
+- Every server-side call to `BACKEND_URL` sends `internalKeyHeaders()` from `src/lib/internalKey.ts` (`INTERNAL_API_KEY` in `.env.local`, the same value as the backend). The backend refuses calls without it. Never expose the key to the browser.
 - Tokens live only in httpOnly cookies. Never expose them to client components or `localStorage`.
 - `src/proxy.ts` refreshes an expired access token and sends visitors without a session away from `/account`. Pages still check the user with `requireUser`.
 - With Cache Components enabled, a component that reads the session must sit behind a `<Suspense>` boundary. Do not wrap session reads in React `cache`.
@@ -56,13 +57,14 @@ These rules set the defaults for every screen. If one of them gets in the way of
 ## Organizations
 
 - Details are in `docs/organizations.md`.
+- Page addresses: `/organizations` is the viewer's owned list and `/organizations/new` the create form. An organization's pages are built once under `src/app/(app)/org/[slug]/`. Its owner sees them at `/organizations/<slug>/...`, everyone else at `/org/<slug>/...`; `proxy.ts` redirects (307) and rewrites with `src/lib/orgRoutes.ts`. Build links with `orgBase` when the role is known, and pass client-built `/org` paths through `keepAddress`. Backend API paths stay `/organizations/{slug}/...`; do not rename them.
 - Pages with the app header and navigation live in the `src/app/(app)/` route group. Read route params and backend data behind a `<Suspense>` boundary.
 - `authedFetch` in `src/lib/auth.ts` is the only way Server Actions call the backend with a token.
 - Activities are described in `docs/activities.md`. `datetime-local` inputs mean Vietnam time: convert them with `toLocalInput` and `fromLocalInput` from `src/lib/activities.ts`.
 
 ## Posts
 
-- Details are in `docs/posts.md`. Posts live inside an organization at `/organizations/[slug]/posts`, like activities. `/compose` only redirects there. Protected post pages are listed in `src/lib/protectedPaths.ts`.
+- Details are in `docs/posts.md`. Posts live inside an organization at `/org/[slug]/posts`, like activities. `/compose` only redirects there. Protected post pages are listed in `src/lib/protectedPaths.ts`.
 - The post form fields are named `post_title`, `post_body`, and `post_tags`. The comment field is `comment_body`.
 - A draft is deleted for good. A published post goes to the trash for 30 days. Only the owner purges, after typing the title again (`ConfirmAction` with `typeToConfirm`).
 - Number inputs use `TextField` with `numeric`, and `numberOrNull` sends anything but a plain number as typed, so the backend refuses it.
@@ -73,7 +75,7 @@ These rules set the defaults for every screen. If one of them gets in the way of
 
 ## Chat
 
-- Details are in `docs/chat.md`. Chat lives at `/organizations/[slug]/chat` for active members.
+- Details are in `docs/chat.md`. Chat lives at `/org/[slug]/chat` for active members.
 - The chat WebSocket is the one place the browser talks to the backend, because Next.js cannot proxy a socket. The browser gets a one-time ticket from the `getSocketTicket` Server Action and connects to `CHAT_WS_URL`. Never send the access token to the client for this.
 - Wrap chat Server Action calls from client code in `attempt`, so a dropped connection becomes a message instead of the error page.
 

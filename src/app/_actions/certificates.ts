@@ -14,7 +14,7 @@ import {
 import { textOrNull, textValue } from "@/lib/forms";
 
 function templatesPage(slug: string): string {
-  return `/organizations/${encodeURIComponent(slug)}/certificates`;
+  return `/org/${encodeURIComponent(slug)}/certificates`;
 }
 
 function finish(result: ApiResult<unknown>, success?: string): FormState {

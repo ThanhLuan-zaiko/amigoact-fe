@@ -4,18 +4,16 @@
 // Writing, editing, drafts and the trash of an organization's posts need a login.
 // Reading the feed and a public post does not.
 const PROTECTED_POST_PAGES = [
-  /^\/organizations\/[^/]+\/posts\/(new|drafts|trash)$/,
+  /^\/org\/[^/]+\/posts\/(new|drafts|trash)$/,
   // Chat is for members only.
-  /^\/organizations\/[^/]+\/chat$/,
-  /^\/organizations\/[^/]+\/posts\/[^/]+\/edit$/,
+  /^\/org\/[^/]+\/chat$/,
+  /^\/org\/[^/]+\/posts\/[^/]+\/edit$/,
   // Creating activities, their drafts and their trash are for managers.
-  /^\/organizations\/[^/]+\/activities\/(new|drafts|trash)$/,
+  /^\/org\/[^/]+\/activities\/(new|drafts|trash)$/,
 ];
 
 // Certificate templates are for managers. The public verify page stays open.
-const PROTECTED_CERTIFICATE_PAGES = [
-  /^\/organizations\/[^/]+\/certificates(\/.*)?$/,
-];
+const PROTECTED_CERTIFICATE_PAGES = [/^\/org\/[^/]+\/certificates(\/.*)?$/];
 
 export function isProtected(pathname: string): boolean {
   if (
@@ -28,6 +26,7 @@ export function isProtected(pathname: string): boolean {
   return (
     pathname === "/account" ||
     pathname.startsWith("/account/") ||
+    pathname === "/organizations" ||
     pathname === "/organizations/new" ||
     pathname === "/compose" ||
     pathname === "/drafts" ||

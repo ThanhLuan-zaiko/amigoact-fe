@@ -63,7 +63,7 @@ export default async function CommentSection({
           ) : (
             <>
               <Link
-                href={`/login?next=/organizations/${slug}/posts/${postId}`}
+                href={`/login?next=/org/${slug}/posts/${postId}`}
                 className="font-semibold text-teal-700 hover:underline dark:text-teal-400"
               >
                 Đăng nhập

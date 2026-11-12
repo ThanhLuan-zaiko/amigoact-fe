@@ -6,17 +6,20 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { FiSearch } from "react-icons/fi";
 import { iconButton } from "./ui";
 
-const ORGANIZATIONS_PATH = "/organizations";
+const HOME_PATH = "/";
 
-// The organizations page searches organizations. Every other page searches activities.
+// The home page's "Tổ chức" tab searches organizations. Every other page searches
+// activities.
 function useSearchScope() {
-  const isOrganizations = usePathname() === ORGANIZATIONS_PATH;
+  const pathname = usePathname();
+  const tab = useSearchParams().get("tab");
+  const isOrganizations = pathname === HOME_PATH && tab === "orgs";
   return isOrganizations
     ? {
-        action: ORGANIZATIONS_PATH,
+        action: HOME_PATH,
         label: "Tìm tổ chức",
         // Phones have no header input, so the link jumps to the one in the page.
-        mobileHref: `${ORGANIZATIONS_PATH}#org-search`,
+        mobileHref: `${HOME_PATH}?tab=orgs#org-search`,
         isOrganizations,
       }
     : {
@@ -37,6 +40,7 @@ export function HeaderSearchForm() {
       className="hidden h-10 max-w-xl flex-1 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm text-slate-500 transition-colors focus-within:border-teal-700 md:flex dark:border-slate-800 dark:focus-within:border-teal-400"
     >
       <FiSearch aria-hidden="true" className="shrink-0" />
+      {isOrganizations ? <input type="hidden" name="tab" value="orgs" /> : null}
       <input
         key={`${action}:${value}`}
         type="search"

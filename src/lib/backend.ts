@@ -1,6 +1,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import type { ValidationIssue } from "./forms";
+import { internalKeyHeaders } from "./internalKey";
 
 export type ApiResult<T> =
   | { ok: true; data: T }
@@ -37,7 +38,7 @@ export async function backendFetch<T>(
   { method = "POST", body, form, token }: RequestOptions = {},
 ): Promise<ApiResult<T>> {
   const incoming = await headers();
-  const outgoing = new Headers();
+  const outgoing = new Headers(internalKeyHeaders());
   if (!form) {
     outgoing.set("Content-Type", "application/json");
   }

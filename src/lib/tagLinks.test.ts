@@ -22,7 +22,7 @@ describe("readTag", () => {
 
 test("tag links use the slug", () => {
   expect(orgTagHref("clb-xanh", "Môi trường")).toBe(
-    "/organizations/clb-xanh/posts?tag=moi-truong",
+    "/org/clb-xanh/posts?tag=moi-truong",
   );
   expect(feedTagHref("Hiến máu")).toBe("/?tag=hien-mau");
   expect(feedTagHref("Hiến máu", "public")).toBe("/?tab=public&tag=hien-mau");

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getMyOrganizations } from "@/lib/organizationApi";
+import { orgBase } from "@/lib/orgRoutes";
 
 // Reads the session, so the app layout renders it behind a Suspense boundary.
 export default async function JoinedOrganizations() {
@@ -18,7 +19,7 @@ export default async function JoinedOrganizations() {
       {organizations.map((organization) => (
         <li key={organization.id}>
           <Link
-            href={`/organizations/${organization.slug}`}
+            href={orgBase(organization.slug, organization.role === "owner")}
             className="block truncate rounded-md px-3 py-2 text-sm text-slate-700 transition-colors hover:text-teal-700 dark:text-slate-300 dark:hover:text-teal-400"
           >
             {organization.name}

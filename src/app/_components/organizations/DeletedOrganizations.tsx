@@ -5,7 +5,7 @@ import { mutedText, panel, secondaryButton, sectionTitle } from "../ui";
 import ActionButton from "./ActionButton";
 import PurgeOrganizationButton from "./PurgeOrganizationButton";
 
-// The owner's trash. A deleted organization has no public page, so it is restored from here,
+// The owner's deleted organizations. A deleted organization has no public page, so it is restored from here,
 // or deleted for good from here.
 export default function DeletedOrganizations({
   organizations,
@@ -15,7 +15,7 @@ export default function DeletedOrganizations({
   return (
     <section className="flex min-w-0 flex-col gap-3">
       <div className="flex items-baseline gap-2">
-        <h2 className={sectionTitle}>Thùng rác</h2>
+        <h2 className={sectionTitle}>Tổ chức đã xóa</h2>
         <span className={mutedText}>{organizations.length}</span>
       </div>
       {organizations.map((organization) => (

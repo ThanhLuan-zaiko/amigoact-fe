@@ -5,6 +5,7 @@ import { FiEdit3, FiFileText, FiTrash2 } from "react-icons/fi";
 import { getOrganization } from "@/lib/organizationApi";
 import { getOrgPosts } from "@/lib/postApi";
 import { feedFilter, postPath } from "@/lib/posts";
+import { hasPermission } from "@/lib/roles";
 import { listQuery, readTag, tagLabel } from "@/lib/tagLinks";
 import EmptyState from "../../../../_components/EmptyState";
 import PostCard from "../../../../_components/PostCard";
@@ -63,7 +64,7 @@ async function OrganizationFeed({
             <FiFileText aria-hidden="true" />
           </Link>
         ) : null}
-        {organization.viewer.can_manage ? (
+        {hasPermission(organization.viewer, "posts.moderate") ? (
           <Link
             href={`${base}/trash`}
             aria-label="Thùng rác bài viết"

@@ -225,19 +225,6 @@ export async function rejectApplication(
   return finish(await authedFetch(`${applicationPath(slug, userId)}/reject`));
 }
 
-export async function setMemberRole(
-  slug: string,
-  userId: string,
-  role: "admin" | "member",
-): Promise<FormState> {
-  return finish(
-    await authedFetch(memberPath(slug, userId), {
-      method: "PATCH",
-      body: { role },
-    }),
-  );
-}
-
 export async function removeMember(
   slug: string,
   userId: string,

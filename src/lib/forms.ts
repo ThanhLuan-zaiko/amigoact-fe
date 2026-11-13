@@ -93,6 +93,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   comment_not_found: "Không tìm thấy bình luận này.",
   comment_edit_expired: "Chỉ sửa được bình luận trong 15 phút sau khi viết.",
   comment_not_deleted: "Bình luận này chưa bị xóa.",
+  role_not_found: "Không tìm thấy vai trò này.",
+  role_hierarchy: "Bạn chỉ thay đổi được vai trò và người ở bậc thấp hơn mình.",
+  permission_not_held: "Bạn không thể cấp quyền mà chính mình không có.",
+  role_limit_reached: "Mỗi tổ chức có tối đa 25 vai trò.",
+  role_name_taken: "Đã có vai trò mang tên này.",
+  role_order_invalid: "Thứ tự vai trò đã thay đổi. Hãy tải lại trang.",
 };
 
 const PASSWORD_COMMON =
@@ -182,6 +188,9 @@ const FIELD_FALLBACKS: Record<string, string> = {
   post_body: "Nội dung cần từ 1 đến 5000 ký tự.",
   post_tags: "Mỗi thẻ tối đa 40 ký tự.",
   minutes: "Thời lượng từ 5 đến 1440 phút.",
+  role_name: "Tên vai trò cần từ 1 đến 50 ký tự và có chữ cái.",
+  role_color: "Hãy chọn một màu trong danh sách.",
+  role_permissions: "Danh sách quyền không hợp lệ.",
 };
 
 // Backend errors that belong to specific inputs. A form renders only some of them.

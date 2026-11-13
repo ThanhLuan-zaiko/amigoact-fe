@@ -14,7 +14,7 @@ Các trang nằm trong `src/app/(app)/org/[slug]/posts/`.
 | `/org/[slug]/posts/[postId]/edit` | Sửa bài hoặc bản nháp | Tác giả |
 | `/org/[slug]/posts/drafts` | Bản nháp của tôi trong tổ chức này | Đã đăng nhập |
 | `/org/[slug]/posts/trash` | Thùng rác bài viết | Ban quản trị |
-| `/drafts` | Bản nháp ở mọi tổ chức | Đã đăng nhập |
+| `/drafts` | Bản nháp ở mọi tổ chức. Nút "Bản nháp" trên thanh tiêu đề của `/organizations` dẫn tới đây. Bản nháp từng tổ chức vẫn ở `/org/[slug]/posts/drafts` | Đã đăng nhập |
 | `/compose` | Chỉ chuyển hướng: có đúng một tổ chức đăng được thì mở form của tổ chức đó, còn lại về `/organizations` | Đã đăng nhập |
 
 - Tab "Bảng tin" nằm ngay sau "Giới thiệu" trong `OrgNav`.

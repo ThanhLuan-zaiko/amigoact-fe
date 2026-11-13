@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { FiCalendar, FiShield, FiShieldOff, FiUserX } from "react-icons/fi";
-import { removeMember, setMemberRole } from "@/app/_actions/organizations";
+import { FiCalendar, FiUserX } from "react-icons/fi";
+import { removeMember } from "@/app/_actions/organizations";
 import { requireUser } from "@/lib/auth";
-import { getMembers, getOrganization } from "@/lib/organizationApi";
+import { getMembers, getOrganization, getRoles } from "@/lib/organizationApi";
 import {
   formatDate,
   initials,
@@ -13,10 +13,18 @@ import {
   ROLE_LABELS,
 } from "@/lib/organizations";
 import { orgTopic } from "@/lib/realtime";
+import {
+  assignableRoles,
+  hasPermission,
+  type RoleInfo,
+  type RoleList,
+} from "@/lib/roles";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
 import PageLinks from "../../../../_components/organizations/PageLinks";
 import LiveRefresh from "../../../../_components/realtime/LiveRefresh";
+import MemberRolePicker from "../../../../_components/roles/MemberRolePicker";
+import RoleDot from "../../../../_components/roles/RoleDot";
 import {
   mutedText,
   panel,
@@ -29,46 +37,45 @@ import {
 export const metadata: Metadata = { title: "Thành viên | AmigoACT" };
 
 // Someone joined, left, was removed, or changed role.
-const MEMBER_EVENTS = ["members.changed"] as const;
+const MEMBER_EVENTS = ["members.changed", "roles.changed"] as const;
 
 function MemberActions({
   organization,
   member,
   currentUserId,
+  roles,
 }: {
   organization: OrganizationDetail;
   member: MemberInfo;
   currentUserId: string;
+  roles: RoleList | null;
 }) {
   const { slug, viewer } = organization;
   const isOwner = viewer.role === "owner";
+  const others = member.role !== "owner" && member.user_id !== currentUserId;
+  // Every role of the member sits below the viewer's top role, so the viewer outranks them.
+  const below = new Set(
+    (roles?.items ?? []).filter((role) => role.below_you).map((r) => r.id),
+  );
+  const outranks = isOwner || member.roles.every((role) => below.has(role.id));
+  const assignable: RoleInfo[] = roles ? assignableRoles(roles.items) : [];
+  const canAssign =
+    others &&
+    outranks &&
+    hasPermission(viewer, "roles.assign") &&
+    assignable.length > 0;
   const canRemove =
-    viewer.can_manage &&
-    member.role !== "owner" &&
-    member.user_id !== currentUserId &&
-    (isOwner || member.role === "member");
-  const canChangeRole = isOwner && member.role !== "owner";
+    others && outranks && hasPermission(viewer, "members.remove");
 
   return (
     <div className="flex flex-wrap items-start gap-2">
-      {canChangeRole ? (
-        <ActionButton
-          action={setMemberRole.bind(
-            null,
-            slug,
-            member.user_id,
-            member.role === "admin" ? "member" : "admin",
-          )}
-          label={
-            member.role === "admin" ? "Bỏ quyền quản trị" : "Đặt làm quản trị"
-          }
-        >
-          {member.role === "admin" ? (
-            <FiShieldOff aria-hidden="true" />
-          ) : (
-            <FiShield aria-hidden="true" />
-          )}
-        </ActionButton>
+      {canAssign ? (
+        <MemberRolePicker
+          slug={slug}
+          userId={member.user_id}
+          roles={assignable}
+          held={member.roles}
+        />
       ) : null}
       {canRemove ? (
         <ActionButton
@@ -83,6 +90,22 @@ function MemberActions({
   );
 }
 
+function MemberRoles({ member }: { member: MemberInfo }) {
+  if (member.role === "owner" || member.roles.length === 0) {
+    return <span className={tagChip}>{ROLE_LABELS[member.role]}</span>;
+  }
+  return (
+    <ul className="flex flex-wrap gap-2">
+      {member.roles.map((role) => (
+        <li key={role.id} className={`${tagChip} gap-1.5`}>
+          <RoleDot color={role.color} />
+          {role.name}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 async function MemberList({
   params,
   searchParams,
@@ -90,9 +113,10 @@ async function MemberList({
   const { slug } = await params;
   const offset = pageOffset((await searchParams).page);
   const user = await requireUser(`/org/${slug}/members`);
-  const [organization, page] = await Promise.all([
+  const [organization, page, roles] = await Promise.all([
     getOrganization(slug),
     getMembers(slug, offset),
+    getRoles(slug),
   ]);
   if (!organization) {
     return null;
@@ -124,11 +148,12 @@ async function MemberList({
                 {formatDate(member.joined_at)}
               </IconStat>
             </div>
-            <span className={tagChip}>{ROLE_LABELS[member.role]}</span>
+            <MemberRoles member={member} />
             <MemberActions
               organization={organization}
               member={member}
               currentUserId={user.id}
+              roles={roles}
             />
           </li>
         ))}

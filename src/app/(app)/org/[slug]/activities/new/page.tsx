@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { createActivity } from "@/app/_actions/activities";
 import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
+import { hasPermission } from "@/lib/roles";
 import ActivityForm from "../../../../../_components/activities/ActivityForm";
 import { mutedText } from "../../../../../_components/ui";
 
@@ -19,7 +20,7 @@ async function NewActivityContent({
   if (!organization) {
     return null;
   }
-  if (!organization.viewer.can_manage) {
+  if (!hasPermission(organization.viewer, "activities.create")) {
     return (
       <p className={mutedText}>Chỉ ban quản trị mới tạo được hoạt động.</p>
     );

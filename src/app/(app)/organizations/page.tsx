@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { FiCompass, FiPlus } from "react-icons/fi";
+import { FiCompass, FiFileText, FiPlus, FiTrash2 } from "react-icons/fi";
 import { getMyOrganizations } from "@/lib/organizationApi";
 import { MAX_OWNED_ORGANIZATIONS } from "@/lib/organizations";
 import EmptyState from "../../_components/EmptyState";
@@ -48,7 +48,16 @@ export default function OrganizationsPage() {
         <h1 className="text-2xl font-extrabold tracking-tight">
           Tổ chức của tôi
         </h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/drafts"
+            aria-label="Bản nháp"
+            title="Bản nháp"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold transition-colors hover:border-teal-700 hover:text-teal-700 dark:border-slate-800 dark:hover:border-teal-400 dark:hover:text-teal-400"
+          >
+            <FiFileText aria-hidden="true" />
+            <span className="hidden sm:inline">Bản nháp</span>
+          </Link>
           <Link
             href="/?tab=orgs"
             aria-label="Khám phá tổ chức"
@@ -57,6 +66,15 @@ export default function OrganizationsPage() {
           >
             <FiCompass aria-hidden="true" />
             <span className="hidden sm:inline">Khám phá</span>
+          </Link>
+          <Link
+            href="/trash"
+            aria-label="Tổ chức đã xóa"
+            title="Tổ chức đã xóa"
+            className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-semibold transition-colors hover:border-teal-700 hover:text-teal-700 dark:border-slate-800 dark:hover:border-teal-400 dark:hover:text-teal-400"
+          >
+            <FiTrash2 aria-hidden="true" />
+            <span className="hidden sm:inline">Tổ chức đã xóa</span>
           </Link>
           <Link
             href="/organizations/new"

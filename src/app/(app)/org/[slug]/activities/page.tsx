@@ -11,6 +11,7 @@ import {
 } from "@/lib/activityList";
 import { getOrganization } from "@/lib/organizationApi";
 import { pageOffset } from "@/lib/organizations";
+import { hasModule, hasPermission } from "@/lib/roles";
 import { readTag, tagLabel } from "@/lib/tagLinks";
 import ActivityCard from "../../../../_components/activities/ActivityCard";
 import ActivityFilters from "../../../../_components/activities/ActivityFilters";
@@ -42,7 +43,8 @@ async function OrganizationActivities({
     return null;
   }
   const base = orgActivitiesPath(slug);
-  const canManage = organization.viewer.can_manage;
+  const { viewer } = organization;
+  const canManage = hasModule(viewer, "activities");
   const empty = tag
     ? {
         title: "Chưa có hoạt động với thẻ này",
@@ -66,18 +68,22 @@ async function OrganizationActivities({
             >
               <FiFileText aria-hidden="true" />
             </Link>
-            <Link
-              href={`${base}/trash`}
-              aria-label="Thùng rác hoạt động"
-              title="Thùng rác hoạt động"
-              className={iconButton}
-            >
-              <FiTrash2 aria-hidden="true" />
-            </Link>
-            <Link href={`${base}/new`} className={primaryButton}>
-              <FiPlus aria-hidden="true" />
-              Tạo hoạt động
-            </Link>
+            {hasPermission(viewer, "activities.delete") ? (
+              <Link
+                href={`${base}/trash`}
+                aria-label="Thùng rác hoạt động"
+                title="Thùng rác hoạt động"
+                className={iconButton}
+              >
+                <FiTrash2 aria-hidden="true" />
+              </Link>
+            ) : null}
+            {hasPermission(viewer, "activities.create") ? (
+              <Link href={`${base}/new`} className={primaryButton}>
+                <FiPlus aria-hidden="true" />
+                Tạo hoạt động
+              </Link>
+            ) : null}
           </>
         ) : null}
       </div>

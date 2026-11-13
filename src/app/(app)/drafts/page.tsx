@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { FiEdit3 } from "react-icons/fi";
+import { FiArrowLeft, FiEdit3 } from "react-icons/fi";
 import { requireUser } from "@/lib/auth";
 import { getMyDrafts } from "@/lib/postApi";
 import DraftList from "../../_components/DraftList";
 import EmptyState from "../../_components/EmptyState";
-import { mutedText, primaryButton } from "../../_components/ui";
+import { mutedText, neutralButton, primaryButton } from "../../_components/ui";
 
 export const metadata: Metadata = { title: "Bản nháp | AmigoACT" };
 
@@ -27,6 +27,12 @@ async function DraftsContent() {
 export default function DraftsPage() {
   return (
     <div className="flex w-full flex-col gap-6">
+      <div>
+        <Link href="/organizations" className={neutralButton}>
+          <FiArrowLeft aria-hidden="true" />
+          Quay lại
+        </Link>
+      </div>
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex flex-1 flex-col gap-1">
           <h1 className="text-2xl font-extrabold tracking-tight">Bản nháp</h1>

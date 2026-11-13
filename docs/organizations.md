@@ -20,14 +20,15 @@ Tài liệu này mô tả giao diện phần tổ chức. Quy tắc nghiệp v�
 
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
-| `/organizations` | "Tổ chức của tôi": chỉ liệt kê tổ chức thuộc quyền sở hữu của tài khoản (hai cột từ xl). Không có tìm kiếm hay danh bạ ở đây, việc khám phá tổ chức do trang chủ đảm nhiệm (nút "Khám phá" dẫn tới `/?tab=orgs`). Tổ chức đã xóa không hiện ở đây | Đã đăng nhập |
+| `/organizations` | "Tổ chức của tôi": chỉ liệt kê tổ chức thuộc quyền sở hữu của tài khoản (hai cột từ xl). Không có tìm kiếm hay danh bạ ở đây, việc khám phá tổ chức do trang chủ đảm nhiệm (nút "Khám phá" dẫn tới `/?tab=orgs`). Tổ chức đã xóa không hiện ở đây. Nút "Bản nháp" dẫn tới `/drafts`, nút "Tổ chức đã xóa" (icon thùng rác) dẫn tới `/trash`, trên thanh tiêu đề | Đã đăng nhập |
 | `/?tab=orgs` | Tab "Tổ chức" của trang chủ: danh bạ tổ chức công khai, có tìm kiếm và phân trang. Gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ (`OrganizationDirectory`) | Mọi người |
 | `/organizations/new` | Form tạo tổ chức, hai cột từ xl | Đã đăng nhập |
 | `/org/[slug]` | Tổng quan. Cột chính: giới thiệu, liên hệ và bài ghim (chưa ghim thì bài mới nhất). Cột phụ từ xl: hoạt động gần đây và bộ sưu tập (`OrgHighlights`) | Mọi người |
 | `/org/[slug]/posts` | Bảng tin của tổ chức, xem `posts.md` | Mọi người, theo quyền xem |
-| `/org/[slug]/members` | Thành viên, đổi vai trò, xóa thành viên. Từ xl hiện hai cột | Thành viên |
-| `/trash` | Thùng rác của chính mình, có nút khôi phục và xóa vĩnh viễn. Mục "Thùng rác" trong thanh bên trái trỏ tới đây. Trang trống hiện "Thùng rác trống" | Đã đăng nhập |
-| `/org/[slug]/applications` | Duyệt yêu cầu tham gia. Từ xl hiện hai cột | Ban quản trị |
+| `/org/[slug]/members` | Thành viên kèm vai trò, nút gán vai trò (menu hộp chọn) và xóa thành viên. Từ xl hiện hai cột | Thành viên |
+| `/org/[slug]/roles` | Vai trò: danh sách từ cao xuống thấp, sửa quyền và màu, đưa lên hoặc xuống, xóa, và form tạo vai trò mới (cột phải từ xl). Ai không có quyền `roles.*` chỉ xem | Thành viên |
+| `/trash` | "Tổ chức đã xóa" của chính mình, có nút khôi phục và xóa vĩnh viễn. Đây là đường dẫn giữ nguyên từ trước, chỉ đổi tên hiển thị. Trang trống hiện "Chưa có tổ chức nào đã xóa". Mục này nằm trong "Tổ chức của tôi", không nằm trong thanh bên | Đã đăng nhập |
+| `/org/[slug]/applications` | Duyệt yêu cầu tham gia. Từ xl hiện hai cột | Quyền `applications.review` |
 | `/org/[slug]/settings` | Sửa hồ sơ tổ chức. Form hồ sơ chia hai cột từ `xl`, ảnh và quy tắc giờ nằm cạnh nhau bên dưới. Chủ sở hữu còn thấy mục "Đưa tổ chức vào thùng rác" ở cuối, rộng cả hai cột | Ban quản trị (xóa: chủ sở hữu) |
 
 Thanh mục trong header chỉ hiện những trang người xem được phép mở. Backend vẫn là nơi kiểm tra quyền thật.
@@ -89,9 +90,9 @@ Mục "Đưa tổ chức vào thùng rác" nằm ở cuối trang cài đặt, c
 - Nút dùng màu trung tính (`neutralButton` trong `ui.ts`), không dùng đỏ, vì thao tác khôi phục được từ thùng rác. Quy tắc trong `AGENTS.md` chỉ dành màu đỏ cho nút không hoàn tác được, ví dụ xóa ảnh khỏi bộ sưu tập. Trước đây nút này đỏ theo ví dụ "xóa tổ chức" trong quy tắc cũ, nhưng ví dụ đó không đúng sau khi xóa trở thành xóa mềm.
 - Sau khi xóa, action chuyển về `/organizations`. Địa chỉ cũ của tổ chức trả về 404, nên không có trang nào để khôi phục từ đó.
 
-Thùng rác chỉ hiện ở trang `/trash`, có mục "Thùng rác" trong thanh bên trái (`SideNav.tsx`). Tổ chức đã xóa không hiện ở `/organizations`, nên thùng rác là nơi duy nhất để khôi phục. Khôi phục không nằm trong cài đặt. Thanh dưới trên điện thoại (`MobileNav.tsx`) chưa có mục này.
+Tổ chức đã xóa chỉ hiện ở trang `/trash`, có nút "Tổ chức đã xóa" trên thanh tiêu đề của `/organizations` (icon thùng rác). Tổ chức đã xóa không hiện trong danh sách của `/organizations`, nên trang `/trash` là nơi duy nhất để khôi phục. Mục này không nằm trong thanh bên (`SideNav.tsx`), vì đây là việc của chủ sở hữu chứ không phải điều hướng chung. Khôi phục không nằm trong cài đặt. Thanh dưới trên điện thoại (`MobileNav.tsx`) chưa có mục này.
 
-Xóa vĩnh viễn nằm ngay cạnh nút khôi phục, trong thùng rác. `PurgeOrganizationButton.tsx` mở `ConfirmDialog` với ô nhập tên tổ chức. Nút đỏ "Xóa vĩnh viễn" chỉ bật khi tên khớp, và gọi `purgeOrganization` trong `src/app/_actions/organizations.ts`, tức `DELETE /organizations/mine/deleted/{org_id}` ở backend. Backend có thể từ chối với `organization_has_certificates` hoặc `organization_has_pending_hours`. Lỗi được hiện ngay trong hộp thoại, và tổ chức vẫn còn trong thùng rác. Chi tiết quy tắc nằm trong `amigoact-be/docs/organizations.md`, mục "Xóa vĩnh viễn". `DeletedOrganizations.tsx` gọi `getDeletedOrganizations()` và action `restoreOrganization`. Khôi phục có thể bị từ chối với `slug_taken` (đường dẫn cũ đã có người dùng) hoặc `organization_limit_reached` (đã đủ 5 tổ chức). Thông báo nằm trong `src/lib/forms.ts`.
+Xóa vĩnh viễn nằm ngay cạnh nút khôi phục, trên trang `/trash`. `PurgeOrganizationButton.tsx` mở `ConfirmDialog` với ô nhập tên tổ chức. Nút đỏ "Xóa vĩnh viễn" chỉ bật khi tên khớp, và gọi `purgeOrganization` trong `src/app/_actions/organizations.ts`, tức `DELETE /organizations/mine/deleted/{org_id}` ở backend. Backend có thể từ chối với `organization_has_certificates` hoặc `organization_has_pending_hours`. Lỗi được hiện ngay trong hộp thoại, và tổ chức vẫn còn trong thùng rác. Chi tiết quy tắc nằm trong `amigoact-be/docs/organizations.md`, mục "Xóa vĩnh viễn". `DeletedOrganizations.tsx` gọi `getDeletedOrganizations()` và action `restoreOrganization`. Khôi phục có thể bị từ chối với `slug_taken` (đường dẫn cũ đã có người dùng) hoặc `organization_limit_reached` (đã đủ 5 tổ chức). Thông báo nằm trong `src/lib/forms.ts`.
 
 ## Phân trang
 

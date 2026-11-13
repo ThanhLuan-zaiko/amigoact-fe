@@ -4,6 +4,7 @@ import { updateOrganization } from "@/app/_actions/organizations";
 import { getHourRule } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
 import { getGallery, getOrganization } from "@/lib/organizationApi";
+import { hasPermission } from "@/lib/roles";
 import HourRuleForm from "../../../../_components/attendance/HourRuleForm";
 import DeleteOrganizationPanel from "../../../../_components/organizations/DeleteOrganizationPanel";
 import GalleryManager from "../../../../_components/organizations/GalleryManager";
@@ -23,7 +24,7 @@ async function SettingsContent({
   if (!organization) {
     return null;
   }
-  if (!organization.viewer.can_manage) {
+  if (!hasPermission(organization.viewer, "organization.update")) {
     return <p className={mutedText}>Chỉ ban quản trị mới sửa được tổ chức.</p>;
   }
   const [rule, gallery] = await Promise.all([

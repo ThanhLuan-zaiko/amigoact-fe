@@ -11,6 +11,7 @@ import type {
   OrganizationPage,
 } from "./organizations";
 import { PAGE_SIZE } from "./pagination";
+import type { RoleList } from "./roles";
 
 function organizationPath(slug: string): string {
   return `/organizations/${encodeURIComponent(slug)}`;
@@ -131,6 +132,17 @@ export async function getApplications(
   const result = await backendFetch<ApplicationPage>(
     `${organizationPath(slug)}/applications?limit=${PAGE_SIZE}&offset=${offset}`,
     { method: "GET", token: await getAccessToken() },
+  );
+  return result.ok ? result.data : null;
+}
+
+export async function getRoles(slug: string): Promise<RoleList | null> {
+  const result = await backendFetch<RoleList>(
+    `${organizationPath(slug)}/roles`,
+    {
+      method: "GET",
+      token: await getAccessToken(),
+    },
   );
   return result.ok ? result.data : null;
 }

@@ -13,11 +13,16 @@ const PROTECTED_POST_PAGES = [
 // Certificate templates are for managers. The public verify page stays open.
 const PROTECTED_CERTIFICATE_PAGES = [/^\/org\/[^/]+\/certificates(\/.*)?$/];
 
+// Roles are read and edited by members only.
+const PROTECTED_ROLE_PAGES = [/^\/org\/[^/]+\/roles$/];
+
 export function isProtected(pathname: string): boolean {
   if (
-    [...PROTECTED_POST_PAGES, ...PROTECTED_CERTIFICATE_PAGES].some((pattern) =>
-      pattern.test(pathname),
-    )
+    [
+      ...PROTECTED_POST_PAGES,
+      ...PROTECTED_CERTIFICATE_PAGES,
+      ...PROTECTED_ROLE_PAGES,
+    ].some((pattern) => pattern.test(pathname))
   ) {
     return true;
   }

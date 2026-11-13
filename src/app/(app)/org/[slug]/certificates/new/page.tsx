@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { createTemplate } from "@/app/_actions/certificates";
 import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
+import { hasPermission } from "@/lib/roles";
 import TemplateForm from "../../../../../_components/certificates/TemplateForm";
 import { mutedText, sectionTitle } from "../../../../../_components/ui";
 
@@ -19,7 +20,7 @@ async function NewTemplateContent({
   if (!organization) {
     return null;
   }
-  if (!organization.viewer.can_manage) {
+  if (!hasPermission(organization.viewer, "certificates.templates")) {
     return (
       <p className={mutedText}>Chỉ ban quản trị mới tạo được mẫu chứng nhận.</p>
     );

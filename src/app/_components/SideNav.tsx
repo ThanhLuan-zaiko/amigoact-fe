@@ -9,10 +9,8 @@ import {
   FiCalendar,
   FiClock,
   FiCompass,
-  FiFileText,
   FiHome,
   FiMessageSquare,
-  FiTrash2,
   FiUser,
   FiUsers,
 } from "react-icons/fi";
@@ -32,8 +30,6 @@ const navItems: NavItem[] = [
   { label: "Chứng nhận", href: "/certificates", icon: FiAward },
   { label: "Tổ chức của tôi", href: "/organizations", icon: FiUsers },
   { label: "Tin nhắn", href: "/messages", icon: FiMessageSquare },
-  { label: "Bản nháp", href: "/drafts", icon: FiFileText },
-  { label: "Thùng rác", href: "/trash", icon: FiTrash2 },
   { label: "Hồ sơ", href: "/account", icon: FiUser },
 ];
 

@@ -4,6 +4,7 @@ import { getActivityTrash } from "@/lib/activityApi";
 import { orgActivitiesPath } from "@/lib/activityList";
 import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
+import { hasPermission } from "@/lib/roles";
 import ActivityTrashList from "../../../../../_components/activities/ActivityTrashList";
 import EmptyState from "../../../../../_components/EmptyState";
 import { MoreLink } from "../../../../../_components/posts/FeedFilters";
@@ -22,7 +23,7 @@ async function TrashContent({
   if (!organization) {
     return null;
   }
-  if (!organization.viewer.can_manage) {
+  if (!hasPermission(organization.viewer, "activities.delete")) {
     return (
       <p className={mutedText}>Chỉ ban quản trị mới xem được thùng rác.</p>
     );

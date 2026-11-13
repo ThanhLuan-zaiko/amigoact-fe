@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
 import { activityOptions } from "@/lib/postActivity";
 import { postKinds, postPath } from "@/lib/posts";
+import { hasPermission } from "@/lib/roles";
 import PostForm from "../../../../../_components/posts/PostForm";
 import { mutedText } from "../../../../../_components/ui";
 
@@ -38,7 +39,7 @@ async function NewPostContent({
       orgSlug={slug}
       activities={activityOptions(activities)}
       action={createPost.bind(null, slug)}
-      kinds={postKinds(organization.viewer.can_manage)}
+      kinds={postKinds(hasPermission(organization.viewer, "posts.announce"))}
       organizationName={organization.name}
       cancelHref={postPath(slug)}
       draftsHref={`${postPath(slug)}/drafts`}

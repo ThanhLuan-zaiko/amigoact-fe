@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth";
 import { getTemplates } from "@/lib/certificateApi";
 import { getOrganization } from "@/lib/organizationApi";
 import { formatDate } from "@/lib/organizations";
+import { hasPermission } from "@/lib/roles";
 import CertificatePreview from "../../../../_components/certificates/CertificatePreview";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
@@ -33,7 +34,7 @@ async function TemplatesContent({
   if (!organization) {
     return null;
   }
-  const templates = organization.viewer.can_manage
+  const templates = hasPermission(organization.viewer, "certificates.templates")
     ? await getTemplates(slug)
     : null;
   if (!templates) {

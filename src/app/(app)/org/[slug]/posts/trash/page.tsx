@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
 import { getPostTrash } from "@/lib/postApi";
 import { postPath } from "@/lib/posts";
+import { hasPermission } from "@/lib/roles";
 import EmptyState from "../../../../../_components/EmptyState";
 import { MoreLink } from "../../../../../_components/posts/FeedFilters";
 import TrashList from "../../../../../_components/posts/TrashList";
@@ -21,7 +22,7 @@ async function TrashContent({
   if (!organization) {
     return null;
   }
-  if (!organization.viewer.can_manage) {
+  if (!hasPermission(organization.viewer, "posts.moderate")) {
     return (
       <p className={mutedText}>Chỉ ban quản trị mới xem được thùng rác.</p>
     );

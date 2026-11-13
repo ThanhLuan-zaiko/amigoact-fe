@@ -9,10 +9,12 @@ import {
   FiInfo,
   FiMessageSquare,
   FiSettings,
+  FiTag,
   FiUsers,
 } from "react-icons/fi";
 import type { ViewerMembership } from "@/lib/organizations";
 import { orgBase } from "@/lib/orgRoutes";
+import { hasModule, hasPermission } from "@/lib/roles";
 import { segmentActive, segmentIdle, segmentItem, segmentList } from "../ui";
 
 type OrgNavProps = {
@@ -45,22 +47,28 @@ export default function OrgNav({ slug, viewer }: OrgNavProps) {
       visible: viewer.role !== null,
     },
     {
+      href: `${base}/roles`,
+      label: "Vai trò",
+      icon: FiTag,
+      visible: viewer.role !== null,
+    },
+    {
       href: `${base}/applications`,
       label: "Yêu cầu",
       icon: FiInbox,
-      visible: viewer.can_manage,
+      visible: hasPermission(viewer, "applications.review"),
     },
     {
       href: `${base}/certificates`,
       label: "Chứng nhận",
       icon: FiAward,
-      visible: viewer.can_manage,
+      visible: hasModule(viewer, "certificates"),
     },
     {
       href: `${base}/settings`,
       label: "Cài đặt",
       icon: FiSettings,
-      visible: viewer.can_manage,
+      visible: hasPermission(viewer, "organization.update"),
     },
   ];
 

@@ -55,8 +55,8 @@ export default function DeleteOrganizationPanel({
         <p className={mutedText}>
           Đây là xóa mềm, không phải xóa vĩnh viễn. Tổ chức sẽ ẩn với mọi người
           và đường dẫn cũ được nhả ra. Thành viên, hoạt động và ảnh vẫn được giữ
-          lại. Bạn có thể khôi phục tổ chức trong Thùng rác, ở mục Tổ chức của
-          tôi.
+          lại. Bạn có thể khôi phục tổ chức ở mục Tổ chức đã xóa, trong Tổ chức
+          của tôi.
         </p>
       </div>
       {blocked ? (

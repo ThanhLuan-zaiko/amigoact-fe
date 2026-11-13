@@ -62,6 +62,12 @@ These rules set the defaults for every screen. If one of them gets in the way of
 - `authedFetch` in `src/lib/auth.ts` is the only way Server Actions call the backend with a token.
 - Activities are described in `docs/activities.md`. `datetime-local` inputs mean Vietnam time: convert them with `toLocalInput` and `fromLocalInput` from `src/lib/activities.ts`.
 
+## Roles and permissions
+
+- Details are in `docs/roles.md`. The page is `src/app/(app)/org/[slug]/roles/`, the Server Actions are in `src/app/_actions/roles.ts`, and the helpers are in `src/lib/roles.ts`.
+- Gate buttons and pages with `hasPermission(viewer, "module.action")` or `hasModule(viewer, "module")`, never with `viewer.role === "admin"`. The backend checks every action again.
+- Role colors come from the fixed palette in `ROLE_COLORS` (static Tailwind classes), because inline styles are not allowed.
+
 ## Posts
 
 - Details are in `docs/posts.md`. Posts live inside an organization at `/org/[slug]/posts`, like activities. `/compose` only redirects there. Protected post pages are listed in `src/lib/protectedPaths.ts`.

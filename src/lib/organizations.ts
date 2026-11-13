@@ -1,5 +1,7 @@
 // Shapes of the organization API responses, with their labels for the UI.
 
+import type { RoleBadge } from "./roles";
+
 export type OrgRole = "owner" | "admin" | "member";
 export type OrgType = "organization" | "club" | "group" | "business";
 export type JoinPolicy = "open" | "invite";
@@ -28,6 +30,8 @@ export type ViewerMembership = {
   status: string | null;
   role: OrgRole | null;
   can_manage: boolean;
+  // Permission codes held. The owner holds all of them.
+  permissions: string[];
   reapply_after: string | null;
 };
 
@@ -75,6 +79,7 @@ export type MemberInfo = {
   user_id: string;
   full_name: string;
   role: OrgRole;
+  roles: RoleBadge[];
   joined_at: string | null;
 };
 

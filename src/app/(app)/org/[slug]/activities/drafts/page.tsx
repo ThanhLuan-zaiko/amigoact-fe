@@ -7,6 +7,7 @@ import { orgActivitiesPath } from "@/lib/activityList";
 import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
 import { pageOffset } from "@/lib/organizations";
+import { hasModule } from "@/lib/roles";
 import ActivityCard from "../../../../../_components/activities/ActivityCard";
 import EmptyState from "../../../../../_components/EmptyState";
 import PageLinks from "../../../../../_components/organizations/PageLinks";
@@ -25,7 +26,7 @@ async function DraftsContent({
   if (!organization) {
     return null;
   }
-  if (!organization.viewer.can_manage) {
+  if (!hasModule(organization.viewer, "activities")) {
     return (
       <p className={mutedText}>Chỉ ban quản trị mới xem được hoạt động nháp.</p>
     );

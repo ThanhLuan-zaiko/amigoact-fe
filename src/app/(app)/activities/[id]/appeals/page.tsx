@@ -1,25 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
-import {
-  FiArrowLeft,
-  FiCalendar,
-  FiCheck,
-  FiClock,
-  FiList,
-  FiX,
-} from "react-icons/fi";
+import { FiCalendar, FiCheck, FiClock, FiList, FiX } from "react-icons/fi";
 import { approveAppeal, rejectAppeal } from "@/app/_actions/attendance";
 import { getActivity } from "@/lib/activityApi";
 import { APPEAL_STATUS_LABELS } from "@/lib/attendance";
 import { getAppeals } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/organizations";
+import BackLink from "../../../../_components/BackLink";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
 import {
-  iconButton,
   mutedText,
   panel,
   primaryButton,
@@ -47,14 +39,7 @@ async function AppealsContent({
   return (
     <>
       <div className="flex items-center gap-3">
-        <Link
-          href={`/activities/${id}`}
-          aria-label="Quay lại"
-          title="Quay lại"
-          className={iconButton}
-        >
-          <FiArrowLeft aria-hidden="true" />
-        </Link>
+        <BackLink href={`/activities/${id}`} />
         <h1 className="min-w-0 truncate text-2xl font-extrabold tracking-tight">
           Khiếu nại
         </h1>

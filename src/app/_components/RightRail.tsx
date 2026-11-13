@@ -54,7 +54,7 @@ export default function RightRail({ popularTags }: RightRailProps) {
           <ul className="flex flex-wrap gap-2">
             {popularTags.map((tag) => (
               <li key={tag}>
-                <Link href={feedTagHref(tag, "public")} className={tagLink}>
+                <Link href={feedTagHref(tag)} className={tagLink}>
                   #{tag}
                 </Link>
               </li>

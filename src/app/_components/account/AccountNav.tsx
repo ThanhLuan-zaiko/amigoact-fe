@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiShield, FiUser } from "react-icons/fi";
+import { FiBell, FiShield, FiUser } from "react-icons/fi";
 import { segmentActive, segmentIdle, segmentItem, segmentList } from "../ui";
 
 const ITEMS = [
   { href: "/account", label: "Thông tin", icon: FiUser },
   { href: "/account/security", label: "Bảo mật", icon: FiShield },
+  { href: "/account/notifications", label: "Thông báo", icon: FiBell },
 ];
 
 export default function AccountNav() {

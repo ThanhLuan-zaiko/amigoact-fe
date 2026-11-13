@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { FiArrowLeft } from "react-icons/fi";
 import { initials } from "@/lib/organizations";
 import { feedBackHref } from "@/lib/orgBack";
 import { keepAddress, pagePath } from "@/lib/orgRoutes";
-import { iconButton, panel } from "../ui";
+import BackLink from "../BackLink";
+import { panel } from "../ui";
 
 type OrgHeaderFrameProps = {
   slug: string;
@@ -35,14 +35,7 @@ export default function OrgHeaderFrame({
   const home = keepAddress(pathname, `/org/${slug}`);
   return (
     <section className={`${panel} flex items-center gap-3 p-2 sm:p-3`}>
-      <Link
-        href={back}
-        aria-label="Quay lại"
-        title="Quay lại"
-        className={iconButton}
-      >
-        <FiArrowLeft aria-hidden="true" />
-      </Link>
+      <BackLink href={back} />
       <Link
         href={home}
         className="flex min-w-0 items-center gap-3 hover:text-teal-700 dark:hover:text-teal-400"

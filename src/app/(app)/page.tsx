@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { FiGlobe, FiStar, FiUsers } from "react-icons/fi";
+import { FiGlobe, FiUsers } from "react-icons/fi";
 import { getAccessToken } from "@/lib/auth";
 import { getFeed, getPopularTags } from "@/lib/postApi";
 import { listQuery, readTag, tagLabel } from "@/lib/tagLinks";
@@ -8,6 +8,7 @@ import Composer from "../_components/Composer";
 import FeedList from "../_components/FeedList";
 import OrganizationDirectory from "../_components/organizations/OrganizationDirectory";
 import { MoreLink } from "../_components/posts/FeedFilters";
+import ScopeToggle from "../_components/posts/ScopeToggle";
 import TagFilterBar from "../_components/posts/TagFilterBar";
 import RightRail from "../_components/RightRail";
 import {
@@ -18,34 +19,16 @@ import {
   segmentList,
 } from "../_components/ui";
 
-type Tab = "mine" | "public" | "orgs";
+type Tab = "all" | "orgs";
 
 // Switching tabs keeps the tag filter. The organization directory has no tags.
-function FeedTabs({
-  current,
-  tag,
-  signedIn,
-}: {
-  current: Tab;
-  tag: string | null;
-  signedIn: boolean;
-}) {
+function FeedTabs({ current, tag }: { current: Tab; tag: string | null }) {
   const tabs = [
-    ...(signedIn
-      ? [
-          {
-            value: "mine" as const,
-            label: "Dành cho bạn",
-            icon: FiStar,
-            href: `/${listQuery({ tab: "mine", tag })}`,
-          },
-        ]
-      : []),
     {
-      value: "public" as const,
-      label: "Công khai",
+      value: "all" as const,
+      label: "Tất cả",
       icon: FiGlobe,
-      href: `/${listQuery({ tab: "public", tag })}`,
+      href: `/${listQuery({ tag })}`,
     },
     {
       value: "orgs" as const,
@@ -74,8 +57,8 @@ function FeedTabs({
   );
 }
 
-// Members start on their organizations. Visitors, and members who pick it, see
-// every organization's public posts.
+// The home feed shows public posts of every organization, plus member posts of the
+// organizations the viewer belongs to. "Tổ chức của tôi" narrows it to those organizations.
 async function HomeFeed({ searchParams }: PageProps<"/">) {
   const query = await searchParams;
   const signedIn = Boolean(await getAccessToken());
@@ -83,26 +66,28 @@ async function HomeFeed({ searchParams }: PageProps<"/">) {
     const search = typeof query.q === "string" ? query.q.trim() : "";
     return (
       <>
-        <FeedTabs current="orgs" tag={null} signedIn={signedIn} />
+        <FeedTabs current="orgs" tag={null} />
         <OrganizationDirectory search={search} page={query.page} />
       </>
     );
   }
-  const tab: Tab = query.tab === "public" || !signedIn ? "public" : "mine";
+  // "tab=mine" is the address of the former tab, so old links keep working.
+  const mine = signedIn && (query.scope === "mine" || query.tab === "mine");
   const before = typeof query.before === "string" ? query.before : null;
   const tag = readTag(query.tag);
-  const page = await getFeed(tab, before, tag);
+  const page = await getFeed(mine ? "mine" : "all", before, tag);
   const more = page?.nextBefore
-    ? `/${listQuery({ tab, tag, before: page.nextBefore })}`
+    ? `/${listQuery({ scope: mine ? "mine" : null, tag, before: page.nextBefore })}`
     : null;
 
   return (
     <>
-      <FeedTabs current={tab} tag={tag} signedIn={signedIn} />
+      <FeedTabs current="all" tag={tag} />
+      {signedIn ? <ScopeToggle mine={mine} tag={tag} /> : null}
       {tag ? (
         <TagFilterBar
           label={tagLabel(tag, page?.posts ?? [])}
-          clearHref={`/${listQuery({ tab })}`}
+          clearHref={`/${listQuery({ scope: mine ? "mine" : null })}`}
         />
       ) : null}
       {page === null ? (

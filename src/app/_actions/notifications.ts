@@ -1,8 +1,11 @@
 "use server";
 
+import type { FormState } from "@/lib/account";
 import { authedFetch } from "@/lib/auth";
 import { isRoomId } from "@/lib/chat";
+import { failureState } from "@/lib/forms";
 import type { NotificationPage } from "@/lib/notifications";
+import { mutedTypesFrom } from "@/lib/notificationTypes";
 
 // The bell calls these from the browser, so the access token stays in its httpOnly cookie.
 
@@ -39,4 +42,24 @@ export async function markAllNotificationsRead(): Promise<BellResult<null>> {
     method: "POST",
   });
   return result.ok ? { ok: true, data: null } : { ok: false };
+}
+
+// The form lists the types a person receives, so every other type goes into muted_types.
+// The backend replaces the whole preference, so all three fields are sent.
+export async function saveNotificationPreferences(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const result = await authedFetch("/notifications/preferences", {
+    method: "PUT",
+    body: {
+      inapp: formData.has("channel_inapp"),
+      email: formData.has("channel_email"),
+      muted_types: mutedTypesFrom(formData.getAll("receive").map(String)),
+    },
+  });
+  if (!result.ok) {
+    return failureState(result.code, result.issues);
+  }
+  return { success: "Đã lưu cài đặt thông báo." };
 }

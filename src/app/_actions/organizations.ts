@@ -83,6 +83,8 @@ export async function updateOrganization(
       ...organizationFields(formData),
       logo_asset_id: readPicture(formData, "logo"),
       cover_asset_id: readPicture(formData, "cover"),
+      // An unchecked box is absent from the form data, which means hidden.
+      listed_publicly: formData.has("listed_publicly"),
     },
   });
   const state = finish(result);

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { FiArrowLeft, FiCalendar, FiCheck, FiX } from "react-icons/fi";
+import { FiCalendar, FiCheck, FiX } from "react-icons/fi";
 import {
   approveRegistration,
   rejectRegistration,
@@ -15,12 +15,12 @@ import { getActivityRegistrations } from "@/lib/activityApi";
 import { requireUser } from "@/lib/auth";
 import { initials, pageOffset } from "@/lib/organizations";
 import RegistrationBadge from "../../../../_components/activities/RegistrationBadge";
+import BackLink from "../../../../_components/BackLink";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
 import PageLinks from "../../../../_components/organizations/PageLinks";
 import {
-  iconButton,
   mutedText,
   panel,
   primaryButton,
@@ -146,22 +146,14 @@ async function RegistrationList({
   );
 }
 
-async function BackLink({
+// The arrow goes to the page the viewer came from, and to the activity without history.
+async function ActivityBackLink({
   params,
 }: {
   params: PageProps<"/activities/[id]/registrations">["params"];
 }) {
   const { id } = await params;
-  return (
-    <Link
-      href={`/activities/${id}`}
-      aria-label="Quay lại"
-      title="Quay lại"
-      className={iconButton}
-    >
-      <FiArrowLeft aria-hidden="true" />
-    </Link>
-  );
+  return <BackLink href={`/activities/${id}`} />;
 }
 
 export default function RegistrationsPage(
@@ -171,7 +163,7 @@ export default function RegistrationsPage(
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <Suspense fallback={null}>
-          <BackLink params={props.params} />
+          <ActivityBackLink params={props.params} />
         </Suspense>
         <h1 className="text-2xl font-extrabold tracking-tight">
           Người đăng ký

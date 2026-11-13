@@ -1,7 +1,7 @@
 // Pages under an organization's feed (a post, its edit form, a new post, drafts,
 // trash) show a short header with a back button instead of the full header.
 
-// Returns where the back button leads, or null when the full header belongs here.
+// Returns where the back button falls back to, or null when the full header belongs here.
 export function feedBackHref(pathname: string, slug: string): string | null {
   const feed = `/org/${slug}/posts`;
   if (!pathname.startsWith(`${feed}/`)) {

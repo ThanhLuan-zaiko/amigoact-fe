@@ -188,6 +188,7 @@ export default function NotificationBell({ initialUnread }: BellProps) {
           loading={loading}
           onChoose={choose}
           onReadAll={readAll}
+          onClose={() => setOpen(false)}
         />
       ) : null}
     </div>

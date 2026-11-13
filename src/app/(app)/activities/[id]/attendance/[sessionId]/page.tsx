@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { BsQrCode } from "react-icons/bs";
 import {
-  FiArrowLeft,
   FiCheck,
   FiClock,
   FiEdit3,
@@ -22,11 +20,11 @@ import type { RosterEntry } from "@/lib/attendance";
 import { getRoster } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
 import { initials } from "@/lib/organizations";
+import BackLink from "../../../../../_components/BackLink";
 import EmptyState from "../../../../../_components/EmptyState";
 import IconStat from "../../../../../_components/IconStat";
 import ActionButton from "../../../../../_components/organizations/ActionButton";
 import {
-  iconButton,
   mutedText,
   panel,
   primaryButton,
@@ -98,14 +96,7 @@ async function RosterContent({
   return (
     <>
       <div className="flex items-center gap-3">
-        <Link
-          href={`/activities/${id}/attendance`}
-          aria-label="Quay lại"
-          title="Quay lại"
-          className={iconButton}
-        >
-          <FiArrowLeft aria-hidden="true" />
-        </Link>
+        <BackLink href={`/activities/${id}/attendance`} />
         <h1 className="min-w-0 truncate text-2xl font-extrabold tracking-tight">
           {activity.title}
         </h1>

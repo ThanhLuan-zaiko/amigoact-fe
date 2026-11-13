@@ -26,7 +26,7 @@ export default function PostPreview({
       ) : null}
       {cover ? (
         <Link href={href} className="relative block" tabIndex={-1}>
-          <PostMediaView item={cover} tile />
+          <PostMediaView item={cover} tile wide />
           {rest.length > 0 ? (
             <span className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-md bg-slate-900/70 px-2 py-1 text-xs font-semibold text-white">
               <FiImage aria-hidden="true" />+{rest.length}

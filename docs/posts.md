@@ -66,9 +66,10 @@ Các trang nằm trong `src/app/(app)/org/[slug]/posts/`.
 
 ## Trang chủ
 
-- `/` đọc `GET /feed` (tab "Dành cho bạn") hoặc `GET /feed/public` (tab "Công khai") theo `?tab=`. Khách luôn thấy tab công khai.
+- `/` đọc `GET /feed/all` (tab "Tất cả"): bài công khai của mọi tổ chức, cộng bài dành cho thành viên của các tổ chức bạn tham gia. Khách chỉ thấy bài công khai.
+- Chip "Tổ chức của tôi" (`?scope=mine`, chỉ hiện khi đã đăng nhập) đổi sang `GET /feed`, chỉ còn bài của các tổ chức bạn tham gia. Địa chỉ cũ `?tab=mine` vẫn được hiểu như vậy, còn `?tab=public` được hiểu như tab "Tất cả".
 - Bài trên trang chủ chỉ để đọc: không hiện nút sửa, ghim, ẩn, xóa (`FeedList` truyền `manageable={false}` cho `PostCard`). Các nút này chỉ có ở trang bài của tổ chức (`/org/[slug]/posts` và trang chi tiết bài).
-- Mục "Thẻ phổ biến" lấy từ `GET /feed/popular-tags`. Mỗi thẻ dẫn tới `/?tab=public&tag=<slug>`.
+- Mục "Thẻ phổ biến" lấy từ `GET /feed/popular-tags`. Mỗi thẻ dẫn tới `/?tag=<slug>`.
 
 ## Lọc theo thẻ
 

@@ -15,9 +15,10 @@ export function orgTagHref(orgSlug: string, tag: string): string {
   return `${postPath(orgSlug)}?${new URLSearchParams({ tag: tagSlug(tag) })}`;
 }
 
-// Where a popular tag leads: the home feed with the tag, on the given tab.
-export function feedTagHref(tag: string, tab?: "mine" | "public"): string {
-  const query = new URLSearchParams(tab ? { tab } : {});
+// Where a popular tag leads: the home feed with the tag, narrowed to the viewer's
+// organizations when mine is set.
+export function feedTagHref(tag: string, mine = false): string {
+  const query = new URLSearchParams(mine ? { scope: "mine" } : {});
   query.set("tag", tagSlug(tag));
   return `/?${query}`;
 }

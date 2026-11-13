@@ -98,9 +98,10 @@ export async function getPostTrash(slug: string, before: string | null) {
   return getJson<TrashPageApi>(`${orgPath(slug)}/post-trash?${query}`);
 }
 
-// "mine" is every organization the viewer belongs to, "public" is everyone's public posts.
+// "all" is the home feed: public posts plus the viewer's own organizations' posts.
+// "mine" only keeps the posts of the organizations the viewer belongs to.
 export async function getFeed(
-  tab: "mine" | "public",
+  scope: "all" | "mine",
   before: string | null,
   tag: string | null = null,
 ): Promise<PostListPage | null> {
@@ -111,7 +112,7 @@ export async function getFeed(
   if (before) {
     query.set("before", before);
   }
-  const path = tab === "mine" ? "/feed" : "/feed/public";
+  const path = scope === "mine" ? "/feed" : "/feed/all";
   return toPage(await getJson<PostPageApi>(`${path}?${query}`));
 }
 

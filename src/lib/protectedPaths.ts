@@ -31,6 +31,7 @@ export function isProtected(pathname: string): boolean {
     pathname === "/activities" ||
     pathname === "/hours" ||
     pathname === "/messages" ||
-    pathname === "/certificates"
+    pathname === "/certificates" ||
+    pathname === "/notifications"
   );
 }

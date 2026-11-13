@@ -63,7 +63,7 @@ export default function PostCard({
       }`}
     >
       <header className="flex items-center gap-3">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-xs font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
           {post.organizationInitials}
         </div>
         <div className="min-w-0 flex-1">
@@ -73,8 +73,10 @@ export default function PostCard({
           >
             {post.organizationName}
           </Link>
-          <p className={`${mutedText} flex items-center gap-2`}>
-            {post.publishedAt}
+          <p
+            className={`${mutedText} flex flex-wrap items-center gap-x-2 gap-y-1`}
+          >
+            <span className="whitespace-nowrap">{post.publishedAt}</span>
             <VisibilityIcon aria-hidden="true" />
             {visibilityLabel[post.visibility]}
             {post.edited ? (
@@ -105,7 +107,7 @@ export default function PostCard({
         </span>
       </header>
 
-      <h2 className="text-lg leading-snug font-bold break-words">
+      <h2 className="text-base leading-snug font-bold break-words sm:text-lg">
         {linked ? (
           <Link
             href={href}

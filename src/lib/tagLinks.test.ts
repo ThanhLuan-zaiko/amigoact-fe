@@ -25,7 +25,7 @@ test("tag links use the slug", () => {
     "/org/clb-xanh/posts?tag=moi-truong",
   );
   expect(feedTagHref("Hiến máu")).toBe("/?tag=hien-mau");
-  expect(feedTagHref("Hiến máu", "public")).toBe("/?tab=public&tag=hien-mau");
+  expect(feedTagHref("Hiến máu", true)).toBe("/?scope=mine&tag=hien-mau");
 });
 
 test("the label is the name a post used, or the slug", () => {

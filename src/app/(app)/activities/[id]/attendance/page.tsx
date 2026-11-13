@@ -2,13 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
-import {
-  FiArrowLeft,
-  FiCheckCircle,
-  FiClock,
-  FiList,
-  FiLock,
-} from "react-icons/fi";
+import { FiCheckCircle, FiClock, FiList, FiLock } from "react-icons/fi";
 import { closeSession } from "@/app/_actions/attendance";
 import { formatDateTime } from "@/lib/activities";
 import { getActivity } from "@/lib/activityApi";
@@ -17,6 +11,7 @@ import { getSessions } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
 import OpenSessionForm from "../../../../_components/attendance/OpenSessionForm";
 import SessionQr from "../../../../_components/attendance/SessionQr";
+import BackLink from "../../../../_components/BackLink";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
@@ -113,14 +108,7 @@ async function AttendanceContent({
   return (
     <>
       <div className="flex items-center gap-3">
-        <Link
-          href={`/activities/${id}`}
-          aria-label="Quay lại"
-          title="Quay lại"
-          className={iconButton}
-        >
-          <FiArrowLeft aria-hidden="true" />
-        </Link>
+        <BackLink href={`/activities/${id}`} />
         <h1 className="min-w-0 truncate text-2xl font-extrabold tracking-tight">
           {activity.title}
         </h1>

@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
-import { FiArrowLeft } from "react-icons/fi";
 import { getActivity } from "@/lib/activityApi";
 import { hoursText } from "@/lib/attendance";
 import { getActivityHours } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
 import { initials } from "@/lib/organizations";
 import AdjustHours from "../../../../_components/attendance/AdjustHours";
+import BackLink from "../../../../_components/BackLink";
 import EmptyState from "../../../../_components/EmptyState";
 import {
-  iconButton,
   mutedText,
   panel,
   splitList,
@@ -37,14 +35,7 @@ async function ActivityHoursContent({
   return (
     <>
       <div className="flex items-center gap-3">
-        <Link
-          href={`/activities/${id}`}
-          aria-label="Quay lại"
-          title="Quay lại"
-          className={iconButton}
-        >
-          <FiArrowLeft aria-hidden="true" />
-        </Link>
+        <BackLink href={`/activities/${id}`} />
         <h1 className="min-w-0 truncate text-2xl font-extrabold tracking-tight">
           {activity.title}
         </h1>

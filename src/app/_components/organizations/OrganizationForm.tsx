@@ -17,7 +17,7 @@ import {
 import { RequiredLegend } from "../account/RequiredMarks";
 import { useAccountForm } from "../account/useAccountForm";
 import SelectMenu, { optionsFrom } from "../SelectMenu";
-import { mutedText, panel } from "../ui";
+import { fieldLabel, mutedText, panel } from "../ui";
 import CreateGalleryField from "./CreateGalleryField";
 import OrganizationLegalFields from "./OrganizationLegalFields";
 import PicturePicker from "./PicturePicker";
@@ -78,6 +78,17 @@ export default function OrganizationForm({
                 options={optionsFrom(JOIN_POLICY_LABELS)}
               />
             </div>
+            {organization ? (
+              <label className={`${fieldLabel} flex items-center gap-2`}>
+                <input
+                  type="checkbox"
+                  name="listed_publicly"
+                  defaultChecked={organization.listed_publicly}
+                  className="h-4 w-4 accent-teal-700 dark:accent-teal-400"
+                />
+                Hiện trong danh sách tổ chức công khai
+              </label>
+            ) : null}
           </FormSection>
           <FormSection title="Ảnh">
             <PicturePicker

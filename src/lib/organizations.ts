@@ -34,6 +34,8 @@ export type ViewerMembership = {
 export type LegalStatus = "none" | "pending" | "verified";
 
 export type OrganizationDetail = OrganizationSummary & {
+  // False when the owner or an admin hid the organization from the public directory.
+  listed_publicly: boolean;
   email: string | null;
   phone: string | null;
   website: string | null;

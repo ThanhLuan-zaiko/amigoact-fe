@@ -6,6 +6,7 @@ import {
   FiClock,
   FiList,
   FiMapPin,
+  FiUserPlus,
   FiUsers,
   FiWatch,
   FiWifi,
@@ -73,9 +74,6 @@ async function ActivityContent({
               {place}
             </IconStat>
           ) : null}
-          <IconStat icon={FiUsers} label="Số chỗ">
-            {seatsText(activity.seats_taken, activity.capacity)}
-          </IconStat>
           {activity.waitlist_count > 0 ? (
             <IconStat icon={FiList} label="Danh sách chờ">
               {activity.waitlist_count}
@@ -86,21 +84,32 @@ async function ActivityContent({
               {activity.hours_awarded}h
             </IconStat>
           ) : null}
-          {activity.registration_deadline ? (
-            <IconStat icon={FiWatch} label="Hạn đăng ký">
-              {formatDateTime(activity.registration_deadline)}
-            </IconStat>
-          ) : null}
         </div>
 
         {activity.description ? (
-          <p className="text-[15px] leading-relaxed break-words whitespace-pre-line text-slate-700 dark:text-slate-300">
+          <p className="border-t border-slate-200 pt-4 text-base leading-7 break-words dark:border-slate-800 whitespace-pre-line text-slate-700 dark:text-slate-300">
             {activity.description}
           </p>
         ) : null}
       </article>
       <div className="flex min-w-0 flex-col gap-4">
-        <RegisterControls activity={activity} />
+        <section className={`${panel} flex flex-col gap-4 p-4 sm:p-6`}>
+          <h2 className="flex items-center gap-2 text-lg font-bold">
+            <FiUserPlus aria-hidden="true" />
+            Đăng ký tham gia
+          </h2>
+          <div className="flex flex-wrap gap-x-5 gap-y-2">
+            <IconStat icon={FiUsers} label="Số chỗ">
+              {seatsText(activity.seats_taken, activity.capacity)}
+            </IconStat>
+            {activity.registration_deadline ? (
+              <IconStat icon={FiWatch} label="Hạn đăng ký">
+                {formatDateTime(activity.registration_deadline)}
+              </IconStat>
+            ) : null}
+          </div>
+          <RegisterControls activity={activity} />
+        </section>
         {activity.viewer.can_manage ? (
           <ManageActions activity={activity} />
         ) : null}

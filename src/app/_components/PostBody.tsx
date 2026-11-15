@@ -13,7 +13,7 @@ function renderBlock(block: BodyBlock, index: number, media: PostMedia[]) {
       return (
         <h3
           key={index}
-          className="text-base font-bold text-slate-900 dark:text-slate-100"
+          className="mt-2 text-lg font-bold text-slate-900 dark:text-slate-100"
         >
           {block.text}
         </h3>
@@ -29,7 +29,7 @@ function renderBlock(block: BodyBlock, index: number, media: PostMedia[]) {
       );
     case "list":
       return (
-        <ul key={index} className="list-disc pl-5">
+        <ul key={index} className="flex list-disc flex-col gap-1 pl-5">
           {block.items.map((item, itemIndex) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: the parsed list is static and never reordered.
             <li key={`${index}-${itemIndex}`}>{item}</li>
@@ -58,7 +58,7 @@ export default function PostBody({
   media?: PostMedia[];
 }) {
   return (
-    <div className="flex flex-col gap-2 text-[15px] leading-relaxed text-slate-700 dark:text-slate-300">
+    <div className="flex flex-col gap-3 text-base leading-7 break-words text-slate-700 dark:text-slate-300">
       {parseBody(body).map((block, index) => renderBlock(block, index, media))}
     </div>
   );

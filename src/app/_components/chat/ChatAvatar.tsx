@@ -1,5 +1,6 @@
 import { FiHash, FiLock } from "react-icons/fi";
 import { initials } from "@/lib/organizations";
+import { sizedSrc } from "@/lib/pictureSizes";
 
 type ChatAvatarProps = {
   name: string;
@@ -34,7 +35,11 @@ export default function ChatAvatar({
     return (
       <span aria-hidden="true" className={box}>
         {/* biome-ignore lint/performance/noImgElement: served by the media route with the viewer's cookie. */}
-        <img src={url} alt="" className="h-full w-full object-cover" />
+        <img
+          src={sizedSrc(url, 320)}
+          alt=""
+          className="h-full w-full object-cover"
+        />
       </span>
     );
   }

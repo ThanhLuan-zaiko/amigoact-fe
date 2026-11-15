@@ -25,9 +25,12 @@ Giao diện cho cơ chế phân quyền giống Discord. Quy tắc và API nằm
 
 ## Trang vai trò
 
-`/org/[slug]/roles`. Cột trái là danh sách (`RoleRow`), cột phải từ xl là form tạo (`RoleForm`).
+`/org/[slug]/roles` dùng bố cục danh sách và chi tiết. Trên màn hình xl, cột trái (`RoleList`) là danh sách vai trò, đứng yên khi cuộn. Cột phải là vai trò đang chọn (`RoleDetail`) hoặc form tạo vai trò. Điện thoại và tablet hiện danh sách trước, chi tiết ở dưới.
 
-- Mỗi vai trò có chấm màu, tên, số thành viên, tóm tắt quyền theo mục ("Hoạt động: Tạo, Sửa") và các nút theo quyền của người xem: đưa lên hoặc xuống và "Sửa vai trò" cần `roles.update`, xóa cần `roles.delete`. Cả ba chỉ hiện khi `below_you` (vai trò nằm dưới vai trò cao nhất của người xem).
+- Vai trò được chọn qua `?role=<id>` (`?role=new` cho vai trò mới), nên trang vẫn dựng trên server và có thể gửi link tới đúng vai trò. Mặc định chọn vai trò đầu tiên. Link có `#role-detail`, nên trên điện thoại trang cuộn xuống phần chi tiết.
+- Mỗi dòng trong danh sách có thứ bậc, chấm màu, tên, biểu tượng khiên nếu là quản trị viên, và số thành viên. Dòng đang chọn có viền teal và nền nhạt.
+- Phần chi tiết có các nút đưa lên hoặc xuống (cần `roles.update`) và xóa (cần `roles.delete`), chỉ hiện khi `below_you`. Nếu sửa được thì form sửa quyền dùng hết chiều rộng; nếu không thì hiện tóm tắt quyền theo mục, kèm lý do không sửa được. Mỗi vai trò có form riêng (`key`), nên đổi vai trò không giữ lại ô đã tích.
+- Thanh lưu của form luôn dính ở cuối màn hình (trên thanh điều hướng dưới cùng của điện thoại), vì danh sách quyền dài.
 - Nút đưa lên hoặc xuống gửi `PUT .../roles/order` với các vai trò người xem được phép di chuyển (`movedOrder`).
 - Trang tự tải lại khi có `roles.changed` hoặc `members.changed` (`LiveRefresh`).
 

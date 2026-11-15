@@ -107,7 +107,11 @@ export default function PostCard({
         </span>
       </header>
 
-      <h2 className="text-base leading-snug font-bold break-words sm:text-lg">
+      <h2
+        className={`leading-snug font-bold break-words ${
+          linked ? "text-lg" : "text-xl sm:text-2xl"
+        }`}
+      >
         {linked ? (
           <Link
             href={href}

@@ -13,6 +13,7 @@ import {
   PICTURE_ACCEPT,
   PICTURE_MAX_MB,
 } from "@/lib/pictureRules";
+import FocusButton from "../FocusButton";
 import { fieldLabel, iconButton, mutedText } from "../ui";
 import CurrentPictures, {
   type PictureRole,
@@ -224,6 +225,7 @@ export default function PicturePicker({
                     )}
                   </button>
                 ))}
+                <FocusButton assetId={item.id} src={item.preview} />
                 <button
                   type="button"
                   aria-label="Bỏ ảnh này"

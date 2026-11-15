@@ -10,6 +10,7 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "hls.js": "^1.7.4",
     "next": "16.4.3",
     "qrcode": "^1.5.4",
     "react": "19.3.0",

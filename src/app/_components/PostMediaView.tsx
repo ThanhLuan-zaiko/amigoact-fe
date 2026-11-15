@@ -1,29 +1,55 @@
+import { focusClass } from "@/lib/focus";
+import Picture from "./Picture";
 import type { PostMedia } from "./types";
+import VideoPlayer from "./VideoPlayer";
 
-const MEDIA =
-  "w-full rounded-md border border-slate-200 object-cover dark:border-slate-800";
+const FRAME =
+  "rounded-lg border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900";
 
-// One attached picture or video. Inline ones keep their own shape. Gallery tiles are
-// cropped to a 16:9 box, and the cover in a feed card to a shorter 2:1 box, so a list
-// of posts does not turn into a list of pictures.
+// The post column is the full phone width, and about half the 1400px container on
+// wide screens, so the browser never needs more than about 900 CSS pixels.
+const POST_SIZES = "(min-width: 1280px) 860px, (min-width: 768px) 70vw, 100vw";
+const TILE_SIZES = "(min-width: 1280px) 430px, (min-width: 768px) 35vw, 50vw";
+
+// One attached picture or video. Tiles (gallery and feed cover) fill a 16:9 box and
+// crop around the upper middle, where faces usually are. Inline media keep their own
+// shape: never cropped or stretched, only scaled down to fit the column and screen.
 export default function PostMediaView({
   item,
   tile = false,
-  wide = false,
+  cover = false,
 }: {
   item: PostMedia;
   tile?: boolean;
-  wide?: boolean;
+  // A feed cover is as wide as the post, so it asks for a larger copy than a tile.
+  cover?: boolean;
 }) {
-  // A wide feed cover is also capped at 14rem, so a wide column does not grow it.
-  const ratio = wide ? "aspect-[2/1] max-h-56" : "aspect-video";
-  const shape = tile ? `${MEDIA} ${ratio}` : `${MEDIA} max-h-[70vh]`;
+  const shape = tile
+    ? `block aspect-video h-full w-full object-cover ${focusClass(item.focus)}`
+    : "mx-auto block h-auto max-h-[80vh] w-auto max-w-full object-contain";
   if (item.isVideo) {
     return (
-      // biome-ignore lint/a11y/useMediaCaption: uploads come without captions.
-      <video src={item.src} controls preload="metadata" className={shape} />
+      <VideoPlayer
+        id={item.id}
+        info={item.video}
+        className={`${FRAME} ${shape} bg-slate-950`}
+      />
     );
   }
-  // biome-ignore lint/performance/noImgElement: served by the media route.
-  return <img src={item.src} alt="" loading="lazy" className={shape} />;
+  return (
+    <Picture
+      src={item.src}
+      sizes={tile && !cover ? TILE_SIZES : POST_SIZES}
+      width={item.width}
+      height={item.height}
+      placeholder={item.placeholder}
+      // With a placeholder the frame draws the border, otherwise the picture does.
+      className={item.placeholder && tile ? shape : `${FRAME} ${shape}`}
+      frameClassName={
+        tile
+          ? `${FRAME} aspect-video w-full`
+          : "mx-auto w-fit max-w-full rounded-lg"
+      }
+    />
+  );
 }

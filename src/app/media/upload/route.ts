@@ -1,4 +1,5 @@
 import { authedFetch } from "@/lib/auth";
+import { asFocus } from "@/lib/focus";
 
 // Gallery files can be 50 MB, too large for a Server Action, so each one comes here.
 // The browser still never talks to the backend, and the token stays in the cookie.
@@ -22,8 +23,13 @@ export async function POST(request: Request) {
 
   const upload = new FormData();
   upload.set("file", file);
-  const result = await authedFetch<{ id: string }>("/media", { form: upload });
+  const result = await authedFetch<{ id: string; focus?: unknown }>("/media", {
+    form: upload,
+  });
   return result.ok
-    ? Response.json({ id: result.data.id }, { status: 201 })
+    ? Response.json(
+        { id: result.data.id, focus: asFocus(result.data.focus) },
+        { status: 201 },
+      )
     : Response.json({ code: result.code }, { status: result.status });
 }

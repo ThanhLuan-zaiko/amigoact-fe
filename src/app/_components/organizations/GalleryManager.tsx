@@ -6,6 +6,7 @@ import {
   addGalleryItem,
   removeGalleryItem,
 } from "@/app/_actions/organizations";
+import { focusClass } from "@/lib/focus";
 import { uploadMessage } from "@/lib/forms";
 import type { GalleryItem } from "@/lib/organizations";
 import {
@@ -16,6 +17,7 @@ import {
   isVideo,
 } from "@/lib/pictureRules";
 import ConfirmDialog from "../ConfirmDialog";
+import FocusButton from "../FocusButton";
 import { fieldLabel, iconButton, mutedText, panel, sectionTitle } from "../ui";
 import GalleryRoleButtons from "./GalleryRoleButtons";
 
@@ -173,7 +175,7 @@ export default function GalleryManager({
                 <img
                   src={item.url}
                   alt=""
-                  className="aspect-video w-full rounded-md border border-slate-200 object-cover dark:border-slate-800"
+                  className={`aspect-video w-full rounded-md border border-slate-200 object-cover dark:border-slate-800 ${focusClass(item.focus)}`}
                 />
               )}
               <div className="flex items-start gap-2">
@@ -183,6 +185,13 @@ export default function GalleryManager({
                     assetId={item.id}
                     isLogo={assetIdFromUrl(logoUrl) === item.id}
                     isCover={assetIdFromUrl(coverUrl) === item.id}
+                  />
+                )}
+                {isVideo(item.mime) ? null : (
+                  <FocusButton
+                    assetId={item.id}
+                    src={item.url}
+                    initial={item.focus}
                   />
                 )}
                 <button

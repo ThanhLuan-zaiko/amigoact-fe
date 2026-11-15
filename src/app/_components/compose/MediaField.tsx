@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FiCornerDownLeft, FiTrash2 } from "react-icons/fi";
+import { asFocus, type Focus, focusClass } from "@/lib/focus";
 import { uploadMessage } from "@/lib/forms";
 import {
   isPictureTooLarge,
@@ -12,10 +13,16 @@ import {
 import { MEDIA_INSERT_EVENT, MEDIA_REMOVE_EVENT } from "@/lib/postMedia";
 import { POST_MEDIA_LIMIT } from "@/lib/posts";
 import { FieldNotes } from "../account/FormParts";
+import FocusButton from "../FocusButton";
 import { iconButton, mutedText } from "../ui";
 import { IMAGE_INPUT_ID, VIDEO_INPUT_ID } from "./BodyField";
 
-type Item = { id: string; mime: string; preview: string };
+type Item = {
+  id: string;
+  mime: string;
+  preview: string;
+  focus?: Focus | null;
+};
 
 function tellBody(event: string, id: string) {
   window.dispatchEvent(new CustomEvent(event, { detail: id.toLowerCase() }));
@@ -27,7 +34,7 @@ const MEDIA_CLASS =
 
 async function uploadFile(
   file: File,
-): Promise<{ id?: string; error?: string }> {
+): Promise<{ id?: string; focus?: Focus | null; error?: string }> {
   const body = new FormData();
   body.set("file", file);
   const response = await fetch("/media/upload", { method: "POST", body });
@@ -35,7 +42,7 @@ async function uploadFile(
   if (!response.ok) {
     return { error: uploadMessage(data.code ?? "network_error") };
   }
-  return { id: data.id };
+  return { id: data.id, focus: asFocus(data.focus) };
 }
 
 // Checked in the browser first. The backend checks the real file type again.
@@ -80,11 +87,14 @@ export default function MediaField({
         errors.push(`${file.name}: ${invalid}`);
         continue;
       }
-      const { id, error: failure } = await uploadFile(file);
+      const { id, focus, error: failure } = await uploadFile(file);
       if (id) {
         room -= 1;
         const preview = URL.createObjectURL(file);
-        setItems((current) => [...current, { id, mime: file.type, preview }]);
+        setItems((current) => [
+          ...current,
+          { id, mime: file.type, preview, focus },
+        ]);
         // A new file lands where the cursor is, like a picture in an article.
         tellBody(MEDIA_INSERT_EVENT, id);
       } else {
@@ -93,6 +103,12 @@ export default function MediaField({
     }
     setFailures(errors);
     setBusy(false);
+  }
+
+  function setFocus(id: string, focus: Focus) {
+    setItems((current) =>
+      current.map((entry) => (entry.id === id ? { ...entry, focus } : entry)),
+    );
   }
 
   function remove(item: Item) {
@@ -148,7 +164,11 @@ export default function MediaField({
                 />
               ) : (
                 // biome-ignore lint/performance/noImgElement: local preview of the chosen file.
-                <img src={item.preview} alt="" className={MEDIA_CLASS} />
+                <img
+                  src={item.preview}
+                  alt=""
+                  className={`${MEDIA_CLASS} ${focusClass(item.focus)}`}
+                />
               )}
               <div className="flex gap-2">
                 <button
@@ -160,6 +180,14 @@ export default function MediaField({
                 >
                   <FiCornerDownLeft aria-hidden="true" />
                 </button>
+                {isVideo(item.mime) ? null : (
+                  <FocusButton
+                    assetId={item.id}
+                    src={item.preview}
+                    initial={item.focus}
+                    onSaved={(focus) => setFocus(item.id, focus)}
+                  />
+                )}
                 <button
                   type="button"
                   aria-label="Gỡ tệp"

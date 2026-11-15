@@ -77,7 +77,7 @@ export default function PermissionPicker({
           </span>
         </label>
       ) : null}
-      <div className="@xl:columns-2 @xl:gap-x-8">
+      <div className="@xl:columns-2 @xl:gap-x-8 @5xl:columns-3">
         {MODULES.map((module) => {
           const codes = moduleCodes(module);
           const editable = codes.filter(canGrant);

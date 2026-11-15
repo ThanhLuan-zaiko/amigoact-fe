@@ -4,6 +4,7 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { FiChevronLeft, FiChevronRight, FiDownload, FiX } from "react-icons/fi";
 import type { ChatAttachment } from "@/lib/chat";
 import { fileSize } from "@/lib/messenger";
+import { transcodedUrl } from "@/lib/video";
 
 type MediaViewerProps = {
   files: ChatAttachment[];
@@ -85,7 +86,7 @@ export default function MediaViewer({
           // biome-ignore lint/a11y/useMediaCaption: uploads come without captions.
           <video
             key={file.id}
-            src={file.url}
+            src={transcodedUrl(file.url)}
             controls
             autoPlay
             playsInline

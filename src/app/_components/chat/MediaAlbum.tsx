@@ -1,6 +1,8 @@
 import { FiPlay } from "react-icons/fi";
 import type { ChatAttachment } from "@/lib/chat";
 import { albumTiles } from "@/lib/messenger";
+import { sizedSrc } from "@/lib/pictureSizes";
+import { transcodedUrl } from "@/lib/video";
 
 type MediaAlbumProps = {
   files: ChatAttachment[];
@@ -18,7 +20,7 @@ function Thumb({ file, fill }: { file: ChatAttachment; fill: boolean }) {
     return (
       <>
         <video
-          src={`${file.url}#t=0.1`}
+          src={`${transcodedUrl(file.url)}#t=0.1`}
           muted
           playsInline
           preload="metadata"
@@ -35,7 +37,12 @@ function Thumb({ file, fill }: { file: ChatAttachment; fill: boolean }) {
   }
   return (
     // biome-ignore lint/performance/noImgElement: served by the media route with the viewer's cookie.
-    <img src={file.url} alt="" loading="lazy" className={size} />
+    <img
+      src={sizedSrc(file.url, 1080)}
+      alt=""
+      loading="lazy"
+      className={size}
+    />
   );
 }
 

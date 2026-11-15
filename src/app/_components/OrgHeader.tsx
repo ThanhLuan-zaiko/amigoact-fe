@@ -1,4 +1,5 @@
 import { FiCalendar, FiClock, FiUsers } from "react-icons/fi";
+import { focusClass } from "@/lib/focus";
 import {
   initials,
   JOIN_POLICY_LABELS,
@@ -8,6 +9,7 @@ import {
   type OrganizationDetail,
   ROLE_LABELS,
 } from "@/lib/organizations";
+import { sizedSrc, srcSetFor } from "@/lib/pictureSizes";
 import IconStat from "./IconStat";
 import MembershipAction from "./organizations/MembershipAction";
 import OrgNav from "./organizations/OrgNav";
@@ -33,21 +35,23 @@ export default function OrgHeader({ organization }: OrgHeaderProps) {
       {organization.cover_url ? (
         // biome-ignore lint/performance/noImgElement: the picture is a same-origin proxy path.
         <img
-          src={organization.cover_url}
+          src={sizedSrc(organization.cover_url, 1080)}
+          srcSet={srcSetFor(organization.cover_url)}
+          sizes="(min-width: 1280px) 1100px, 100vw"
           alt=""
-          className="h-32 w-full rounded-md object-cover sm:h-44"
+          className={`aspect-[2/1] w-full rounded-lg bg-slate-100 object-cover sm:aspect-[3/1] xl:aspect-[4/1] dark:bg-slate-900 ${focusClass(organization.cover_focus)}`}
         />
       ) : null}
       <div className="flex flex-wrap items-start gap-4">
         {organization.logo_url ? (
           // biome-ignore lint/performance/noImgElement: the picture is a same-origin proxy path.
           <img
-            src={organization.logo_url}
+            src={sizedSrc(organization.logo_url, 320)}
             alt=""
-            className="h-16 w-16 shrink-0 rounded-md border border-slate-300 object-cover dark:border-slate-700"
+            className={`h-20 w-20 shrink-0 rounded-lg border border-slate-300 object-cover dark:border-slate-700 ${focusClass(organization.logo_focus)}`}
           />
         ) : (
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border border-slate-300 text-xl font-extrabold text-slate-900 dark:border-slate-700 dark:text-slate-100">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg border border-slate-300 text-xl font-extrabold text-slate-900 dark:border-slate-700 dark:text-slate-100">
             {initials(organization.name)}
           </div>
         )}

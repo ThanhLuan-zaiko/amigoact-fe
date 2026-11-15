@@ -1,6 +1,8 @@
 // View models for the UI, filled from the API by toPost in src/lib/posts.ts.
 
 import type { ActivitySummary } from "@/lib/activities";
+import type { Focus } from "@/lib/focus";
+import type { VideoInfo } from "@/lib/video";
 
 export type PostKind = "announcement" | "discussion";
 
@@ -36,4 +38,13 @@ export type Post = {
   media?: PostMedia[];
 };
 
-export type PostMedia = { id: string; src: string; isVideo: boolean };
+export type PostMedia = {
+  id: string;
+  src: string;
+  isVideo: boolean;
+  width?: number | null;
+  height?: number | null;
+  placeholder?: string | null;
+  focus?: Focus | null;
+  video?: VideoInfo | null;
+};

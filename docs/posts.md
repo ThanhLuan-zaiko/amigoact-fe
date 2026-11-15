@@ -112,3 +112,23 @@ Bấm lại nút lên các dòng đã có dấu thì gỡ dấu. Code ở `src/l
 ## Chưa làm
 
 - Tab "Đang theo dõi" ở trang chủ, vì backend chưa có việc theo dõi tổ chức.
+
+## Ảnh nhiều kích thước
+
+- Backend lưu mỗi ảnh ở các bậc chiều rộng 320 / 640 / 1080 / 1600 / 2400 px dạng WebP, đã xoay đúng chiều và bỏ EXIF (xem `docs/media.md` của backend). Route `/media/[id]/file` chỉ chuyển tiếp tham số `?w=` khi đó là một số nguyên từ 1 tới 4096 (`parseWidth` trong `src/lib/pictureSizes.ts`).
+- Ảnh bài viết dùng `Picture` (`src/app/_components/Picture.tsx`): có `srcset` gồm mọi bậc, và `sizes` theo bố cục, nên trình duyệt tự chọn bản vừa khung và đủ nét cho màn hình Retina. Ảnh có `width`/`height` thì giữ đúng tỉ lệ khung trước khi tải xong. Ảnh có `placeholder` thì hiện ảnh mờ trong lúc chờ.
+- Ảnh bìa và bộ sưu tập tổ chức cũng dùng `srcset`. Logo và avatar chat dùng bản 320 px (`sizedSrc`).
+- URL blob và data (ảnh xem trước lúc chọn tệp) được giữ nguyên.
+
+## Điểm lấy nét
+
+- Khi ảnh bị cắt cho vừa khung (ảnh bìa bài ở bảng tin, ô bộ sưu tập, ảnh bìa và logo tổ chức), khung cắt giữ điểm lấy nét `focus` mà backend trả về. `focusClass` trong `src/lib/focus.ts` đổi điểm này thành class `object-[x%_y%]` theo lưới 10%. Ảnh chưa có điểm lấy nét dùng điểm giữa, lệch lên trên (50%, 30%).
+- Không được viết inline style, và Tailwind chỉ sinh class được viết đầy đủ trong mã nguồn, nên mọi vị trí được liệt kê sẵn trong `src/lib/focusClasses.ts`. Đừng ghép chuỗi class lúc chạy.
+- `FocusButton` (`src/app/_components/FocusButton.tsx`) là nút có biểu tượng tâm ngắm, nằm trên mỗi ảnh trong form bài viết, form ảnh tổ chức và bộ sưu tập. Nút mở hộp thoại: người dùng chạm vào ảnh, hoặc dùng phím mũi tên để dời điểm, và xem trước hai kiểu cắt (16:9 và vuông) trước khi lưu. Server Action `setMediaFocus` (`src/app/_actions/media.ts`) gọi `PUT /media/{id}/focus`. Chỉ người tải ảnh lên mới lưu được; người khác thấy thông báo lỗi rõ ràng.
+
+## Video
+
+- Video trong bài viết và bộ sưu tập dùng `VideoPlayer` (`src/app/_components/VideoPlayer.tsx`). Khi backend chuyển mã xong (`video.status = "ready"`), trình phát dùng HLS: Safari tự phát, các trình duyệt khác tải `hls.js` khi cần, nên mạng yếu sẽ tự hạ xuống bản nhỏ thay vì đứng hình. Poster hiện ngay trước khi phát. Không phát được HLS thì phát bản MP4 720p (`/media/[id]/video`).
+- Trong lúc video đang chờ hoặc đang chuyển mã, bản gốc được phát, và trang tự tải lại khi sự kiện `media.video` tới trên topic `ME`.
+- Video trong chat dùng `/media/[id]/video` thay cho `/file` (`transcodedUrl` trong `src/lib/video.ts`).
+- Các route proxy `/media/[id]/video`, `/poster` và `/hls/[...name]` dùng chung `proxyMedia` (`src/lib/mediaProxy.ts`). Chúng chỉ chuyển tiếp `?q=` và `?w=` khi là số hợp lệ, và chỉ chuyển tiếp tên file HLS mà backend ghi ra.

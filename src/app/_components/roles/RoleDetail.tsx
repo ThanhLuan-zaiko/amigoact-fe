@@ -1,7 +1,7 @@
 import {
   FiArrowDown,
   FiArrowUp,
-  FiEdit2,
+  FiLock,
   FiTrash2,
   FiUsers,
 } from "react-icons/fi";
@@ -19,7 +19,7 @@ import { mutedText } from "../ui";
 import RoleDot from "./RoleDot";
 import RoleForm from "./RoleForm";
 
-type RoleRowProps = {
+type RoleDetailProps = {
   slug: string;
   role: RoleInfo;
   roles: RoleList;
@@ -27,14 +27,15 @@ type RoleRowProps = {
   grantable: string[];
 };
 
-// One role: its name, members and permissions, with edit, move and delete for those who may.
-export default function RoleRow({
+// One role in the detail panel: its rank controls, then either the edit form at
+// full width or, for a role the viewer may not change, a read-only summary.
+export default function RoleDetail({
   slug,
   role,
   roles,
   viewer,
   grantable,
-}: RoleRowProps) {
+}: RoleDetailProps) {
   const canUpdate = role.below_you && hasPermission(viewer, "roles.update");
   const canDelete = role.below_you && hasPermission(viewer, "roles.delete");
   const up = canUpdate ? movedOrder(roles.items, role.id, "up") : null;
@@ -42,16 +43,16 @@ export default function RoleRow({
   const lines = summarize(role.permissions);
 
   return (
-    <li className="flex flex-col gap-3 py-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-col gap-4">
+      <header className="flex flex-wrap items-center gap-3 border-b border-slate-200 pb-4 dark:border-slate-800">
         <RoleDot color={role.color} />
-        <p className="min-w-0 flex-1 basis-32 truncate text-sm font-semibold">
+        <h2 className="min-w-0 flex-1 basis-40 truncate text-lg font-bold">
           {role.name}
-        </p>
+        </h2>
         <IconStat icon={FiUsers} label="Số thành viên">
           {role.member_count}
         </IconStat>
-        <div className="flex flex-wrap items-start gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {up ? (
             <ActionButton
               action={reorderRoles.bind(null, slug, up)}
@@ -78,37 +79,40 @@ export default function RoleRow({
             </ActionButton>
           ) : null}
         </div>
-      </div>
-      {lines.length === 0 ? (
-        <p className={mutedText}>Chỉ để nhận diện, không có quyền nào.</p>
-      ) : (
-        <dl className="grid grid-cols-1 gap-x-4 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
-          {lines.map((line) => (
-            <div key={line.module} className="contents">
-              <dt className="font-semibold text-slate-700 dark:text-slate-300">
-                {line.module}
-              </dt>
-              <dd className={mutedText}>{line.actions.join(", ")}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      </header>
       {canUpdate ? (
-        <details className="rounded-md border border-slate-200 p-3 dark:border-slate-800">
-          <summary className="flex cursor-pointer items-center gap-2 text-sm font-semibold">
-            <FiEdit2 aria-hidden="true" />
-            Sửa vai trò
-          </summary>
-          <div className="pt-4">
-            <RoleForm
-              action={updateRole.bind(null, slug, role.id)}
-              role={role}
-              grantable={grantable}
-              submitLabel="Lưu"
-            />
-          </div>
-        </details>
-      ) : null}
-    </li>
+        <RoleForm
+          // A fresh form for each role, so switching roles never keeps old ticks.
+          key={role.id}
+          action={updateRole.bind(null, slug, role.id)}
+          role={role}
+          grantable={grantable}
+          submitLabel="Lưu thay đổi"
+        />
+      ) : (
+        <>
+          <p className={`${mutedText} flex items-center gap-2`}>
+            <FiLock aria-hidden="true" className="shrink-0" />
+            {role.below_you
+              ? "Bạn không có quyền sửa vai trò, nên chỉ xem được."
+              : "Vai trò này ngang hoặc cao hơn vai trò của bạn, nên bạn chỉ xem được."}
+          </p>
+          {lines.length === 0 ? (
+            <p className={mutedText}>Chỉ để nhận diện, không có quyền nào.</p>
+          ) : (
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-[auto_1fr]">
+              {lines.map((line) => (
+                <div key={line.module} className="contents">
+                  <dt className="font-semibold text-slate-700 dark:text-slate-300">
+                    {line.module}
+                  </dt>
+                  <dd className={mutedText}>{line.actions.join(", ")}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </>
+      )}
+    </div>
   );
 }

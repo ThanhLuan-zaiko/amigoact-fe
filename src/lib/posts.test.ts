@@ -175,7 +175,15 @@ describe("toPost", () => {
         body: "B",
         tags: ["a"],
         media: [
-          { id: "m1", url: "/media/m1/file", mime: "image/png" },
+          {
+            id: "m1",
+            url: "/media/m1/file",
+            mime: "image/png",
+            width: 1200,
+            height: 800,
+            placeholder: "data:image/webp;base64,AA",
+            focus: { x: 0.2, y: 0.7 },
+          },
           { id: "m2", url: "/media/m2/file", mime: "video/mp4" },
         ],
         pinned: false,
@@ -187,8 +195,26 @@ describe("toPost", () => {
       (value) => `d:${value}`,
     );
     expect(post.media).toEqual([
-      { id: "m1", src: "/media/m1/file", isVideo: false },
-      { id: "m2", src: "/media/m2/file", isVideo: true },
+      {
+        id: "m1",
+        src: "/media/m1/file",
+        isVideo: false,
+        width: 1200,
+        height: 800,
+        placeholder: "data:image/webp;base64,AA",
+        focus: { x: 0.2, y: 0.7 },
+        video: null,
+      },
+      {
+        id: "m2",
+        src: "/media/m2/file",
+        isVideo: true,
+        width: null,
+        height: null,
+        placeholder: null,
+        focus: null,
+        video: null,
+      },
     ]);
     expect(post.publishedAt).toBe("d:2026-01-01T00:00:00Z");
     expect(post.organizationInitials).toBe("CL");

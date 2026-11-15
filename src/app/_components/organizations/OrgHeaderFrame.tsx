@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { initials } from "@/lib/organizations";
 import { feedBackHref } from "@/lib/orgBack";
 import { keepAddress, pagePath } from "@/lib/orgRoutes";
+import { sizedSrc } from "@/lib/pictureSizes";
 import BackLink from "../BackLink";
 import { panel } from "../ui";
 
@@ -43,7 +44,7 @@ export default function OrgHeaderFrame({
         {logoUrl ? (
           // biome-ignore lint/performance/noImgElement: the picture is a same-origin proxy path.
           <img
-            src={logoUrl}
+            src={sizedSrc(logoUrl, 320)}
             alt=""
             className="h-9 w-9 shrink-0 rounded-md border border-slate-300 object-cover dark:border-slate-700"
           />

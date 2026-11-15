@@ -1,6 +1,8 @@
 // Shapes of the organization API responses, with their labels for the UI.
 
+import type { Focus } from "./focus";
 import type { RoleBadge } from "./roles";
+import type { VideoInfo } from "./video";
 
 export type OrgRole = "owner" | "admin" | "member";
 export type OrgType = "organization" | "club" | "group" | "business";
@@ -18,6 +20,9 @@ export type OrganizationSummary = {
   // Served by the frontend at the same path (see app/media), or null.
   logo_url: string | null;
   cover_url: string | null;
+  // Spots that crops of the logo and cover keep in view, or null.
+  logo_focus?: Focus | null;
+  cover_focus?: Focus | null;
 };
 
 export type OrganizationPage = {
@@ -154,4 +159,6 @@ export type GalleryItem = {
   id: string;
   url: string;
   mime: string;
+  focus?: Focus | null;
+  video?: VideoInfo | null;
 };

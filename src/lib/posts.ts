@@ -1,8 +1,10 @@
 // Pure helpers for posts and their forms. The backend repeats every rule.
 import type { FieldErrors } from "./account";
 import type { ActivitySummary } from "./activities";
+import { asFocus } from "./focus";
 import { initials, type MyOrganization } from "./organizations";
 import { hasLetter } from "./validation";
+import { asVideoInfo } from "./video";
 
 export const TAG_LIMIT = 5;
 export const TAG_NAME_MAX = 40;
@@ -183,7 +185,16 @@ export type PostApi = {
   title: string;
   body: string;
   tags: string[];
-  media: { id: string; url: string; mime: string }[];
+  media: {
+    id: string;
+    url: string;
+    mime: string;
+    width?: number | null;
+    height?: number | null;
+    placeholder?: string | null;
+    focus?: unknown;
+    video?: unknown;
+  }[];
   pinned: boolean;
   hidden?: boolean;
   comment_count: number;
@@ -259,6 +270,11 @@ export function toPost(post: PostApi, formatDate: (value: string) => string) {
       id: item.id.toLowerCase(),
       src: `/media/${item.id}/file`,
       isVideo: item.mime.startsWith("video/"),
+      width: item.width ?? null,
+      height: item.height ?? null,
+      placeholder: item.placeholder ?? null,
+      focus: asFocus(item.focus),
+      video: asVideoInfo(item.video),
     })),
   };
 }

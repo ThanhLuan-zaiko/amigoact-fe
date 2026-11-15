@@ -9,6 +9,7 @@ import {
   galleryFileError,
   isVideo,
 } from "@/lib/pictureRules";
+import FocusButton from "../FocusButton";
 import { fieldLabel, iconButton, mutedText } from "../ui";
 
 type Item = { id: string; mime: string; preview: string };
@@ -150,15 +151,20 @@ export default function CreateGalleryField() {
                   className="aspect-video w-full rounded-md border border-slate-200 object-cover dark:border-slate-800"
                 />
               )}
-              <button
-                type="button"
-                aria-label="Gỡ khỏi bộ sưu tập"
-                title="Gỡ khỏi bộ sưu tập"
-                onClick={() => remove(item)}
-                className={iconButton}
-              >
-                <FiTrash2 aria-hidden="true" />
-              </button>
+              <div className="flex gap-2">
+                {isVideo(item.mime) ? null : (
+                  <FocusButton assetId={item.id} src={item.preview} />
+                )}
+                <button
+                  type="button"
+                  aria-label="Gỡ khỏi bộ sưu tập"
+                  title="Gỡ khỏi bộ sưu tập"
+                  onClick={() => remove(item)}
+                  className={iconButton}
+                >
+                  <FiTrash2 aria-hidden="true" />
+                </button>
+              </div>
               <input type="hidden" name="gallery_asset_id" value={item.id} />
             </li>
           ))}

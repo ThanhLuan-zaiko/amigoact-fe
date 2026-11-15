@@ -95,7 +95,8 @@ export default function RoleForm({
       {[...selected].map((code) => (
         <input key={code} type="hidden" name="role_permissions" value={code} />
       ))}
-      <div>
+      {/* Stays in reach at the bottom of the screen while a long permission list scrolls. */}
+      <div className="sticky bottom-14 z-[1] -mx-4 -mb-4 border-t border-slate-200 bg-white px-4 py-3 sm:-mx-6 sm:-mb-6 sm:px-6 md:bottom-0 dark:border-slate-800 dark:bg-slate-950">
         <SubmitButton pending={pending} icon={FiSave}>
           {submitLabel}
         </SubmitButton>

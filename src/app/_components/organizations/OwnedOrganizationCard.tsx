@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FiSettings, FiUsers } from "react-icons/fi";
+import { focusClass } from "@/lib/focus";
 import {
   initials,
   JOIN_POLICY_LABELS,
@@ -7,6 +8,7 @@ import {
   ORG_TYPE_LABELS,
 } from "@/lib/organizations";
 import { orgBase } from "@/lib/orgRoutes";
+import { sizedSrc, srcSetFor } from "@/lib/pictureSizes";
 import IconStat from "../IconStat";
 import { mutedText, panel, secondaryButton } from "../ui";
 
@@ -22,9 +24,11 @@ export default function OwnedOrganizationCard({
       {organization.cover_url ? (
         // biome-ignore lint/performance/noImgElement: the picture is a same-origin proxy path.
         <img
-          src={organization.cover_url}
+          src={sizedSrc(organization.cover_url, 640)}
+          srcSet={srcSetFor(organization.cover_url)}
+          sizes="(min-width: 1280px) 440px, (min-width: 640px) 50vw, 100vw"
           alt=""
-          className="h-24 w-full object-cover sm:h-28"
+          className={`h-24 w-full object-cover sm:h-28 ${focusClass(organization.cover_focus)}`}
         />
       ) : null}
       <div className="flex min-w-0 flex-col gap-3 p-4">
@@ -32,9 +36,9 @@ export default function OwnedOrganizationCard({
           {organization.logo_url ? (
             // biome-ignore lint/performance/noImgElement: the picture is a same-origin proxy path.
             <img
-              src={organization.logo_url}
+              src={sizedSrc(organization.logo_url, 320)}
               alt=""
-              className="h-10 w-10 shrink-0 rounded-md border border-slate-300 object-cover dark:border-slate-700"
+              className={`h-10 w-10 shrink-0 rounded-md border border-slate-300 object-cover dark:border-slate-700 ${focusClass(organization.logo_focus)}`}
             />
           ) : (
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-slate-200 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   FiAward,
   FiCalendar,
+  FiClock,
   FiInbox,
   FiInfo,
   FiMessageSquare,
@@ -57,6 +58,12 @@ export default function OrgNav({ slug, viewer }: OrgNavProps) {
       label: "Yêu cầu",
       icon: FiInbox,
       visible: hasPermission(viewer, "applications.review"),
+    },
+    {
+      href: `${base}/hours`,
+      label: "Giờ",
+      icon: FiClock,
+      visible: hasPermission(viewer, "attendance.hours"),
     },
     {
       href: `${base}/certificates`,

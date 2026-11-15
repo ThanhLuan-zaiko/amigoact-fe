@@ -141,6 +141,9 @@ const ISSUE_MESSAGES: Record<string, string> = {
     "Bài chỉ dành cho thành viên không có ảnh hoặc video.",
   text_needs_letter: FIELD_MESSAGES.needsLetter,
   bool_type: "Giá trị không hợp lệ. Vui lòng chọn lại.",
+  date_invalid: "Ngày không hợp lệ. Hãy nhập theo dạng năm-tháng-ngày.",
+  range_invalid: "Ngày bắt đầu không được sau ngày kết thúc.",
+  range_too_long: "Khoảng thời gian quá dài. Hãy chọn tối đa 3 năm.",
 };
 
 // A number of the wrong shape. The field message says the range, so it wins when present.

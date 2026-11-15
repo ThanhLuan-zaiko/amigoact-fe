@@ -15,7 +15,12 @@ import BackLink from "../../../../_components/BackLink";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
-import { iconButton, mutedText, panel } from "../../../../_components/ui";
+import {
+  iconButton,
+  mutedText,
+  panel,
+  stickySide,
+} from "../../../../_components/ui";
 
 export const metadata: Metadata = { title: "Điểm danh | AmigoACT" };
 
@@ -115,7 +120,7 @@ async function AttendanceContent({
       </div>
       {/* Opening a session on the left, the sessions already open on the right, on wide screens. */}
       <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-        <div className="flex min-w-0 flex-col gap-4">
+        <div className={`${stickySide} flex min-w-0 flex-col gap-4`}>
           {activity.status === "published" ? (
             <OpenSessionForm activityId={id} shifts={activity.shifts} />
           ) : null}

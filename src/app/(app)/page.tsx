@@ -115,7 +115,7 @@ export default function HomePage(props: PageProps<"/">) {
         </Suspense>
       </div>
 
-      <aside className="hidden w-[300px] shrink-0 lg:block">
+      <aside className="sticky top-20 hidden max-h-[calc(100dvh-6rem)] w-[300px] shrink-0 self-start overflow-y-auto lg:block">
         <Suspense fallback={<RightRail popularTags={[]} />}>
           <HomeRail />
         </Suspense>

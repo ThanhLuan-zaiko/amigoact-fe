@@ -9,6 +9,14 @@ import type {
 } from "./attendance";
 import { getAccessToken } from "./auth";
 import { backendFetch } from "./backend";
+import {
+  type Bucket,
+  type MyHourStats,
+  type OrgHourStats,
+  orgStatsPath,
+  type RangeKey,
+  statsPath,
+} from "./hoursStats";
 
 async function getData<T>(path: string): Promise<T | null> {
   const result = await backendFetch<T>(path, {
@@ -45,6 +53,21 @@ export function getMyHours(): Promise<MyHours | null> {
   return getData("/hours/mine");
 }
 
+export function getMyHourStats(
+  range: RangeKey,
+  bucket: Bucket,
+): Promise<MyHourStats | null> {
+  return getData(statsPath(range, bucket, new Date()));
+}
+
 export function getHourRule(slug: string): Promise<HourRule | null> {
   return getData(`/organizations/${encodeURIComponent(slug)}/hour-rule`);
+}
+
+export function getOrgHourStats(
+  slug: string,
+  range: RangeKey,
+  bucket: Bucket,
+): Promise<OrgHourStats | null> {
+  return getData(orgStatsPath(slug, range, bucket, new Date()));
 }

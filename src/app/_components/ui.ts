@@ -49,6 +49,11 @@ export const splitList =
 export const splitRow =
   "xl:border-b xl:border-slate-200 dark:xl:border-slate-800";
 
+// The secondary column of a two-column page on xl: it stays in view while the main
+// column scrolls, and scrolls inside itself when it is taller than the screen.
+export const stickySide =
+  "xl:sticky xl:top-24 xl:max-h-[calc(100dvh-7rem)] xl:overflow-y-auto";
+
 export const sectionTitle =
   "text-base font-bold text-slate-900 dark:text-slate-100";
 

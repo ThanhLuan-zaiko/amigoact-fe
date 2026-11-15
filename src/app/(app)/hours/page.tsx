@@ -1,96 +1,73 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
-import { FiCalendar, FiClock, FiEdit2 } from "react-icons/fi";
-import { hoursText } from "@/lib/attendance";
-import { getMyHours } from "@/lib/attendanceApi";
+import { FiUsers } from "react-icons/fi";
+import { getMyHourStats, getMyHours } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
-import { formatDate } from "@/lib/organizations";
+import { organizationRows, readBucket, readRange } from "@/lib/hoursStats";
 import EmptyState from "../../_components/EmptyState";
-import IconStat from "../../_components/IconStat";
-import { mutedText, panel, tagChip } from "../../_components/ui";
+import BreakdownSection from "../../_components/hours/BreakdownSection";
+import HourEntries from "../../_components/hours/HourEntries";
+import HoursSummary from "../../_components/hours/HoursSummary";
+import StatsFilters from "../../_components/hours/StatsFilters";
+import TrendSection from "../../_components/hours/TrendSection";
+import { mutedText } from "../../_components/ui";
 
 export const metadata: Metadata = { title: "Giờ tình nguyện | AmigoACT" };
 
-async function HoursContent() {
+async function HoursContent({ searchParams }: PageProps<"/hours">) {
   await requireUser("/hours");
-  const hours = await getMyHours();
-  if (!hours) {
+  const query = await searchParams;
+  const range = readRange(query.range);
+  const bucket = readBucket(query.bucket);
+  const [stats, hours] = await Promise.all([
+    getMyHourStats(range, bucket),
+    getMyHours(),
+  ]);
+  if (!stats || !hours) {
     return (
       <p className={mutedText}>Không tải được dữ liệu. Vui lòng thử lại.</p>
     );
   }
-  // The total stays visible on the left while the entries scroll on the right.
+  if (hours.entries.length === 0) {
+    return (
+      <EmptyState
+        title="Chưa có giờ nào"
+        description="Giờ được ghi khi hoạt động kết thúc và bạn đã điểm danh."
+      />
+    );
+  }
+  // Phones read the summary first. From xl the charts take the wide left column and
+  // the summary stays in view on the right.
   return (
-    <div className="grid w-full grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-      <section
-        className={`${panel} flex flex-wrap items-center gap-4 p-4 sm:p-6 xl:sticky xl:top-24 xl:flex-col xl:items-start`}
-      >
-        <p className="flex items-center gap-2 text-3xl font-extrabold tracking-tight">
-          <FiClock aria-hidden="true" className="text-slate-500" />
-          <span className="sr-only">Tổng giờ: </span>
-          {hoursText(hours.total)}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {hours.by_term.map(({ term, hours: termHours }) => (
-            <span key={term} className={tagChip}>
-              {term}: {hoursText(termHours)}
-            </span>
-          ))}
+    <>
+      <StatsFilters range={range} bucket={bucket} base="/hours" />
+      <div className="grid w-full grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="xl:col-start-2 xl:row-start-1 xl:self-stretch">
+          <HoursSummary stats={stats} />
         </div>
-      </section>
-      {hours.entries.length === 0 ? (
-        <EmptyState
-          title="Chưa có giờ nào"
-          description="Giờ được ghi khi hoạt động kết thúc và bạn đã điểm danh."
-        />
-      ) : (
-        <ul
-          className={`${panel} flex flex-col divide-y divide-slate-200 px-4 dark:divide-slate-800`}
-        >
-          {hours.entries.map((entry) => (
-            <li key={entry.id} className="flex items-center gap-3 py-3">
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                {entry.activity_id ? (
-                  <Link
-                    href={`/activities/${entry.activity_id}`}
-                    className="font-semibold break-words transition-colors hover:text-teal-700 dark:hover:text-teal-400"
-                  >
-                    {entry.activity_title}
-                  </Link>
-                ) : (
-                  <p className="font-semibold">{entry.organization_name}</p>
-                )}
-                <div className="flex flex-wrap gap-x-4 gap-y-1">
-                  <IconStat icon={FiCalendar} label="Ngày ghi">
-                    {formatDate(entry.recorded_at)}
-                  </IconStat>
-                  {entry.source === "adjustment" ? (
-                    <IconStat icon={FiEdit2} label="Điều chỉnh">
-                      {entry.note}
-                    </IconStat>
-                  ) : null}
-                </div>
-              </div>
-              <span className="shrink-0 font-bold">
-                {hoursText(entry.hours, { signed: true })}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+        <div className="flex min-w-0 flex-col gap-4 xl:col-start-1 xl:row-start-1">
+          <TrendSection series={stats.series} bucket={stats.bucket} />
+          <BreakdownSection
+            title="Theo tổ chức"
+            icon={FiUsers}
+            rows={organizationRows(stats)}
+            description="Giờ tình nguyện theo tổ chức"
+          />
+          <HourEntries entries={hours.entries} />
+        </div>
+      </div>
+    </>
   );
 }
 
-export default function HoursPage() {
+export default function HoursPage(props: PageProps<"/hours">) {
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full min-w-0 flex-col gap-4">
       <h1 className="text-2xl font-extrabold tracking-tight">
         Giờ tình nguyện
       </h1>
       <Suspense fallback={<p className={mutedText}>Đang tải…</p>}>
-        <HoursContent />
+        <HoursContent {...props} />
       </Suspense>
     </div>
   );

@@ -21,7 +21,7 @@ import ManageActions from "../../../_components/activities/ManageActions";
 import RegisterControls from "../../../_components/activities/RegisterControls";
 import CertificatePanel from "../../../_components/certificates/CertificatePanel";
 import IconStat from "../../../_components/IconStat";
-import { mutedText, panel, tagChip } from "../../../_components/ui";
+import { mutedText, panel, stickySide, tagChip } from "../../../_components/ui";
 
 async function ActivityContent({
   params,
@@ -92,7 +92,7 @@ async function ActivityContent({
           </p>
         ) : null}
       </article>
-      <div className="flex min-w-0 flex-col gap-4">
+      <div className={`${stickySide} flex min-w-0 flex-col gap-4`}>
         <section className={`${panel} flex flex-col gap-4 p-4 sm:p-6`}>
           <h2 className="flex items-center gap-2 text-lg font-bold">
             <FiUserPlus aria-hidden="true" />

@@ -20,6 +20,7 @@ import type { RosterEntry } from "@/lib/attendance";
 import { getRoster } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
 import { initials } from "@/lib/organizations";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import BackLink from "../../../../../_components/BackLink";
 import EmptyState from "../../../../../_components/EmptyState";
 import IconStat from "../../../../../_components/IconStat";
@@ -88,6 +89,7 @@ async function RosterContent({
     return <p className={mutedText}>Chỉ ban quản trị mới xem được.</p>;
   }
   const editable = activity.status === "published";
+  const timeZone = await viewerTimeZone();
   const present = roster.filter((entry) => entry.verified).length;
   const pending = roster.filter(
     (entry) => entry.record_id && !entry.verified,
@@ -144,7 +146,7 @@ async function RosterContent({
                         icon={entry.method === "qr" ? BsQrCode : FiEdit3}
                         label={entry.method === "qr" ? "Quét QR" : "Nhập tay"}
                       >
-                        {formatDateTime(entry.scanned_at)}
+                        {formatDateTime(entry.scanned_at, timeZone)}
                       </IconStat>
                     ) : null}
                   </div>

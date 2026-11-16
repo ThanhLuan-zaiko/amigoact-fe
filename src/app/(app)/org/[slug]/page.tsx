@@ -9,6 +9,7 @@ import {
 } from "react-icons/fi";
 import { getGallery, getOrganization } from "@/lib/organizationApi";
 import { formatDate } from "@/lib/organizations";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import IconStat from "../../../_components/IconStat";
 import OrganizationGallery from "../../../_components/organizations/OrganizationGallery";
 import {
@@ -27,6 +28,7 @@ async function OrganizationAbout({
 }) {
   const { slug } = await params;
   const organization = await getOrganization(slug);
+  const timeZone = await viewerTimeZone();
   // The layout already shows the not-found page for an unknown organization.
   if (!organization) {
     return null;
@@ -47,7 +49,7 @@ async function OrganizationAbout({
           {organization.owner_name}
         </IconStat>
         <IconStat icon={FiCalendar} label="Ngày tạo">
-          {formatDate(organization.created_at)}
+          {formatDate(organization.created_at, timeZone)}
         </IconStat>
         {organization.email ? (
           <IconStat icon={FiMail} label="Email">

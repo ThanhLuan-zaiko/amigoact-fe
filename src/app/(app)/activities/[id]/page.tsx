@@ -13,10 +13,12 @@ import {
 } from "react-icons/fi";
 import {
   ACTIVITY_STATUS_LABELS,
-  formatDateTime,
+  formatDateTimeZoned,
+  formatTimeRange,
   seatsText,
 } from "@/lib/activities";
 import { getActivity } from "@/lib/activityApi";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import ManageActions from "../../../_components/activities/ManageActions";
 import RegisterControls from "../../../_components/activities/RegisterControls";
 import CertificatePanel from "../../../_components/certificates/CertificatePanel";
@@ -33,6 +35,7 @@ async function ActivityContent({
   if (!activity) {
     notFound();
   }
+  const timeZone = await viewerTimeZone();
   const place = [activity.location, activity.address, activity.city]
     .filter(Boolean)
     .join(", ");
@@ -61,8 +64,7 @@ async function ActivityContent({
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           {activity.start_at ? (
             <IconStat icon={FiCalendar} label="Thời gian">
-              {formatDateTime(activity.start_at)}
-              {activity.end_at ? ` – ${formatDateTime(activity.end_at)}` : ""}
+              {formatTimeRange(activity.start_at, activity.end_at, timeZone)}
             </IconStat>
           ) : null}
           {activity.is_remote ? (
@@ -104,11 +106,11 @@ async function ActivityContent({
             </IconStat>
             {activity.registration_deadline ? (
               <IconStat icon={FiWatch} label="Hạn đăng ký">
-                {formatDateTime(activity.registration_deadline)}
+                {formatDateTimeZoned(activity.registration_deadline, timeZone)}
               </IconStat>
             ) : null}
           </div>
-          <RegisterControls activity={activity} />
+          <RegisterControls activity={activity} timeZone={timeZone} />
         </section>
         {activity.viewer.can_manage ? (
           <ManageActions activity={activity} />
@@ -118,6 +120,7 @@ async function ActivityContent({
             <CertificatePanel
               activityId={activity.id}
               organizationSlug={activity.organization_slug}
+              timeZone={timeZone}
             />
           </Suspense>
         ) : null}

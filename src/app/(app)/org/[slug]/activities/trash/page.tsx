@@ -5,6 +5,7 @@ import { orgActivitiesPath } from "@/lib/activityList";
 import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
 import { hasPermission } from "@/lib/roles";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import ActivityTrashList from "../../../../../_components/activities/ActivityTrashList";
 import EmptyState from "../../../../../_components/EmptyState";
 import { MoreLink } from "../../../../../_components/posts/FeedFilters";
@@ -53,7 +54,11 @@ async function TrashContent({
           description="Hoạt động nháp bị xóa sẽ nằm ở đây trong 30 ngày."
         />
       ) : (
-        <ActivityTrashList slug={slug} items={page.items} />
+        <ActivityTrashList
+          slug={slug}
+          items={page.items}
+          timeZone={await viewerTimeZone()}
+        />
       )}
       <MoreLink
         href={

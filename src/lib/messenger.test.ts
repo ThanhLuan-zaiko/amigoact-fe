@@ -123,11 +123,21 @@ describe("previews", () => {
 describe("listTime", () => {
   const now = new Date("2026-11-12T10:00:00+07:00");
 
+  const zone = "Asia/Ho_Chi_Minh";
+
   test("today shows the time, older days a weekday or a date", () => {
-    expect(listTime("2026-11-12T08:05:00+07:00", now)).toBe("08:05");
-    expect(listTime("2026-11-10T08:05:00+07:00", now)).not.toContain("/");
-    expect(listTime("2026-10-01T08:05:00+07:00", now)).toBe("01/10");
-    expect(listTime("2025-10-01T08:05:00+07:00", now)).toBe("01/10/25");
+    expect(listTime("2026-11-12T08:05:00+07:00", now, zone)).toBe("08:05");
+    expect(listTime("2026-11-10T08:05:00+07:00", now, zone)).not.toContain("/");
+    expect(listTime("2026-10-01T08:05:00+07:00", now, zone)).toBe("01/10");
+    expect(listTime("2025-10-01T08:05:00+07:00", now, zone)).toBe("01/10/25");
+  });
+
+  test("today is the viewer's own day", () => {
+    // Now is 12 Nov, 10:00 in Vietnam and 11 Nov, 22:00 in New York. The message
+    // is 11 Nov, 23:00 in Vietnam (yesterday) and 11 Nov, 11:00 in New York (today).
+    const message = "2026-11-11T16:00:00Z";
+    expect(listTime(message, now, "America/New_York")).toBe("11:00");
+    expect(listTime(message, now, zone)).not.toContain(":");
   });
 });
 

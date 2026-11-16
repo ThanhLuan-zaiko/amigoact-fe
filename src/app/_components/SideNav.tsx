@@ -8,7 +8,6 @@ import {
   FiAward,
   FiCalendar,
   FiClock,
-  FiCompass,
   FiHome,
   FiMessageSquare,
   FiUser,
@@ -24,7 +23,6 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { label: "Trang chủ", href: "/", icon: FiHome },
-  { label: "Khám phá", href: "/explore", icon: FiCompass },
   { label: "Hoạt động", href: "/activities", icon: FiCalendar },
   { label: "Giờ tình nguyện", href: "/hours", icon: FiClock },
   { label: "Chứng nhận", href: "/certificates", icon: FiAward },

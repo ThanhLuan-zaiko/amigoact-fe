@@ -13,9 +13,11 @@ const KIND_LABELS = { announcement: "Thông báo", discussion: "Thảo luận" }
 export default function TrashList({
   slug,
   items,
+  timeZone,
 }: {
   slug: string;
   items: TrashPostApi[];
+  timeZone: string;
 }) {
   return (
     <ul className={splitList}>
@@ -28,11 +30,11 @@ export default function TrashList({
             <p className="font-semibold break-words">{item.title}</p>
             <p className={mutedText}>
               {KIND_LABELS[item.kind]} · Xóa lúc{" "}
-              {formatDateTime(item.deleted_at)}
+              {formatDateTime(item.deleted_at, timeZone)}
               {item.deleted_by_name ? ` bởi ${item.deleted_by_name}` : ""}
             </p>
             <p className={mutedText}>
-              Tự xóa vĩnh viễn vào {formatDateTime(item.purge_at)}
+              Tự xóa vĩnh viễn vào {formatDateTime(item.purge_at, timeZone)}
             </p>
           </div>
           <div className="flex items-start gap-2">

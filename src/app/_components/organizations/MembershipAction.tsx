@@ -54,12 +54,14 @@ const OWN_EVENTS = ["membership.changed"] as const;
 
 type MembershipActionProps = {
   organization: OrganizationDetail;
+  timeZone: string;
 };
 
 // What the viewer can do with their own membership. Visitors see the join
 // button too, and the action sends them to log in first.
 export default function MembershipAction({
   organization,
+  timeZone,
 }: MembershipActionProps) {
   const { slug, viewer, join_policy: joinPolicy } = organization;
   const [formOpen, setFormOpen] = useState(false);
@@ -107,7 +109,7 @@ export default function MembershipAction({
     return (
       <p className={mutedText}>
         Yêu cầu trước đã bị từ chối. Bạn có thể gửi lại từ ngày{" "}
-        {formatDate(viewer.reapply_after)}.
+        {formatDate(viewer.reapply_after, timeZone)}.
       </p>
     );
   }

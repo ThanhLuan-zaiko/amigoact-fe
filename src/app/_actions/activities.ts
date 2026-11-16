@@ -12,6 +12,7 @@ import { authedFetch, getAccessToken } from "@/lib/auth";
 import type { ApiResult } from "@/lib/backend";
 import { failureState, textOrNull, textValue } from "@/lib/forms";
 import { parseTags } from "@/lib/posts";
+import { formTimeZone } from "@/lib/viewerTimeZone";
 
 function activityPath(id: string): string {
   return `/activities/${encodeURIComponent(id)}`;
@@ -29,7 +30,10 @@ function finish(result: ApiResult<unknown>): FormState {
   return {};
 }
 
-function activityBody(formData: FormData) {
+// Typed times are read on the clock of the person who typed them: the zone the
+// form carried in `time_zone`, else their cookie zone.
+async function activityBody(formData: FormData) {
+  const timeZone = await formTimeZone(formData);
   return {
     title: textValue(formData, "title"),
     description: textOrNull(formData, "description"),
@@ -37,10 +41,11 @@ function activityBody(formData: FormData) {
     address: textOrNull(formData, "address"),
     city: textOrNull(formData, "city"),
     is_remote: formData.get("is_remote") === "on",
-    start_at: fromLocalInput(textValue(formData, "start_at")),
-    end_at: fromLocalInput(textValue(formData, "end_at")),
+    start_at: fromLocalInput(textValue(formData, "start_at"), timeZone),
+    end_at: fromLocalInput(textValue(formData, "end_at"), timeZone),
     registration_deadline: fromLocalInput(
       textValue(formData, "registration_deadline"),
+      timeZone,
     ),
     max_participants: numberOrNull(textValue(formData, "max_participants")),
     hours_awarded: textOrNull(formData, "hours_awarded"),
@@ -54,7 +59,7 @@ export async function createActivity(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const body = activityBody(formData);
+  const body = await activityBody(formData);
   const publishNow = formData.get("intent") === "publish";
   // Checked before creating, so a refused publish does not leave a stray draft behind.
   if (publishNow && body.start_at && new Date(body.start_at) <= new Date()) {
@@ -84,7 +89,7 @@ export async function updateActivity(
 ): Promise<FormState> {
   const result = await authedFetch(activityPath(id), {
     method: "PATCH",
-    body: activityBody(formData),
+    body: await activityBody(formData),
   });
   const state = finish(result);
   return result.ok ? { success: "Đã lưu." } : state;
@@ -147,11 +152,12 @@ export async function purgeActivity(
   return { success: "Đã xóa vĩnh viễn hoạt động." };
 }
 
-function shiftBody(formData: FormData) {
+async function shiftBody(formData: FormData) {
+  const timeZone = await formTimeZone(formData);
   return {
     title: textValue(formData, "shift_title"),
-    start_at: fromLocalInput(textValue(formData, "start_at")),
-    end_at: fromLocalInput(textValue(formData, "end_at")),
+    start_at: fromLocalInput(textValue(formData, "start_at"), timeZone),
+    end_at: fromLocalInput(textValue(formData, "end_at"), timeZone),
     capacity: numberOrNull(textValue(formData, "capacity")),
   };
 }
@@ -162,7 +168,7 @@ export async function createShift(
   formData: FormData,
 ): Promise<FormState> {
   const result = await authedFetch(`${activityPath(id)}/shifts`, {
-    body: shiftBody(formData),
+    body: await shiftBody(formData),
   });
   const state = finish(result);
   return result.ok ? { success: "Đã thêm ca." } : state;
@@ -176,7 +182,7 @@ export async function updateShift(
 ): Promise<FormState> {
   const result = await authedFetch<unknown>(
     `${activityPath(id)}/shifts/${encodeURIComponent(shiftId)}`,
-    { method: "PUT", body: shiftBody(formData) },
+    { method: "PUT", body: await shiftBody(formData) },
   );
   const state = finish(result);
   return result.ok ? { success: "Đã lưu ca." } : state;

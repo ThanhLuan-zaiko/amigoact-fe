@@ -5,7 +5,7 @@ import {
 } from "@/app/_actions/activities";
 import {
   type ActivityDetail,
-  formatDateTime,
+  formatTimeRange,
   type Shift,
   seatsText,
 } from "@/lib/activities";
@@ -70,9 +70,13 @@ function SeatControl({
 
 type RegisterControlsProps = {
   activity: ActivityDetail;
+  timeZone: string;
 };
 
-export default function RegisterControls({ activity }: RegisterControlsProps) {
+export default function RegisterControls({
+  activity,
+  timeZone,
+}: RegisterControlsProps) {
   if (activity.shifts.length === 0) {
     return <SeatControl activity={activity} shift={null} />;
   }
@@ -86,8 +90,7 @@ export default function RegisterControls({ activity }: RegisterControlsProps) {
               <p className="truncate text-sm font-semibold">{shift.title}</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1">
                 <IconStat icon={FiCalendar} label="Thời gian">
-                  {formatDateTime(shift.start_at)} –{" "}
-                  {formatDateTime(shift.end_at)}
+                  {formatTimeRange(shift.start_at, shift.end_at, timeZone)}
                 </IconStat>
                 <IconStat icon={FiUsers} label="Số chỗ">
                   {seatsText(shift.seats_taken, shift.capacity)}

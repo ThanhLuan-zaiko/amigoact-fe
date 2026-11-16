@@ -288,6 +288,8 @@ export function issuedMessage(count: number): string {
 }
 
 // A full date such as 10/11/2026, in Vietnam time. Paper keeps the four-digit year.
+// Not the viewer's zone on purpose: it is the date printed on the certificate,
+// the same in every zone and the same as on the backend's PDF.
 const certificateDate = new Intl.DateTimeFormat("vi-VN", {
   day: "2-digit",
   month: "2-digit",

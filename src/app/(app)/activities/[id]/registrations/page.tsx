@@ -14,6 +14,7 @@ import {
 import { getActivityRegistrations } from "@/lib/activityApi";
 import { requireUser } from "@/lib/auth";
 import { initials, pageOffset } from "@/lib/organizations";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import RegistrationBadge from "../../../../_components/activities/RegistrationBadge";
 import BackLink from "../../../../_components/BackLink";
 import EmptyState from "../../../../_components/EmptyState";
@@ -49,6 +50,7 @@ async function RegistrationList({
   const offset = pageOffset(query.page);
   await requireUser(`/activities/${id}/registrations`);
   const page = await getActivityRegistrations(id, status, offset);
+  const timeZone = await viewerTimeZone();
   if (!page) {
     return <p className={mutedText}>Chỉ ban quản trị mới xem được.</p>;
   }
@@ -102,7 +104,7 @@ async function RegistrationList({
                     {registration.full_name}
                   </p>
                   <IconStat icon={FiCalendar} label="Ngày đăng ký">
-                    {formatDateTime(registration.registered_at)}
+                    {formatDateTime(registration.registered_at, timeZone)}
                     {registration.shift_title
                       ? ` · ${registration.shift_title}`
                       : ""}

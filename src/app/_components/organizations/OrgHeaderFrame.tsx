@@ -34,8 +34,34 @@ export default function OrgHeaderFrame({
   }
   const back = keepAddress(pathname, found);
   const home = keepAddress(pathname, `/org/${slug}`);
+  const row = (
+    <ShortRow back={back} home={home} name={name} logoUrl={logoUrl} />
+  );
+  // The short row stays under the app header while the post scrolls. Its
+  // wrapper reaches up into the page padding and paints the page color, so
+  // nothing shows between the two when it sticks.
   return (
-    <section className={`${panel} flex items-center gap-3 p-2 sm:p-3`}>
+    <div className="sticky top-16 z-[5] -mt-4 bg-white pt-4 sm:-mt-6 sm:pt-6 dark:bg-slate-950 print:static">
+      {row}
+    </div>
+  );
+}
+
+function ShortRow({
+  back,
+  home,
+  name,
+  logoUrl,
+}: {
+  back: string;
+  home: string;
+  name: string;
+  logoUrl: string | null;
+}) {
+  return (
+    <section
+      className={`${panel} flex items-center gap-3 bg-white p-2 sm:p-3 dark:bg-slate-950`}
+    >
       <BackLink href={back} />
       <Link
         href={home}

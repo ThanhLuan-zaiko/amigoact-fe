@@ -17,6 +17,7 @@ import { panel, tagChip } from "./ui";
 
 type OrgHeaderProps = {
   organization: OrganizationDetail;
+  timeZone: string;
 };
 
 // Only "verified" carries the semantic green. The other statuses stay neutral.
@@ -27,7 +28,7 @@ const LEGAL_BADGE: Record<LegalStatus, string> = {
   none: tagChip,
 };
 
-export default function OrgHeader({ organization }: OrgHeaderProps) {
+export default function OrgHeader({ organization, timeZone }: OrgHeaderProps) {
   const { viewer } = organization;
 
   return (
@@ -87,7 +88,11 @@ export default function OrgHeader({ organization }: OrgHeaderProps) {
           </div>
         </div>
 
-        <MembershipAction key={viewer.status} organization={organization} />
+        <MembershipAction
+          key={viewer.status}
+          organization={organization}
+          timeZone={timeZone}
+        />
       </div>
 
       <OrgNav slug={organization.slug} viewer={viewer} />

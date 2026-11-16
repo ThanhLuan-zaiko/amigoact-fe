@@ -7,6 +7,7 @@ import { getOrganization } from "@/lib/organizationApi";
 import { activityOptions } from "@/lib/postActivity";
 import { postKinds, postPath } from "@/lib/posts";
 import { hasPermission } from "@/lib/roles";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import PostForm from "../../../../../_components/posts/PostForm";
 import { mutedText } from "../../../../../_components/ui";
 
@@ -37,7 +38,7 @@ async function NewPostContent({
   return (
     <PostForm
       orgSlug={slug}
-      activities={activityOptions(activities)}
+      activities={activityOptions(activities, null, await viewerTimeZone())}
       action={createPost.bind(null, slug)}
       kinds={postKinds(hasPermission(organization.viewer, "posts.announce"))}
       organizationName={organization.name}

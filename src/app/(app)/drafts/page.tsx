@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { FiArrowLeft, FiEdit3 } from "react-icons/fi";
 import { requireUser } from "@/lib/auth";
 import { getMyDrafts } from "@/lib/postApi";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import DraftList from "../../_components/DraftList";
 import EmptyState from "../../_components/EmptyState";
 import { mutedText, neutralButton, primaryButton } from "../../_components/ui";
@@ -21,7 +22,13 @@ async function DraftsContent() {
       />
     );
   }
-  return <DraftList posts={drafts} back="/drafts" />;
+  return (
+    <DraftList
+      posts={drafts}
+      back="/drafts"
+      timeZone={await viewerTimeZone()}
+    />
+  );
 }
 
 export default function DraftsPage() {

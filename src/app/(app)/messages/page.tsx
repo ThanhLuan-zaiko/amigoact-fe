@@ -3,7 +3,9 @@ import { Suspense } from "react";
 import { requireUser } from "@/lib/auth";
 import { isRoomId } from "@/lib/chat";
 import { getInbox, getRoomMessages } from "@/lib/chatApi";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import Messenger from "../../_components/chat/Messenger";
+import { TimeZoneProvider } from "../../_components/TimeZoneContext";
 import { mutedText } from "../../_components/ui";
 
 export const metadata: Metadata = { title: "Tin nhắn | AmigoACT" };
@@ -26,12 +28,14 @@ async function MessengerPage({ searchParams }: PageProps<"/messages">) {
   const page = wanted ? await getRoomMessages(wanted.room_id) : null;
 
   return (
-    <Messenger
-      viewerId={user.id}
-      rooms={rooms}
-      initialRoomId={wanted?.room_id ?? null}
-      initialPage={page}
-    />
+    <TimeZoneProvider timeZone={await viewerTimeZone()}>
+      <Messenger
+        viewerId={user.id}
+        rooms={rooms}
+        initialRoomId={wanted?.room_id ?? null}
+        initialPage={page}
+      />
+    </TimeZoneProvider>
   );
 }
 

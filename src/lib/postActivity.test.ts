@@ -5,6 +5,9 @@ import {
   canSignUp,
   isFull,
   linkableActivities,
+  pickPostSideTab,
+  postSideTabs,
+  seatWidthClass,
 } from "./postActivity";
 
 function activity(fields: Partial<ActivitySummary>): ActivitySummary {
@@ -90,4 +93,42 @@ test("isFull only with a limit", () => {
   expect(isFull(activity({ capacity: 2, seats_taken: 2 }))).toBe(true);
   expect(isFull(activity({ capacity: 2, seats_taken: 1 }))).toBe(false);
   expect(isFull(activity({ capacity: null, seats_taken: 99 }))).toBe(false);
+});
+
+describe("post side tabs", () => {
+  const open = activity({ start_at: "2026-12-01T00:30:00Z" });
+  const closed = activity({ start_at: "2026-11-01T00:30:00Z" });
+
+  test("an activity adds its own tab first", () => {
+    expect(postSideTabs(open)).toEqual(["activity", "comments", "posts"]);
+    expect(postSideTabs(null)).toEqual(["comments", "posts"]);
+  });
+
+  test("the address wins when the post has that tab", () => {
+    expect(pickPostSideTab("posts", open, NOW)).toBe("posts");
+    expect(pickPostSideTab("comments", open, NOW)).toBe("comments");
+    expect(pickPostSideTab("activity", null, NOW)).toBe("comments");
+  });
+
+  test("an open activity leads, anything else opens the comments", () => {
+    expect(pickPostSideTab(null, open, NOW)).toBe("activity");
+    expect(pickPostSideTab("junk", closed, NOW)).toBe("comments");
+    expect(pickPostSideTab(undefined, null, NOW)).toBe("comments");
+  });
+});
+
+describe("seatWidthClass", () => {
+  test("no limit draws no bar", () => {
+    expect(seatWidthClass(3, null)).toBeNull();
+    expect(seatWidthClass(3, 0)).toBeNull();
+  });
+
+  test("steps in tenths, keeping one seat visible and full only when full", () => {
+    expect(seatWidthClass(0, 20)).toBe("w-0");
+    expect(seatWidthClass(1, 100)).toBe("w-[10%]");
+    expect(seatWidthClass(5, 20)).toBe("w-[30%]");
+    expect(seatWidthClass(99, 100)).toBe("w-[90%]");
+    expect(seatWidthClass(20, 20)).toBe("w-full");
+    expect(seatWidthClass(25, 20)).toBe("w-full");
+  });
 });

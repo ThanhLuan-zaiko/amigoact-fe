@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getOrganization } from "@/lib/organizationApi";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import OrgHeader from "../../../_components/OrgHeader";
 import OrgHeaderFrame from "../../../_components/organizations/OrgHeaderFrame";
 import { mutedText } from "../../../_components/ui";
@@ -11,7 +12,10 @@ async function OrganizationHeader({
   params: LayoutProps<"/org/[slug]">["params"];
 }) {
   const { slug } = await params;
-  const organization = await getOrganization(slug);
+  const [organization, timeZone] = await Promise.all([
+    getOrganization(slug),
+    viewerTimeZone(),
+  ]);
   if (!organization) {
     notFound();
   }
@@ -21,7 +25,7 @@ async function OrganizationHeader({
       name={organization.name}
       logoUrl={organization.logo_url}
     >
-      <OrgHeader organization={organization} />
+      <OrgHeader organization={organization} timeZone={timeZone} />
     </OrgHeaderFrame>
   );
 }

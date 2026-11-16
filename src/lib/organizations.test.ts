@@ -23,8 +23,18 @@ describe("initials", () => {
 });
 
 describe("formatDate", () => {
-  test("uses the Vietnam time zone", () => {
-    expect(formatDate("2026-01-31T18:00:00Z")).toContain("1/2");
+  test("writes the day on the viewer's clock", () => {
+    expect(formatDate("2026-01-31T18:00:00Z", "Asia/Ho_Chi_Minh")).toBe(
+      "1/2/26",
+    );
+    expect(formatDate("2026-01-31T18:00:00Z", "America/New_York")).toBe(
+      "31/1/26",
+    );
+  });
+
+  test("a plain calendar date is the same day in every zone", () => {
+    expect(formatDate("2026-11-20", "America/New_York")).toBe("20/11/26");
+    expect(formatDate("2026-11-20", "Asia/Ho_Chi_Minh")).toBe("20/11/26");
   });
 
   test("returns an empty string without a date", () => {

@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import type { FormState } from "@/lib/account";
 import { authedFetch } from "@/lib/auth";
 import { failureState, textValue } from "@/lib/forms";
-import { postPath, validateComment } from "@/lib/posts";
+import { getReplies } from "@/lib/postApi";
+import { type CommentApi, postPath, validateComment } from "@/lib/posts";
 
 function refresh(slug: string, postId: string): void {
   revalidatePath(postPath(slug, postId));
@@ -41,15 +42,44 @@ export async function addComment(
   if (typeof body !== "string") {
     return body;
   }
+  // Set when answering a comment; the backend files it under the thread's root.
+  const parentId = textValue(formData, "parent_id");
   const result = await authedFetch(
     `/posts/${encodeURIComponent(postId)}/comments`,
-    { body: { body } },
+    { body: parentId ? { body, parent_id: parentId } : { body } },
   );
   if (!result.ok) {
     return commentFailure(result.code, result.issues);
   }
   refresh(slug, postId);
-  return { success: "Đã gửi bình luận." };
+  return { success: parentId ? "Đã gửi trả lời." : "Đã gửi bình luận." };
+}
+
+// Likes or takes back a like. Doing it twice changes nothing on the backend.
+export async function setCommentLike(
+  slug: string,
+  postId: string,
+  commentId: string,
+  liked: boolean,
+): Promise<FormState> {
+  const result = await authedFetch(
+    `/comments/${encodeURIComponent(commentId)}/like`,
+    { method: liked ? "PUT" : "DELETE" },
+  );
+  if (!result.ok) {
+    return failureState(result.code, result.issues);
+  }
+  refresh(slug, postId);
+  return {};
+}
+
+// The replies of one comment, read when someone opens its thread. Null when the
+// backend cannot be reached or the post is no longer visible.
+export async function loadReplies(
+  commentId: string,
+): Promise<CommentApi[] | null> {
+  const page = await getReplies(commentId, null);
+  return page ? page.items : null;
 }
 
 // The backend allows an edit only for the author, within 15 minutes of writing.

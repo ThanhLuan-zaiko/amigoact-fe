@@ -8,6 +8,7 @@ import { getOrganization } from "@/lib/organizationApi";
 import { activityOptions } from "@/lib/postActivity";
 import { getPostForEdit } from "@/lib/postApi";
 import { isPostId, postPath } from "@/lib/posts";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import PostForm from "../../../../../../_components/posts/PostForm";
 import { mutedText } from "../../../../../../_components/ui";
 
@@ -37,7 +38,11 @@ async function EditPostContent({ params }: { params: Params }) {
   return (
     <PostForm
       orgSlug={slug}
-      activities={activityOptions(activities, post.activity ?? null)}
+      activities={activityOptions(
+        activities,
+        post.activity ?? null,
+        await viewerTimeZone(),
+      )}
       action={updatePost.bind(null, slug, postId, isDraft)}
       kinds={[post.kind]}
       organizationName={organization.name}

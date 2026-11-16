@@ -10,7 +10,7 @@ Các trang nằm trong `src/app/(app)/org/[slug]/posts/`.
 | ---- | ---- | ---- |
 | `/org/[slug]/posts` | Bảng tin của tổ chức, lọc Tất cả, Thông báo, Thảo luận, Đã ghim (`?filter=`), trang tiếp bằng `?before=`. Từ xl hiện hai cột | Mọi người, theo quyền xem |
 | `/org/[slug]/posts/new` | Tạo bài, thay cho `/compose` cũ | Thành viên đang hoạt động |
-| `/org/[slug]/posts/[postId]` | Chi tiết bài, nút sửa, ghim, xóa và bình luận | Theo quyền xem |
+| `/org/[slug]/posts/[postId]` | Chi tiết bài với nút sửa, ghim, xóa. Bên cạnh (từ xl, dính khi cuộn; điện thoại thì nằm dưới bài) là khung tab, xem "Trang chi tiết bài" | Theo quyền xem |
 | `/org/[slug]/posts/[postId]/edit` | Sửa bài hoặc bản nháp | Tác giả |
 | `/org/[slug]/posts/drafts` | Bản nháp của tôi trong tổ chức này | Đã đăng nhập |
 | `/org/[slug]/posts/trash` | Thùng rác bài viết | Ban quản trị |
@@ -54,10 +54,13 @@ Các trang nằm trong `src/app/(app)/org/[slug]/posts/`.
 
 ## Bình luận
 
-- `CommentSection` đọc bình luận trên server. `CommentItem` hiện từng bình luận với nút sửa, xóa, khôi phục theo cờ `can_edit`, `can_delete`, `can_restore` của backend.
+- Bố cục giống mạng xã hội (lấy TikTok làm mẫu). `CommentSection` đọc bình luận gốc trên server, `CommentThread` hiện danh sách và ô nhập ở cuối khung (dính đáy khi cuộn, trên điện thoại nằm trên thanh dưới).
+- Mỗi bình luận (`CommentRow`): ảnh đại diện tròn hoặc chữ viết tắt, tên nhỏ màu xám, nội dung, rồi hàng nhỏ gồm thời gian, "Đã sửa", "Trả lời", "Sửa", "Xóa", "Khôi phục" theo cờ `can_edit`, `can_delete`, `can_restore`. Bên phải là nút tim với số lượt thích (`CommentLike`): đổi ngay khi bấm, lỗi thì trả lại; đã thích thì tim tô đặc màu teal (`fill-current`), không dùng đỏ vì đỏ chỉ dành cho lỗi. Khách thấy tim nhưng không bấm được.
+- Trả lời một cấp: "Trả lời" mở ô nhập với dòng "Đang trả lời <tên>" và nút ×. Trả lời một câu trả lời thì vào cùng luồng. Câu trả lời gập dưới bình luận gốc với nút "Xem n câu trả lời" (`CommentReplies`, đọc bằng Server Action `loadReplies`), "Ẩn" để gập lại. Gửi trả lời xong thì luồng đó tự mở và đọc lại.
+- Thời gian tương đối như mạng xã hội ("Vừa xong", "5 phút", "2 giờ", "3 ngày", rồi ngày) bằng `relativeTime` trong `src/lib/relativeTime.ts`. Tuổi tính từ thời điểm UTC nên đúng ở mọi múi giờ; ngày được viết theo múi giờ của máy người xem, vì `CommentTime` tính trong trình duyệt sau khi trang tải. Rê chuột lên thời gian thấy ngày giờ đầy đủ kèm tên múi giờ (`absoluteTime`). Số lượt thích rút gọn bằng `compactCount` (1,2K, 1,5Tr).
 - Sửa bình luận ngay tại chỗ bằng `CommentForm`. Backend chỉ cho sửa trong 15 phút sau khi viết.
 - Ô nhập tên là `comment_body`, 1 đến 1000 ký tự (`validateComment`).
-- Server Action nằm trong `src/app/_actions/comments.ts`.
+- Server Action nằm trong `src/app/_actions/comments.ts`: `addComment` (có `parent_id` khi trả lời), `setCommentLike`, `loadReplies`, `editComment`, `deleteComment`, `restoreComment`.
 
 ## Kiểm tra dữ liệu
 
@@ -66,6 +69,8 @@ Các trang nằm trong `src/app/(app)/org/[slug]/posts/`.
 
 ## Trang chủ
 
+- Trang chủ có hai tab: "Tất cả" và "Tổ chức" (`?tab=orgs`, danh bạ tổ chức). "Tất cả" chỉ hiện bài viết; hoạt động hiện bên trong bài gắn với nó (xem "Gắn bài với hoạt động"). `?tab=activities` (tìm trên header) hiện danh sách hoạt động thay bảng tin, xem `docs/activities.md`. Trang chủ là nơi khám phá, nên không còn trang `/explore` riêng.
+- Rail phải (từ lg) gồm "Tổ chức gợi ý" và "Thẻ phổ biến". Hoạt động hiện bên trong bài viết, nên rail không có mục hoạt động.
 - `/` đọc `GET /feed/all` (tab "Tất cả"): bài công khai của mọi tổ chức, cộng bài dành cho thành viên của các tổ chức bạn tham gia. Khách chỉ thấy bài công khai.
 - Chip "Tổ chức của tôi" (`?scope=mine`, chỉ hiện khi đã đăng nhập) đổi sang `GET /feed`, chỉ còn bài của các tổ chức bạn tham gia. Địa chỉ cũ `?tab=mine` vẫn được hiểu như vậy, còn `?tab=public` được hiểu như tab "Tất cả".
 - Bài trên trang chủ chỉ để đọc: không hiện nút sửa, ghim, ẩn, xóa (`FeedList` truyền `manageable={false}` cho `PostCard`). Các nút này chỉ có ở trang bài của tổ chức (`/org/[slug]/posts` và trang chi tiết bài).
@@ -82,9 +87,16 @@ Các trang nằm trong `src/app/(app)/org/[slug]/posts/`.
 
 - Form bài có ô "Hoạt động liên quan" (`SelectMenu`, trường `activity_id`). Danh sách lấy từ `getLinkableActivities` trong `src/lib/activityApi.ts`: hoạt động đã đăng hoặc đã kết thúc của tổ chức, mới nhất trước. Tổ chức chưa có hoạt động nào như vậy thì ô này ẩn đi.
 - Khi sửa bài, hoạt động đang gắn luôn có trong danh sách, kể cả khi đã bị hủy (`activityOptions` trong `src/lib/postActivity.ts`). Chọn "Không gắn hoạt động" thì gửi `null` và bỏ gắn.
-- Bài có hoạt động hiện `PostActivityRow` ở cuối bài: tên hoạt động (link tới `/activities/[id]`), giờ, địa điểm, số chỗ. Đây là một phần của bài, ngăn bằng đường kẻ, không phải thẻ lồng trong thẻ.
+- Trên bảng tin và bản nháp, bài có hoạt động hiện `PostActivityRow` ở cuối bài: tên hoạt động (link tới `/activities/[id]`), giờ, địa điểm, số chỗ. Đây là một phần của bài, ngăn bằng đường kẻ, không phải thẻ lồng trong thẻ.
 - Nút "Đăng ký" (hoặc "Vào hàng chờ" khi hết chỗ) chỉ hiện khi hoạt động đã đăng và chưa qua hạn đăng ký (`canSignUp`). Nút dẫn tới trang hoạt động, nơi kiểm tra mọi quy tắc đăng ký. Hết hạn thì hiện "Đã đóng đăng ký", hoạt động đã kết thúc hoặc đã hủy thì hiện trạng thái.
 - Mã lỗi `activity_not_linkable` hiện màu đỏ dưới ô chọn hoạt động.
+
+## Trang chi tiết bài
+
+- Bài đã đăng có khung tab bên cạnh (`PostSideTabs`): "Hoạt động" (chỉ khi bài gắn hoạt động), "Bình luận (n)" và "Bài viết khác". Tab nằm trên địa chỉ (`?tab=activity|comments|posts`), nên gửi link là mở đúng tab. Không có `?tab=` thì mở "Hoạt động" khi còn đăng ký được, còn lại mở "Bình luận" (`pickPostSideTab` trong `src/lib/postActivity.ts`).
+- "Hoạt động" (`PostActivityPanel`): ảnh của hoạt động (bỏ qua nếu bài đã có đúng ảnh đó), tên, giờ, số giờ tình nguyện, địa điểm hoặc Online, số chỗ với thanh đã giữ (`seatWidthClass`, các bậc 10%), hạn đăng ký, nút "Đăng ký"/"Vào hàng chờ" hoặc nhãn trạng thái, và link "Xem chi tiết hoạt động". Khi có tab này, bài không hiện `PostActivityRow` nữa.
+- "Bài viết khác" (`OrgOtherPosts`): tối đa 5 bài mới nhất khác của tổ chức, mỗi bài có ảnh đầu, ngày đăng, số bình luận, cuối có "Xem tất cả bài viết".
+- Hàng ngắn của tổ chức (nút quay lại, logo, tên) dính dưới header khi cuộn (`OrgHeaderFrame`), và khung tab dính ngay dưới nó.
 
 ## Định dạng nội dung
 

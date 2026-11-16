@@ -6,7 +6,13 @@ import IconStat from "../IconStat";
 import { panel, sectionTitle } from "../ui";
 
 // The latest rows of the ledger, newest first. Not filtered by the range above.
-export default function HourEntries({ entries }: { entries: HourEntry[] }) {
+export default function HourEntries({
+  entries,
+  timeZone,
+}: {
+  entries: HourEntry[];
+  timeZone: string;
+}) {
   return (
     <section className={`${panel} flex flex-col gap-1 px-4 pt-4`}>
       <h2 className={`${sectionTitle} flex items-center gap-2`}>
@@ -29,7 +35,7 @@ export default function HourEntries({ entries }: { entries: HourEntry[] }) {
               )}
               <div className="flex flex-wrap gap-x-4 gap-y-1">
                 <IconStat icon={FiCalendar} label="Ngày ghi">
-                  {formatDate(entry.recorded_at)}
+                  {formatDate(entry.recorded_at, timeZone)}
                 </IconStat>
                 {entry.source === "adjustment" ? (
                   <IconStat icon={FiEdit2} label="Điều chỉnh">

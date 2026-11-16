@@ -140,8 +140,20 @@ describe("timeAgo", () => {
     expect(timeAgo("2026-11-12T09:55:00Z", now)).toBe("5 phút trước");
     expect(timeAgo("2026-11-12T07:00:00Z", now)).toBe("3 giờ trước");
     expect(timeAgo("2026-11-10T10:00:00Z", now)).toBe("2 ngày trước");
-    expect(timeAgo("2026-10-01T10:00:00Z", now)).toBe("01/10/2026");
+    expect(timeAgo("2026-10-01T10:00:00Z", now, "Asia/Ho_Chi_Minh")).toBe(
+      "01/10/2026",
+    );
     expect(timeAgo("bad", now)).toBe("");
+  });
+
+  test("an older date is the viewer's day", () => {
+    // 20:00 UTC on 1 Oct is already 2 Oct in Vietnam, still 1 Oct in New York.
+    expect(timeAgo("2026-10-01T20:00:00Z", now, "Asia/Ho_Chi_Minh")).toBe(
+      "02/10/2026",
+    );
+    expect(timeAgo("2026-10-01T20:00:00Z", now, "America/New_York")).toBe(
+      "01/10/2026",
+    );
   });
 });
 

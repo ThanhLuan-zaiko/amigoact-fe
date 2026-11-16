@@ -5,6 +5,7 @@ import { FiEdit3 } from "react-icons/fi";
 import { requireUser } from "@/lib/auth";
 import { getOrgDrafts } from "@/lib/postApi";
 import { postPath } from "@/lib/posts";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import DraftList from "../../../../../_components/DraftList";
 import EmptyState from "../../../../../_components/EmptyState";
 import { mutedText, primaryButton } from "../../../../../_components/ui";
@@ -41,7 +42,11 @@ async function DraftsContent({ params }: { params: Params }) {
           description="Bài bạn lưu nháp trong tổ chức này sẽ hiện ở đây."
         />
       ) : (
-        <DraftList posts={page.posts} back={`${base}/drafts`} />
+        <DraftList
+          posts={page.posts}
+          back={`${base}/drafts`}
+          timeZone={await viewerTimeZone()}
+        />
       )}
     </div>
   );

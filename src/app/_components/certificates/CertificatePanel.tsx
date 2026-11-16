@@ -21,6 +21,7 @@ import RevokeButton from "./RevokeButton";
 type CertificatePanelProps = {
   activityId: string;
   organizationSlug: string;
+  timeZone: string;
 };
 
 // For managers of a completed activity: issue certificates to everyone who attended,
@@ -28,6 +29,7 @@ type CertificatePanelProps = {
 export default async function CertificatePanel({
   activityId,
   organizationSlug,
+  timeZone,
 }: CertificatePanelProps) {
   const [data, templates] = await Promise.all([
     getActivityCertificates(activityId),
@@ -90,7 +92,7 @@ export default async function CertificatePanel({
                     {hoursText(item.hours)}
                   </IconStat>
                   <IconStat icon={FiCalendar} label="Ngày cấp">
-                    {formatDate(item.issued_at)}
+                    {formatDate(item.issued_at, timeZone)}
                   </IconStat>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FiBookmark } from "react-icons/fi";
 import { loadPins } from "@/app/_actions/chat";
 import { attempt, type ChatMessage, messageDay, messageTime } from "@/lib/chat";
+import { useTimeZone } from "../TimeZoneContext";
 import { mutedText } from "../ui";
 
 type PinsPanelProps = {
@@ -16,6 +17,7 @@ type PinsState =
   | { status: "failed"; error: string };
 
 export default function PinsPanel({ roomId }: PinsPanelProps) {
+  const timeZone = useTimeZone();
   const [state, setState] = useState<PinsState>({ status: "loading" });
 
   useEffect(() => {
@@ -56,8 +58,8 @@ export default function PinsPanel({ roomId }: PinsPanelProps) {
             <li key={message.id} className="flex flex-col gap-0.5 py-2">
               <p className={`${mutedText} text-xs`}>
                 <span className="font-semibold">{message.author_name}</span> ·{" "}
-                {messageDay(message.created_at)}{" "}
-                {messageTime(message.created_at)}
+                {messageDay(message.created_at, timeZone)}{" "}
+                {messageTime(message.created_at, timeZone)}
               </p>
               <p className="line-clamp-3 text-sm break-words whitespace-pre-wrap text-slate-800 dark:text-slate-200">
                 {message.body || "Ảnh hoặc video"}

@@ -4,6 +4,9 @@ import { LEFT, OBJECT_POSITION, TOP } from "./focusClasses";
 // The backend guesses one on upload and the uploader can move it.
 export type Focus = { x: number; y: number };
 
+// A picture on a list card, borrowed from a public post or the organization cover.
+export type CardPicture = { url: string; focus?: Focus | null };
+
 // Upper middle, where faces usually are, for pictures without a focal point.
 export const DEFAULT_FOCUS: Focus = { x: 0.5, y: 0.3 };
 

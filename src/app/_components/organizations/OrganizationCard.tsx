@@ -18,10 +18,12 @@ type OrganizationCardProps = {
 };
 
 // The cover is a banner above the text. Without one, the logo or the initials lead.
+// On the public directory a strip of pictures from the newest public posts follows.
 export default function OrganizationCard({
   organization,
   badge,
 }: OrganizationCardProps) {
+  const postPictures = organization.post_pictures ?? [];
   return (
     <Link
       href={`/org/${organization.slug}`}
@@ -32,9 +34,9 @@ export default function OrganizationCard({
         <img
           src={sizedSrc(organization.cover_url, 640)}
           srcSet={srcSetFor(organization.cover_url)}
-          sizes="(min-width: 1280px) 440px, (min-width: 640px) 50vw, 100vw"
+          sizes="(min-width: 768px) 720px, 100vw"
           alt=""
-          className={`h-20 w-full object-cover sm:h-24 ${focusClass(organization.cover_focus)}`}
+          className={`h-24 w-full object-cover sm:h-36 ${focusClass(organization.cover_focus)}`}
         />
       ) : null}
       <div className="flex min-w-0 gap-3 p-4">
@@ -70,6 +72,24 @@ export default function OrganizationCard({
           </div>
         </div>
       </div>
+      {postPictures.length > 0 ? (
+        <ul
+          aria-label="Ảnh từ bài viết"
+          className="grid grid-cols-4 gap-1 px-4 pb-4"
+        >
+          {postPictures.map((picture) => (
+            <li key={picture.url}>
+              {/* biome-ignore lint/performance/noImgElement: the picture is a same-origin proxy path. */}
+              <img
+                src={sizedSrc(picture.url, 320)}
+                alt=""
+                loading="lazy"
+                className={`aspect-square w-full rounded-md object-cover ${focusClass(picture.focus)}`}
+              />
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </Link>
   );
 }

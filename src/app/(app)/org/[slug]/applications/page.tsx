@@ -9,6 +9,7 @@ import { requireUser } from "@/lib/auth";
 import { getApplications, getOrganization } from "@/lib/organizationApi";
 import { formatDate, initials, pageOffset } from "@/lib/organizations";
 import { managersTopic } from "@/lib/realtime";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
@@ -35,6 +36,7 @@ async function ApplicationList({
   const { slug } = await params;
   const offset = pageOffset((await searchParams).page);
   await requireUser(`/org/${slug}/applications`);
+  const timeZone = await viewerTimeZone();
   const [organization, page] = await Promise.all([
     getOrganization(slug),
     getApplications(slug, offset),
@@ -82,7 +84,7 @@ async function ApplicationList({
                 {application.full_name}
               </p>
               <IconStat icon={FiCalendar} label="Ngày gửi">
-                {formatDate(application.submitted_at)}
+                {formatDate(application.submitted_at, timeZone)}
               </IconStat>
               {application.message ? (
                 <p className="mt-1 text-sm break-words whitespace-pre-line text-slate-700 dark:text-slate-300">

@@ -16,7 +16,7 @@ import {
   updateShift,
 } from "@/app/_actions/activities";
 import {
-  formatDateTime,
+  formatTimeRange,
   type Shift,
   seatsText,
   toLocalInput,
@@ -25,7 +25,9 @@ import { FormMessage, SubmitButton, TextField } from "../account/FormParts";
 import { useAccountForm } from "../account/useAccountForm";
 import IconStat from "../IconStat";
 import ActionButton from "../organizations/ActionButton";
+import { useTimeZone } from "../TimeZoneContext";
 import { iconButton, panel, sectionTitle } from "../ui";
+import ZoneNote from "./ZoneNote";
 
 function ShiftForm({
   activityId,
@@ -42,9 +44,11 @@ function ShiftForm({
       : createShift.bind(null, activityId),
   );
   const errors = state.fieldErrors;
+  const timeZone = useTimeZone();
   return (
     <form {...formProps} className="flex flex-col gap-3">
       <FormMessage state={state} />
+      <ZoneNote />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <TextField
           label="Tên ca"
@@ -66,7 +70,7 @@ function ShiftForm({
           label="Bắt đầu"
           name="start_at"
           type="datetime-local"
-          defaultValue={toLocalInput(shift?.start_at ?? null)}
+          defaultValue={toLocalInput(shift?.start_at ?? null, timeZone)}
           errors={errors}
           required
         />
@@ -74,7 +78,7 @@ function ShiftForm({
           label="Kết thúc"
           name="end_at"
           type="datetime-local"
-          defaultValue={toLocalInput(shift?.end_at ?? null)}
+          defaultValue={toLocalInput(shift?.end_at ?? null, timeZone)}
           errors={errors}
           required
         />
@@ -101,6 +105,7 @@ function ShiftForm({
 
 function ShiftRow({ activityId, shift }: { activityId: string; shift: Shift }) {
   const [editing, setEditing] = useState(false);
+  const timeZone = useTimeZone();
   if (editing) {
     return (
       <li className="py-3">
@@ -118,7 +123,7 @@ function ShiftRow({ activityId, shift }: { activityId: string; shift: Shift }) {
         <p className="truncate text-sm font-semibold">{shift.title}</p>
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           <IconStat icon={FiCalendar} label="Thời gian">
-            {formatDateTime(shift.start_at)} – {formatDateTime(shift.end_at)}
+            {formatTimeRange(shift.start_at, shift.end_at, timeZone)}
           </IconStat>
           <IconStat icon={FiUsers} label="Số chỗ">
             {seatsText(shift.seats_taken, shift.capacity)}

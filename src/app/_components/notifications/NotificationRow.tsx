@@ -16,6 +16,7 @@ import {
   type NotificationItem,
   timeAgo,
 } from "@/lib/notifications";
+import { useTimeZone } from "../TimeZoneContext";
 
 function iconFor(type: string): IconType {
   if (type === "membership_requested") {
@@ -50,6 +51,7 @@ export default function NotificationRow({
   item: NotificationItem;
   onChoose: (item: NotificationItem) => void;
 }) {
+  const timeZone = useTimeZone();
   const view = describeNotification(item);
   const Icon = iconFor(item.type);
   return (
@@ -81,7 +83,7 @@ export default function NotificationRow({
             </span>
           ) : null}
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            {timeAgo(item.created_at)}
+            {timeAgo(item.created_at, undefined, timeZone)}
           </span>
         </span>
         {item.read ? null : (

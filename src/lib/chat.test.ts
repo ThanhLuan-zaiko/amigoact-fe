@@ -9,7 +9,9 @@ import {
   continuesGroup,
   isRoomId,
   MESSAGE_MAX,
+  messageDay,
   messageRights,
+  messageTime,
   messengerPath,
   reconnectDelay,
   textLength,
@@ -148,6 +150,22 @@ describe("small helpers", () => {
       }),
     ).toBe(false);
     expect(continuesGroup(undefined, first)).toBe(false);
+  });
+
+  test("messages are timed and grouped by the viewer's day", () => {
+    // 16:58 and 17:01 UTC: the same day in New York, but 23:58 and 00:01 in Vietnam.
+    const before = message({ id: "y1", created_at: "2026-11-10T16:58:00Z" });
+    const after = message({ id: "y2", created_at: "2026-11-10T17:01:00Z" });
+    expect(messageTime(before.created_at, "Asia/Ho_Chi_Minh")).toBe("23:58");
+    expect(messageTime(before.created_at, "America/New_York")).toBe("11:58");
+    expect(continuesGroup(before, after, "America/New_York")).toBe(true);
+    expect(continuesGroup(before, after, "Asia/Ho_Chi_Minh")).toBe(false);
+    expect(messageDay(after.created_at, "Asia/Ho_Chi_Minh")).toContain(
+      "11/11/2026",
+    );
+    expect(messageDay(after.created_at, "America/New_York")).toContain(
+      "10/11/2026",
+    );
   });
 });
 

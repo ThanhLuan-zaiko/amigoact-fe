@@ -92,6 +92,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   comment_forbidden: "Bạn không có quyền với bình luận này.",
   comment_not_found: "Không tìm thấy bình luận này.",
   comment_edit_expired: "Chỉ sửa được bình luận trong 15 phút sau khi viết.",
+  comment_parent_invalid: "Bình luận bạn trả lời không còn nữa.",
   comment_not_deleted: "Bình luận này chưa bị xóa.",
   role_not_found: "Không tìm thấy vai trò này.",
   role_hierarchy: "Bạn chỉ thay đổi được vai trò và người ở bậc thấp hơn mình.",

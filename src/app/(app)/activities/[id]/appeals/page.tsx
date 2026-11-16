@@ -7,6 +7,7 @@ import { APPEAL_STATUS_LABELS } from "@/lib/attendance";
 import { getAppeals } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/organizations";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import BackLink from "../../../../_components/BackLink";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
@@ -28,6 +29,7 @@ async function AppealsContent({
 }) {
   const { id } = await params;
   await requireUser(`/activities/${id}/appeals`);
+  const timeZone = await viewerTimeZone();
   const [activity, appeals] = await Promise.all([
     getActivity(id),
     getAppeals(id),
@@ -74,7 +76,7 @@ async function AppealsContent({
                       {appeal.full_name}
                     </p>
                     <IconStat icon={FiCalendar} label="Ngày gửi">
-                      {formatDate(appeal.created_at)}
+                      {formatDate(appeal.created_at, timeZone)}
                     </IconStat>
                     <span className={tagChip}>
                       {APPEAL_STATUS_LABELS[appeal.status]}

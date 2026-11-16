@@ -21,8 +21,10 @@ import { primaryButton, tagChip } from "../ui";
 // card. People sign up on the activity page, which checks every rule.
 export default function PostActivityRow({
   activity,
+  timeZone,
 }: {
   activity: ActivitySummary;
+  timeZone: string;
 }) {
   const href = `/activities/${activity.id}`;
   const place = [activity.location, activity.city].filter(Boolean).join(", ");
@@ -48,7 +50,7 @@ export default function PostActivityRow({
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           {activity.start_at ? (
             <IconStat icon={FiCalendar} label="Thời gian">
-              {formatDateTime(activity.start_at)}
+              {formatDateTime(activity.start_at, timeZone)}
             </IconStat>
           ) : null}
           {activity.is_remote ? (

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { FiEdit3, FiFileText, FiTrash2 } from "react-icons/fi";
 import { getOrganization } from "@/lib/organizationApi";
@@ -7,6 +8,7 @@ import { getOrgPosts } from "@/lib/postApi";
 import { feedFilter, postPath } from "@/lib/posts";
 import { hasPermission } from "@/lib/roles";
 import { listQuery, readTag, tagLabel } from "@/lib/tagLinks";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import EmptyState from "../../../../_components/EmptyState";
 import PostCard from "../../../../_components/PostCard";
 import FeedFilters, {
@@ -31,9 +33,13 @@ async function OrganizationFeed({
 }: PageProps<"/org/[slug]/posts">) {
   const { slug } = await params;
   const query = await searchParams;
+  // Posts show whether their activity still takes sign-ups, which depends on
+  // the current time, so this list renders per request (see canSignUp).
+  await connection();
   const filter = feedFilter(query.filter);
   const before = firstValue(query.before);
   const tag = readTag(query.tag);
+  const timeZone = await viewerTimeZone();
   const [organization, page] = await Promise.all([
     getOrganization(slug),
     getOrgPosts(slug, filter, before, 20, tag),
@@ -103,7 +109,7 @@ async function OrganizationFeed({
       ) : (
         <div className="grid grid-cols-1 items-start gap-3 xl:grid-cols-2">
           {page.posts.map((post) => (
-            <PostCard key={post.id} post={post} />
+            <PostCard key={post.id} post={post} timeZone={timeZone} />
           ))}
         </div>
       )}

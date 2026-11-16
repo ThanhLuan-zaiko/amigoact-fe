@@ -56,7 +56,8 @@ Tài liệu chi tiết nằm trong thư mục [`docs/`](docs):
 - [Lộ trình phát triển](docs/roadmap.md): kế hoạch theo giai đoạn và các quyết định sản phẩm.
 - [Xác thực và tài khoản](docs/authentication.md): luồng đăng nhập, cookie, form và kiểm tra dữ liệu.
 - [Tổ chức và thành viên](docs/organizations.md): các trang, luồng dữ liệu và kiểm tra dữ liệu.
-- [Hoạt động và đăng ký](docs/activities.md): các trang, giờ Việt Nam và thành phần.
+- [Hoạt động và đăng ký](docs/activities.md): các trang, ô nhập ngày giờ và thành phần.
+- [Ngày giờ và múi giờ](docs/time-zones.md): giờ theo múi giờ của người xem, cookie `tz`, ô nhập ngày giờ.
 - [Điểm danh và giờ tình nguyện](docs/attendance.md): các trang, mã QR và `APP_URL`.
 - [Chứng nhận](docs/certificates.md): mẫu, cấp và thu hồi, xác minh công khai.
 - [Chat](docs/chat.md): trang nhắn tin `/messages`, ảnh và video, WebSocket và polling dự phòng.

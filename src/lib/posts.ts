@@ -219,6 +219,14 @@ export type CommentApi = {
   can_restore: boolean;
   created_at: string;
   edited_at: string | null;
+  // Relative path served through the media proxy, or null.
+  author_avatar_url?: string | null;
+  // The top-level comment a reply belongs to; null for a top-level comment.
+  parent_id?: string | null;
+  reply_count?: number;
+  like_count?: number;
+  // Whether the viewer likes it. Always false for visitors.
+  liked?: boolean;
 };
 
 export type CommentPageApi = { items: CommentApi[]; next_after: string | null };

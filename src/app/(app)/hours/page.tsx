@@ -4,6 +4,7 @@ import { FiUsers } from "react-icons/fi";
 import { getMyHourStats, getMyHours } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
 import { organizationRows, readBucket, readRange } from "@/lib/hoursStats";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import EmptyState from "../../_components/EmptyState";
 import BreakdownSection from "../../_components/hours/BreakdownSection";
 import HourEntries from "../../_components/hours/HourEntries";
@@ -53,7 +54,10 @@ async function HoursContent({ searchParams }: PageProps<"/hours">) {
             rows={organizationRows(stats)}
             description="Giờ tình nguyện theo tổ chức"
           />
-          <HourEntries entries={hours.entries} />
+          <HourEntries
+            entries={hours.entries}
+            timeZone={await viewerTimeZone()}
+          />
         </div>
       </div>
     </>

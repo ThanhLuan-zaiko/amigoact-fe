@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
 import { pageOffset } from "@/lib/organizations";
 import { hasModule } from "@/lib/roles";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import ActivityCard from "../../../../../_components/activities/ActivityCard";
 import EmptyState from "../../../../../_components/EmptyState";
 import PageLinks from "../../../../../_components/organizations/PageLinks";
@@ -33,6 +34,7 @@ async function DraftsContent({
   }
   const offset = pageOffset((await searchParams).page);
   const page = await listOrganizationActivities(slug, offset, "draft");
+  const timeZone = await viewerTimeZone();
 
   return (
     <div className="flex flex-col gap-4">
@@ -60,7 +62,11 @@ async function DraftsContent({
       ) : (
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
           {page.items.map((activity) => (
-            <ActivityCard key={activity.id} activity={activity} />
+            <ActivityCard
+              key={activity.id}
+              activity={activity}
+              timeZone={timeZone}
+            />
           ))}
         </div>
       )}

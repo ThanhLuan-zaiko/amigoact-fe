@@ -4,11 +4,12 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FiCheckCircle, FiClock, FiList, FiLock } from "react-icons/fi";
 import { closeSession } from "@/app/_actions/attendance";
-import { formatDateTime } from "@/lib/activities";
+import { formatDateTimeZoned } from "@/lib/activities";
 import { getActivity } from "@/lib/activityApi";
 import { type AttendanceSession, checkInUrl } from "@/lib/attendance";
 import { getSessions } from "@/lib/attendanceApi";
 import { requireUser } from "@/lib/auth";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import OpenSessionForm from "../../../../_components/attendance/OpenSessionForm";
 import SessionQr from "../../../../_components/attendance/SessionQr";
 import BackLink from "../../../../_components/BackLink";
@@ -35,10 +36,12 @@ function SessionCard({
   activityId,
   session,
   origin,
+  timeZone,
 }: {
   activityId: string;
   session: AttendanceSession;
   origin: string;
+  timeZone: string;
 }) {
   return (
     <li className={`${panel} flex flex-wrap items-start gap-4 p-4`}>
@@ -59,7 +62,7 @@ function SessionCard({
         ) : null}
         <div className="flex flex-wrap gap-x-4 gap-y-1">
           <IconStat icon={FiClock} label="Đóng lúc">
-            {formatDateTime(session.closes_at)}
+            {formatDateTimeZoned(session.closes_at, timeZone)}
           </IconStat>
           <IconStat icon={FiCheckCircle} label="Đã điểm danh">
             {session.checked_in_count}
@@ -109,6 +112,7 @@ async function AttendanceContent({
     return <p className={mutedText}>Chỉ ban quản trị mới xem được.</p>;
   }
   const origin = await requestOrigin();
+  const timeZone = await viewerTimeZone();
 
   return (
     <>
@@ -138,6 +142,7 @@ async function AttendanceContent({
                   key={session.id}
                   activityId={id}
                   session={session}
+                  timeZone={timeZone}
                   origin={origin}
                 />
               ))}

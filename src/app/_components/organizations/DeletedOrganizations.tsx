@@ -9,8 +9,10 @@ import PurgeOrganizationButton from "./PurgeOrganizationButton";
 // or deleted for good from here.
 export default function DeletedOrganizations({
   organizations,
+  timeZone,
 }: {
   organizations: DeletedOrganization[];
+  timeZone: string;
 }) {
   return (
     <section className="flex min-w-0 flex-col gap-3">
@@ -26,7 +28,7 @@ export default function DeletedOrganizations({
           <div className="min-w-0">
             <p className="truncate font-semibold">{organization.name}</p>
             <p className={mutedText}>
-              Xóa ngày {formatDate(organization.deleted_at)}
+              Xóa ngày {formatDate(organization.deleted_at, timeZone)}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

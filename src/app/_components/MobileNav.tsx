@@ -3,13 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { IconType } from "react-icons";
-import {
-  FiCalendar,
-  FiCompass,
-  FiHome,
-  FiMessageSquare,
-  FiUser,
-} from "react-icons/fi";
+import { FiCalendar, FiHome, FiMessageSquare, FiUser } from "react-icons/fi";
 import { isActivePath } from "./navigation";
 
 type MobileItem = {
@@ -20,7 +14,6 @@ type MobileItem = {
 
 const mobileItems: MobileItem[] = [
   { label: "Trang chủ", href: "/", icon: FiHome },
-  { label: "Khám phá", href: "/explore", icon: FiCompass },
   { label: "Hoạt động", href: "/activities", icon: FiCalendar },
   { label: "Tin nhắn", href: "/messages", icon: FiMessageSquare },
   { label: "Hồ sơ", href: "/account", icon: FiUser },

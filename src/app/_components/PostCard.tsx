@@ -34,16 +34,22 @@ type PostCardProps = {
   actions?: ReactNode;
   // On the post page itself the title is not a link.
   linked?: boolean;
+  // False on the post page, where the activity has its own tab beside the post.
+  showActivity?: boolean;
   // Edit, pin, hide and delete buttons. The home feed only reads posts, so it
   // turns them off; managers use the organization's own pages.
   manageable?: boolean;
+  // The viewer's zone, for the activity's time.
+  timeZone: string;
 };
 
 export default function PostCard({
   post,
   actions,
   linked = true,
+  showActivity = true,
   manageable = true,
+  timeZone,
 }: PostCardProps) {
   // A draft opens its edit form. A published post opens its own page.
   const href =
@@ -147,7 +153,9 @@ export default function PostCard({
         </ul>
       ) : null}
 
-      {post.activity ? <PostActivityRow activity={post.activity} /> : null}
+      {post.activity && showActivity ? (
+        <PostActivityRow activity={post.activity} timeZone={timeZone} />
+      ) : null}
 
       <footer className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3 dark:border-slate-800">
         {post.tags.map((tag) => (

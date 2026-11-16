@@ -7,6 +7,7 @@ import type {
   LastMessage,
 } from "./chat";
 import type { ChatFrame } from "./chatEvents";
+import { dateFormat } from "./timeZone";
 
 export type InboxFilter = "all" | "unread" | "groups" | "people";
 
@@ -106,36 +107,42 @@ export function previewLine(room: ChatRoom, viewerId: string): string {
   return `${name}: ${text}`;
 }
 
-const ZONE = "Asia/Ho_Chi_Minh";
-const clock = new Intl.DateTimeFormat("vi-VN", {
+const CLOCK: Intl.DateTimeFormatOptions = {
   hour: "2-digit",
   minute: "2-digit",
-  timeZone: ZONE,
-});
-const weekday = new Intl.DateTimeFormat("vi-VN", {
-  weekday: "short",
-  timeZone: ZONE,
-});
-const dateParts = new Intl.DateTimeFormat("en-GB", {
+};
+const WEEKDAY: Intl.DateTimeFormatOptions = { weekday: "short" };
+const DATE_PARTS: Intl.DateTimeFormatOptions = {
   day: "2-digit",
   month: "2-digit",
   year: "2-digit",
-  timeZone: ZONE,
-});
+};
 
 // Built from parts, because vi-VN writes a day and month without a year as "01-10".
-function shortDate(date: Date, withYear: boolean): string {
+function shortDate(
+  date: Date,
+  withYear: boolean,
+  timeZone: string | undefined,
+): string {
+  const parts = dateFormat("en-GB", DATE_PARTS, timeZone).formatToParts(date);
   const part = (type: string) =>
-    dateParts.formatToParts(date).find((item) => item.type === type)?.value;
+    parts.find((item) => item.type === type)?.value;
   const text = `${part("day")}/${part("month")}`;
   return withYear ? `${text}/${part("year")}` : text;
 }
-const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: ZONE });
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Today shows the time, this week the weekday, this year the day and month, older the full date.
-export function listTime(value: string, now: Date = new Date()): string {
+// "Today" is the viewer's day: pass the viewer's zone, or nothing for the device zone.
+export function listTime(
+  value: string,
+  now: Date = new Date(),
+  timeZone?: string,
+): string {
+  const dayKey = dateFormat("en-CA", {}, timeZone);
+  const clock = dateFormat("vi-VN", CLOCK, timeZone);
+  const weekday = dateFormat("vi-VN", WEEKDAY, timeZone);
   const date = new Date(value);
   const days = Math.round(
     (Date.parse(dayKey.format(now)) - Date.parse(dayKey.format(date))) / DAY_MS,
@@ -148,7 +155,7 @@ export function listTime(value: string, now: Date = new Date()): string {
   }
   const sameYear =
     dayKey.format(now).slice(0, 4) === dayKey.format(date).slice(0, 4);
-  return shortDate(date, !sameYear);
+  return shortDate(date, !sameYear, timeZone);
 }
 
 // Moves a room to the top, as a new message does in every messenger.

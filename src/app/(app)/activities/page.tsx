@@ -16,6 +16,7 @@ import { formatDateTime } from "@/lib/activities";
 import { getMyRegistrations } from "@/lib/activityApi";
 import { APPEAL_STATUS_LABELS } from "@/lib/attendance";
 import { requireUser } from "@/lib/auth";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import RegistrationBadge from "../../_components/activities/RegistrationBadge";
 import AppealButton from "../../_components/attendance/AppealButton";
 import EmptyState from "../../_components/EmptyState";
@@ -36,6 +37,7 @@ export const metadata: Metadata = { title: "Hoạt động | AmigoACT" };
 async function MyActivities() {
   await requireUser("/activities");
   const registrations = await getMyRegistrations();
+  const timeZone = await viewerTimeZone();
   if (registrations.length === 0) {
     return (
       <div className="flex flex-col items-start gap-4">
@@ -45,7 +47,7 @@ async function MyActivities() {
             description="Các hoạt động bạn đăng ký sẽ hiện ở đây."
           />
         </div>
-        <Link href="/explore" className={primaryButton}>
+        <Link href="/?tab=activities" className={primaryButton}>
           <FiCompass aria-hidden="true" />
           Khám phá
         </Link>
@@ -72,7 +74,7 @@ async function MyActivities() {
             </p>
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               <IconStat icon={FiCalendar} label="Thời gian">
-                {formatDateTime(registration.start_at)}
+                {formatDateTime(registration.start_at, timeZone)}
               </IconStat>
               {registration.location ? (
                 <IconStat icon={FiMapPin} label="Địa điểm">

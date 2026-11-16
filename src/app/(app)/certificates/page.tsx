@@ -7,6 +7,7 @@ import { requireUser } from "@/lib/auth";
 import { getMyCertificates } from "@/lib/certificateApi";
 import { CERTIFICATE_STATUS_LABELS } from "@/lib/certificates";
 import { formatDate } from "@/lib/organizations";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import EmptyState from "../../_components/EmptyState";
 import IconStat from "../../_components/IconStat";
 import {
@@ -23,6 +24,7 @@ export const metadata: Metadata = { title: "Chứng nhận của tôi | AmigoACT
 async function MyCertificatesContent() {
   await requireUser("/certificates");
   const certificates = await getMyCertificates();
+  const timeZone = await viewerTimeZone();
   if (!certificates) {
     return (
       <p className={mutedText}>Không tải được dữ liệu. Vui lòng thử lại.</p>
@@ -61,7 +63,7 @@ async function MyCertificatesContent() {
                 {hoursText(certificate.hours)}
               </IconStat>
               <IconStat icon={FiCalendar} label="Ngày cấp">
-                {formatDate(certificate.issued_at)}
+                {formatDate(certificate.issued_at, timeZone)}
               </IconStat>
             </div>
           </div>

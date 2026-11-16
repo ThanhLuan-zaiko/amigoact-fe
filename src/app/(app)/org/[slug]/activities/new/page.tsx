@@ -4,7 +4,9 @@ import { createActivity } from "@/app/_actions/activities";
 import { requireUser } from "@/lib/auth";
 import { getOrganization } from "@/lib/organizationApi";
 import { hasPermission } from "@/lib/roles";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import ActivityForm from "../../../../../_components/activities/ActivityForm";
+import { TimeZoneProvider } from "../../../../../_components/TimeZoneContext";
 import { mutedText } from "../../../../../_components/ui";
 
 export const metadata: Metadata = { title: "Tạo hoạt động | AmigoACT" };
@@ -26,7 +28,9 @@ async function NewActivityContent({
     );
   }
   return (
-    <ActivityForm action={createActivity.bind(null, slug)} orgSlug={slug} />
+    <TimeZoneProvider timeZone={await viewerTimeZone()}>
+      <ActivityForm action={createActivity.bind(null, slug)} orgSlug={slug} />
+    </TimeZoneProvider>
   );
 }
 

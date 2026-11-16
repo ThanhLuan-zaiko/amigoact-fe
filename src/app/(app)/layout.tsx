@@ -4,6 +4,7 @@ import MobileNav from "../_components/MobileNav";
 import JoinedOrganizations from "../_components/organizations/JoinedOrganizations";
 import RealtimeProvider from "../_components/realtime/RealtimeProvider";
 import SideNav from "../_components/SideNav";
+import TimeZoneCheck from "../_components/TimeZoneCheck";
 
 // Shell for every page: header, side navigation and mobile navigation.
 // The navigation reads the current path, so each one sits behind a Suspense boundary.
@@ -26,6 +27,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </div>
       <Suspense fallback={null}>
         <MobileNav />
+      </Suspense>
+      <Suspense fallback={null}>
+        <TimeZoneCheck />
       </Suspense>
     </RealtimeProvider>
   );

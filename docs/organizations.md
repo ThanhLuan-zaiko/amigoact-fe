@@ -21,7 +21,7 @@ Tài liệu này mô tả giao diện phần tổ chức. Quy tắc nghiệp v�
 | Đường dẫn | Nội dung | Ai xem được |
 | ---- | ---- | ---- |
 | `/organizations` | "Tổ chức của tôi": chỉ liệt kê tổ chức thuộc quyền sở hữu của tài khoản (hai cột từ xl). Không có tìm kiếm hay danh bạ ở đây, việc khám phá tổ chức do trang chủ đảm nhiệm (nút "Khám phá" dẫn tới `/?tab=orgs`). Tổ chức đã xóa không hiện ở đây. Nút "Bản nháp" dẫn tới `/drafts`, nút "Tổ chức đã xóa" (icon thùng rác) dẫn tới `/trash`, trên thanh tiêu đề | Đã đăng nhập |
-| `/?tab=orgs` | Tab "Tổ chức" của trang chủ: danh bạ tổ chức công khai, có tìm kiếm và phân trang. Gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ (`OrganizationDirectory`) | Mọi người |
+| `/?tab=orgs` | Tab "Tổ chức" của trang chủ: danh bạ tổ chức công khai, có tìm kiếm và phân trang. Thẻ xếp một cột như bài ở tab "Tất cả". Gọi API với `exclude_owned=true`, nên không lặp lại tổ chức đã sở hữu và mỗi trang vẫn đủ số thẻ (`OrganizationDirectory`). Dưới mỗi thẻ là dải tối đa 4 ảnh vuông lấy từ các bài công khai mới nhất của tổ chức (`post_pictures`) | Mọi người |
 | `/organizations/new` | Form tạo tổ chức, hai cột từ xl | Đã đăng nhập |
 | `/org/[slug]` | Tổng quan. Cột chính: giới thiệu, liên hệ và bài ghim (chưa ghim thì bài mới nhất). Cột phụ từ xl: hoạt động gần đây và bộ sưu tập (`OrgHighlights`) | Mọi người |
 | `/org/[slug]/posts` | Bảng tin của tổ chức, xem `posts.md` | Mọi người, theo quyền xem |
@@ -43,7 +43,7 @@ Thanh mục trong header chỉ hiện những trang người xem được phép 
 
 - `ActionButton` chạy một Server Action và hiện lỗi ngay cạnh nút. Truyền `confirmLabel` để yêu cầu bấm xác nhận lần hai.
 - `MembershipAction` chọn nút theo trạng thái của người xem: tham gia, xin tham gia, rút yêu cầu, rời tổ chức.
-- `HeaderSearch` đổi theo trang: ở tab "Tổ chức" của trang chủ (`/?tab=orgs`) thanh tìm kiếm trên header tìm tổ chức, các trang khác tìm hoạt động. Điện thoại không có ô trên header, nên nút kính lúp nhảy đến ô tìm trong trang.
+- `HeaderSearch` đổi theo trang: ở tab "Tổ chức" của trang chủ (`/?tab=orgs`) thanh tìm kiếm trên header tìm tổ chức, các trang khác tìm hoạt động (`/?tab=activities`, dưới tab "Tất cả"). Điện thoại không có ô trên header, nên nút kính lúp nhảy đến ô tìm trong trang (`#org-search` hoặc `#activity-search`).
 - `OrganizationForm` dùng cho cả tạo và sửa. Form chia bốn mục: thông tin chung, ảnh, liên hệ, pháp lý. Lúc tạo và lúc sửa đều có đủ các mục. Khi sửa, form điền sẵn giá trị đã lưu. Khi tạo, email và số điện thoại được điền sẵn từ tài khoản qua `contactDefaults`, kèm một dòng nhắc rằng chúng sẽ hiển thị công khai. Đây chỉ là bản sao: sửa được trước khi tạo và không đổi theo tài khoản về sau.
 - `PicturePicker` là một ô tải ảnh chung cho logo và ảnh bìa: người dùng kéo thả hoặc chọn nhiều ảnh, mỗi ảnh tải ngay qua `/media/upload`, rồi bấm nút "Logo" hoặc "Ảnh bìa" dưới từng ảnh để chọn vai trò. Lựa chọn đi cùng form dưới dạng `logo_asset_id` và `cover_asset_id`. Logo và ảnh bìa đang dùng hiện kèm nhãn "Logo" hoặc "Ảnh bìa" (`CurrentPictures`), không còn ô "Gỡ": muốn đổi thì bấm "Đổi chỗ logo và ảnh bìa" hoặc chọn một ảnh trong bộ sưu tập. Ảnh tối đa 20 MB, kiểm tra ngay trên trình duyệt.
 - `OrganizationLegalFields` là các trường pháp lý. Form không bao giờ gửi `legal_status`, vì trạng thái này do quản trị nền tảng đặt.

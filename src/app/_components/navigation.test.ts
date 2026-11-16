@@ -3,7 +3,7 @@ import { isActivePath } from "./navigation";
 
 test("home matches only itself", () => {
   expect(isActivePath("/", "/")).toBe(true);
-  expect(isActivePath("/explore", "/")).toBe(false);
+  expect(isActivePath("/activities", "/")).toBe(false);
 });
 
 test("my organizations covers its list, the form and owner addresses", () => {

@@ -58,7 +58,9 @@ function DraftActions({ post, back }: { post: Post; back: string }) {
 export default function DraftList({
   posts,
   back,
+  timeZone,
 }: {
+  timeZone: string;
   posts: Post[];
   back: string;
 }) {
@@ -69,6 +71,7 @@ export default function DraftList({
           key={post.id}
           post={post}
           actions={<DraftActions post={post} back={back} />}
+          timeZone={timeZone}
         />
       ))}
     </div>

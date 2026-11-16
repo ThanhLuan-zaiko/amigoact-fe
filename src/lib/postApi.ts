@@ -11,6 +11,7 @@ import {
   type TrashPageApi,
   toPost,
 } from "./posts";
+import { viewerTimeZone } from "./viewerTimeZone";
 
 // Read every function here behind a Suspense boundary. The viewer's token goes
 // along when there is one, so members see member posts and their own rights.
@@ -28,12 +29,21 @@ async function getJson<T>(path: string): Promise<T | null> {
   return result.ok ? result.data : null;
 }
 
-function toPage(page: PostPageApi | null) {
+// Post dates are written on the viewer's clock.
+async function postDate(): Promise<(value: string) => string> {
+  const timeZone = await viewerTimeZone();
+  return (value) => formatDateTime(value, timeZone);
+}
+
+function toPage(
+  page: PostPageApi | null,
+  formatDate: (value: string) => string,
+) {
   if (!page) {
     return null;
   }
   return {
-    posts: page.items.map((post) => toPost(post, formatDateTime)),
+    posts: page.items.map((post) => toPost(post, formatDate)),
     nextBefore: page.next_before,
   };
 }
@@ -60,13 +70,16 @@ export async function getOrgPosts(
   if (before) {
     query.set("before", before);
   }
-  return toPage(await getJson<PostPageApi>(`${orgPath(slug)}/posts?${query}`));
+  return toPage(
+    await getJson<PostPageApi>(`${orgPath(slug)}/posts?${query}`),
+    await postDate(),
+  );
 }
 
 // Null when the post is missing, deleted, or hidden from this viewer.
 export async function getPost(id: string) {
   const post = await getJson<PostApi>(`/posts/${encodeURIComponent(id)}`);
-  return post ? toPost(post, formatDateTime) : null;
+  return post ? toPost(post, await postDate()) : null;
 }
 
 // The raw post, for the edit form, which needs the exact stored values.
@@ -84,9 +97,21 @@ export async function getComments(postId: string, after: string | null) {
   );
 }
 
+// The replies of one top-level comment, oldest first.
+export async function getReplies(commentId: string, after: string | null) {
+  const query = new URLSearchParams({ limit: "100" });
+  if (after) {
+    query.set("after", after);
+  }
+  return getJson<CommentPageApi>(
+    `/comments/${encodeURIComponent(commentId)}/replies?${query}`,
+  );
+}
+
 export async function getOrgDrafts(slug: string) {
   return toPage(
     await getJson<PostPageApi>(`${orgPath(slug)}/post-drafts?limit=50`),
+    await postDate(),
   );
 }
 
@@ -113,7 +138,10 @@ export async function getFeed(
     query.set("before", before);
   }
   const path = scope === "mine" ? "/feed" : "/feed/all";
-  return toPage(await getJson<PostPageApi>(`${path}?${query}`));
+  return toPage(
+    await getJson<PostPageApi>(`${path}?${query}`),
+    await postDate(),
+  );
 }
 
 export async function getPopularTags(): Promise<string[]> {
@@ -141,8 +169,9 @@ export async function getMyDrafts() {
       }),
     ),
   );
+  const formatDate = await postDate();
   return pages
     .flatMap((page) => (page.ok ? page.data.items : []))
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
-    .map((post) => toPost(post, formatDateTime));
+    .map((post) => toPost(post, formatDate));
 }

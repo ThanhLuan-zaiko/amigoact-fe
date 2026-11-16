@@ -1,7 +1,8 @@
 // Shapes of the organization API responses, with their labels for the UI.
 
-import type { Focus } from "./focus";
+import type { CardPicture, Focus } from "./focus";
 import type { RoleBadge } from "./roles";
+import { dateFormat } from "./timeZone";
 import type { VideoInfo } from "./video";
 
 export type OrgRole = "owner" | "admin" | "member";
@@ -23,6 +24,8 @@ export type OrganizationSummary = {
   // Spots that crops of the logo and cover keep in view, or null.
   logo_focus?: Focus | null;
   cover_focus?: Focus | null;
+  // The public directory only: pictures from the newest public posts.
+  post_pictures?: CardPicture[];
 };
 
 export type OrganizationPage = {
@@ -131,13 +134,22 @@ export const ROLE_LABELS: Record<OrgRole, string> = {
   member: "Thành viên",
 };
 
-const dateFormat = new Intl.DateTimeFormat("vi-VN", {
-  dateStyle: "short",
-  timeZone: "Asia/Ho_Chi_Minh",
-});
+const DATE: Intl.DateTimeFormatOptions = { dateStyle: "short" };
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
-export function formatDate(value: string | null): string {
-  return value ? dateFormat.format(new Date(value)) : "";
+// A day such as 16/11/2026 on the viewer's clock (the device zone when timeZone
+// is left out). A plain date such as "2026-11-20" names a calendar day, not a
+// moment, so it is written as it is in every zone.
+export function formatDate(value: string | null, timeZone?: string): string {
+  if (!value) {
+    return "";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  const zone = DATE_ONLY.test(value) ? "UTC" : timeZone;
+  return dateFormat("vi-VN", DATE, zone).format(date);
 }
 
 // Up to two letters from the first two words, for the placeholder logo and avatars.

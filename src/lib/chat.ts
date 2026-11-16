@@ -1,5 +1,7 @@
 // Pure helpers for the organization chat. No server or browser APIs, so bun tests cover them.
 
+import { dateFormat } from "./timeZone";
+
 export const MESSAGE_MAX = 2000;
 export const PAGE_SIZE = 50;
 // Polling is the fallback when the socket is down. The socket carries the live updates.
@@ -187,26 +189,23 @@ export function reconnectDelay(attempt: number): number {
   return Math.min(30_000, 1000 * 2 ** Math.max(0, attempt));
 }
 
-const timeFormat = new Intl.DateTimeFormat("vi-VN", {
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Asia/Ho_Chi_Minh",
-});
+const TIME: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" };
 
-const dayFormat = new Intl.DateTimeFormat("vi-VN", {
+const DAY: Intl.DateTimeFormatOptions = {
   weekday: "long",
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
-  timeZone: "Asia/Ho_Chi_Minh",
-});
+};
 
-export function messageTime(value: string): string {
-  return timeFormat.format(new Date(value));
+// Message times and days are on the viewer's clock: pass the viewer's zone, or
+// nothing for the device zone.
+export function messageTime(value: string, timeZone?: string): string {
+  return dateFormat("vi-VN", TIME, timeZone).format(new Date(value));
 }
 
-export function messageDay(value: string): string {
-  return dayFormat.format(new Date(value));
+export function messageDay(value: string, timeZone?: string): string {
+  return dateFormat("vi-VN", DAY, timeZone).format(new Date(value));
 }
 
 const GROUP_GAP_MS = 5 * 60 * 1000;
@@ -216,6 +215,7 @@ const GROUP_GAP_MS = 5 * 60 * 1000;
 export function continuesGroup(
   previous: ChatMessage | undefined,
   message: ChatMessage,
+  timeZone?: string,
 ): boolean {
   if (!previous || previous.author_id !== message.author_id) {
     return false;
@@ -223,7 +223,10 @@ export function continuesGroup(
   if (message.reply_to) {
     return false;
   }
-  if (messageDay(previous.created_at) !== messageDay(message.created_at)) {
+  if (
+    messageDay(previous.created_at, timeZone) !==
+    messageDay(message.created_at, timeZone)
+  ) {
     return false;
   }
   const gap =

@@ -1,5 +1,6 @@
 import { badgeText, type ChatRoom } from "@/lib/chat";
 import { listTime, previewLine } from "@/lib/messenger";
+import { useTimeZone } from "../TimeZoneContext";
 import ChatAvatar from "./ChatAvatar";
 
 type ChatListRowProps = {
@@ -19,6 +20,7 @@ export default function ChatListRow({
   viewerId,
   onSelect,
 }: ChatListRowProps) {
+  const timeZone = useTimeZone();
   const unread = room.unread > 0;
   const channel =
     room.kind === "channel" ? (room.restricted ? "restricted" : "open") : null;
@@ -53,7 +55,7 @@ export default function ChatListRow({
                 dateTime={room.last_message.created_at}
                 className={`shrink-0 text-xs ${unread ? "font-semibold text-teal-700 dark:text-teal-400" : "text-slate-500 dark:text-slate-400"}`}
               >
-                {listTime(room.last_message.created_at)}
+                {listTime(room.last_message.created_at, undefined, timeZone)}
               </time>
             ) : null}
           </span>

@@ -4,6 +4,7 @@ import { formatDateTime } from "@/lib/activities";
 import { listOrganizationActivities } from "@/lib/activityApi";
 import { getOrgPosts } from "@/lib/postApi";
 import { postPath } from "@/lib/posts";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import IconStat from "../IconStat";
 import { mutedText, panel, sectionTitle } from "../ui";
 
@@ -81,6 +82,7 @@ export async function PinnedPosts({ slug }: { slug: string }) {
 export async function RecentActivities({ slug }: { slug: string }) {
   const page = await listOrganizationActivities(slug, 0);
   const activities = (page?.items ?? []).slice(0, HIGHLIGHT_COUNT);
+  const timeZone = await viewerTimeZone();
 
   return (
     <section className={`${panel} flex flex-col gap-3 p-4`}>
@@ -103,7 +105,7 @@ export async function RecentActivities({ slug }: { slug: string }) {
                 {activity.title}
               </Link>
               <IconStat icon={FiCalendar} label="Thời gian">
-                {formatDateTime(activity.start_at)}
+                {formatDateTime(activity.start_at, timeZone)}
               </IconStat>
             </li>
           ))}

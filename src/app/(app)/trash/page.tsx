@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 import { getDeletedOrganizations } from "@/lib/organizationApi";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import DeletedOrganizations from "../../_components/organizations/DeletedOrganizations";
 import { mutedText, neutralButton } from "../../_components/ui";
 
@@ -13,7 +14,12 @@ async function TrashContent() {
   if (deleted.length === 0) {
     return <p className={mutedText}>Chưa có tổ chức nào đã xóa.</p>;
   }
-  return <DeletedOrganizations organizations={deleted} />;
+  return (
+    <DeletedOrganizations
+      organizations={deleted}
+      timeZone={await viewerTimeZone()}
+    />
+  );
 }
 
 // The owner's deleted organizations, linked from "Tổ chức của tôi". Restoring is only possible here.

@@ -8,6 +8,7 @@ import { getTemplates } from "@/lib/certificateApi";
 import { getOrganization } from "@/lib/organizationApi";
 import { formatDate } from "@/lib/organizations";
 import { hasPermission } from "@/lib/roles";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import CertificatePreview from "../../../../_components/certificates/CertificatePreview";
 import EmptyState from "../../../../_components/EmptyState";
 import IconStat from "../../../../_components/IconStat";
@@ -30,6 +31,7 @@ async function TemplatesContent({
 }) {
   const { slug } = await params;
   await requireUser(`/org/${slug}/certificates`);
+  const timeZone = await viewerTimeZone();
   const organization = await getOrganization(slug);
   if (!organization) {
     return null;
@@ -84,7 +86,7 @@ async function TemplatesContent({
               </div>
               <div className="flex flex-wrap items-start gap-2">
                 <IconStat icon={FiCalendar} label="Ngày tạo">
-                  {formatDate(template.created_at)}
+                  {formatDate(template.created_at, timeZone)}
                 </IconStat>
                 <div className="ml-auto flex items-start gap-2">
                   <Link

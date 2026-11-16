@@ -1,6 +1,8 @@
 // The notification bell: Vietnamese text for each backend code, socket frames, and the local
 // state they change. Pure, so bun tests cover them. See docs/notifications.md.
 
+import { dateFormat } from "./timeZone";
+
 export type NotificationItem = {
   id: string;
   type: string;
@@ -251,15 +253,19 @@ export function applyNotificationFrame(
   };
 }
 
-const dateFormat = new Intl.DateTimeFormat("vi-VN", {
+const DATE: Intl.DateTimeFormatOptions = {
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
-  timeZone: "Asia/Ho_Chi_Minh",
-});
+};
 
-// "Vừa xong", "5 phút trước", "3 giờ trước", "2 ngày trước", then the date.
-export function timeAgo(iso: string, now: number = Date.now()): string {
+// "Vừa xong", "5 phút trước", "3 giờ trước", "2 ngày trước", then the date on the
+// viewer's clock (the device zone when timeZone is left out).
+export function timeAgo(
+  iso: string,
+  now: number = Date.now(),
+  timeZone?: string,
+): string {
   const time = Date.parse(iso);
   if (Number.isNaN(time)) {
     return "";
@@ -276,5 +282,7 @@ export function timeAgo(iso: string, now: number = Date.now()): string {
     return `${hours} giờ trước`;
   }
   const days = Math.floor(hours / 24);
-  return days < 7 ? `${days} ngày trước` : dateFormat.format(time);
+  return days < 7
+    ? `${days} ngày trước`
+    : dateFormat("vi-VN", DATE, timeZone).format(time);
 }

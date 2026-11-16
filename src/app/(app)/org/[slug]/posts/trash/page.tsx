@@ -5,6 +5,7 @@ import { getOrganization } from "@/lib/organizationApi";
 import { getPostTrash } from "@/lib/postApi";
 import { postPath } from "@/lib/posts";
 import { hasPermission } from "@/lib/roles";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import EmptyState from "../../../../../_components/EmptyState";
 import { MoreLink } from "../../../../../_components/posts/FeedFilters";
 import TrashList from "../../../../../_components/posts/TrashList";
@@ -52,7 +53,11 @@ async function TrashContent({
           description="Bài viết bị xóa sẽ nằm ở đây trong 30 ngày."
         />
       ) : (
-        <TrashList slug={slug} items={page.items} />
+        <TrashList
+          slug={slug}
+          items={page.items}
+          timeZone={await viewerTimeZone()}
+        />
       )}
       <MoreLink
         href={

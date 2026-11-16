@@ -13,6 +13,7 @@ import { getOrganization } from "@/lib/organizationApi";
 import { pageOffset } from "@/lib/organizations";
 import { hasModule, hasPermission } from "@/lib/roles";
 import { readTag, tagLabel } from "@/lib/tagLinks";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import ActivityCard from "../../../../_components/activities/ActivityCard";
 import ActivityFilters from "../../../../_components/activities/ActivityFilters";
 import EmptyState from "../../../../_components/EmptyState";
@@ -35,6 +36,7 @@ async function OrganizationActivities({
   const filter = activityFilter(query.filter);
   const offset = pageOffset(query.page);
   const tag = readTag(query.tag);
+  const timeZone = await viewerTimeZone();
   const [organization, page] = await Promise.all([
     getOrganization(slug),
     listOrganizationActivities(slug, offset, filter, tag),
@@ -103,7 +105,11 @@ async function OrganizationActivities({
       ) : (
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
           {page.items.map((activity) => (
-            <ActivityCard key={activity.id} activity={activity} />
+            <ActivityCard
+              key={activity.id}
+              activity={activity}
+              timeZone={timeZone}
+            />
           ))}
         </div>
       )}

@@ -57,7 +57,8 @@ export default async function OrganizationDirectory({
             : "Chưa có tổ chức nào khác."}
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+        // One column, like the posts of the "Tất cả" tab beside it.
+        <div className="flex flex-col gap-3">
           {others.map((organization) => (
             <OrganizationCard
               key={organization.id}

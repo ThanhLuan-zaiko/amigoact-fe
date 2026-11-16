@@ -60,7 +60,17 @@ These rules set the defaults for every screen. If one of them gets in the way of
 - Page addresses: `/organizations` is the viewer's owned list and `/organizations/new` the create form. An organization's pages are built once under `src/app/(app)/org/[slug]/`. Its owner sees them at `/organizations/<slug>/...`, everyone else at `/org/<slug>/...`; `proxy.ts` redirects (307) and rewrites with `src/lib/orgRoutes.ts`. Build links with `orgBase` when the role is known, and pass client-built `/org` paths through `keepAddress`. Backend API paths stay `/organizations/{slug}/...`; do not rename them.
 - Pages with the app header and navigation live in the `src/app/(app)/` route group. Read route params and backend data behind a `<Suspense>` boundary.
 - `authedFetch` in `src/lib/auth.ts` is the only way Server Actions call the backend with a token.
-- Activities are described in `docs/activities.md`. `datetime-local` inputs mean Vietnam time: convert them with `toLocalInput` and `fromLocalInput` from `src/lib/activities.ts`.
+- Activities are described in `docs/activities.md`. `datetime-local` inputs hold the typing person's wall clock: convert them with `toLocalInput` and `fromLocalInput` from `src/lib/activities.ts`, passing that person's zone (see Dates and times).
+
+## Dates and times
+
+- Details are in `docs/time-zones.md`. Every moment is shown on the viewer's own clock, named by an IANA zone, never in a fixed zone.
+- The browser writes its zone into the `tz` cookie (`TimeZoneSync`). Server code reads it with `viewerTimeZone()` from `src/lib/viewerTimeZone.ts` behind a `<Suspense>` boundary; a missing or unknown zone falls back to `DEFAULT_TIME_ZONE` (`Asia/Ho_Chi_Minh`).
+- The formatting helpers in `src/lib` take an optional `timeZone` last. Leaving it out means the runtime's zone, which is wrong on the server, so server code always passes the viewer's zone. Server components get it as a `timeZone` prop; client components that the server also renders read it with `useTimeZone()` under a `TimeZoneProvider` from the page.
+- Name the zone where a time is planned around: activity and shift start and end (`formatTimeRange`), registration deadline and attendance closing time (`formatDateTimeZoned`).
+- Forms with `datetime-local` inputs carry `ZoneNote`, which shows the zone and sends it as `time_zone`; Server Actions read it with `formTimeZone(formData)`.
+- Hour terms, hour charts, and the date printed on certificates stay in Vietnam time on purpose, like the backend, so every viewer sees the same totals and the same certificate.
+- Tests of time helpers pass an explicit zone and cover at least two zones (for example `Asia/Ho_Chi_Minh` and `America/New_York`), so they do not depend on the machine's zone.
 
 ## Roles and permissions
 

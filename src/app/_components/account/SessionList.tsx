@@ -1,17 +1,16 @@
 import { FiLogOut, FiMonitor, FiXCircle } from "react-icons/fi";
 import { logoutAll, revokeSession } from "@/app/_actions/account";
+import { formatDateTime } from "@/lib/activities";
 import { getSessions } from "@/lib/auth";
 import { describeDevice } from "@/lib/forms";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import { mutedText, secondaryButton } from "../ui";
 
-const dateFormat = new Intl.DateTimeFormat("vi-VN", {
-  dateStyle: "short",
-  timeStyle: "short",
-  timeZone: "Asia/Ho_Chi_Minh",
-});
-
 export default async function SessionList() {
-  const sessions = await getSessions();
+  const [sessions, timeZone] = await Promise.all([
+    getSessions(),
+    viewerTimeZone(),
+  ]);
   return (
     <div className="flex flex-col gap-4">
       <ul className="flex flex-col divide-y divide-slate-200 dark:divide-slate-800">
@@ -33,8 +32,9 @@ export default async function SessionList() {
                 </p>
                 <p className={mutedText}>
                   {session.ip ?? "Không rõ IP"} ·{" "}
-                  {dateFormat.format(
-                    new Date(session.last_seen_at ?? session.created_at),
+                  {formatDateTime(
+                    session.last_seen_at ?? session.created_at,
+                    timeZone,
                   )}
                 </p>
               </div>

@@ -83,6 +83,8 @@ function isoDate(year: number, monthIndex: number, day: number): string {
 }
 
 // The first day of the oldest month in the range, in Vietnam time. Null means all time.
+// Not the viewer's zone on purpose: the backend counts hours by day and term in
+// Vietnam time, so every viewer sees the same totals for the same month.
 export function rangeStart(range: RangeKey, now: Date): string | null {
   const months = RANGES.find((item) => item.key === range)?.months ?? null;
   if (months === null) return null;

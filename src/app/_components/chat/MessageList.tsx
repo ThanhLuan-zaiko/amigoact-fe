@@ -10,6 +10,7 @@ import {
   messageRights,
 } from "@/lib/chat";
 import type { RoomCache } from "@/lib/chatEvents";
+import { useTimeZone } from "../TimeZoneContext";
 import { chipButton, mutedText } from "../ui";
 import MessageBubble, { type BubbleHandlers } from "./MessageBubble";
 
@@ -33,6 +34,7 @@ export default function MessageList({
   onLoadOlder,
   ...handlers
 }: MessageListProps) {
+  const timeZone = useTimeZone();
   const scrollRef = useRef<HTMLDivElement>(null);
   // The height before an older page was added, so the view stays on the same message.
   const anchorRef = useRef<number | null>(null);
@@ -147,9 +149,9 @@ export default function MessageList({
           >
             {items.map((message, index) => {
               const previous = items[index - 1];
-              const day = messageDay(message.created_at);
+              const day = messageDay(message.created_at, timeZone);
               const newDay =
-                !previous || messageDay(previous.created_at) !== day;
+                !previous || messageDay(previous.created_at, timeZone) !== day;
               return (
                 <Fragment key={message.id}>
                   {newDay ? (
@@ -161,7 +163,9 @@ export default function MessageList({
                   ) : null}
                   <MessageBubble
                     message={message}
-                    compact={!newDay && continuesGroup(previous, message)}
+                    compact={
+                      !newDay && continuesGroup(previous, message, timeZone)
+                    }
                     mine={message.author_id === viewerId}
                     group={group}
                     rights={messageRights(message, room, viewerId)}

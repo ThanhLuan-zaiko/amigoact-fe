@@ -19,6 +19,7 @@ import {
   printableDesign,
 } from "@/lib/certificates";
 import { formatDate } from "@/lib/organizations";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import CertificatePreview from "../../../../_components/certificates/CertificatePreview";
 import PrintButton from "../../../../_components/certificates/PrintButton";
 import VerifyForm from "../../../../_components/certificates/VerifyForm";
@@ -44,6 +45,7 @@ async function VerifyResult({
   params: PageProps<"/certificates/verify/[serial]">["params"];
 }) {
   const { serial } = await params;
+  const timeZone = await viewerTimeZone();
   const typed = normalizeSerial(serial);
   const result = isSerialShape(typed)
     ? await verifyCertificate(typed)
@@ -134,16 +136,17 @@ async function VerifyResult({
           </IconStat>
           {certificate.activity_start_at ? (
             <IconStat icon={FiCalendar} label="Thời gian hoạt động">
-              {formatDateTime(certificate.activity_start_at)}
+              {formatDateTime(certificate.activity_start_at, timeZone)}
             </IconStat>
           ) : null}
           <IconStat icon={FiCalendar} label="Ngày cấp">
-            {formatDate(certificate.issued_at)}
+            {formatDate(certificate.issued_at, timeZone)}
           </IconStat>
         </div>
         {certificate.revoked_at ? (
           <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">
-            Chứng nhận đã bị thu hồi ngày {formatDate(certificate.revoked_at)}.
+            Chứng nhận đã bị thu hồi ngày{" "}
+            {formatDate(certificate.revoked_at, timeZone)}.
           </p>
         ) : null}
       </article>

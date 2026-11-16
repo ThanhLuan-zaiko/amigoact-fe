@@ -19,6 +19,7 @@ import {
   type RoleInfo,
   type RoleList,
 } from "@/lib/roles";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import IconStat from "../../../../_components/IconStat";
 import ActionButton from "../../../../_components/organizations/ActionButton";
 import PageLinks from "../../../../_components/organizations/PageLinks";
@@ -113,6 +114,7 @@ async function MemberList({
   const { slug } = await params;
   const offset = pageOffset((await searchParams).page);
   const user = await requireUser(`/org/${slug}/members`);
+  const timeZone = await viewerTimeZone();
   const [organization, page, roles] = await Promise.all([
     getOrganization(slug),
     getMembers(slug, offset),
@@ -145,7 +147,7 @@ async function MemberList({
                 {member.full_name}
               </p>
               <IconStat icon={FiCalendar} label="Ngày tham gia">
-                {formatDate(member.joined_at)}
+                {formatDate(member.joined_at, timeZone)}
               </IconStat>
             </div>
             <MemberRoles member={member} />

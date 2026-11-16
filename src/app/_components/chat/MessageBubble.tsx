@@ -15,6 +15,7 @@ import {
   messageTime,
 } from "@/lib/chat";
 import ConfirmDialog from "../ConfirmDialog";
+import { useTimeZone } from "../TimeZoneContext";
 import ChatAvatar from "./ChatAvatar";
 import MediaAlbum from "./MediaAlbum";
 import MessageEditor from "./MessageEditor";
@@ -57,6 +58,7 @@ export default function MessageBubble({
   onPin,
   onOpenMedia,
 }: MessageBubbleProps) {
+  const timeZone = useTimeZone();
   const [editing, setEditing] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -152,7 +154,7 @@ export default function MessageBubble({
                 ) : null}
                 {message.edited_at ? <span>đã sửa</span> : null}
                 <time dateTime={message.created_at}>
-                  {messageTime(message.created_at)}
+                  {messageTime(message.created_at, timeZone)}
                 </time>
                 {mine ? <span className="sr-only">(bạn)</span> : null}
               </span>

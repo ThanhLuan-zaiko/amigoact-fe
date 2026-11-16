@@ -20,7 +20,7 @@ Quy tắc tính giờ nằm trong trang cài đặt của tổ chức.
 ## Dashboard giờ (`/hours`)
 
 - Dữ liệu lấy từ `GET /hours/mine/stats` (`getMyHourStats`) và `GET /hours/mine` (các dòng gần đây, không lọc theo khoảng thời gian). Logic bộ lọc, nhãn kỳ và đường dẫn nằm trong `src/lib/hoursStats.ts`.
-- Bộ lọc là link thường: `?range=3m|6m|12m|all` (mặc định `12m`) và `?bucket=week|month` (mặc định `month`). Giá trị lạ quay về mặc định. Khoảng thời gian tính theo tháng giờ Việt Nam, gồm cả tháng hiện tại.
+- Bộ lọc là link thường: `?range=3m|6m|12m|all` (mặc định `12m`) và `?bucket=week|month` (mặc định `month`). Giá trị lạ quay về mặc định. Khoảng thời gian tính theo tháng giờ Việt Nam, gồm cả tháng hiện tại. Đây là chỗ cố ý không theo múi giờ của người xem: backend cộng giờ theo ngày và kỳ giờ Việt Nam, nên mọi người thấy cùng tổng cho cùng một tháng (xem `docs/time-zones.md`). Giờ đóng phiên điểm danh thì hiện theo múi giờ của người xem, kèm độ lệch.
 - Trên điện thoại, tổng quan đứng trước biểu đồ. Từ xl, cột phụ dùng `stickySide`.
 
 ### Dashboard của tổ chức (`/org/[slug]/hours`)
@@ -57,4 +57,4 @@ Trang `/checkin` không nằm trong danh sách bảo vệ của `src/proxy.ts`, 
 
 ## Thanh điều hướng
 
-Thanh dưới trên điện thoại có Trang chủ, Khám phá, Hoạt động, Tin nhắn, Hồ sơ. Tạo bài vẫn ở nút cộng trên header.
+Thanh dưới trên điện thoại có Trang chủ, Hoạt động, Tin nhắn, Hồ sơ. Hoạt động hiện bên trong bài viết gắn với nó trên bảng tin, và tìm được bằng ô tìm trên header. Tạo bài vẫn ở nút cộng trên header.

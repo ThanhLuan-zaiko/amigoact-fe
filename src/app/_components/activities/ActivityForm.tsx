@@ -16,7 +16,9 @@ import {
 import { RequiredLegend } from "../account/RequiredMarks";
 import { useAccountForm } from "../account/useAccountForm";
 import TagInput from "../compose/TagInput";
+import { useTimeZone } from "../TimeZoneContext";
 import { fieldLabel, panel, secondaryButton } from "../ui";
+import ZoneNote from "./ZoneNote";
 
 type ActivityFormProps = {
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
@@ -80,6 +82,7 @@ export default function ActivityForm({
   // A remote activity has no place, so the place is required only for the others.
   const [remote, setRemote] = useState(activity?.is_remote ?? false);
   const errors = state.fieldErrors;
+  const timeZone = useTimeZone();
 
   return (
     <form {...formProps} className={`${panel} flex flex-col gap-6 p-4 sm:p-6`}>
@@ -115,12 +118,16 @@ export default function ActivityForm({
             />
           </FormSection>
           <FormSection title="Thời gian">
+            <ZoneNote />
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <TextField
                 label="Bắt đầu"
                 name="start_at"
                 type="datetime-local"
-                defaultValue={toLocalInput(activity?.start_at ?? null)}
+                defaultValue={toLocalInput(
+                  activity?.start_at ?? null,
+                  timeZone,
+                )}
                 errors={errors}
                 required
               />
@@ -128,7 +135,7 @@ export default function ActivityForm({
                 label="Kết thúc"
                 name="end_at"
                 type="datetime-local"
-                defaultValue={toLocalInput(activity?.end_at ?? null)}
+                defaultValue={toLocalInput(activity?.end_at ?? null, timeZone)}
                 errors={errors}
                 required
               />
@@ -138,6 +145,7 @@ export default function ActivityForm({
                 type="datetime-local"
                 defaultValue={toLocalInput(
                   activity?.registration_deadline ?? null,
+                  timeZone,
                 )}
                 errors={errors}
               />

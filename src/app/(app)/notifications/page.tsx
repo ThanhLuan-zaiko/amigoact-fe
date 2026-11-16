@@ -7,10 +7,12 @@ import { getNotificationPage } from "@/lib/notificationApi";
 import { NOTIFICATION_EVENTS } from "@/lib/notificationTypes";
 import { ME } from "@/lib/realtime";
 import { listQuery } from "@/lib/tagLinks";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import EmptyState from "../../_components/EmptyState";
 import MarkAllReadButton from "../../_components/notifications/MarkAllReadButton";
 import NotificationList from "../../_components/notifications/NotificationList";
 import LiveRefresh from "../../_components/realtime/LiveRefresh";
+import { TimeZoneProvider } from "../../_components/TimeZoneContext";
 import {
   iconButton,
   mutedText,
@@ -93,7 +95,9 @@ async function NotificationsContent({
         />
       ) : (
         <section className={`${panel} px-4`}>
-          <NotificationList items={page.items} />
+          <TimeZoneProvider timeZone={await viewerTimeZone()}>
+            <NotificationList items={page.items} />
+          </TimeZoneProvider>
         </section>
       )}
       {more ? (

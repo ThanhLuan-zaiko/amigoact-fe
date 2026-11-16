@@ -6,9 +6,14 @@ type FeedListProps = {
   posts: Post[];
   // True when the list is filtered by a tag, so the empty message says so.
   filtered?: boolean;
+  timeZone: string;
 };
 
-export default function FeedList({ posts, filtered = false }: FeedListProps) {
+export default function FeedList({
+  posts,
+  filtered = false,
+  timeZone,
+}: FeedListProps) {
   if (posts.length === 0) {
     return filtered ? (
       <EmptyState
@@ -26,7 +31,12 @@ export default function FeedList({ posts, filtered = false }: FeedListProps) {
   return (
     <div className="flex flex-col gap-3">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} manageable={false} />
+        <PostCard
+          key={post.id}
+          post={post}
+          manageable={false}
+          timeZone={timeZone}
+        />
       ))}
     </div>
   );

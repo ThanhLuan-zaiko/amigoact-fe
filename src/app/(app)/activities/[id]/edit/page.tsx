@@ -4,9 +4,11 @@ import { Suspense } from "react";
 import { updateActivity } from "@/app/_actions/activities";
 import { getActivity } from "@/lib/activityApi";
 import { requireUser } from "@/lib/auth";
+import { viewerTimeZone } from "@/lib/viewerTimeZone";
 import ActivityForm from "../../../../_components/activities/ActivityForm";
 import ShiftEditor from "../../../../_components/activities/ShiftEditor";
 import BackLink from "../../../../_components/BackLink";
+import { TimeZoneProvider } from "../../../../_components/TimeZoneContext";
 import { mutedText } from "../../../../_components/ui";
 
 export const metadata: Metadata = { title: "Sửa hoạt động | AmigoACT" };
@@ -25,6 +27,7 @@ async function EditContent({
   if (!activity.viewer.can_manage) {
     return <p className={mutedText}>Chỉ ban quản trị mới sửa được.</p>;
   }
+  const timeZone = await viewerTimeZone();
   return (
     <>
       <div className="flex items-center gap-3">
@@ -34,14 +37,16 @@ async function EditContent({
         </h1>
       </div>
       {/* The form splits itself into two columns on xl. The shifts sit below it. */}
-      <div className="flex w-full flex-col gap-4">
-        <ActivityForm
-          action={updateActivity.bind(null, id)}
-          orgSlug={activity.organization_slug}
-          activity={activity}
-        />
-        <ShiftEditor activityId={id} shifts={activity.shifts} />
-      </div>
+      <TimeZoneProvider timeZone={timeZone}>
+        <div className="flex w-full flex-col gap-4">
+          <ActivityForm
+            action={updateActivity.bind(null, id)}
+            orgSlug={activity.organization_slug}
+            activity={activity}
+          />
+          <ShiftEditor activityId={id} shifts={activity.shifts} />
+        </div>
+      </TimeZoneProvider>
     </>
   );
 }

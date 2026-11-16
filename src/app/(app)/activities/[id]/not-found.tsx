@@ -12,7 +12,7 @@ export default function ActivityNotFound() {
           description="Hoạt động này không tồn tại hoặc chưa được đăng."
         />
       </div>
-      <Link href="/explore" className={secondaryButton}>
+      <Link href="/?tab=activities" className={secondaryButton}>
         <FiCompass aria-hidden="true" />
         Khám phá
       </Link>

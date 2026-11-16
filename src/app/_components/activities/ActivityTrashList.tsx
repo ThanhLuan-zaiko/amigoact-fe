@@ -12,9 +12,11 @@ import { mutedText, splitList, splitRow } from "../ui";
 export default function ActivityTrashList({
   slug,
   items,
+  timeZone,
 }: {
   slug: string;
   items: ActivityTrashItem[];
+  timeZone: string;
 }) {
   return (
     <ul className={splitList}>
@@ -27,12 +29,12 @@ export default function ActivityTrashList({
             <p className="font-semibold break-words">{item.title}</p>
             {item.start_at ? (
               <IconStat icon={FiCalendar} label="Thời gian">
-                {formatDateTime(item.start_at)}
+                {formatDateTime(item.start_at, timeZone)}
               </IconStat>
             ) : null}
             <p className={mutedText}>
-              Xóa lúc {formatDateTime(item.deleted_at)} · Tự xóa vĩnh viễn vào{" "}
-              {formatDateTime(item.purge_at)}
+              Xóa lúc {formatDateTime(item.deleted_at, timeZone)} · Tự xóa vĩnh
+              viễn vào {formatDateTime(item.purge_at, timeZone)}
             </p>
           </div>
           <div className="flex items-start gap-2">
